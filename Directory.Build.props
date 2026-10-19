@@ -6,23 +6,18 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <NoWarn>NU5105;xUnit2031</NoWarn>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Npgsql.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)H2Sharp.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <ImplicitUsings>true</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <Copyright>Copyright 2025 © The Npgsql Development Team</Copyright>
-    <Company>Npgsql</Company>
+    <Copyright>Copyright 2026 © The H2Sharp contributors</Copyright>
+    <Company>H2Sharp</Company>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageLicenseExpression>PostgreSQL</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/npgsql/efcore.pg</PackageProjectUrl>
-    <PackageIcon>postgresql.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/dimzon/h2sharp-efcore</PackageProjectUrl>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)postgresql.png" Pack="true" PackagePath="" />
-  </ItemGroup>
 
   <ItemGroup>
     <Using Include="System.Diagnostics" />
