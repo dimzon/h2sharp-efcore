@@ -1,6 +1,11 @@
 <Project>
   <PropertyGroup>
-    <VersionPrefix>9.0.5</VersionPrefix>
+    <!--
+      The version of the provider. The rules for it, and for the versions of the engine and of
+      the other provider, are in the engine's docs/VERSIONING.md: the number says which EF Core
+      the provider is for, the suffix says that the work is not finished.
+    -->
+    <Version>9.0.5-alpha.1</Version>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest</AnalysisLevel>
