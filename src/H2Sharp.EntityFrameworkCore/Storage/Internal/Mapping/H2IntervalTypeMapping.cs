@@ -30,7 +30,7 @@ public class H2IntervalTypeMapping : H2TypeMapping
         : this(
             new RelationalTypeMappingParameters(
                 new CoreTypeMappingParameters(typeof(TimeSpan), jsonValueReaderWriter: H2JsonTimeSpanReaderWriter.Instance),
-                "interval"))
+                "interval day to second"))
     {
     }
 
@@ -61,7 +61,10 @@ public class H2IntervalTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string ProcessStoreType(RelationalTypeMappingParameters parameters, string storeType, string _)
-        => parameters.Precision is null ? storeType : $"interval({parameters.Precision})";
+        // H2 spells the interval types with their qualifier -- INTERVAL DAY TO SECOND and the like -- and
+        // a bare INTERVAL is not a column type. The engine puts a TimeSpan into DAY TO SECOND, so that is
+        // the qualifier the column has to carry.
+        => parameters.Precision is null ? storeType : $"{storeType}({parameters.Precision})";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using H2Sharp.EntityFrameworkCore.Infrastructure;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
@@ -287,7 +288,7 @@ WHERE s."UppercaseNamedEnum" = ANY (@__values_0)
 
     public enum SchemaQualifiedEnum
     {
-        [PgName("Happy (PgName)")]
+        [Column("Happy (PgName)")]
         Happy,
         Sad
     }

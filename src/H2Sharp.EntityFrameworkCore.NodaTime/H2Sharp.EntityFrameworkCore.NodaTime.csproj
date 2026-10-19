@@ -6,9 +6,16 @@
     <TargetFramework Condition="'$(DeveloperBuild)' == 'True'">net8.0</TargetFramework>
 
     <Authors>Shay Rojansky</Authors>
-    <Description>NodaTime support plugin for PostgreSQL/H2 Entity Framework Core provider.</Description>
-    <PackageTags>npgsql;postgresql;postgres;Entity Framework Core;entity-framework-core;ef;efcore;orm;sql;nodatime;date;time</PackageTags>
+    <Description>NodaTime support plugin for the H2 Entity Framework Core provider.</Description>
+    <PackageTags>h2;h2sharp;Entity Framework Core;entity-framework-core;ef;efcore;orm;sql;nodatime;date;time</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!--
+      EF1001: the provider's convention set builder takes IH2SingletonOptions, which is public but
+      lives in a namespace ending in .Internal, and the analyzer flags that naming convention across
+      assembly boundaries. The convention set builder is replaced with one derived from the
+      provider's, so the option has to be passed along.
+    -->
+    <NoWarn>$(NoWarn);EF1001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="H2.NodaTime" />
+    <PackageReference Include="NodaTime" />
   </ItemGroup>
 
   <ItemGroup>

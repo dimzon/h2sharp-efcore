@@ -14,13 +14,9 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
 [UsedImplicitly]
-public class H2GeometryTypeMapping<TGeometry> : RelationalGeometryTypeMapping<TGeometry, TGeometry>, IH2TypeMapping
+public class H2GeometryTypeMapping<TGeometry> : RelationalGeometryTypeMapping<TGeometry, TGeometry>
 {
     private readonly bool _isGeography;
-
-    /// <inheritdoc />
-    public virtual H2DbType H2DbType
-        => _isGeography ? H2DbType.Geography : H2DbType.Geometry;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -60,12 +56,6 @@ public class H2GeometryTypeMapping<TGeometry> : RelationalGeometryTypeMapping<TG
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected override void ConfigureParameter(DbParameter parameter)
-    {
-        base.ConfigureParameter(parameter);
-
-        ((H2Parameter)parameter).H2DbType = H2DbType;
-    }
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

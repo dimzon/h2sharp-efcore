@@ -1,5 +1,6 @@
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Storage.Json;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
@@ -26,6 +27,31 @@ public abstract class H2TypeMapping : RelationalTypeMapping
     /// <param name="jsonValueReaderWriter">Handles reading and writing JSON values for instances of the mapped type.</param>
     public H2TypeMapping(string storeType, Type clrType, JsonValueReaderWriter? jsonValueReaderWriter = null)
         : base(storeType, clrType, jsonValueReaderWriter: jsonValueReaderWriter)
+    {
+    }
+
+    /// <summary>
+    ///     Constructs an instance of the <see cref="H2TypeMapping" /> class for a type the database does not
+    ///     hold natively, and which therefore reaches it through a conversion.
+    /// </summary>
+    /// <param name="storeType">The database type to map.</param>
+    /// <param name="clrType">The CLR type the model holds.</param>
+    /// <param name="converter">The conversion between the model type and the type the engine understands.</param>
+    /// <param name="jsonValueReaderWriter">Handles reading and writing JSON values for instances of the mapped type.</param>
+    /// <remarks>
+    ///     The H2 engine's value mapper knows the BCL types only. A type it has never heard of -- NodaTime's
+    ///     LocalDate, for instance -- reaches the database as the BCL type the conversion produces, and the
+    ///     store type says which H2 column it lands in.
+    /// </remarks>
+    public H2TypeMapping(
+        string storeType,
+        Type clrType,
+        ValueConverter? converter,
+        JsonValueReaderWriter? jsonValueReaderWriter = null)
+        : base(
+            new RelationalTypeMappingParameters(
+                new CoreTypeMappingParameters(clrType, converter, jsonValueReaderWriter: jsonValueReaderWriter),
+                storeType))
     {
     }
 

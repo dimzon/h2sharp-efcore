@@ -561,11 +561,6 @@ public class JsonTypesH2Test : JsonTypesRelationalTestBase
             """{"Prop":"SRID=4326;POLYGON ((0 0, 1 0, 0 1, 0 0))"}""");
     }
 
-    protected class LogSequenceNumberType
-    {
-        public H2LogSequenceNumber LogSequenceNumber { get; set; }
-    }
-
     protected override ITestStoreFactory TestStoreFactory => H2TestStoreFactory.Instance;
 
     protected override IServiceCollection AddServices(IServiceCollection serviceCollection)

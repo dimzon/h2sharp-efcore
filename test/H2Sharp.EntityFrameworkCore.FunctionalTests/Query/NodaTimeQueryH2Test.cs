@@ -1890,9 +1890,7 @@ LIMIT 1
         public Period Period { get; set; }
         public Duration Duration { get; set; }
         public DateInterval DateInterval { get; set; }
-        public H2Range<LocalDate> LocalDateRange { get; set; }
         public Interval Interval { get; set; }
-        public H2Range<Instant> InstantRange { get; set; }
         public long Long { get; set; }
 
         public string TimeZoneId { get; set; }

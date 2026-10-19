@@ -23,7 +23,6 @@ public static class H2NetTopologySuiteServiceCollectionExtensions
         Check.NotNull(serviceCollection, nameof(serviceCollection));
 
         new EntityFrameworkH2ServicesBuilder(serviceCollection)
-            .TryAdd<IH2DataSourceConfigurationPlugin, NetTopologySuiteDataSourceConfigurationPlugin>()
             .TryAdd<ISingletonOptions, IH2NetTopologySuiteSingletonOptions>(p => p.GetRequiredService<IH2NetTopologySuiteSingletonOptions>())
             .TryAdd<IRelationalTypeMappingSourcePlugin, H2NetTopologySuiteTypeMappingSourcePlugin>()
             .TryAdd<IMethodCallTranslatorPlugin, H2NetTopologySuiteMethodCallTranslatorPlugin>()

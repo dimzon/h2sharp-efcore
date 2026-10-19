@@ -1244,9 +1244,6 @@ FROM "MappedDataTypes" AS m
         [Column(TypeName = "macaddr")]
         public PhysicalAddress PhysicalAddressAsMacaddr { get; set; }
 
-        [Column(TypeName = "point")]
-        public H2Point H2PointAsPoint { get; set; }
-
         [Column(TypeName = "jsonb")]
         public string StringAsJsonb { get; set; }
 
@@ -1255,9 +1252,6 @@ FROM "MappedDataTypes" AS m
 
         [Column(TypeName = "hstore")]
         public Dictionary<string, string> DictionaryAsHstore { get; set; }
-
-        [Column(TypeName = "int4range")]
-        public H2Range<int> H2RangeAsRange { get; set; }
 
         [Column(TypeName = "int[]")]
         public int[] IntArrayAsIntArray { get; set; }
@@ -1268,9 +1262,6 @@ FROM "MappedDataTypes" AS m
         [Column(TypeName = "xid")]
         public uint UintAsXid { get; set; }
 
-        public H2TsQuery SearchQuery { get; set; }
-        public H2TsVector SearchVector { get; set; }
-        public H2TsRankingNormalization RankingNormalization { get; set; }
         public uint Regconfig { get; set; }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
@@ -1439,9 +1430,6 @@ FROM "MappedDataTypes" AS m
         [Column(TypeName = "macaddr")]
         public PhysicalAddress PhysicalAddressAsMacaddr { get; set; }
 
-        [Column(TypeName = "point")]
-        public H2Point? H2PointAsPoint { get; set; }
-
         [Column(TypeName = "jsonb")]
         public string StringAsJsonb { get; set; }
 
@@ -1454,9 +1442,6 @@ FROM "MappedDataTypes" AS m
         [Column(TypeName = "hstore")]
         public ImmutableDictionary<string, string> ImmutableDictionaryAsHstore { get; set; }
 
-        [Column(TypeName = "int4range")]
-        public H2Range<int>? H2RangeAsRange { get; set; }
-
         [Column(TypeName = "int[]")]
         public int[] IntArrayAsIntArray { get; set; }
 
@@ -1466,9 +1451,6 @@ FROM "MappedDataTypes" AS m
         [Column(TypeName = "xid")]
         public uint? UintAsXid { get; set; }
 
-        public H2TsQuery SearchQuery { get; set; }
-        public H2TsVector SearchVector { get; set; }
-        public H2TsRankingNormalization? RankingNormalization { get; set; }
         public uint? Regconfig { get; set; }
 
         [Column(TypeName = "mood")]

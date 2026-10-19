@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="H2.NetTopologySuite" />
+    <PackageReference Include="NetTopologySuite" />
   </ItemGroup>
 
   <ItemGroup>

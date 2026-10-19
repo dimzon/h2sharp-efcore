@@ -903,11 +903,6 @@ WHERE CAST(e."TimestamptzDateTime" AT TIME ZONE 'UTC' AS time without time zone)
         public DateTime[] TimestampDateTimeArray { get; set; }
 
         public DateTimeOffset[] TimestampDateTimeOffsetArray { get; set; }
-
-        public H2Range<DateTime> TimestamptzDateTimeRange { get; set; }
-
-        [Column(TypeName = "tsrange")]
-        public H2Range<DateTime> TimestampDateTimeRange { get; set; }
     }
 
     public class TimestampQueryFixture : SharedStoreFixtureBase<TimestampQueryContext>, IQueryFixtureBase, ITestSqlLoggerFactory

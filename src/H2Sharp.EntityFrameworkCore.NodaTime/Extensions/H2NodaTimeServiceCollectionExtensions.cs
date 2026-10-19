@@ -1,7 +1,6 @@
-using H2Sharp.EntityFrameworkCore.Infrastructure;
-using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
-using H2Sharp.EntityFrameworkCore.NodaTime.Query.Internal;
+using H2Sharp.EntityFrameworkCore.Storage;
 using H2Sharp.EntityFrameworkCore.Storage.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
@@ -9,6 +8,15 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 ///     H2Sharp.EntityFrameworkCore.NodaTime extension methods for <see cref="IServiceCollection" />.
 /// </summary>
+/// <remarks>
+///     <para>
+///         Upstream this plugin brought its own type mappings and relied on the Npgsql ADO driver to
+///         convert the values. The H2Sharp ADO layer knows only the BCL types, so the conversion is
+///         done here instead, by a convention that gives each NodaTime property a value converter.
+///         The store types then come from the main provider's own mappings, which already know that
+///         a DateOnly is a DATE and a DateTimeOffset a TIMESTAMP WITH TIME ZONE.
+///     </para>
+/// </remarks>
 public static class H2NodaTimeServiceCollectionExtensions
 {
     /// <summary>
@@ -21,13 +29,10 @@ public static class H2NodaTimeServiceCollectionExtensions
     {
         Check.NotNull(serviceCollection, nameof(serviceCollection));
 
-        new EntityFrameworkH2ServicesBuilder(serviceCollection)
-            .TryAdd<IH2DataSourceConfigurationPlugin, NodaTimeDataSourceConfigurationPlugin>()
-            .TryAdd<IRelationalTypeMappingSourcePlugin, H2NodaTimeTypeMappingSourcePlugin>()
-            .TryAdd<IMethodCallTranslatorPlugin, H2NodaTimeMethodCallTranslatorPlugin>()
-            .TryAdd<IAggregateMethodCallTranslatorPlugin, H2NodaTimeAggregateMethodCallTranslatorPlugin>()
-            .TryAdd<IMemberTranslatorPlugin, H2NodaTimeMemberTranslatorPlugin>()
-            .TryAdd<IEvaluatableExpressionFilterPlugin, H2NodaTimeEvaluatableExpressionFilterPlugin>();
+        // The plugin supplies the type mappings for the NodaTime types. Each mapping carries the
+        // conversion to the BCL type the H2 engine understands, so nothing here depends on the ADO
+        // driver having a handler for NodaTime -- which it does not.
+        serviceCollection.AddScoped<IRelationalTypeMappingSourcePlugin, H2NodaTimeTypeMappingSourcePlugin>();
 
         return serviceCollection;
     }

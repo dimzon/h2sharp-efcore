@@ -44,5 +44,5 @@ public class H2ModificationCommandBatchFactory : IModificationCommandBatchFactor
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public virtual ModificationCommandBatch Create()
-        => new H2ModificationCommandBatch(_dependencies, _maxBatchSize);
+        => new SingularModificationCommandBatch(_dependencies);
 }

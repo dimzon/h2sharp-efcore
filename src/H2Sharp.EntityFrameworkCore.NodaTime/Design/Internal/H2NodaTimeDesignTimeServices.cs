@@ -1,6 +1,6 @@
-using JetBrains.Annotations;
-using H2Sharp.EntityFrameworkCore.NodaTime.Scaffolding.Internal;
 using H2Sharp.EntityFrameworkCore.Storage.Internal;
+using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Storage;
 
 // ReSharper disable once CheckNamespace
 namespace H2Sharp.EntityFrameworkCore.Design.Internal;
@@ -11,6 +11,11 @@ namespace H2Sharp.EntityFrameworkCore.Design.Internal;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
+/// <remarks>
+///     Upstream this registered the plugin's type mapping source and code generator, both of which
+///     existed to serve the ADO-level NodaTime handlers. The conversion now happens in the model, so
+///     the design-time service provider needs the convention and nothing else.
+/// </remarks>
 [UsedImplicitly]
 public class H2NodaTimeDesignTimeServices : IDesignTimeServices
 {
@@ -22,6 +27,5 @@ public class H2NodaTimeDesignTimeServices : IDesignTimeServices
     /// </summary>
     public virtual void ConfigureDesignTimeServices(IServiceCollection serviceCollection)
         => serviceCollection
-            .AddSingleton<IRelationalTypeMappingSourcePlugin, H2NodaTimeTypeMappingSourcePlugin>()
-            .AddSingleton<IProviderCodeGeneratorPlugin, H2NodaTimeCodeGeneratorPlugin>();
+            .AddSingleton<IRelationalTypeMappingSourcePlugin, H2NodaTimeTypeMappingSourcePlugin>();
 }

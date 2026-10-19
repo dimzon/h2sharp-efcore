@@ -16,7 +16,7 @@ public class H2ModificationCommandFactory : IModificationCommandFactory
     /// </summary>
     public virtual IModificationCommand CreateModificationCommand(
         in ModificationCommandParameters modificationCommandParameters)
-        => new H2ModificationCommand(modificationCommandParameters);
+        => new ModificationCommand(modificationCommandParameters);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -26,5 +26,5 @@ public class H2ModificationCommandFactory : IModificationCommandFactory
     /// </summary>
     public virtual INonTrackedModificationCommand CreateNonTrackedModificationCommand(
         in NonTrackedModificationCommandParameters modificationCommandParameters)
-        => new H2ModificationCommand(modificationCommandParameters);
+        => new ModificationCommand(modificationCommandParameters);
 }
