@@ -1,7 +1,5 @@
-using H2DbException = H2Sharp.Message.DbException;
-using System.Net.Sockets;
-using System.Transactions;
-using H2Sharp.EntityFrameworkCore.Migrations.Operations;
+using System.Data.Common;
+using H2Sharp.Data;
 
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 
@@ -11,424 +9,168 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
-public class H2DatabaseCreator(
+/// <remarks>
+///     <para>
+///         Upstream this creator manages a PostgreSQL <em>database</em>: it opens an admin connection to
+///         the maintenance database <c>postgres</c>, issues <c>CREATE DATABASE</c>, reloads type mappings
+///         and clears the connection pool. None of that exists here. An H2 database is embedded in the
+///         process, is created by opening it, and has no maintenance instance, no pool to clear and no
+///         type mappings to reload.
+///     </para>
+///     <para>
+///         The nearest thing H2 has to a PostgreSQL database is a <em>schema</em> inside a database, and
+///         this creator manages that instead: <see cref="Exists" /> reports whether the schema is
+///         present, <see cref="Create" /> issues <c>CREATE SCHEMA</c> and <see cref="Delete" /> issues
+///         <c>DROP ALL OBJECTS</c> followed by <c>DROP SCHEMA</c>.
+///     </para>
+/// </remarks>
+public class H2DatabaseCreator : RelationalDatabaseCreator
+{
+    private readonly IH2RelationalConnection _connection;
+    private readonly ISqlGenerationHelper _sqlGenerationHelper;
+
+    /// <summary>
+    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+    ///     any release. You should only use it directly in your code with extreme caution and knowing that
+    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+    /// </summary>
+    public H2DatabaseCreator(
         RelationalDatabaseCreatorDependencies dependencies,
         IH2RelationalConnection connection,
-        IRawSqlCommandBuilder rawSqlCommandBuilder)
-    : RelationalDatabaseCreator(dependencies)
-{
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public virtual TimeSpan RetryDelay { get; set; } = TimeSpan.FromMilliseconds(500);
+        ISqlGenerationHelper sqlGenerationHelper)
+        : base(dependencies)
+    {
+        _connection = connection;
+        _sqlGenerationHelper = sqlGenerationHelper;
+    }
 
     /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+    ///     The schema this creator manages, or <see langword="null" /> for the engine default.
     /// </summary>
-    public virtual TimeSpan RetryTimeout { get; set; } = TimeSpan.FromMinutes(1);
+    /// <remarks>
+    ///     An H2 connection opens a database, and its objects live in a schema inside it. EF's default
+    ///     schema is <c>public</c>, which H2 creates for you, so a caller that never set a schema gets
+    ///     <see langword="null" /> and nothing is created or dropped.
+    /// </remarks>
+    private string? Schema
+        => Dependencies.CurrentContext.Context.Model?.GetDefaultSchema() is { } schema && !string.Equals(schema, "public", StringComparison.Ordinal)
+            ? schema
+            : null;
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
+    /// <inheritdoc />
+    public override bool Exists()
+        => Schema is not { } schema || SchemaExists(schema);
+
+    /// <inheritdoc />
     public override void Create()
     {
-        using (var masterConnection = connection.CreateAdminConnection())
+        if (Schema is not { } schema)
         {
-            try
-            {
-                Dependencies.MigrationCommandExecutor
-                    .ExecuteNonQuery(CreateCreateOperations(), masterConnection);
-            }
-            catch (DbException e) when (e is { SqlState: "23505", ConstraintName: "pg_database_datname_index" })
-            {
-                // This occurs when two connections are trying to create the same database concurrently
-                // (happens in the tests). Simply ignore the error.
-            }
-
-            ClearPool();
+            // H2 creates the database and its PUBLIC schema when the connection opens, so there is
+            // genuinely nothing to do rather than something this class has failed to implement.
+            return;
         }
 
+        Execute($"CREATE SCHEMA {_sqlGenerationHelper.DelimitIdentifier(schema)}");
         Exists();
     }
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public override async Task CreateAsync(CancellationToken cancellationToken = default)
-    {
-        var masterConnection = connection.CreateAdminConnection();
-        await using (masterConnection.ConfigureAwait(false))
-        {
-            try
-            {
-                await Dependencies.MigrationCommandExecutor
-                    .ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (DbException e) when (e is { SqlState: "23505", ConstraintName: "pg_database_datname_index" })
-            {
-                // This occurs when two connections are trying to create the same database concurrently
-                // (happens in the tests). Simply ignore the error.
-            }
-
-            ClearPool();
-        }
-
-        await ExistsAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public override bool HasTables()
-        => Dependencies.ExecutionStrategy
-            .Execute(
-                connection,
-                connection => (bool)CreateHasTablesCommand()
-                    .ExecuteScalar(
-                        new RelationalCommandParameterObject(
-                            connection,
-                            null,
-                            null,
-                            Dependencies.CurrentContext.Context,
-                            Dependencies.CommandLogger))!);
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
-        => Dependencies.ExecutionStrategy.ExecuteAsync(
-            connection,
-            async (connection, ct) => (bool)(await CreateHasTablesCommand()
-                .ExecuteScalarAsync(
-                    new RelationalCommandParameterObject(
-                        connection,
-                        null,
-                        null,
-                        Dependencies.CurrentContext.Context,
-                        Dependencies.CommandLogger),
-                    cancellationToken: ct).ConfigureAwait(false))!, cancellationToken);
-
-    private IRelationalCommand CreateHasTablesCommand()
-        => rawSqlCommandBuilder
-            .Build(
-                """
-SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
-FROM pg_class AS cls
-JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
-WHERE
-        cls.relkind IN ('r', 'v', 'm', 'f', 'p') AND
-        ns.nspname NOT IN ('pg_catalog', 'information_schema') AND
-        -- Exclude tables which are members of PG extensions
-        NOT EXISTS (
-            SELECT 1 FROM pg_depend WHERE
-                classid=(
-                    SELECT cls.oid
-                    FROM pg_class AS cls
-                             JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
-                    WHERE relname='pg_class' AND ns.nspname='pg_catalog'
-                ) AND
-                objid=cls.oid AND
-                deptype IN ('e', 'x')
-        )
-""");
-
-    private IReadOnlyList<MigrationCommand> CreateCreateOperations()
-    {
-        var designTimeModel = Dependencies.CurrentContext.Context.GetService<IDesignTimeModel>().Model;
-
-        return Dependencies.MigrationsSqlGenerator.Generate(
-        [
-            new H2CreateDatabaseOperation
-                {
-                    Name = connection.DbConnection.Database,
-                    Template = designTimeModel.GetDatabaseTemplate(),
-                    Collation = designTimeModel.GetCollation(),
-                    Tablespace = designTimeModel.GetTablespace()
-                }
-        ]);
-    }
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public override bool Exists()
-        => Dependencies.ExecutionStrategy.Execute(() =>
-        {
-            using var _ = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled);
-            var opened = false;
-
-            try
-            {
-                connection.Open(errorsExpected: true);
-                opened = true;
-
-                rawSqlCommandBuilder
-                    .Build("SELECT 1")
-                    .ExecuteNonQuery(
-                        new RelationalCommandParameterObject(
-                            connection,
-                            parameterValues: null,
-                            readerColumns: null,
-                            Dependencies.CurrentContext.Context,
-                            Dependencies.CommandLogger,
-                            CommandSource.Migrations));
-
-                return true;
-            }
-            catch (Exception e) when (IsDoesNotExist(e))
-            {
-                return false;
-            }
-            finally
-            {
-                if (opened)
-                {
-                    connection.Close();
-                }
-            }
-        });
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
+    /// <inheritdoc />
     public override Task<bool> ExistsAsync(CancellationToken cancellationToken = default)
-        => Dependencies.ExecutionStrategy.ExecuteAsync(async ct =>
-        {
-            using var _ = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled);
-            var opened = false;
+        => Task.FromResult(Exists());
 
-            try
-            {
-                await connection.OpenAsync(cancellationToken, errorsExpected: true).ConfigureAwait(false);
-                opened = true;
+    /// <inheritdoc />
+    public override Task CreateAsync(CancellationToken cancellationToken = default)
+    {
+        Create();
+        return Task.CompletedTask;
+    }
 
-                await rawSqlCommandBuilder
-                    .Build("SELECT 1")
-                    .ExecuteNonQueryAsync(
-                        new RelationalCommandParameterObject(
-                            connection,
-                            parameterValues: null,
-                            readerColumns: null,
-                            Dependencies.CurrentContext.Context,
-                            Dependencies.CommandLogger,
-                            CommandSource.Migrations),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-
-                return true;
-            }
-            catch (Exception e) when (IsDoesNotExist(e))
-            {
-                return false;
-            }
-            finally
-            {
-                if (opened)
-                {
-                    await connection.CloseAsync().ConfigureAwait(false);
-                }
-            }
-        }, cancellationToken);
-
-    private static bool IsDoesNotExist(Exception exception)
-        => exception switch
-        {
-            // Login failed is thrown when database does not exist (See Issue #776)
-            DbException { SqlState: "3D000" }
-                => true,
-
-            // This can happen when H2 attempts to connect to multiple hosts
-            H2Exception { InnerException: AggregateException ae } when ae.InnerExceptions.Any(ie => ie is DbException { SqlState: "3D000" })
-                => true,
-
-            // Pretty awful hack around #104
-            H2Exception { InnerException: IOException { InnerException: SocketException { SocketErrorCode: SocketError.ConnectionReset } } }
-                => true,
-
-            _ => false
-        };
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
+    /// <inheritdoc />
     public override void Delete()
     {
-        switch (connection.DataSource)
+        if (Schema is not { } schema)
         {
-            case H2DataSource dataSource:
-                dataSource.Clear();
-                break;
-            case null:
-                ClearAllPools();
-                break;
+            throw new InvalidOperationException(
+                "Dropping the engine default schema is not supported: H2 has no way to remove PUBLIC, " +
+                "and dropping it would take the session's own unqualified object namespace with it. " +
+                "Set a schema on the model if you want this creator to manage its lifetime.");
         }
 
-        using (var masterConnection = connection.CreateAdminConnection())
-        {
-            Dependencies.MigrationCommandExecutor
-                .ExecuteNonQuery(CreateDropCommands(), masterConnection);
-        }
+        // DROP ALL OBJECTS removes the schema's contents but leaves the schema itself; the DROP does that.
+        Execute($"DROP ALL OBJECTS {_sqlGenerationHelper.DelimitIdentifier(schema)}");
+        Execute($"DROP SCHEMA {_sqlGenerationHelper.DelimitIdentifier(schema)} CASCADE");
     }
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public override async Task DeleteAsync(CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public override Task DeleteAsync(CancellationToken cancellationToken = default)
     {
-        switch (connection.DataSource)
-        {
-            case H2DataSource dataSource:
-                // TODO: Do this asynchronously once https://github.com/npgsql/npgsql/issues/4499 is done
-                dataSource.Clear();
-                break;
-            case null:
-                ClearAllPools();
-                break;
-        }
-
-        var masterConnection = connection.CreateAdminConnection();
-        await using (masterConnection)
-        {
-            await Dependencies.MigrationCommandExecutor
-                .ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken)
-                .ConfigureAwait(false);
-        }
+        Delete();
+        return Task.CompletedTask;
     }
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public override void CreateTables()
+    /// <inheritdoc />
+    public override bool HasTables()
     {
-        var designTimeModel = Dependencies.CurrentContext.Context.GetService<IDesignTimeModel>().Model;
-        var operations = Dependencies.ModelDiffer.GetDifferences(null, designTimeModel.GetRelationalModel());
-        var commands = Dependencies.MigrationsSqlGenerator.Generate(operations, designTimeModel);
-
-        // If a PostgreSQL extension, enum or range was added, we want H2 to reload all types at the ADO.NET level.
-        var reloadTypes =
-            operations.OfType<AlterDatabaseOperation>()
-                .Any(
-                    o =>
-                        o.GetPostgresExtensions().Any() || o.GetPostgresEnums().Any() || o.GetPostgresRanges().Any());
-
-        try
+        if (Schema is { } schema)
         {
-            Dependencies.MigrationCommandExecutor.ExecuteNonQuery(commands, connection);
-        }
-        catch (DbException e) when (e is { SqlState: "23505", ConstraintName: "pg_type_typname_nsp_index" })
-        {
-            // This occurs when two connections are trying to create the same database concurrently
-            // (happens in the tests). Simply ignore the error.
+            using var connection = OpenConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText =
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @p";
+
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "p";
+            parameter.Value = schema;
+            command.Parameters.Add(parameter);
+
+            return Convert.ToInt64(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0;
         }
 
-        if (reloadTypes && connection.DbConnection is H2Connection npgsqlConnection)
-        {
-            npgsqlConnection.Open();
-            try
-            {
-                npgsqlConnection.ReloadTypes();
-            }
-            finally
-            {
-                npgsqlConnection.Close();
-            }
-        }
+        return false;
     }
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public override async Task CreateTablesAsync(CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(HasTables());
+
+    private bool SchemaExists(string schema)
     {
-        var designTimeModel = Dependencies.CurrentContext.Context.GetService<IDesignTimeModel>().Model;
-        var operations = Dependencies.ModelDiffer.GetDifferences(null, designTimeModel.GetRelationalModel());
-        var commands = Dependencies.MigrationsSqlGenerator.Generate(operations, designTimeModel);
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = @p";
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "p";
+        parameter.Value = schema;
+        command.Parameters.Add(parameter);
 
-        try
-        {
-            await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(commands, connection, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (DbException e) when (e is { SqlState: "23505", ConstraintName: "pg_type_typname_nsp_index" })
-        {
-            // This occurs when two connections are trying to create the same database concurrently
-            // (happens in the tests). Simply ignore the error.
-        }
-
-        // If a PostgreSQL extension, enum or range was added, we want H2 to reload all types at the ADO.NET level.
-        var reloadTypes = operations
-            .OfType<AlterDatabaseOperation>()
-            .Any(o => o.GetPostgresExtensions().Any() || o.GetPostgresEnums().Any() || o.GetPostgresRanges().Any());
-
-        if (reloadTypes && connection.DbConnection is H2Connection npgsqlConnection)
-        {
-            await npgsqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                await npgsqlConnection.ReloadTypesAsync(cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                await npgsqlConnection.CloseAsync().ConfigureAwait(false);
-            }
-        }
+        return Convert.ToInt64(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0;
     }
 
-    private IReadOnlyList<MigrationCommand> CreateDropCommands()
+    private void Execute(string sql)
     {
-        var operations = new MigrationOperation[]
-        {
-            // TODO Check DbConnection.Database always gives us what we want
-            // Issue #775
-            new H2DropDatabaseOperation { Name = connection.DbConnection.Database }
-        };
-
-        return Dependencies.MigrationsSqlGenerator.Generate(operations);
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        command.ExecuteNonQuery();
     }
 
-    // Clear connection pools in case there are active connections that are pooled
-    private static void ClearAllPools()
-        => H2Connection.ClearAllPools();
+    private H2Connection OpenConnection()
+    {
+        // Opening is the creation: H2Sharp creates the database file or registers the in-memory
+        // database on first open, so there is no separate "connect to a maintenance instance" step
+        // the way PostgreSQL needs one before CREATE DATABASE can be issued.
+        //
+        // A fresh connection is made from the connection string rather than reusing the one EF holds.
+        // This class issues DDL against the catalog and the running DbConnection may be mid-reader.
+        var connectionString = _connection.ConnectionString
+            ?? throw new InvalidOperationException(
+                $"{nameof(H2DatabaseCreator)} needs a connection string: an H2 database is addressed by " +
+                "URL, and a context configured with a bare DbConnection instance cannot be duplicated here.");
 
-    // Clear connection pool for the database connection since after the 'create database' call, a previously
-    // invalid connection may now be valid.
-    private void ClearPool()
-        => H2Connection.ClearPool((H2Connection)connection.DbConnection);
+        var connection = new H2Connection(connectionString);
+        connection.Open();
+        return connection;
+    }
 }

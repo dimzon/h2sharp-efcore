@@ -106,6 +106,10 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     private readonly H2ByteArrayTypeMapping _bytea = H2ByteArrayTypeMapping.Default;
     private readonly H2BlobTypeMapping _blob = H2BlobTypeMapping.Default;
 
+    // BOOLEAN is a distinct H2 type, not an alias for an integer: it does not accept 0/1, and
+    // arithmetic on it fails. That is the one place where reusing a numeric mapping would be wrong.
+    private readonly H2BoolTypeMapping _bool = H2BoolTypeMapping.Default;
+
     // Geometry. H2 stores points as GEOMETRY with a POINT subtype, unlike PostgreSQL's bare 'point'.
     private readonly H2GeometryTypeMapping _geometry = H2GeometryTypeMapping.Default;
 
@@ -179,16 +183,16 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
         };
 // ReSharper restore CoVariantArrayConversion
 
-        // Set up aliases
-        storeTypeMappings["timestamp"] = storeTypeMappings["timestamp without time zone"];
+        // H2 spells the time-zone-qualified types in full; keep the short PostgreSQL-style names as
+        // aliases so a store type written either way resolves to the same mapping.
         storeTypeMappings["timestamptz"] = storeTypeMappings["timestamp with time zone"];
-        storeTypeMappings["time"] = storeTypeMappings["time without time zone"];
         storeTypeMappings["timetz"] = storeTypeMappings["time with time zone"];
 
         var clrTypeMappings = new Dictionary<Type, RelationalTypeMapping>
         {
             { typeof(bool), _bool },
             { typeof(Guid), _uuid },
+            { typeof(sbyte), _int1 },
             { typeof(byte), _int2Byte },
             { typeof(short), _int2 },
             { typeof(int), _int4 },
@@ -198,48 +202,21 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             { typeof(decimal), _numeric },
             { typeof(BigInteger), _bigInteger },
             { typeof(string), _text },
-            { typeof(JsonDocument), _jsonbDocument },
-            // { typeof(JsonElement),                         _jsonbElement         },
-            { typeof(JsonElement), _jsonbOwned },
+            { typeof(JsonDocument), _jsonDocument },
+            { typeof(JsonElement), _jsonElement },
             { typeof(char), _singleChar },
-            { typeof(DateTime), LegacyTimestampBehavior ? _timestamp : _timestamptz },
+            { typeof(DateTime), LegacyTimestampBehavior ? _timestamptz : _timestamp },
             { typeof(DateOnly), _dateDateOnly },
             { typeof(TimeOnly), _timeTimeOnly },
             { typeof(TimeSpan), _interval },
             { typeof(DateTimeOffset), _timestamptzDto },
-            { typeof(PhysicalAddress), _macaddr },
-            { typeof(IPAddress), _inetAsIPAddress },
-            { typeof(H2Inet), _inetAsH2Inet },
-            { typeof(H2Cidr), _cidr },
-            { typeof(BitArray), _varbit },
-            { typeof(ImmutableDictionary<string, string>), _immutableHstore },
-            { typeof(Dictionary<string, string>), _hstore },
-            { typeof(H2Tid), _tid },
-            { typeof(H2LogSequenceNumber), _pgLsn },
-            { typeof(H2Point), _point },
-            { typeof(H2Box), _box },
-            { typeof(H2Line), _line },
-            { typeof(H2LSeg), _lseg },
-            { typeof(H2Path), _path },
-            { typeof(H2Polygon), _polygon },
-            { typeof(H2Circle), _circle },
-            { typeof(H2Range<int>), _int4range },
-            { typeof(H2Range<long>), _int8range },
-            { typeof(H2Range<decimal>), _numrange },
-            { typeof(H2Range<DateTime>), LegacyTimestampBehavior ? _tsrange : _tstzrange },
-            { typeof(H2Range<DateTimeOffset>), _tstzrange },
-            { typeof(H2Range<DateOnly>), _dateOnlyDaterange },
-            { typeof(H2TsQuery), _tsquery },
-            { typeof(H2TsVector), _tsvector },
-            { typeof(H2TsRankingNormalization), _rankingNormalization },
-            { typeof(LTree), _ltree }
+            { typeof(byte[]), _bytea }
         };
 
         StoreTypeMappings = new ConcurrentDictionary<string, RelationalTypeMapping[]>(storeTypeMappings, StringComparer.OrdinalIgnoreCase);
         ClrTypeMappings = new ConcurrentDictionary<Type, RelationalTypeMapping>(clrTypeMappings);
 
         _enumDefinitions = options.EnumDefinitions;
-        _userRangeDefinitions = options.UserRangeDefinitions;
     }
 
     /// <summary>
@@ -253,8 +230,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
         => base.FindMapping(mappingInfo)
             ?? FindBaseMapping(mappingInfo)?.Clone(mappingInfo)
             ?? FindEnumMapping(mappingInfo)
-            ?? FindRowValueMapping(mappingInfo)?.Clone(mappingInfo)
-            ?? FindUserRangeMapping(mappingInfo);
+            ?? FindRowValueMapping(mappingInfo)?.Clone(mappingInfo);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -360,12 +336,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
                             ? mapping.WithStoreTypeAndSize($"{mapping.StoreType}({mappingInfo.Size})", mappingInfo.Size)
                             : _text;
                     }
-
-                    if (clrType == typeof(BitArray))
-                    {
-                        mapping = mappingInfo.IsFixedLength ?? false ? _bit : _varbit;
-                        return mapping.WithStoreTypeAndSize($"{mapping.StoreType}({mappingInfo.Size})", mappingInfo.Size);
-                    }
+                    // H2 has no BIT/VARBIT type, so BitArray has no store type to map to.
                 }
 
                 return mapping;
@@ -389,19 +360,8 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
 
                 return _bytea;
             }
-
-            if (mappingInfo.IsRowVersion == true)
-            {
-                if (clrType == typeof(uint))
-                {
-                    return _xid;
-                }
-
-                if (clrType == typeof(ulong))
-                {
-                    return _xid8;
-                }
-            }
+            // H2 has no xid/xid8 system column types, so a row-version property gets no special
+            // mapping: byte[] falls through to the VARBINARY mapping above.
         }
 
         return null;
@@ -459,49 +419,8 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
                 return null;
             }
 
-            // If the element type mapping is a range, default to return a multirange type mapping (if the PG version supports it).
-            // Otherwise an array over the range will be returned.
-            if (_supportsMultiranges)
-            {
-                if (relationalElementMapping is RelationalTypeMapping rangeMapping)
-                {
-                    var multirangeStoreType = rangeMapping.StoreType switch
-                    {
-                        "int4range" => "int4multirange",
-                        "int8range" => "int8multirange",
-                        "numrange" => "nummultirange",
-                        "tsrange" => "tsmultirange",
-                        "tstzrange" => "tstzmultirange",
-                        "daterange" => "datemultirange",
-
-                        _ => throw new InvalidOperationException(
-                            $"Cannot create multirange type mapping for range type '{rangeMapping.StoreType}'")
-                    };
-
-                    return new object(multirangeStoreType, modelType, rangeMapping);
-                }
-
-                // TODO: This needs to move to the NodaTime plugin, but there's no FindCollectionMapping extension yet for plugins
-                if (relationalElementMapping.GetType() is
-                    { Name: "IntervalRangeMapping", Namespace: "H2Sharp.EntityFrameworkCore.Storage.Internal" } type1)
-                {
-                    return (RelationalTypeMapping)Activator.CreateInstance(
-                        type1.Assembly.GetType(
-                            "H2Sharp.EntityFrameworkCore.Storage.Internal.IntervalMultirangeMapping")!,
-                        modelType,
-                        relationalElementMapping)!;
-                }
-
-                if (relationalElementMapping.GetType() is
-                    { Name: "DateIntervalRangeMapping", Namespace: "H2Sharp.EntityFrameworkCore.Storage.Internal" } type2)
-                {
-                    return (RelationalTypeMapping)Activator.CreateInstance(
-                        type2.Assembly.GetType(
-                            "H2Sharp.EntityFrameworkCore.Storage.Internal.DateIntervalMultirangeMapping")!,
-                        modelType,
-                        relationalElementMapping)!;
-                }
-            }
+            // Multiranges are gone with the range types themselves: H2 has no range types, so there is
+            // no multirange to build an array over. Everything below maps as a plain H2 array.
 
             // Not a multirange - map as a PG array type
             concreteCollectionType = FindTypeToInstantiate(modelType, elementType);
@@ -549,64 +468,10 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
                     storeType, relationalElementMapping)!;
             }
         }
-        else if (IsMultirange(storeType, out var rangeStoreType) && _supportsMultiranges)
-        {
-            // Note that we ignore the elementMapping argument here (but not in the CLR type-only path above).
-            // This is because the user-provided storeType for the array should take precedence over the element type mapping that gets
-            // calculated purely based on the element's CLR type in base.FindMappingWithConversion.
-            var relationalElementMapping = elementType is null
-                ? FindMapping(rangeStoreType)
-                : FindMapping(elementType, rangeStoreType);
-
-            // If no mapping was found for the element, there's no mapping for the array.
-            // Also, arrays of arrays aren't supported (as opposed to multidimensional arrays) by PostgreSQL
-            if (relationalElementMapping is RelationalTypeMapping rangeMapping
-                // TODO: Why exclude if there's an element converter??
-                && (relationalElementMapping.Converter is null || modelType is null || modelType.IsArrayOrGenericList()))
-            {
-                return new object(
-                    storeType, modelType ?? typeof(List<>).MakeGenericType(relationalElementMapping.ClrType), rangeMapping);
-            }
-
-            // TODO: This needs to move to the NodaTime plugin, but there's no FindCollectionMapping extension yet for plugins
-            if (relationalElementMapping?.GetType() is
-                { Name: "IntervalRangeMapping", Namespace: "H2Sharp.EntityFrameworkCore.Storage.Internal" } type1)
-            {
-                return (RelationalTypeMapping)Activator.CreateInstance(
-                    type1.Assembly.GetType(
-                        "H2Sharp.EntityFrameworkCore.Storage.Internal.IntervalMultirangeMapping")!,
-                    modelType ?? relationalElementMapping.ClrType.MakeArrayType(),
-                    relationalElementMapping)!;
-            }
-
-            if (relationalElementMapping?.GetType() is
-                { Name: "DateIntervalRangeMapping", Namespace: "H2Sharp.EntityFrameworkCore.Storage.Internal" } type2)
-            {
-                return (RelationalTypeMapping)Activator.CreateInstance(
-                    type2.Assembly.GetType(
-                        "H2Sharp.EntityFrameworkCore.Storage.Internal.DateIntervalMultirangeMapping")!,
-                    modelType ?? relationalElementMapping.ClrType.MakeArrayType(),
-                    relationalElementMapping)!;
-            }
-        }
+        // Multirange store types are gone with the range types themselves.
 
         return null;
 
-        static bool IsMultirange(string multiRangeStoreType, [NotNullWhen(true)] out string? rangeStoreType)
-        {
-            rangeStoreType = multiRangeStoreType switch
-            {
-                "int4multirange" => "int4range",
-                "int8multirange" => "int8range",
-                "nummultirange" => "numrange",
-                "tsmultirange" => "tsrange",
-                "tstzmultirange" => "tstzrange",
-                "datemultirange" => "daterange",
-                _ => null
-            };
-
-            return rangeStoreType is not null;
-        }
 
         static Type FindTypeToInstantiate(Type collectionType, Type elementType)
         {
@@ -710,81 +575,6 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             enumDefinition.ClrType,
             enumDefinition.Labels);
     }
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    protected virtual RelationalTypeMapping? FindUserRangeMapping(in RelationalTypeMappingInfo mappingInfo)
-    {
-        UserRangeDefinition? rangeDefinition = null;
-        var rangeStoreType = mappingInfo.StoreTypeName;
-        var rangeClrType = mappingInfo.ClrType;
-
-        // If the incoming MappingInfo contains a ClrType, make sure it's an H2Range<T>, otherwise bail
-        if (rangeClrType is not null && (!rangeClrType.IsGenericType || rangeClrType.GetGenericTypeDefinition() != typeof(H2Range<>)))
-        {
-            return null;
-        }
-
-        // Try to find a user range definition (defined by the user on their context options), based on the
-        // incoming MappingInfo's StoreType or ClrType
-        if (rangeStoreType is not null)
-        {
-            rangeDefinition = _userRangeDefinitions.SingleOrDefault(m => m.StoreTypeName == rangeStoreType);
-
-            if (rangeDefinition is null)
-            {
-                return null;
-            }
-
-            if (rangeClrType is null)
-            {
-                // The incoming MappingInfo does not contain a ClrType, only a StoreType (i.e. scaffolding).
-                // Construct the range ClrType from the range definition's subtype ClrType
-                rangeClrType = typeof(H2Range<>).MakeGenericType(rangeDefinition.SubtypeClrType);
-            }
-            else if (rangeClrType != typeof(H2Range<>).MakeGenericType(rangeDefinition.SubtypeClrType))
-            {
-                // If the incoming MappingInfo also contains a ClrType (in addition to the StoreType), make sure it
-                // corresponds to the subtype ClrType on the range definition
-                return null;
-            }
-        }
-        else if (rangeClrType is not null)
-        {
-            rangeDefinition = _userRangeDefinitions.SingleOrDefault(m => m.SubtypeClrType == rangeClrType.GetGenericArguments()[0]);
-        }
-
-        if (rangeClrType is null || rangeDefinition is null)
-        {
-            return null;
-        }
-
-        // We now have a user-defined range definition from the context options. Use it to get the subtype's mapping
-        var subtypeMapping = rangeDefinition.SubtypeName is null
-            ? FindMapping(rangeDefinition.SubtypeClrType)
-            : FindMapping(rangeDefinition.SubtypeName);
-
-        if (subtypeMapping is null)
-        {
-            throw new Exception($"Could not map range {rangeDefinition.StoreTypeName}, no mapping was found its subtype");
-        }
-
-        // We need to store types for the user-defined range:
-        // 1. The quoted type name is used in migrations, where quoting is needed
-        // 2. The unquoted type name is set on H2Parameter.DataTypeName
-        var quotedRangeStoreType = _sqlGenerationHelper.DelimitIdentifier(rangeDefinition.StoreTypeName, rangeDefinition.StoreTypeSchema);
-        var unquotedRangeStoreType = rangeDefinition.StoreTypeSchema is null
-            ? rangeDefinition.StoreTypeName
-            : rangeDefinition.StoreTypeSchema + '.' + rangeDefinition.StoreTypeName;
-
-        return RelationalTypeMapping.CreatUserDefinedRangeMapping(
-            quotedRangeStoreType, unquotedRangeStoreType, rangeClrType, subtypeMapping);
-    }
-
     /// <summary>
     ///     Finds the mapping for a container given its CLR type and its containee's type mapping; this is used when inferring type mappings
     ///     for arrays and ranges/multiranges.
@@ -794,43 +584,8 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
         RelationalTypeMapping containeeTypeMapping,
         IModel model)
     {
-        // Ranges aren't handled by the general FindMapping logic below, as we don't represent range type mappings as having an element
-        // (they're not queryable).
-        if (containerClrType.IsRange())
-        {
-            var rangeStoreType = containeeTypeMapping.StoreType switch
-            {
-                "int" or "integer" => "int4range",
-                "bigint" => "int8range",
-                "decimal" or "numeric" => "numrange",
-                "date" => "daterange",
-                "timestamp" or "timestamp without time zone" => "tsrange",
-                "timestamptz" or "timestamp with time zone" => "tstzrange",
-                _ => null
-            };
-
-            return rangeStoreType is null ? null : FindMapping(containerClrType, rangeStoreType);
-        }
-
-        // If this containment of a range within a multirange, just flow down to the general collection mapping logic; multiranges are
-        // handled just like normal collections over ranges (since they can be unnested).
-        // However, we also support containment of the base type (e.g. int) directly in its multirange (e.g. int4range). A multirange
-        // is *not* a collection over the base type, so handle that specific case here.
-        if (containerClrType.IsMultirange() && !containeeTypeMapping.ClrType.IsRange())
-        {
-            var multirangeStoreType = containeeTypeMapping.StoreType switch
-            {
-                "int" or "integer" => "int4multirange",
-                "bigint" => "int8multirange",
-                "decimal" or "numeric" => "nummultirange",
-                "date" => "datemultirange",
-                "timestamp" or "timestamp without time zone" => "tsmultirange",
-                "timestamptz" or "timestamp with time zone" => "tstzmultirange",
-                _ => null
-            };
-
-            return !_supportsMultiranges || multirangeStoreType is null ? null : FindMapping(containerClrType, multirangeStoreType);
-        }
+        // Ranges and multiranges have no H2 equivalent, so the only container left is an array, which
+        // the standard EF lookup below already handles.
 
         // Then, try to find the mapping with the containee mapping as the element type mapping.
         // This is the standard EF lookup mechanism, and takes care of regular arrays and multiranges, which are supported as full primitive
