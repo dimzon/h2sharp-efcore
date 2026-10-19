@@ -16,9 +16,9 @@ public static class NpgsqlEntityTypeExtensions
     /// </summary>
     public static Dictionary<string, object?> GetStorageParameters(this IReadOnlyEntityType entityType)
         => entityType.GetAnnotations()
-            .Where(a => a.Name.StartsWith(NpgsqlAnnotationNames.StorageParameterPrefix, StringComparison.Ordinal))
+            .Where(a => a.Name.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal))
             .ToDictionary(
-                a => a.Name.Substring(NpgsqlAnnotationNames.StorageParameterPrefix.Length),
+                a => a.Name.Substring(H2AnnotationNames.StorageParameterPrefix.Length),
                 a => a.Value);
 
     /// <summary>
@@ -28,7 +28,7 @@ public static class NpgsqlEntityTypeExtensions
     {
         Check.NotEmpty(parameterName, nameof(parameterName));
 
-        return (string?)entityType[NpgsqlAnnotationNames.StorageParameterPrefix + parameterName];
+        return (string?)entityType[H2AnnotationNames.StorageParameterPrefix + parameterName];
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public static class NpgsqlEntityTypeExtensions
     {
         Check.NotEmpty(parameterName, nameof(parameterName));
 
-        entityType.SetOrRemoveAnnotation(NpgsqlAnnotationNames.StorageParameterPrefix + parameterName, parameterValue);
+        entityType.SetOrRemoveAnnotation(H2AnnotationNames.StorageParameterPrefix + parameterName, parameterValue);
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public static class NpgsqlEntityTypeExtensions
     {
         Check.NotEmpty(parameterName, nameof(parameterName));
 
-        entityType.SetOrRemoveAnnotation(NpgsqlAnnotationNames.StorageParameterPrefix + parameterName, parameterValue, fromDataAnnotation);
+        entityType.SetOrRemoveAnnotation(H2AnnotationNames.StorageParameterPrefix + parameterName, parameterValue, fromDataAnnotation);
 
         return parameterName;
     }
@@ -66,7 +66,7 @@ public static class NpgsqlEntityTypeExtensions
     {
         Check.NotEmpty(parameterName, nameof(parameterName));
 
-        return index.FindAnnotation(NpgsqlAnnotationNames.StorageParameterPrefix + parameterName)?.GetConfigurationSource();
+        return index.FindAnnotation(H2AnnotationNames.StorageParameterPrefix + parameterName)?.GetConfigurationSource();
     }
 
     #endregion Storage parameters
@@ -77,13 +77,13 @@ public static class NpgsqlEntityTypeExtensions
     ///     Gets whether the table to which the entity is mapped is unlogged.
     /// </summary>
     public static bool GetIsUnlogged(this IReadOnlyEntityType entityType)
-        => entityType[NpgsqlAnnotationNames.UnloggedTable] as bool? ?? false;
+        => entityType[H2AnnotationNames.UnloggedTable] as bool? ?? false;
 
     /// <summary>
     ///     Sets whether the table to which the entity is mapped is unlogged.
     /// </summary>
     public static void SetIsUnlogged(this IMutableEntityType entityType, bool unlogged)
-        => entityType.SetOrRemoveAnnotation(NpgsqlAnnotationNames.UnloggedTable, unlogged);
+        => entityType.SetOrRemoveAnnotation(H2AnnotationNames.UnloggedTable, unlogged);
 
     /// <summary>
     ///     Sets whether the table to which the entity is mapped is unlogged.
@@ -93,7 +93,7 @@ public static class NpgsqlEntityTypeExtensions
         bool unlogged,
         bool fromDataAnnotation = false)
     {
-        entityType.SetOrRemoveAnnotation(NpgsqlAnnotationNames.UnloggedTable, unlogged, fromDataAnnotation);
+        entityType.SetOrRemoveAnnotation(H2AnnotationNames.UnloggedTable, unlogged, fromDataAnnotation);
 
         return unlogged;
     }
@@ -102,7 +102,7 @@ public static class NpgsqlEntityTypeExtensions
     ///     Gets the configuration source for whether the table to which the entity is mapped is unlogged.
     /// </summary>
     public static ConfigurationSource? GetIsUnloggedConfigurationSource(this IConventionEntityType index)
-        => index.FindAnnotation(NpgsqlAnnotationNames.UnloggedTable)?.GetConfigurationSource();
+        => index.FindAnnotation(H2AnnotationNames.UnloggedTable)?.GetConfigurationSource();
 
     #endregion Unlogged
 

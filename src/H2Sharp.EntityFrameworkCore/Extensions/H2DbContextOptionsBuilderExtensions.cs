@@ -9,7 +9,7 @@ namespace Microsoft.EntityFrameworkCore;
 ///     Provides extension methods on <see cref="DbContextOptionsBuilder" /> and <see cref="DbContextOptionsBuilder{T}" />
 ///     used to configure a <see cref="DbContext" /> to context to a PostgreSQL database with Npgsql.
 /// </summary>
-public static class NpgsqlDbContextOptionsBuilderExtensions
+public static class H2DbContextOptionsBuilderExtensions
 {
     /// <summary>
     ///     <para>
@@ -23,11 +23,11 @@ public static class NpgsqlDbContextOptionsBuilderExtensions
     ///     </para>
     /// </summary>
     /// <param name="optionsBuilder">The builder being used to configure the context.</param>
-    /// <param name="npgsqlOptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
+    /// <param name="h2OptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
     /// <returns>The options builder so that further configuration can be chained.</returns>
-    public static DbContextOptionsBuilder UseNpgsql(
+    public static DbContextOptionsBuilder UseH2(
         this DbContextOptionsBuilder optionsBuilder,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null)
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null)
     {
         Check.NotNull(optionsBuilder, nameof(optionsBuilder));
 
@@ -35,7 +35,7 @@ public static class NpgsqlDbContextOptionsBuilderExtensions
 
         ConfigureWarnings(optionsBuilder);
 
-        npgsqlOptionsAction?.Invoke(new NpgsqlDbContextOptionsBuilder(optionsBuilder));
+        h2OptionsAction?.Invoke(new H2DbContextOptionsBuilder(optionsBuilder));
 
         return optionsBuilder;
     }
@@ -45,23 +45,23 @@ public static class NpgsqlDbContextOptionsBuilderExtensions
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
     /// <param name="connectionString">The connection string of the database to connect to.</param>
-    /// <param name="npgsqlOptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
+    /// <param name="h2OptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
     /// <returns>
     ///     The options builder so that further configuration can be chained.
     /// </returns>
-    public static DbContextOptionsBuilder UseNpgsql(
+    public static DbContextOptionsBuilder UseH2(
         this DbContextOptionsBuilder optionsBuilder,
         string? connectionString,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null)
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null)
     {
         Check.NotNull(optionsBuilder, nameof(optionsBuilder));
 
-        var extension = (NpgsqlOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
+        var extension = (H2OptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
         ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
         ConfigureWarnings(optionsBuilder);
 
-        npgsqlOptionsAction?.Invoke(new NpgsqlDbContextOptionsBuilder(optionsBuilder));
+        h2OptionsAction?.Invoke(new H2DbContextOptionsBuilder(optionsBuilder));
 
         return optionsBuilder;
     }
@@ -76,13 +76,13 @@ public static class NpgsqlDbContextOptionsBuilderExtensions
     ///     state then EF will open and close the connection as needed. The caller owns the connection and is
     ///     responsible for its disposal.
     /// </param>
-    /// <param name="npgsqlOptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
+    /// <param name="h2OptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
     /// <returns>The options builder so that further configuration can be chained.</returns>
-    public static DbContextOptionsBuilder UseNpgsql(
+    public static DbContextOptionsBuilder UseH2(
         this DbContextOptionsBuilder optionsBuilder,
         DbConnection connection,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null)
-        => UseNpgsql(optionsBuilder, connection, contextOwnsConnection: false, npgsqlOptionsAction);
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null)
+        => UseH2(optionsBuilder, connection, contextOwnsConnection: false, h2OptionsAction);
 
     /// <summary>
     ///     Configures the context to connect to a PostgreSQL database with Npgsql.
@@ -98,25 +98,25 @@ public static class NpgsqlDbContextOptionsBuilderExtensions
     ///     dispose it in the same way it would dispose a connection created by EF. If <see langword="false" />, then the caller still
     ///     owns the connection and is responsible for its disposal.
     /// </param>
-    /// <param name="npgsqlOptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
+    /// <param name="h2OptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
     /// <returns>
     ///     The options builder so that further configuration can be chained.
     /// </returns>
-    public static DbContextOptionsBuilder UseNpgsql(
+    public static DbContextOptionsBuilder UseH2(
         this DbContextOptionsBuilder optionsBuilder,
         DbConnection connection,
         bool contextOwnsConnection,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null)
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null)
     {
         Check.NotNull(optionsBuilder, nameof(optionsBuilder));
         Check.NotNull(connection, nameof(connection));
 
-        var extension = (NpgsqlOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnection(connection, contextOwnsConnection);
+        var extension = (H2OptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnection(connection, contextOwnsConnection);
         ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
         ConfigureWarnings(optionsBuilder);
 
-        npgsqlOptionsAction?.Invoke(new NpgsqlDbContextOptionsBuilder(optionsBuilder));
+        h2OptionsAction?.Invoke(new H2DbContextOptionsBuilder(optionsBuilder));
 
         return optionsBuilder;
     }
@@ -126,24 +126,24 @@ public static class NpgsqlDbContextOptionsBuilderExtensions
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
     /// <param name="dataSource">A <see cref="DbDataSource" /> which will be used to get database connections.</param>
-    /// <param name="npgsqlOptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
+    /// <param name="h2OptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
     /// <returns>
     ///     The options builder so that further configuration can be chained.
     /// </returns>
-    public static DbContextOptionsBuilder UseNpgsql(
+    public static DbContextOptionsBuilder UseH2(
         this DbContextOptionsBuilder optionsBuilder,
         DbDataSource dataSource,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null)
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null)
     {
         Check.NotNull(optionsBuilder, nameof(optionsBuilder));
         Check.NotNull(dataSource, nameof(dataSource));
 
-        var extension = (NpgsqlOptionsExtension)GetOrCreateExtension(optionsBuilder).WithDataSource(dataSource);
+        var extension = (H2OptionsExtension)GetOrCreateExtension(optionsBuilder).WithDataSource(dataSource);
         ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
         ConfigureWarnings(optionsBuilder);
 
-        npgsqlOptionsAction?.Invoke(new NpgsqlDbContextOptionsBuilder(optionsBuilder));
+        h2OptionsAction?.Invoke(new H2DbContextOptionsBuilder(optionsBuilder));
 
         return optionsBuilder;
     }
@@ -162,31 +162,31 @@ public static class NpgsqlDbContextOptionsBuilderExtensions
     ///     </para>
     /// </summary>
     /// <param name="optionsBuilder">The builder being used to configure the context.</param>
-    /// <param name="npgsqlOptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
+    /// <param name="h2OptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
     /// <returns>The options builder so that further configuration can be chained.</returns>
-    public static DbContextOptionsBuilder<TContext> UseNpgsql<TContext>(
+    public static DbContextOptionsBuilder<TContext> UseH2<TContext>(
         this DbContextOptionsBuilder<TContext> optionsBuilder,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null)
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null)
         where TContext : DbContext
-        => (DbContextOptionsBuilder<TContext>)UseNpgsql(
-            (DbContextOptionsBuilder)optionsBuilder, npgsqlOptionsAction);
+        => (DbContextOptionsBuilder<TContext>)UseH2(
+            (DbContextOptionsBuilder)optionsBuilder, h2OptionsAction);
 
     /// <summary>
     ///     Configures the context to connect to a PostgreSQL database with Npgsql.
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
     /// <param name="connectionString">The connection string of the database to connect to.</param>
-    /// <param name="npgsqlOptionsAction">An optional action to allow additional Npgsql-configuration.</param>
+    /// <param name="h2OptionsAction">An optional action to allow additional Npgsql-configuration.</param>
     /// <returns>
     ///     The options builder so that further configuration can be chained.
     /// </returns>
-    public static DbContextOptionsBuilder<TContext> UseNpgsql<TContext>(
+    public static DbContextOptionsBuilder<TContext> UseH2<TContext>(
         this DbContextOptionsBuilder<TContext> optionsBuilder,
         string? connectionString,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null)
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null)
         where TContext : DbContext
-        => (DbContextOptionsBuilder<TContext>)UseNpgsql(
-            (DbContextOptionsBuilder)optionsBuilder, connectionString, npgsqlOptionsAction);
+        => (DbContextOptionsBuilder<TContext>)UseH2(
+            (DbContextOptionsBuilder)optionsBuilder, connectionString, h2OptionsAction);
 
     /// <summary>
     ///     Configures the context to connect to a PostgreSQL database with Npgsql.
@@ -198,17 +198,17 @@ public static class NpgsqlDbContextOptionsBuilderExtensions
     ///     state then EF will open and close the connection as needed. The caller owns the connection and is
     ///     responsible for its disposal.
     /// </param>
-    /// <param name="npgsqlOptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
+    /// <param name="h2OptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
     /// <returns>
     ///     The options builder so that further configuration can be chained.
     /// </returns>
-    public static DbContextOptionsBuilder<TContext> UseNpgsql<TContext>(
+    public static DbContextOptionsBuilder<TContext> UseH2<TContext>(
         this DbContextOptionsBuilder<TContext> optionsBuilder,
         DbConnection connection,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null)
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null)
         where TContext : DbContext
-        => (DbContextOptionsBuilder<TContext>)UseNpgsql(
-            (DbContextOptionsBuilder)optionsBuilder, connection, npgsqlOptionsAction);
+        => (DbContextOptionsBuilder<TContext>)UseH2(
+            (DbContextOptionsBuilder)optionsBuilder, connection, h2OptionsAction);
 
     /// <summary>
     ///     Configures the context to connect to a PostgreSQL database with Npgsql.
@@ -225,45 +225,45 @@ public static class NpgsqlDbContextOptionsBuilderExtensions
     ///     dispose it in the same way it would dispose a connection created by EF. If <see langword="false" />, then the caller still
     ///     owns the connection and is responsible for its disposal.
     /// </param>
-    /// <param name="npgsqlOptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
+    /// <param name="h2OptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
     /// <returns>The options builder so that further configuration can be chained.</returns>
-    public static DbContextOptionsBuilder<TContext> UseNpgsql<TContext>(
+    public static DbContextOptionsBuilder<TContext> UseH2<TContext>(
         this DbContextOptionsBuilder<TContext> optionsBuilder,
         DbConnection connection,
         bool contextOwnsConnection,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null)
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null)
         where TContext : DbContext
-        => (DbContextOptionsBuilder<TContext>)UseNpgsql(
-            (DbContextOptionsBuilder)optionsBuilder, connection, contextOwnsConnection, npgsqlOptionsAction);
+        => (DbContextOptionsBuilder<TContext>)UseH2(
+            (DbContextOptionsBuilder)optionsBuilder, connection, contextOwnsConnection, h2OptionsAction);
 
     /// <summary>
     ///     Configures the context to connect to a PostgreSQL database with Npgsql.
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
     /// <param name="dataSource">A <see cref="DbDataSource" /> which will be used to get database connections.</param>
-    /// <param name="npgsqlOptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
+    /// <param name="h2OptionsAction">An optional action to allow additional Npgsql-specific configuration.</param>
     /// <returns>
     ///     The options builder so that further configuration can be chained.
     /// </returns>
-    public static DbContextOptionsBuilder<TContext> UseNpgsql<TContext>(
+    public static DbContextOptionsBuilder<TContext> UseH2<TContext>(
         this DbContextOptionsBuilder<TContext> optionsBuilder,
         DbDataSource dataSource,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null)
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null)
         where TContext : DbContext
-        => (DbContextOptionsBuilder<TContext>)UseNpgsql(
-            (DbContextOptionsBuilder)optionsBuilder, dataSource, npgsqlOptionsAction);
+        => (DbContextOptionsBuilder<TContext>)UseH2(
+            (DbContextOptionsBuilder)optionsBuilder, dataSource, h2OptionsAction);
 
     /// <summary>
-    ///     Returns an existing instance of <see cref="NpgsqlOptionsExtension" />, or a new instance if one does not exist.
+    ///     Returns an existing instance of <see cref="H2OptionsExtension" />, or a new instance if one does not exist.
     /// </summary>
     /// <param name="optionsBuilder">The <see cref="DbContextOptionsBuilder" /> to search.</param>
     /// <returns>
-    ///     An existing instance of <see cref="NpgsqlOptionsExtension" />, or a new instance if one does not exist.
+    ///     An existing instance of <see cref="H2OptionsExtension" />, or a new instance if one does not exist.
     /// </returns>
-    private static NpgsqlOptionsExtension GetOrCreateExtension(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.Options.FindExtension<NpgsqlOptionsExtension>() is { } existing
-            ? new NpgsqlOptionsExtension(existing)
-            : new NpgsqlOptionsExtension();
+    private static H2OptionsExtension GetOrCreateExtension(DbContextOptionsBuilder optionsBuilder)
+        => optionsBuilder.Options.FindExtension<H2OptionsExtension>() is { } existing
+            ? new H2OptionsExtension(existing)
+            : new H2OptionsExtension();
 
     private static void ConfigureWarnings(DbContextOptionsBuilder optionsBuilder)
     {

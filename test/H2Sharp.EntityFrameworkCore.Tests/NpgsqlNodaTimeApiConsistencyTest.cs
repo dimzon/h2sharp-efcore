@@ -4,7 +4,7 @@ public class NpgsqlNodaTimeApiConsistencyTest(NpgsqlNodaTimeApiConsistencyTest.N
     : ApiConsistencyTestBase<NpgsqlNodaTimeApiConsistencyTest.NpgsqlNodaTimeApiConsistencyFixture>(fixture)
 {
     protected override void AddServices(ServiceCollection serviceCollection)
-        => serviceCollection.AddEntityFrameworkNpgsqlNodaTime();
+        => serviceCollection.AddEntityFrameworkH2NodaTime();
 
     protected override Assembly TargetAssembly
         => typeof(NpgsqlNodaTimeServiceCollectionExtensions).Assembly;

@@ -171,8 +171,8 @@ public class PostgresEnum
 
     private static string BuildAnnotationName(string? schema, string name)
         => schema is not null
-            ? $"{NpgsqlAnnotationNames.EnumPrefix}{schema}.{name}"
-            : $"{NpgsqlAnnotationNames.EnumPrefix}{name}";
+            ? $"{H2AnnotationNames.EnumPrefix}{schema}.{name}"
+            : $"{H2AnnotationNames.EnumPrefix}{name}";
 
     /// <summary>
     ///     Gets the collection of <see cref="PostgresEnum" /> stored in the <see cref="IAnnotatable" />.
@@ -187,7 +187,7 @@ public class PostgresEnum
     public static IEnumerable<PostgresEnum> GetPostgresEnums(IReadOnlyAnnotatable annotatable)
         => Check.NotNull(annotatable, nameof(annotatable))
             .GetAnnotations()
-            .Where(a => a.Name.StartsWith(NpgsqlAnnotationNames.EnumPrefix, StringComparison.Ordinal))
+            .Where(a => a.Name.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal))
             .Select(a => new PostgresEnum(annotatable, a.Name));
 
     /// <summary>
@@ -234,7 +234,7 @@ public class PostgresEnum
 
         // TODO: This would be a safer operation if we stored schema and name in the annotation value (see Sequence.cs).
         // Yes, this doesn't support dots in the schema/enum name, let somebody complain first.
-        var schemaAndName = annotation.Name.Substring(NpgsqlAnnotationNames.EnumPrefix.Length).Split('.');
+        var schemaAndName = annotation.Name.Substring(H2AnnotationNames.EnumPrefix.Length).Split('.');
         switch (schemaAndName.Length)
         {
             case 1:

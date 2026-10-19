@@ -13,9 +13,9 @@ public class TwoDatabasesNpgsqlTest(NpgsqlFixture fixture) : TwoDatabasesTestBas
         bool withNullConnectionString = false)
         => withConnectionString
             ? withNullConnectionString
-                ? optionsBuilder.UseNpgsql((string)null)
-                : optionsBuilder.UseNpgsql(DummyConnectionString)
-            : optionsBuilder.UseNpgsql();
+                ? optionsBuilder.UseH2((string)null)
+                : optionsBuilder.UseH2(DummyConnectionString)
+            : optionsBuilder.UseH2();
 
     protected override TwoDatabasesWithDataContext CreateBackingContext(string databaseName)
         => new(Fixture.CreateOptions(NpgsqlTestStore.Create(databaseName)));

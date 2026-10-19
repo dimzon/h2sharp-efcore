@@ -5,7 +5,7 @@ using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 namespace Microsoft.EntityFrameworkCore;
 
 /// <summary>
-///     NodaTime specific extension methods for <see cref="NpgsqlDbContextOptionsBuilder" />.
+///     NodaTime specific extension methods for <see cref="H2DbContextOptionsBuilder" />.
 /// </summary>
 public static class NpgsqlNodaTimeDbContextOptionsBuilderExtensions
 {
@@ -13,8 +13,8 @@ public static class NpgsqlNodaTimeDbContextOptionsBuilderExtensions
     ///     Configure NodaTime type mappings for Entity Framework.
     /// </summary>
     /// <returns> The options builder so that further configuration can be chained. </returns>
-    public static NpgsqlDbContextOptionsBuilder UseNodaTime(
-        this NpgsqlDbContextOptionsBuilder optionsBuilder)
+    public static H2DbContextOptionsBuilder UseNodaTime(
+        this H2DbContextOptionsBuilder optionsBuilder)
     {
         Check.NotNull(optionsBuilder, nameof(optionsBuilder));
 

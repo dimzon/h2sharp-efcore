@@ -90,7 +90,7 @@ public static class NpgsqlIndexBuilderExtensions
     {
         Check.NotNull(indexBuilder, nameof(indexBuilder));
 
-        return indexBuilder.CanSetAnnotation(NpgsqlAnnotationNames.IndexMethod, method, fromDataAnnotation);
+        return indexBuilder.CanSetAnnotation(H2AnnotationNames.IndexMethod, method, fromDataAnnotation);
     }
 
     #endregion Method
@@ -174,7 +174,7 @@ public static class NpgsqlIndexBuilderExtensions
     {
         Check.NotNull(indexBuilder, nameof(indexBuilder));
 
-        return indexBuilder.CanSetAnnotation(NpgsqlAnnotationNames.IndexOperators, operators, fromDataAnnotation);
+        return indexBuilder.CanSetAnnotation(H2AnnotationNames.IndexOperators, operators, fromDataAnnotation);
     }
 
     #endregion Operators
@@ -280,7 +280,7 @@ public static class NpgsqlIndexBuilderExtensions
     {
         Check.NotNull(indexBuilder, nameof(indexBuilder));
 
-        return indexBuilder.CanSetAnnotation(NpgsqlAnnotationNames.TsVectorConfig, config, fromDataAnnotation);
+        return indexBuilder.CanSetAnnotation(H2AnnotationNames.TsVectorConfig, config, fromDataAnnotation);
     }
 
     #endregion IsTsVectorExpressionIndex
@@ -454,7 +454,7 @@ public static class NpgsqlIndexBuilderExtensions
     {
         Check.NotNull(indexBuilder, nameof(indexBuilder));
 
-        return indexBuilder.CanSetAnnotation(NpgsqlAnnotationNames.IndexNullSortOrder, values, fromDataAnnotation);
+        return indexBuilder.CanSetAnnotation(H2AnnotationNames.IndexNullSortOrder, values, fromDataAnnotation);
     }
 
     #endregion Null sort order
@@ -663,7 +663,7 @@ public static class NpgsqlIndexBuilderExtensions
     {
         Check.NotNull(indexBuilder, nameof(indexBuilder));
 
-        return indexBuilder.CanSetAnnotation(NpgsqlAnnotationNames.CreatedConcurrently, createdConcurrently, fromDataAnnotation);
+        return indexBuilder.CanSetAnnotation(H2AnnotationNames.CreatedConcurrently, createdConcurrently, fromDataAnnotation);
     }
 
     #endregion Created concurrently
@@ -750,7 +750,7 @@ public static class NpgsqlIndexBuilderExtensions
     {
         Check.NotNull(indexBuilder, nameof(indexBuilder));
 
-        return indexBuilder.CanSetAnnotation(NpgsqlAnnotationNames.NullsDistinct, nullsDistinct, fromDataAnnotation);
+        return indexBuilder.CanSetAnnotation(H2AnnotationNames.NullsDistinct, nullsDistinct, fromDataAnnotation);
     }
 
     #endregion NULLS distinct
@@ -843,7 +843,7 @@ public static class NpgsqlIndexBuilderExtensions
         Check.NotNull(indexBuilder, nameof(indexBuilder));
 
         return indexBuilder.CanSetAnnotation(
-            NpgsqlAnnotationNames.StorageParameterPrefix + parameterName, parameterValue, fromDataAnnotation);
+            H2AnnotationNames.StorageParameterPrefix + parameterName, parameterValue, fromDataAnnotation);
     }
 
     #endregion Storage parameters

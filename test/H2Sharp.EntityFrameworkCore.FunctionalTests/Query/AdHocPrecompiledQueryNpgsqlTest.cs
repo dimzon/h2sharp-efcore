@@ -113,7 +113,7 @@ FROM "Books" AS b
         builder = base.AddOptions(builder);
 
         // TODO: Figure out if there's a nice way to continue using the retrying strategy
-        var sqlServerOptionsBuilder = new NpgsqlDbContextOptionsBuilder(builder);
+        var sqlServerOptionsBuilder = new H2DbContextOptionsBuilder(builder);
         sqlServerOptionsBuilder.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d));
         return builder;
     }

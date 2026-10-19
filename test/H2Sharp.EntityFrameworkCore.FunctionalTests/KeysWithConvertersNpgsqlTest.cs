@@ -12,6 +12,6 @@ public class KeysWithConvertersNpgsqlTest(KeysWithConvertersNpgsqlTest.KeysWithC
             => NpgsqlTestStoreFactory.Instance;
 
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-            => builder.UseNpgsql(b => b.MinBatchSize(1));
+            => builder.UseH2(b => b.MinBatchSize(1));
     }
 }

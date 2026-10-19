@@ -2,9 +2,9 @@ using H2Sharp.EntityFrameworkCore.Infrastructure;
 
 namespace H2Sharp.EntityFrameworkCore.TestUtilities;
 
-public static class NpgsqlDbContextOptionsBuilderExtensions
+public static class H2DbContextOptionsBuilderExtensions
 {
-    public static NpgsqlDbContextOptionsBuilder ApplyConfiguration(this NpgsqlDbContextOptionsBuilder optionsBuilder)
+    public static H2DbContextOptionsBuilder ApplyConfiguration(this H2DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
 

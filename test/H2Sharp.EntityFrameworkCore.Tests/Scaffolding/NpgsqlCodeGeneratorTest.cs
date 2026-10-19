@@ -16,7 +16,7 @@ public class NpgsqlCodeGeneratorTest
 
         var result = codeGenerator.GenerateUseProvider("Server=test;Username=test;Password=test;Database=test", providerOptions: null);
 
-        Assert.Equal("UseNpgsql", result.Method);
+        Assert.Equal("UseH2", result.Method);
         Assert.Collection(
             result.Arguments,
             a => Assert.Equal("Server=test;Username=test;Password=test;Database=test", a));
@@ -34,7 +34,7 @@ public class NpgsqlCodeGeneratorTest
 
         var result = codeGenerator.GenerateUseProvider("Server=test;Username=test;Password=test;Database=test", providerOptions);
 
-        Assert.Equal("UseNpgsql", result.Method);
+        Assert.Equal("UseH2", result.Method);
         Assert.Collection(
             result.Arguments,
             a => Assert.Equal("Server=test;Username=test;Password=test;Database=test", a),
@@ -57,7 +57,7 @@ public class NpgsqlCodeGeneratorTest
 
         var result = ((IProviderConfigurationCodeGenerator)codeGenerator).GenerateUseProvider("Data Source=Test");
 
-        Assert.Equal("UseNpgsql", result.Method);
+        Assert.Equal("UseH2", result.Method);
         Assert.Collection(
             result.Arguments,
             a => Assert.Equal("Data Source=Test", a),
@@ -80,7 +80,7 @@ public class NpgsqlCodeGeneratorTest
 
         var result = ((IProviderConfigurationCodeGenerator)codeGenerator).GenerateUseProvider("Data Source=Test");
 
-        Assert.Equal("UseNpgsql", result.Method);
+        Assert.Equal("UseH2", result.Method);
         Assert.Collection(
             result.Arguments,
             a => Assert.Equal("Data Source=Test", a),
@@ -97,6 +97,6 @@ public class NpgsqlCodeGeneratorTest
     private static readonly MethodInfo _setProviderOptionMethodInfo
         = typeof(NpgsqlCodeGeneratorTest).GetRuntimeMethod(nameof(SetProviderOption), [typeof(DbContextOptionsBuilder)]);
 
-    public static NpgsqlDbContextOptionsBuilder SetProviderOption(DbContextOptionsBuilder optionsBuilder)
+    public static H2DbContextOptionsBuilder SetProviderOption(DbContextOptionsBuilder optionsBuilder)
         => throw new NotSupportedException();
 }

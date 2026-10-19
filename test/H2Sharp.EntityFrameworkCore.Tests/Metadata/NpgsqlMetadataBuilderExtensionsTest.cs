@@ -31,7 +31,7 @@ public class NpgsqlInternalMetadataBuilderExtensionsTest
 
         Assert.Equal(
             1, builder.Metadata.GetAnnotations().Count(
-                a => a.Name.StartsWith(NpgsqlAnnotationNames.Prefix, StringComparison.Ordinal)));
+                a => a.Name.StartsWith(H2AnnotationNames.Prefix, StringComparison.Ordinal)));
     }
 
     [ConditionalFact]
@@ -50,7 +50,7 @@ public class NpgsqlInternalMetadataBuilderExtensionsTest
 
         Assert.Equal(
             1, typeBuilder.Metadata.GetAnnotations().Count(
-                a => a.Name.StartsWith(NpgsqlAnnotationNames.Prefix, StringComparison.Ordinal)));
+                a => a.Name.StartsWith(H2AnnotationNames.Prefix, StringComparison.Ordinal)));
     }
 
     [ConditionalFact]
@@ -71,7 +71,7 @@ public class NpgsqlInternalMetadataBuilderExtensionsTest
 
         Assert.Equal(
             1, propertyBuilder.Metadata.GetAnnotations().Count(
-                a => a.Name.StartsWith(NpgsqlAnnotationNames.Prefix, StringComparison.Ordinal)));
+                a => a.Name.StartsWith(H2AnnotationNames.Prefix, StringComparison.Ordinal)));
     }
 
     [ConditionalFact]
@@ -93,7 +93,7 @@ public class NpgsqlInternalMetadataBuilderExtensionsTest
 
         Assert.Equal(
             1, indexBuilder.Metadata.GetAnnotations().Count(
-                a => a.Name.StartsWith(NpgsqlAnnotationNames.Prefix, StringComparison.Ordinal)));
+                a => a.Name.StartsWith(H2AnnotationNames.Prefix, StringComparison.Ordinal)));
     }
 
     [ConditionalFact]

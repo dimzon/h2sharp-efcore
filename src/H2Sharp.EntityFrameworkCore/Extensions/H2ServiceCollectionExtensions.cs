@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 ///     Provides extension methods to configure Entity Framework Core for Npgsql.
 /// </summary>
 // ReSharper disable once UnusedMember.Global
-public static class NpgsqlServiceCollectionExtensions
+public static class H2ServiceCollectionExtensions
 {
     /// <summary>
     ///     <para>
@@ -46,13 +46,13 @@ public static class NpgsqlServiceCollectionExtensions
     /// <typeparam name="TContext"> The type of context to be registered. </typeparam>
     /// <param name="serviceCollection"> The <see cref="IServiceCollection" /> to add services to. </param>
     /// <param name="connectionString"> The connection string of the database to connect to. </param>
-    /// <param name="npgsqlOptionsAction"> An optional action to allow additional SQL Server specific configuration. </param>
+    /// <param name="h2OptionsAction"> An optional action to allow additional SQL Server specific configuration. </param>
     /// <param name="optionsAction"> An optional action to configure the <see cref="DbContextOptions" /> for the context. </param>
     /// <returns> The same service collection so that multiple calls can be chained. </returns>
-    public static IServiceCollection AddNpgsql<TContext>(
+    public static IServiceCollection AddH2<TContext>(
         this IServiceCollection serviceCollection,
         string? connectionString,
-        Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null,
+        Action<H2DbContextOptionsBuilder>? h2OptionsAction = null,
         Action<DbContextOptionsBuilder>? optionsAction = null)
         where TContext : DbContext
     {
@@ -62,7 +62,7 @@ public static class NpgsqlServiceCollectionExtensions
             (_, options) =>
             {
                 optionsAction?.Invoke(options);
-                options.UseNpgsql(connectionString, npgsqlOptionsAction);
+                options.UseH2(connectionString, h2OptionsAction);
             });
     }
 
@@ -83,13 +83,13 @@ public static class NpgsqlServiceCollectionExtensions
     /// <returns>
     ///     The same service collection so that multiple calls can be chained.
     /// </returns>
-    public static IServiceCollection AddEntityFrameworkNpgsql(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddEntityFrameworkH2(this IServiceCollection serviceCollection)
     {
         Check.NotNull(serviceCollection, nameof(serviceCollection));
 
-        new EntityFrameworkNpgsqlServicesBuilder(serviceCollection)
+        new EntityFrameworkH2ServicesBuilder(serviceCollection)
             .TryAdd<LoggingDefinitions, NpgsqlLoggingDefinitions>()
-            .TryAdd<IDatabaseProvider, DatabaseProvider<NpgsqlOptionsExtension>>()
+            .TryAdd<IDatabaseProvider, DatabaseProvider<H2OptionsExtension>>()
             .TryAdd<IValueGeneratorCache>(p => p.GetRequiredService<INpgsqlValueGeneratorCache>())
             .TryAdd<IRelationalTypeMappingSource, NpgsqlTypeMappingSource>()
             .TryAdd<ISqlGenerationHelper, NpgsqlSqlGenerationHelper>()
@@ -117,12 +117,12 @@ public static class NpgsqlServiceCollectionExtensions
             .TryAdd<IQueryTranslationPostprocessorFactory, NpgsqlQueryTranslationPostprocessorFactory>()
             .TryAdd<IRelationalParameterBasedSqlProcessorFactory, NpgsqlParameterBasedSqlProcessorFactory>()
             .TryAdd<ISqlExpressionFactory, NpgsqlSqlExpressionFactory>()
-            .TryAdd<ISingletonOptions, INpgsqlSingletonOptions>(p => p.GetRequiredService<INpgsqlSingletonOptions>())
+            .TryAdd<ISingletonOptions, IH2SingletonOptions>(p => p.GetRequiredService<IH2SingletonOptions>())
             .TryAdd<IQueryCompilationContextFactory, NpgsqlQueryCompilationContextFactory>()
             .TryAddProviderSpecificServices(
                 b => b
                     .TryAddSingleton<INpgsqlValueGeneratorCache, NpgsqlValueGeneratorCache>()
-                    .TryAddSingleton<INpgsqlSingletonOptions, NpgsqlSingletonOptions>()
+                    .TryAddSingleton<IH2SingletonOptions, H2SingletonOptions>()
                     .TryAddSingleton<INpgsqlSequenceValueGeneratorFactory, NpgsqlSequenceValueGeneratorFactory>()
                     .TryAddSingleton<NpgsqlDataSourceManager, NpgsqlDataSourceManager>()
                     .TryAddScoped<INpgsqlRelationalConnection, NpgsqlRelationalConnection>())

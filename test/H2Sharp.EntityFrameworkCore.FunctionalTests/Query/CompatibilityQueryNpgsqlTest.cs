@@ -58,7 +58,7 @@ LIMIT 2
             var builder = new DbContextOptionsBuilder();
             _testStore.AddProviderOptions(builder);
             builder
-                .UseNpgsql(o => o.SetPostgresVersion(postgresVersion))
+                .UseH2(o => o.SetPostgresVersion(postgresVersion))
                 .UseLoggerFactory(_listLoggerFactory);
             return new CompatibilityContext(builder.Options);
         }
@@ -68,7 +68,7 @@ LIMIT 2
             var builder = new DbContextOptionsBuilder();
             _testStore.AddProviderOptions(builder);
             builder
-                .UseNpgsql(o => o.UseRedshift())
+                .UseH2(o => o.UseRedshift())
                 .UseLoggerFactory(_listLoggerFactory);
             return new CompatibilityContext(builder.Options);
         }

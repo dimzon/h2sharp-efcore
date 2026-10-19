@@ -38,13 +38,13 @@ public class NpgsqlValueGenerationConvention : RelationalValueGenerationConventi
         IConventionAnnotation? oldAnnotation,
         IConventionContext<IConventionAnnotation> context)
     {
-        if (name == NpgsqlAnnotationNames.ValueGenerationStrategy)
+        if (name == H2AnnotationNames.ValueGenerationStrategy)
         {
             propertyBuilder.ValueGenerated(GetValueGenerated(propertyBuilder.Metadata));
             return;
         }
 
-        if (name == NpgsqlAnnotationNames.TsVectorConfig && propertyBuilder.Metadata.GetTsVectorConfig() is not null)
+        if (name == H2AnnotationNames.TsVectorConfig && propertyBuilder.Metadata.GetTsVectorConfig() is not null)
         {
             propertyBuilder.ValueGenerated(ValueGenerated.OnAddOrUpdate);
             return;

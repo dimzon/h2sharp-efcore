@@ -632,7 +632,7 @@ LIMIT 2
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
         {
             var optionsBuilder = base.AddOptions(builder);
-            var npgsqlOptionsBuilder = new NpgsqlDbContextOptionsBuilder(optionsBuilder);
+            var npgsqlOptionsBuilder = new H2DbContextOptionsBuilder(optionsBuilder);
             npgsqlOptionsBuilder.MapRange("doublerange", typeof(double));
             npgsqlOptionsBuilder.MapRange<float>("Schema_Range", "test");
             return optionsBuilder;

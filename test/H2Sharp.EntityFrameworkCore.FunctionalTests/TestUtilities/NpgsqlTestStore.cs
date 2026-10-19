@@ -115,7 +115,7 @@ public class NpgsqlTestStore : RelationalTestStore
 
     public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
     {
-        Action<NpgsqlDbContextOptionsBuilder> npgsqlOptionsBuilder = b => b.ApplyConfiguration()
+        Action<H2DbContextOptionsBuilder> npgsqlOptionsBuilder = b => b.ApplyConfiguration()
             .CommandTimeout(CommandTimeout)
             // The tests are written with the assumption that NULLs are sorted first (SQL Server and .NET behavior), but PostgreSQL
             // sorts NULLs last by default. This configures the provider to emit NULLS FIRST.
@@ -125,8 +125,8 @@ public class NpgsqlTestStore : RelationalTestStore
         // we use a connection string instead, because an NpgsqlDataSource is required internally (e.g. enums or plugins
         // are used).
         return _connectionString is null
-            ? builder.UseNpgsql(Connection, npgsqlOptionsBuilder)
-            : builder.UseNpgsql(_connectionString, npgsqlOptionsBuilder);
+            ? builder.UseH2(Connection, npgsqlOptionsBuilder)
+            : builder.UseH2(_connectionString, npgsqlOptionsBuilder);
     }
 
     private async Task<bool> CreateDatabaseAsync(Func<DbContext, Task>? clean)

@@ -24,7 +24,7 @@ public static class NpgsqlDatabaseFacadeExtensions
     /// <param name="database">The facade from <see cref="DbContext.Database" />.</param>
     /// <returns>True if Npgsql is being used; false otherwise.</returns>
     public static bool IsNpgsql(this DatabaseFacade database)
-        => database.ProviderName == typeof(NpgsqlOptionsExtension).GetTypeInfo().Assembly.GetName().Name;
+        => database.ProviderName == typeof(H2OptionsExtension).GetTypeInfo().Assembly.GetName().Name;
 
     /// <summary>
     ///     Sets the underlying <see cref="DbDataSource" /> configured for this <see cref="DbContext" />.

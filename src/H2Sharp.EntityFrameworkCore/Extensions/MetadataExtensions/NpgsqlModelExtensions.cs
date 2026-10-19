@@ -30,7 +30,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model"> The model. </param>
     /// <returns> The name to use for the default hi-lo sequence. </returns>
     public static string GetHiLoSequenceName(this IReadOnlyModel model)
-        => (string?)model[NpgsqlAnnotationNames.HiLoSequenceName]
+        => (string?)model[H2AnnotationNames.HiLoSequenceName]
             ?? DefaultHiLoSequenceName;
 
     /// <summary>
@@ -42,7 +42,7 @@ public static class NpgsqlModelExtensions
     {
         Check.NullButNotEmpty(name, nameof(name));
 
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.HiLoSequenceName, name);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.HiLoSequenceName, name);
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ public static class NpgsqlModelExtensions
     {
         Check.NullButNotEmpty(name, nameof(name));
 
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.HiLoSequenceName, name, fromDataAnnotation);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.HiLoSequenceName, name, fromDataAnnotation);
 
         return name;
     }
@@ -69,7 +69,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model"> The model. </param>
     /// <returns> The <see cref="ConfigurationSource" /> for the default hi-lo sequence name. </returns>
     public static ConfigurationSource? GetHiLoSequenceNameConfigurationSource(this IConventionModel model)
-        => model.FindAnnotation(NpgsqlAnnotationNames.HiLoSequenceName)?.GetConfigurationSource();
+        => model.FindAnnotation(H2AnnotationNames.HiLoSequenceName)?.GetConfigurationSource();
 
     /// <summary>
     ///     Returns the schema to use for the default hi-lo sequence.
@@ -78,7 +78,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model"> The model. </param>
     /// <returns> The schema to use for the default hi-lo sequence. </returns>
     public static string? GetHiLoSequenceSchema(this IReadOnlyModel model)
-        => (string?)model[NpgsqlAnnotationNames.HiLoSequenceSchema];
+        => (string?)model[H2AnnotationNames.HiLoSequenceSchema];
 
     /// <summary>
     ///     Sets the schema to use for the default hi-lo sequence.
@@ -89,7 +89,7 @@ public static class NpgsqlModelExtensions
     {
         Check.NullButNotEmpty(value, nameof(value));
 
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.HiLoSequenceSchema, value);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.HiLoSequenceSchema, value);
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ public static class NpgsqlModelExtensions
     {
         Check.NullButNotEmpty(value, nameof(value));
 
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.HiLoSequenceSchema, value, fromDataAnnotation);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.HiLoSequenceSchema, value, fromDataAnnotation);
 
         return value;
     }
@@ -116,7 +116,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model"> The model. </param>
     /// <returns> The <see cref="ConfigurationSource" /> for the default hi-lo sequence schema. </returns>
     public static ConfigurationSource? GetHiLoSequenceSchemaConfigurationSource(this IConventionModel model)
-        => model.FindAnnotation(NpgsqlAnnotationNames.HiLoSequenceSchema)?.GetConfigurationSource();
+        => model.FindAnnotation(H2AnnotationNames.HiLoSequenceSchema)?.GetConfigurationSource();
 
     #endregion
 
@@ -128,7 +128,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model">The model.</param>
     /// <returns>The name to use for the default key value generation sequence.</returns>
     public static string GetSequenceNameSuffix(this IReadOnlyModel model)
-        => (string?)model[NpgsqlAnnotationNames.SequenceNameSuffix]
+        => (string?)model[H2AnnotationNames.SequenceNameSuffix]
             ?? DefaultSequenceNameSuffix;
 
     /// <summary>
@@ -140,7 +140,7 @@ public static class NpgsqlModelExtensions
     {
         Check.NullButNotEmpty(name, nameof(name));
 
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.SequenceNameSuffix, name);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.SequenceNameSuffix, name);
     }
 
     /// <summary>
@@ -157,7 +157,7 @@ public static class NpgsqlModelExtensions
     {
         Check.NullButNotEmpty(name, nameof(name));
 
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.SequenceNameSuffix, name, fromDataAnnotation);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.SequenceNameSuffix, name, fromDataAnnotation);
 
         return name;
     }
@@ -168,7 +168,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model">The model.</param>
     /// <returns>The <see cref="ConfigurationSource" /> for the default key value generation sequence name.</returns>
     public static ConfigurationSource? GetSequenceNameSuffixConfigurationSource(this IConventionModel model)
-        => model.FindAnnotation(NpgsqlAnnotationNames.SequenceNameSuffix)?.GetConfigurationSource();
+        => model.FindAnnotation(H2AnnotationNames.SequenceNameSuffix)?.GetConfigurationSource();
 
     /// <summary>
     ///     Returns the schema to use for the default value generation sequence.
@@ -177,7 +177,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model">The model.</param>
     /// <returns>The schema to use for the default key value generation sequence.</returns>
     public static string? GetSequenceSchema(this IReadOnlyModel model)
-        => (string?)model[NpgsqlAnnotationNames.SequenceSchema];
+        => (string?)model[H2AnnotationNames.SequenceSchema];
 
     /// <summary>
     ///     Sets the schema to use for the default key value generation sequence.
@@ -188,7 +188,7 @@ public static class NpgsqlModelExtensions
     {
         Check.NullButNotEmpty(value, nameof(value));
 
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.SequenceSchema, value);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.SequenceSchema, value);
     }
 
     /// <summary>
@@ -205,7 +205,7 @@ public static class NpgsqlModelExtensions
     {
         Check.NullButNotEmpty(value, nameof(value));
 
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.SequenceSchema, value, fromDataAnnotation);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.SequenceSchema, value, fromDataAnnotation);
 
         return value;
     }
@@ -216,7 +216,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model">The model.</param>
     /// <returns>The <see cref="ConfigurationSource" /> for the default key value generation sequence schema.</returns>
     public static ConfigurationSource? GetSequenceSchemaConfigurationSource(this IConventionModel model)
-        => model.FindAnnotation(NpgsqlAnnotationNames.SequenceSchema)?.GetConfigurationSource();
+        => model.FindAnnotation(H2AnnotationNames.SequenceSchema)?.GetConfigurationSource();
 
     #endregion Sequence
 
@@ -229,7 +229,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model"> The model. </param>
     /// <returns> The default <see cref="NpgsqlValueGenerationStrategy" />. </returns>
     public static NpgsqlValueGenerationStrategy? GetValueGenerationStrategy(this IReadOnlyModel model)
-        => (NpgsqlValueGenerationStrategy?)model[NpgsqlAnnotationNames.ValueGenerationStrategy];
+        => (NpgsqlValueGenerationStrategy?)model[H2AnnotationNames.ValueGenerationStrategy];
 
     /// <summary>
     ///     Attempts to set the <see cref="NpgsqlValueGenerationStrategy" /> to use for properties
@@ -238,7 +238,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model"> The model. </param>
     /// <param name="value"> The value to set. </param>
     public static void SetValueGenerationStrategy(this IMutableModel model, NpgsqlValueGenerationStrategy? value)
-        => model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.ValueGenerationStrategy, value);
+        => model.SetOrRemoveAnnotation(H2AnnotationNames.ValueGenerationStrategy, value);
 
     /// <summary>
     ///     Attempts to set the <see cref="NpgsqlValueGenerationStrategy" /> to use for properties
@@ -252,7 +252,7 @@ public static class NpgsqlModelExtensions
         NpgsqlValueGenerationStrategy? value,
         bool fromDataAnnotation = false)
     {
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
 
         return value;
     }
@@ -263,7 +263,7 @@ public static class NpgsqlModelExtensions
     /// <param name="model"> The model. </param>
     /// <returns> The <see cref="ConfigurationSource" /> for the default <see cref="NpgsqlValueGenerationStrategy" />. </returns>
     public static ConfigurationSource? GetValueGenerationStrategyConfigurationSource(this IConventionModel model)
-        => model.FindAnnotation(NpgsqlAnnotationNames.ValueGenerationStrategy)?.GetConfigurationSource();
+        => model.FindAnnotation(H2AnnotationNames.ValueGenerationStrategy)?.GetConfigurationSource();
 
     #endregion
 
@@ -392,7 +392,7 @@ public static class NpgsqlModelExtensions
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public static string? GetDatabaseTemplate(this IReadOnlyModel model)
-        => (string?)model[NpgsqlAnnotationNames.DatabaseTemplate];
+        => (string?)model[H2AnnotationNames.DatabaseTemplate];
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -401,7 +401,7 @@ public static class NpgsqlModelExtensions
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public static void SetDatabaseTemplate(this IMutableModel model, string? template)
-        => model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.DatabaseTemplate, template);
+        => model.SetOrRemoveAnnotation(H2AnnotationNames.DatabaseTemplate, template);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -416,7 +416,7 @@ public static class NpgsqlModelExtensions
     {
         Check.NullButNotEmpty(template, nameof(template));
 
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.DatabaseTemplate, template, fromDataAnnotation);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.DatabaseTemplate, template, fromDataAnnotation);
 
         return template;
     }
@@ -428,7 +428,7 @@ public static class NpgsqlModelExtensions
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public static ConfigurationSource? GetDatabaseTemplateConfigurationSource(this IConventionModel model)
-        => model.FindAnnotation(NpgsqlAnnotationNames.DatabaseTemplate)?.GetConfigurationSource();
+        => model.FindAnnotation(H2AnnotationNames.DatabaseTemplate)?.GetConfigurationSource();
 
     #endregion
 
@@ -441,7 +441,7 @@ public static class NpgsqlModelExtensions
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public static string? GetTablespace(this IReadOnlyModel model)
-        => (string?)model[NpgsqlAnnotationNames.Tablespace];
+        => (string?)model[H2AnnotationNames.Tablespace];
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -450,7 +450,7 @@ public static class NpgsqlModelExtensions
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public static void SetTablespace(this IMutableModel model, string? tablespace)
-        => model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.Tablespace, tablespace);
+        => model.SetOrRemoveAnnotation(H2AnnotationNames.Tablespace, tablespace);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -465,7 +465,7 @@ public static class NpgsqlModelExtensions
     {
         Check.NullButNotEmpty(tablespace, nameof(tablespace));
 
-        model.SetOrRemoveAnnotation(NpgsqlAnnotationNames.Tablespace, tablespace, fromDataAnnotation);
+        model.SetOrRemoveAnnotation(H2AnnotationNames.Tablespace, tablespace, fromDataAnnotation);
 
         return tablespace;
     }
@@ -477,7 +477,7 @@ public static class NpgsqlModelExtensions
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public static ConfigurationSource? GetTablespaceConfigurationSource(this IConventionModel model)
-        => model.FindAnnotation(NpgsqlAnnotationNames.Tablespace)?.GetConfigurationSource();
+        => model.FindAnnotation(H2AnnotationNames.Tablespace)?.GetConfigurationSource();
 
     #endregion
 

@@ -8,7 +8,7 @@ namespace H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 /// <summary>
 ///     Represents options managed by the Npgsql.
 /// </summary>
-public class NpgsqlOptionsExtension : RelationalOptionsExtension
+public class H2OptionsExtension : RelationalOptionsExtension
 {
     private DbContextOptionsExtensionInfo? _info;
     private readonly List<UserRangeDefinition> _userRangeDefinitions;
@@ -92,9 +92,9 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     public virtual bool ReverseNullOrdering { get; private set; }
 
     /// <summary>
-    ///     Initializes an instance of <see cref="NpgsqlOptionsExtension" /> with the default settings.
+    ///     Initializes an instance of <see cref="H2OptionsExtension" /> with the default settings.
     /// </summary>
-    public NpgsqlOptionsExtension()
+    public H2OptionsExtension()
     {
         _userRangeDefinitions = [];
         _enumDefinitions = [];
@@ -102,10 +102,10 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
 
     // NB: When adding new options, make sure to update the copy ctor below.
     /// <summary>
-    ///     Initializes an instance of <see cref="NpgsqlOptionsExtension" /> by copying the specified instance.
+    ///     Initializes an instance of <see cref="H2OptionsExtension" /> by copying the specified instance.
     /// </summary>
     /// <param name="copyFrom">The instance to copy.</param>
-    public NpgsqlOptionsExtension(NpgsqlOptionsExtension copyFrom)
+    public H2OptionsExtension(H2OptionsExtension copyFrom)
         : base(copyFrom)
     {
         DataSource = copyFrom.DataSource;
@@ -138,9 +138,9 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     /// </summary>
     /// <param name="dataSourceBuilderAction">A lambda to configure Npgsql options on <see cref="NpgsqlDataSourceBuilder" />.</param>
     /// <returns>A new instance with the option changed.</returns>
-    public virtual NpgsqlOptionsExtension WithDataSourceConfiguration(Action<NpgsqlDataSourceBuilder> dataSourceBuilderAction)
+    public virtual H2OptionsExtension WithDataSourceConfiguration(Action<NpgsqlDataSourceBuilder> dataSourceBuilderAction)
     {
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
         clone.DataSourceBuilderAction = dataSourceBuilderAction;
 
@@ -155,7 +155,7 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     /// <returns>A new instance with the option changed.</returns>
     public virtual RelationalOptionsExtension WithDataSource(DbDataSource? dataSource)
     {
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
         clone.DataSource = dataSource;
 
@@ -165,7 +165,7 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     /// <inheritdoc />
     public override RelationalOptionsExtension WithConnectionString(string? connectionString)
     {
-        var clone = (NpgsqlOptionsExtension)base.WithConnectionString(connectionString);
+        var clone = (H2OptionsExtension)base.WithConnectionString(connectionString);
 
         clone.DataSource = null;
 
@@ -175,7 +175,7 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     /// <inheritdoc />
     public override RelationalOptionsExtension WithConnection(DbConnection? connection)
     {
-        var clone = (NpgsqlOptionsExtension)base.WithConnection(connection);
+        var clone = (H2OptionsExtension)base.WithConnection(connection);
 
         clone.DataSource = null;
 
@@ -185,7 +185,7 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     /// <summary>
     ///     Returns a copy of the current instance configured with the specified range mapping.
     /// </summary>
-    public virtual NpgsqlOptionsExtension WithUserRangeDefinition<TSubtype>(
+    public virtual H2OptionsExtension WithUserRangeDefinition<TSubtype>(
         string rangeName,
         string? schemaName = null,
         string? subtypeName = null)
@@ -194,7 +194,7 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     /// <summary>
     ///     Returns a copy of the current instance configured with the specified range mapping.
     /// </summary>
-    public virtual NpgsqlOptionsExtension WithUserRangeDefinition(
+    public virtual H2OptionsExtension WithUserRangeDefinition(
         string rangeName,
         string? schemaName,
         Type subtypeClrType,
@@ -203,7 +203,7 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
         Check.NotEmpty(rangeName, nameof(rangeName));
         Check.NotNull(subtypeClrType, nameof(subtypeClrType));
 
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
         clone._userRangeDefinitions.Add(new UserRangeDefinition(rangeName, schemaName, subtypeClrType, subtypeName));
 
@@ -213,7 +213,7 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     /// <summary>
     ///     Returns a copy of the current instance configured with the specified range mapping.
     /// </summary>
-    public virtual NpgsqlOptionsExtension WithEnumMapping(
+    public virtual H2OptionsExtension WithEnumMapping(
         Type clrType,
         string? enumName,
         string? schemaName,
@@ -224,7 +224,7 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
             throw new ArgumentException($"Enum type mappings require a CLR enum. {clrType.FullName} is not an enum.");
         }
 
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
 #pragma warning disable CS0618 // NpgsqlConnection.GlobalTypeMapper is obsolete
         nameTranslator ??= NpgsqlConnection.GlobalTypeMapper.DefaultNameTranslator;
@@ -239,9 +239,9 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     ///     Returns a copy of the current instance configured to use the specified administrative database.
     /// </summary>
     /// <param name="adminDatabase">The name of the database for administrative operations.</param>
-    public virtual NpgsqlOptionsExtension WithAdminDatabase(string? adminDatabase)
+    public virtual H2OptionsExtension WithAdminDatabase(string? adminDatabase)
     {
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
         clone.AdminDatabase = adminDatabase;
 
@@ -255,9 +255,9 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     /// <returns>
     ///     A copy of the current instance with the specified PostgreSQL version.
     /// </returns>
-    public virtual NpgsqlOptionsExtension WithPostgresVersion(Version? postgresVersion)
+    public virtual H2OptionsExtension WithPostgresVersion(Version? postgresVersion)
     {
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
         clone._postgresVersion = postgresVersion;
 
@@ -271,9 +271,9 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     /// <returns>
     ///     A copy of the current instance with the specified Redshift setting.
     /// </returns>
-    public virtual NpgsqlOptionsExtension WithRedshift(bool useRedshift)
+    public virtual H2OptionsExtension WithRedshift(bool useRedshift)
     {
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
         clone.UseRedshift = useRedshift;
 
@@ -284,9 +284,9 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     ///     Returns a copy of the current instance configured with the specified value..
     /// </summary>
     /// <param name="reverseNullOrdering">True to enable reverse null ordering; otherwise, false.</param>
-    internal virtual NpgsqlOptionsExtension WithReverseNullOrdering(bool reverseNullOrdering)
+    internal virtual H2OptionsExtension WithReverseNullOrdering(bool reverseNullOrdering)
     {
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
         clone.ReverseNullOrdering = reverseNullOrdering;
 
@@ -307,19 +307,19 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
             if (ProvideClientCertificatesCallback is not null)
             {
                 throw new InvalidOperationException(
-                    "When passing an NpgsqlDataSource to UseNpgsql(), call 'ProvideClientCertificatesCallback' on NpgsqlDataSourceBuilder rather than in UseNpgsql().");
+                    "When passing an NpgsqlDataSource to UseH2(), call 'ProvideClientCertificatesCallback' on NpgsqlDataSourceBuilder rather than in UseH2().");
             }
 
             if (RemoteCertificateValidationCallback is not null)
             {
                 throw new InvalidOperationException(
-                    "When passing an NpgsqlDataSource to UseNpgsql(), call 'RemoteCertificateValidationCallback' on NpgsqlDataSourceBuilder rather than in UseNpgsql().");
+                    "When passing an NpgsqlDataSource to UseH2(), call 'RemoteCertificateValidationCallback' on NpgsqlDataSourceBuilder rather than in UseH2().");
             }
 
             if (ProvidePasswordCallback is not null)
             {
                 throw new InvalidOperationException(
-                    "When passing an NpgsqlDataSource to UseNpgsql(), 'ProviderPasswordCallback' cannot be used in UseNpgsql(). See https://www.npgsql.org/doc/security.html for configuring passwords and token rotation on NpgsqlDataSourceBuilder.");
+                    "When passing an NpgsqlDataSource to UseH2(), 'ProviderPasswordCallback' cannot be used in UseH2(). See https://www.npgsql.org/doc/security.html for configuring passwords and token rotation on NpgsqlDataSourceBuilder.");
             }
         }
 
@@ -335,9 +335,9 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     ///     Returns a copy of the current instance with the specified <see cref="ProvideClientCertificatesCallback" />.
     /// </summary>
     /// <param name="callback">The specified callback.</param>
-    public virtual NpgsqlOptionsExtension WithProvideClientCertificatesCallback(ProvideClientCertificatesCallback? callback)
+    public virtual H2OptionsExtension WithProvideClientCertificatesCallback(ProvideClientCertificatesCallback? callback)
     {
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
         clone.ProvideClientCertificatesCallback = callback;
 
@@ -348,9 +348,9 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     ///     Returns a copy of the current instance with the specified <see cref="RemoteCertificateValidationCallback" />.
     /// </summary>
     /// <param name="callback">The specified callback.</param>
-    public virtual NpgsqlOptionsExtension WithRemoteCertificateValidationCallback(RemoteCertificateValidationCallback? callback)
+    public virtual H2OptionsExtension WithRemoteCertificateValidationCallback(RemoteCertificateValidationCallback? callback)
     {
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
         clone.RemoteCertificateValidationCallback = callback;
 
@@ -362,9 +362,9 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
     /// </summary>
     /// <param name="callback">The specified callback.</param>
 #pragma warning disable CS0618 // ProvidePasswordCallback is obsolete
-    public virtual NpgsqlOptionsExtension WithProvidePasswordCallback(ProvidePasswordCallback? callback)
+    public virtual H2OptionsExtension WithProvidePasswordCallback(ProvidePasswordCallback? callback)
     {
-        var clone = (NpgsqlOptionsExtension)Clone();
+        var clone = (H2OptionsExtension)Clone();
 
         clone.ProvidePasswordCallback = callback;
 
@@ -378,11 +378,11 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
 
     /// <inheritdoc />
     protected override RelationalOptionsExtension Clone()
-        => new NpgsqlOptionsExtension(this);
+        => new H2OptionsExtension(this);
 
     /// <inheritdoc />
     public override void ApplyServices(IServiceCollection services)
-        => services.AddEntityFrameworkNpgsql();
+        => services.AddEntityFrameworkH2();
 
     /// <inheritdoc />
     public override DbContextOptionsExtensionInfo Info
@@ -393,8 +393,8 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
         private int? _serviceProviderHash;
         private string? _logFragment;
 
-        private new NpgsqlOptionsExtension Extension
-            => (NpgsqlOptionsExtension)base.Extension;
+        private new H2OptionsExtension Extension
+            => (H2OptionsExtension)base.Extension;
 
         public override bool IsDatabaseProvider
             => true;
@@ -511,32 +511,32 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
         /// <inheritdoc />
         public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
         {
-            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(NpgsqlDbContextOptionsBuilder.UseAdminDatabase)]
+            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(H2DbContextOptionsBuilder.UseAdminDatabase)]
                 = (Extension.AdminDatabase?.GetHashCode() ?? 0).ToString(CultureInfo.InvariantCulture);
 
-            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(NpgsqlDbContextOptionsBuilder.SetPostgresVersion)]
+            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(H2DbContextOptionsBuilder.SetPostgresVersion)]
                 = Extension.PostgresVersion.GetHashCode().ToString(CultureInfo.InvariantCulture);
 
-            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(NpgsqlDbContextOptionsBuilder.UseRedshift)]
+            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(H2DbContextOptionsBuilder.UseRedshift)]
                 = Extension.UseRedshift.GetHashCode().ToString(CultureInfo.InvariantCulture);
 
-            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(NpgsqlDbContextOptionsBuilder.ReverseNullOrdering)]
+            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(H2DbContextOptionsBuilder.ReverseNullOrdering)]
                 = Extension.ReverseNullOrdering.GetHashCode().ToString(CultureInfo.InvariantCulture);
 
-            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(NpgsqlDbContextOptionsBuilder.RemoteCertificateValidationCallback)]
+            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(H2DbContextOptionsBuilder.RemoteCertificateValidationCallback)]
                 = (Extension.RemoteCertificateValidationCallback?.GetHashCode() ?? 0).ToString(CultureInfo.InvariantCulture);
 
-            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(NpgsqlDbContextOptionsBuilder.ProvideClientCertificatesCallback)]
+            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(H2DbContextOptionsBuilder.ProvideClientCertificatesCallback)]
                 = (Extension.ProvideClientCertificatesCallback?.GetHashCode() ?? 0).ToString(CultureInfo.InvariantCulture);
 
-            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(NpgsqlDbContextOptionsBuilder.ProvidePasswordCallback)]
+            debugInfo["H2Sharp.EntityFrameworkCore:" + nameof(H2DbContextOptionsBuilder.ProvidePasswordCallback)]
                 = (Extension.ProvidePasswordCallback?.GetHashCode() ?? 0).ToString(CultureInfo.InvariantCulture);
 
             foreach (var enumDefinition in Extension._enumDefinitions)
             {
                 debugInfo[
                         "H2Sharp.EntityFrameworkCore:"
-                        + nameof(NpgsqlDbContextOptionsBuilder.MapEnum)
+                        + nameof(H2DbContextOptionsBuilder.MapEnum)
                         + ":"
                         + enumDefinition.ClrType.Name]
                     = enumDefinition.GetHashCode().ToString(CultureInfo.InvariantCulture);
@@ -546,7 +546,7 @@ public class NpgsqlOptionsExtension : RelationalOptionsExtension
             {
                 debugInfo[
                         "H2Sharp.EntityFrameworkCore:"
-                        + nameof(NpgsqlDbContextOptionsBuilder.MapRange)
+                        + nameof(H2DbContextOptionsBuilder.MapRange)
                         + ":"
                         + rangeDefinition.SubtypeClrType.Name]
                     = rangeDefinition.GetHashCode().ToString(CultureInfo.InvariantCulture);

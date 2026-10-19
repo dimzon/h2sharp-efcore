@@ -45,7 +45,7 @@ public class NpgsqlAnnotationCodeGeneratorTest
         property = entity.GetProperties().Single(p => p.Name == "IdentityAlways");
         annotations = property.GetAnnotations().ToDictionary(a => a.Name, a => a);
         generator.RemoveAnnotationsHandledByConventions(property, annotations);
-        Assert.Contains(annotations, kv => kv.Key == NpgsqlAnnotationNames.ValueGenerationStrategy);
+        Assert.Contains(annotations, kv => kv.Key == H2AnnotationNames.ValueGenerationStrategy);
         result = generator.GenerateFluentApiCalls(property, annotations).Single();
         Assert.Equal(nameof(NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn), result.Method);
         Assert.Empty(result.Arguments);
@@ -62,13 +62,13 @@ public class NpgsqlAnnotationCodeGeneratorTest
         property = entity.GetProperties().Single(p => p.Name == "None");
         annotations = property.GetAnnotations().ToDictionary(a => a.Name, a => a);
         generator.RemoveAnnotationsHandledByConventions(property, annotations);
-        Assert.Contains(annotations, kv => kv.Key == NpgsqlAnnotationNames.ValueGenerationStrategy);
+        Assert.Contains(annotations, kv => kv.Key == H2AnnotationNames.ValueGenerationStrategy);
         result = generator.GenerateFluentApiCalls(property, property.GetAnnotations().ToDictionary(a => a.Name, a => a))
             .Single();
         Assert.Equal(nameof(PropertyBuilder.HasAnnotation), result.Method);
         Assert.Collection(
             result.Arguments,
-            a => Assert.Equal(NpgsqlAnnotationNames.ValueGenerationStrategy, a),
+            a => Assert.Equal(H2AnnotationNames.ValueGenerationStrategy, a),
             a => Assert.Equal(NpgsqlValueGenerationStrategy.None, a));
     }
 
@@ -96,7 +96,7 @@ public class NpgsqlAnnotationCodeGeneratorTest
             .Single(p => p.Name == "Id");
         var annotations = property.GetAnnotations().ToDictionary(a => a.Name, a => a);
         generator.RemoveAnnotationsHandledByConventions(property, annotations);
-        Assert.Contains(annotations, kv => kv.Key == NpgsqlAnnotationNames.IdentityOptions);
+        Assert.Contains(annotations, kv => kv.Key == H2AnnotationNames.IdentityOptions);
         var result = generator.GenerateFluentApiCalls(property, annotations).Single();
         Assert.Equal(nameof(NpgsqlPropertyBuilderExtensions.HasIdentityOptions), result.Method);
         Assert.Equal(5L, result.Arguments[0]);
@@ -408,5 +408,5 @@ public class NpgsqlAnnotationCodeGeneratorTest
                     ),
                     new RelationalTypeMappingSourceDependencies([]),
                     new NpgsqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
-                    new NpgsqlSingletonOptions())));
+                    new H2SingletonOptions())));
 }

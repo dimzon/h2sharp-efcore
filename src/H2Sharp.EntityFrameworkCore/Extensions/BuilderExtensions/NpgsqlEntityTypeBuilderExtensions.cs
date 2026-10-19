@@ -152,7 +152,7 @@ public static class NpgsqlEntityTypeBuilderExtensions
         Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
 
         return entityTypeBuilder.CanSetAnnotation(
-            NpgsqlAnnotationNames.StorageParameterPrefix + parameterName, parameterValue, fromDataAnnotation);
+            H2AnnotationNames.StorageParameterPrefix + parameterName, parameterValue, fromDataAnnotation);
     }
 
     #endregion Storage parameters
@@ -244,7 +244,7 @@ public static class NpgsqlEntityTypeBuilderExtensions
     {
         Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
 
-        return entityTypeBuilder.CanSetAnnotation(NpgsqlAnnotationNames.UnloggedTable, unlogged, fromDataAnnotation);
+        return entityTypeBuilder.CanSetAnnotation(H2AnnotationNames.UnloggedTable, unlogged, fromDataAnnotation);
     }
 
     #endregion

@@ -34,7 +34,7 @@ public class NpgsqlRelationalConnectionTest
         serviceCollection
             .AddNpgsqlDataSource("Host=FakeHost")
             // ReSharper disable once AccessToDisposedClosure
-            .AddDbContext<FakeDbContext>(o => o.UseNpgsql(dataSource));
+            .AddDbContext<FakeDbContext>(o => o.UseH2(dataSource));
 
         using var serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -62,7 +62,7 @@ public class NpgsqlRelationalConnectionTest
 
         serviceCollection
             .AddNpgsqlDataSource("Host=FakeHost")
-            .AddDbContext<FakeDbContext>(o => o.UseNpgsql());
+            .AddDbContext<FakeDbContext>(o => o.UseH2());
 
         using var serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -92,7 +92,7 @@ public class NpgsqlRelationalConnectionTest
 
         serviceCollection
             .AddNpgsqlDataSource("Host=FakeHost1")
-            .AddDbContext<FakeDbContext>(o => o.UseNpgsql("Host=FakeHost2"));
+            .AddDbContext<FakeDbContext>(o => o.UseH2("Host=FakeHost2"));
 
         using var serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -268,7 +268,7 @@ public class NpgsqlRelationalConnectionTest
         using var dataSource = NpgsqlDataSource.Create("Host=FakeHost");
 
         var optionsBuilder = new DbContextOptionsBuilder<FakeDbContext>();
-        optionsBuilder.UseNpgsql(dataSource, no => no.ConfigureDataSource(dsb => dsb.ConnectionStringBuilder.ApplicationName = "foo"));
+        optionsBuilder.UseH2(dataSource, no => no.ConfigureDataSource(dsb => dsb.ConnectionStringBuilder.ApplicationName = "foo"));
 
         var context1 = new FakeDbContext(optionsBuilder.Options);
         var exception = Assert.Throws<NotSupportedException>(() => context1.GetService<IRelationalConnection>());
@@ -309,7 +309,7 @@ public class NpgsqlRelationalConnectionTest
     public void Can_create_master_connection_with_connection_string_and_alternate_admin_db()
     {
         var options = new DbContextOptionsBuilder()
-            .UseNpgsql(
+            .UseH2(
                 @"Host=localhost;Database=NpgsqlConnectionTest;Username=some_user;Password=some_password",
                 b => b.UseAdminDatabase("template0"))
             .Options;
@@ -329,7 +329,7 @@ public class NpgsqlRelationalConnectionTest
     public void CurrentAmbientTransaction_returns_null_with_enlist_set_to_false(string falseValue)
     {
         var options = new DbContextOptionsBuilder()
-            .UseNpgsql(
+            .UseH2(
                 @"Host=localhost;Database=NpgsqlConnectionTest;Username=some_user;Password=some_password;Enlist=" + falseValue)
             .Options;
 
@@ -347,7 +347,7 @@ public class NpgsqlRelationalConnectionTest
     public void CurrentAmbientTransaction_returns_transaction_with_enlist_enabled(string enlist)
     {
         var options = new DbContextOptionsBuilder()
-            .UseNpgsql(
+            .UseH2(
                 @"Host=localhost;Database=NpgsqlConnectionTest;Username=some_user;Password=some_password" + enlist)
             .Options;
 
@@ -365,7 +365,7 @@ public class NpgsqlRelationalConnectionTest
     {
         var services = NpgsqlTestHelpers.Instance.CreateContextServices(
             new DbContextOptionsBuilder()
-                .UseNpgsql("Host=localhost;Database=DummyDatabase")
+                .UseH2("Host=localhost;Database=DummyDatabase")
                 .Options);
 
         var relationalConnection = (NpgsqlRelationalConnection)services.GetRequiredService<IRelationalConnection>();
@@ -378,7 +378,7 @@ public class NpgsqlRelationalConnectionTest
     public static NpgsqlRelationalConnection CreateConnection(DbContextOptions? options = null, DbDataSource? dataSource = null)
     {
         options ??= new DbContextOptionsBuilder()
-            .UseNpgsql(@"Host=localhost;Database=NpgsqlConnectionTest;Username=some_user;Password=some_password")
+            .UseH2(@"Host=localhost;Database=NpgsqlConnectionTest;Username=some_user;Password=some_password")
             .Options;
 
         foreach (var extension in options.Extensions)
@@ -416,7 +416,7 @@ public class NpgsqlRelationalConnectionTest
                             TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
                             TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
                             new NpgsqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
-                            new NpgsqlSingletonOptions()),
+                            new H2SingletonOptions()),
                         new ExceptionDetector()))),
             new NpgsqlDataSourceManager([]),
             dbContextOptions);
@@ -448,10 +448,10 @@ public class NpgsqlRelationalConnectionTest
         }
     }
 
-    private class ConfigurableContext(string? connectionString, Action<NpgsqlDbContextOptionsBuilder>? npgsqlOptionsAction = null) : DbContext
+    private class ConfigurableContext(string? connectionString, Action<H2DbContextOptionsBuilder>? h2OptionsAction = null) : DbContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql(connectionString, npgsqlOptionsAction);
+            => optionsBuilder.UseH2(connectionString, h2OptionsAction);
     }
 
     private enum Mood

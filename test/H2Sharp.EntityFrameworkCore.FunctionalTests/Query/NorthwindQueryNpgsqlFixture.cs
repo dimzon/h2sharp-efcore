@@ -17,7 +17,7 @@ public class NorthwindQueryNpgsqlFixture<TModelCustomizer> : NorthwindQueryRelat
     public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
     {
         var optionsBuilder = base.AddOptions(builder);
-        new NpgsqlDbContextOptionsBuilder(optionsBuilder).SetPostgresVersion(TestEnvironment.PostgresVersion);
+        new H2DbContextOptionsBuilder(optionsBuilder).SetPostgresVersion(TestEnvironment.PostgresVersion);
         return optionsBuilder;
     }
 

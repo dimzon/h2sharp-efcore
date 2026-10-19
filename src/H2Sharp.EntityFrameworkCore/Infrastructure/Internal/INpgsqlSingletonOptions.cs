@@ -3,7 +3,7 @@ namespace H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 /// <summary>
 ///     Represents options for Npgsql that can only be set at the <see cref="IServiceProvider" /> singleton level.
 /// </summary>
-public interface INpgsqlSingletonOptions : ISingletonOptions
+public interface IH2SingletonOptions : ISingletonOptions
 {
     /// <summary>
     ///     The backend version to target.

@@ -21,7 +21,7 @@ public class NpgsqlDesignTimeServices : IDesignTimeServices
     {
         Check.NotNull(serviceCollection, nameof(serviceCollection));
 
-        serviceCollection.AddEntityFrameworkNpgsql();
+        serviceCollection.AddEntityFrameworkH2();
 #pragma warning disable EF1001 // Internal EF Core API usage.
         new EntityFrameworkRelationalDesignServicesBuilder(serviceCollection)
             .TryAdd<ICSharpRuntimeAnnotationCodeGenerator, NpgsqlCSharpRuntimeAnnotationCodeGenerator>()

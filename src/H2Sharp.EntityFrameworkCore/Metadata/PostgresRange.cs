@@ -119,8 +119,8 @@ public class PostgresRange
 
     private static string BuildAnnotationName(string? schema, string name)
         => schema is not null
-            ? $"{NpgsqlAnnotationNames.RangePrefix}{schema}.{name}"
-            : $"{NpgsqlAnnotationNames.RangePrefix}{name}";
+            ? $"{H2AnnotationNames.RangePrefix}{schema}.{name}"
+            : $"{H2AnnotationNames.RangePrefix}{name}";
 
     /// <summary>
     ///     Gets the collection of <see cref="PostgresRange" /> stored in the <see cref="IAnnotatable" />.
@@ -135,7 +135,7 @@ public class PostgresRange
     public static IEnumerable<PostgresRange> GetPostgresRanges(IReadOnlyAnnotatable annotatable)
         => Check.NotNull(annotatable, nameof(annotatable))
             .GetAnnotations()
-            .Where(a => a.Name.StartsWith(NpgsqlAnnotationNames.RangePrefix, StringComparison.Ordinal))
+            .Where(a => a.Name.StartsWith(H2AnnotationNames.RangePrefix, StringComparison.Ordinal))
             .Select(a => new PostgresRange(annotatable, a.Name));
 
     /// <summary>
@@ -239,7 +239,7 @@ public class PostgresRange
 
         // TODO: This would be a safer operation if we stored schema and name in the annotation value (see Sequence.cs).
         // Yes, this doesn't support dots in the schema/range name, let somebody complain first.
-        var schemaAndName = annotation.Name.Substring(NpgsqlAnnotationNames.RangePrefix.Length).Split('.');
+        var schemaAndName = annotation.Name.Substring(H2AnnotationNames.RangePrefix.Length).Split('.');
         switch (schemaAndName.Length)
         {
             case 1:

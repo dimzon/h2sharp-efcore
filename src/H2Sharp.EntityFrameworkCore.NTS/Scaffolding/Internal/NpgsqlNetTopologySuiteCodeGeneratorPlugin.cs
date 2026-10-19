@@ -13,7 +13,7 @@ public class NpgsqlNetTopologySuiteCodeGeneratorPlugin : ProviderCodeGeneratorPl
     private static readonly MethodInfo _useNetTopologySuiteMethodInfo
         = typeof(NpgsqlNetTopologySuiteDbContextOptionsBuilderExtensions).GetRequiredRuntimeMethod(
             nameof(NpgsqlNetTopologySuiteDbContextOptionsBuilderExtensions.UseNetTopologySuite),
-            typeof(NpgsqlDbContextOptionsBuilder),
+            typeof(H2DbContextOptionsBuilder),
             typeof(CoordinateSequenceFactory),
             typeof(PrecisionModel),
             typeof(Ordinates),

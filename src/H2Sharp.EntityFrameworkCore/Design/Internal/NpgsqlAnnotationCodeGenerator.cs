@@ -161,7 +161,7 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
         Check.NotNull(index, nameof(index));
         Check.NotNull(annotation, nameof(annotation));
 
-        if (annotation.Name == NpgsqlAnnotationNames.IndexMethod
+        if (annotation.Name == H2AnnotationNames.IndexMethod
             && (string?)annotation.Value == "btree")
         {
             return true;
@@ -183,7 +183,7 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
 
         // The default by-convention value generation strategy is serial in pre-10 PostgreSQL,
         // and IdentityByDefault otherwise.
-        if (annotation.Name == NpgsqlAnnotationNames.ValueGenerationStrategy)
+        if (annotation.Name == H2AnnotationNames.ValueGenerationStrategy)
         {
             // Note: both serial and identity-by-default columns are considered by-convention - we don't want
             // to assume that the PostgreSQL version of the scaffolded database necessarily determines the
@@ -231,7 +231,7 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
         Check.NotNull(model, nameof(model));
         Check.NotNull(annotation, nameof(annotation));
 
-        if (annotation.Name.StartsWith(NpgsqlAnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal))
+        if (annotation.Name.StartsWith(H2AnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal))
         {
             var extension = new PostgresExtension(model, annotation.Name);
 
@@ -240,7 +240,7 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
                 : new MethodCallCodeFragment(ModelHasPostgresExtensionMethodInfo2, extension.Schema, extension.Name);
         }
 
-        if (annotation.Name.StartsWith(NpgsqlAnnotationNames.EnumPrefix, StringComparison.Ordinal))
+        if (annotation.Name.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal))
         {
             var enumTypeDef = new PostgresEnum(model, annotation.Name);
 
@@ -249,7 +249,7 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
                 : new MethodCallCodeFragment(ModelHasPostgresEnumMethodInfo2, enumTypeDef.Schema, enumTypeDef.Name, enumTypeDef.Labels);
         }
 
-        if (annotation.Name.StartsWith(NpgsqlAnnotationNames.RangePrefix, StringComparison.Ordinal))
+        if (annotation.Name.StartsWith(H2AnnotationNames.RangePrefix, StringComparison.Ordinal))
         {
             var rangeTypeDef = new PostgresRange(model, annotation.Name);
 
@@ -287,7 +287,7 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
         Check.NotNull(entityType, nameof(entityType));
         Check.NotNull(annotation, nameof(annotation));
 
-        if (annotation.Name == NpgsqlAnnotationNames.UnloggedTable)
+        if (annotation.Name == H2AnnotationNames.UnloggedTable)
         {
             return new MethodCallCodeFragment(EntityTypeIsUnloggedMethodInfo, annotation.Value);
         }
@@ -322,7 +322,7 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
 
     private MethodCallCodeFragment? GenerateValueGenerationStrategy(IDictionary<string, IAnnotation> annotations, bool onModel)
     {
-        if (!TryGetAndRemove(annotations, NpgsqlAnnotationNames.ValueGenerationStrategy, out NpgsqlValueGenerationStrategy strategy))
+        if (!TryGetAndRemove(annotations, H2AnnotationNames.ValueGenerationStrategy, out NpgsqlValueGenerationStrategy strategy))
         {
             return null;
         }
@@ -342,8 +342,8 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
 
             case NpgsqlValueGenerationStrategy.SequenceHiLo:
             {
-                var name = GetAndRemove<string>(NpgsqlAnnotationNames.HiLoSequenceName)!;
-                var schema = GetAndRemove<string>(NpgsqlAnnotationNames.HiLoSequenceSchema);
+                var name = GetAndRemove<string>(H2AnnotationNames.HiLoSequenceName)!;
+                var schema = GetAndRemove<string>(H2AnnotationNames.HiLoSequenceSchema);
                 return new MethodCallCodeFragment(
                     onModel ? ModelUseHiLoMethodInfo : PropertyUseHiLoMethodInfo,
                     (name, schema) switch
@@ -357,9 +357,9 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
             case NpgsqlValueGenerationStrategy.Sequence:
             {
                 var nameOrSuffix = GetAndRemove<string>(
-                    onModel ? NpgsqlAnnotationNames.SequenceNameSuffix : NpgsqlAnnotationNames.SequenceName);
+                    onModel ? H2AnnotationNames.SequenceNameSuffix : H2AnnotationNames.SequenceName);
 
-                var schema = GetAndRemove<string>(NpgsqlAnnotationNames.SequenceSchema);
+                var schema = GetAndRemove<string>(H2AnnotationNames.SequenceSchema);
                 return new MethodCallCodeFragment(
                     onModel ? ModelUseKeySequencesMethodInfo : PropertyUseSequenceMethodInfo,
                     (name: nameOrSuffix, schema) switch
@@ -371,7 +371,7 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
             }
             case NpgsqlValueGenerationStrategy.None:
                 return new MethodCallCodeFragment(
-                    ModelHasAnnotationMethodInfo, NpgsqlAnnotationNames.ValueGenerationStrategy, NpgsqlValueGenerationStrategy.None);
+                    ModelHasAnnotationMethodInfo, H2AnnotationNames.ValueGenerationStrategy, NpgsqlValueGenerationStrategy.None);
 
             default:
                 throw new ArgumentOutOfRangeException(strategy.ToString());
@@ -386,7 +386,7 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
     private MethodCallCodeFragment? GenerateIdentityOptions(IDictionary<string, IAnnotation> annotations)
     {
         if (!TryGetAndRemove(
-                annotations, NpgsqlAnnotationNames.IdentityOptions,
+                annotations, H2AnnotationNames.IdentityOptions,
                 out string? annotationValue))
         {
             return null;
@@ -415,15 +415,15 @@ public class NpgsqlAnnotationCodeGenerator : AnnotationCodeGenerator
             RelationalAnnotationNames.Collation
                 => new MethodCallCodeFragment(IndexUseCollationMethodInfo, annotation.Value),
 
-            NpgsqlAnnotationNames.IndexMethod
+            H2AnnotationNames.IndexMethod
                 => new MethodCallCodeFragment(IndexHasMethodMethodInfo, annotation.Value),
-            NpgsqlAnnotationNames.IndexOperators
+            H2AnnotationNames.IndexOperators
                 => new MethodCallCodeFragment(IndexHasOperatorsMethodInfo, annotation.Value),
-            NpgsqlAnnotationNames.IndexNullSortOrder
+            H2AnnotationNames.IndexNullSortOrder
                 => new MethodCallCodeFragment(IndexHasNullSortOrderMethodInfo, annotation.Value),
-            NpgsqlAnnotationNames.IndexInclude
+            H2AnnotationNames.IndexInclude
                 => new MethodCallCodeFragment(IndexIncludePropertiesMethodInfo, annotation.Value),
-            NpgsqlAnnotationNames.NullsDistinct
+            H2AnnotationNames.NullsDistinct
                 => new MethodCallCodeFragment(IndexAreNullsDistinctMethodInfo, annotation.Value),
             _ => null
         };

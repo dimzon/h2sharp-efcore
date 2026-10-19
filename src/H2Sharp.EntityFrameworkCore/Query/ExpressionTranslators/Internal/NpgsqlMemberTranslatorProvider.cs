@@ -28,7 +28,7 @@ public class NpgsqlMemberTranslatorProvider : RelationalMemberTranslatorProvider
         IDbContextOptions contextOptions)
         : base(dependencies)
     {
-        var npgsqlOptions = contextOptions.FindExtension<NpgsqlOptionsExtension>() ?? new NpgsqlOptionsExtension();
+        var npgsqlOptions = contextOptions.FindExtension<H2OptionsExtension>() ?? new H2OptionsExtension();
         var supportsMultiranges = npgsqlOptions.PostgresVersion.AtLeast(14);
 
         var sqlExpressionFactory = (NpgsqlSqlExpressionFactory)dependencies.SqlExpressionFactory;

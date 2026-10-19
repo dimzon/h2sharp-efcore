@@ -579,7 +579,7 @@ public class NpgsqlDatabaseCreatorTest
 
     private static IServiceProvider CreateServiceProvider()
         => new ServiceCollection()
-            .AddEntityFrameworkNpgsql()
+            .AddEntityFrameworkH2()
             .AddScoped<IExecutionStrategyFactory, TestNpgsqlExecutionStrategyFactory>()
             .AddScoped<IRelationalDatabaseCreator, TestDatabaseCreator>()
             .BuildServiceProvider();
@@ -593,7 +593,7 @@ public class NpgsqlDatabaseCreatorTest
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseNpgsql(
+                .UseH2(
                     connectionString, b => b
                         .ApplyConfiguration()
                         .SetPostgresVersion(TestEnvironment.PostgresVersion))

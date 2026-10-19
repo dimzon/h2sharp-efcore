@@ -20,7 +20,7 @@ public class NpgsqlNodaTimeOptionsExtension : IDbContextOptionsExtension
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public virtual void ApplyServices(IServiceCollection services)
-        => services.AddEntityFrameworkNpgsqlNodaTime();
+        => services.AddEntityFrameworkH2NodaTime();
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -49,7 +49,7 @@ public class NpgsqlNodaTimeOptionsExtension : IDbContextOptionsExtension
                     != true)
                 {
                     throw new InvalidOperationException(
-                        $"{nameof(NpgsqlNodaTimeDbContextOptionsBuilderExtensions.UseNodaTime)} requires {nameof(NpgsqlNodaTimeServiceCollectionExtensions.AddEntityFrameworkNpgsqlNodaTime)} to be called on the internal service provider used.");
+                        $"{nameof(NpgsqlNodaTimeDbContextOptionsBuilderExtensions.UseNodaTime)} requires {nameof(NpgsqlNodaTimeServiceCollectionExtensions.AddEntityFrameworkH2NodaTime)} to be called on the internal service provider used.");
                 }
             }
         }
@@ -70,7 +70,7 @@ public class NpgsqlNodaTimeOptionsExtension : IDbContextOptionsExtension
             => true;
 
         public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
-            => debugInfo["Npgsql:" + nameof(NpgsqlNodaTimeDbContextOptionsBuilderExtensions.UseNodaTime)] = "1";
+            => debugInfo["H2:" + nameof(NpgsqlNodaTimeDbContextOptionsBuilderExtensions.UseNodaTime)] = "1";
 
         public override string LogFragment
             => "using NodaTime ";

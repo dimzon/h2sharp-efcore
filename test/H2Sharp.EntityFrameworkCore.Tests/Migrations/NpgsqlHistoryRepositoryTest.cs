@@ -150,7 +150,7 @@ END $EF$;
         => new TestDbContext(
                 new DbContextOptionsBuilder()
                     .UseInternalServiceProvider(NpgsqlTestHelpers.Instance.CreateServiceProvider())
-                    .UseNpgsql(
+                    .UseH2(
                         new NpgsqlConnection("Host=localhost;Database=DummyDatabase"),
                         b => b.MigrationsHistoryTable(HistoryRepository.DefaultTableName, schema))
                     .Options)

@@ -664,7 +664,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
         {
             var options = base.AddOptions(builder);
 
-            new NpgsqlDbContextOptionsBuilder(options)
+            new H2DbContextOptionsBuilder(options)
                 .MaxBatchSize(1)
                 .ExecutionStrategy(d => new TestNpgsqlRetryingExecutionStrategy(d));
 

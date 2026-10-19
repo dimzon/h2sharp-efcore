@@ -9,7 +9,7 @@ namespace H2Sharp.EntityFrameworkCore.Internal;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
-public class NpgsqlSingletonOptions : INpgsqlSingletonOptions
+public class H2SingletonOptions : IH2SingletonOptions
 {
     /// <inheritdoc />
     public virtual Version PostgresVersion { get; private set; } = null!;
@@ -60,7 +60,7 @@ public class NpgsqlSingletonOptions : INpgsqlSingletonOptions
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public NpgsqlSingletonOptions()
+    public H2SingletonOptions()
     {
         EnumDefinitions = [];
         UserRangeDefinitions = [];
@@ -69,7 +69,7 @@ public class NpgsqlSingletonOptions : INpgsqlSingletonOptions
     /// <inheritdoc />
     public virtual void Initialize(IDbContextOptions options)
     {
-        var npgsqlOptions = options.FindExtension<NpgsqlOptionsExtension>() ?? new NpgsqlOptionsExtension();
+        var npgsqlOptions = options.FindExtension<H2OptionsExtension>() ?? new H2OptionsExtension();
 
         PostgresVersion = npgsqlOptions.PostgresVersion;
         IsPostgresVersionSet = npgsqlOptions.IsPostgresVersionSet;
@@ -82,13 +82,13 @@ public class NpgsqlSingletonOptions : INpgsqlSingletonOptions
     /// <inheritdoc />
     public virtual void Validate(IDbContextOptions options)
     {
-        var npgsqlOptions = options.FindExtension<NpgsqlOptionsExtension>() ?? new NpgsqlOptionsExtension();
+        var npgsqlOptions = options.FindExtension<H2OptionsExtension>() ?? new H2OptionsExtension();
 
         if (PostgresVersion != npgsqlOptions.PostgresVersion)
         {
             throw new InvalidOperationException(
                 CoreStrings.SingletonOptionChanged(
-                    nameof(NpgsqlDbContextOptionsBuilder.SetPostgresVersion),
+                    nameof(H2DbContextOptionsBuilder.SetPostgresVersion),
                     nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
         }
 
@@ -96,7 +96,7 @@ public class NpgsqlSingletonOptions : INpgsqlSingletonOptions
         {
             throw new InvalidOperationException(
                 CoreStrings.SingletonOptionChanged(
-                    nameof(NpgsqlDbContextOptionsBuilder.UseRedshift),
+                    nameof(H2DbContextOptionsBuilder.UseRedshift),
                     nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
         }
 
@@ -104,7 +104,7 @@ public class NpgsqlSingletonOptions : INpgsqlSingletonOptions
         {
             throw new InvalidOperationException(
                 CoreStrings.SingletonOptionChanged(
-                    nameof(NpgsqlDbContextOptionsBuilder.ReverseNullOrdering),
+                    nameof(H2DbContextOptionsBuilder.ReverseNullOrdering),
                     nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
         }
 
@@ -112,7 +112,7 @@ public class NpgsqlSingletonOptions : INpgsqlSingletonOptions
         {
             throw new InvalidOperationException(
                 CoreStrings.SingletonOptionChanged(
-                    nameof(NpgsqlDbContextOptionsBuilder.MapEnum),
+                    nameof(H2DbContextOptionsBuilder.MapEnum),
                     nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
         }
 
@@ -120,7 +120,7 @@ public class NpgsqlSingletonOptions : INpgsqlSingletonOptions
         {
             throw new InvalidOperationException(
                 CoreStrings.SingletonOptionChanged(
-                    nameof(NpgsqlDbContextOptionsBuilder.MapRange),
+                    nameof(H2DbContextOptionsBuilder.MapRange),
                     nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
         }
     }

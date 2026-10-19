@@ -7,7 +7,7 @@ public class NpgsqlApiConsistencyTest(NpgsqlApiConsistencyTest.NpgsqlApiConsiste
     : ApiConsistencyTestBase<NpgsqlApiConsistencyTest.NpgsqlApiConsistencyFixture>(fixture)
 {
     protected override void AddServices(ServiceCollection serviceCollection)
-        => serviceCollection.AddEntityFrameworkNpgsql();
+        => serviceCollection.AddEntityFrameworkH2();
 
     protected override Assembly TargetAssembly
         => typeof(NpgsqlRelationalConnection).Assembly;
@@ -16,14 +16,14 @@ public class NpgsqlApiConsistencyTest(NpgsqlApiConsistencyTest.NpgsqlApiConsiste
     {
         public override HashSet<Type> FluentApiTypes { get; } =
         [
-            typeof(NpgsqlDbContextOptionsBuilder),
-            typeof(NpgsqlDbContextOptionsBuilderExtensions),
+            typeof(H2DbContextOptionsBuilder),
+            typeof(H2DbContextOptionsBuilderExtensions),
             typeof(NpgsqlMigrationBuilderExtensions),
             typeof(NpgsqlIndexBuilderExtensions),
             typeof(NpgsqlModelBuilderExtensions),
             typeof(NpgsqlPropertyBuilderExtensions),
             typeof(NpgsqlEntityTypeBuilderExtensions),
-            typeof(NpgsqlServiceCollectionExtensions)
+            typeof(H2ServiceCollectionExtensions)
         ];
 
         public override HashSet<MethodInfo> UnmatchedMetadataMethods { get; } =

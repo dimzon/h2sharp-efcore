@@ -6,14 +6,14 @@ namespace H2Sharp.EntityFrameworkCore.Infrastructure;
 /// <summary>
 ///     Allows for options specific to PostgreSQL to be configured for a <see cref="DbContext" />.
 /// </summary>
-public class NpgsqlDbContextOptionsBuilder
-    : RelationalDbContextOptionsBuilder<NpgsqlDbContextOptionsBuilder, NpgsqlOptionsExtension>
+public class H2DbContextOptionsBuilder
+    : RelationalDbContextOptionsBuilder<H2DbContextOptionsBuilder, H2OptionsExtension>
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="NpgsqlDbContextOptionsBuilder" /> class.
+    ///     Initializes a new instance of the <see cref="H2DbContextOptionsBuilder" /> class.
     /// </summary>
     /// <param name="optionsBuilder"> The core options builder.</param>
-    public NpgsqlDbContextOptionsBuilder(DbContextOptionsBuilder optionsBuilder)
+    public H2DbContextOptionsBuilder(DbContextOptionsBuilder optionsBuilder)
         : base(optionsBuilder)
     {
     }
@@ -28,21 +28,21 @@ public class NpgsqlDbContextOptionsBuilder
     ///     to <see cref="ConfigureDataSource" />. Either make sure that <see cref="ConfigureDataSource" /> always sets the same
     ///     configuration, or pass externally-provided, pre-configured data source instances when configuring the provider.
     /// </remarks>
-    public virtual NpgsqlDbContextOptionsBuilder ConfigureDataSource(Action<NpgsqlDataSourceBuilder> dataSourceBuilderAction)
+    public virtual H2DbContextOptionsBuilder ConfigureDataSource(Action<NpgsqlDataSourceBuilder> dataSourceBuilderAction)
         => WithOption(e => e.WithDataSourceConfiguration(dataSourceBuilderAction));
 
     /// <summary>
     ///     Connect to this database for administrative operations (creating/dropping databases).
     /// </summary>
     /// <param name="dbName">The name of the database for administrative operations.</param>
-    public virtual NpgsqlDbContextOptionsBuilder UseAdminDatabase(string? dbName)
+    public virtual H2DbContextOptionsBuilder UseAdminDatabase(string? dbName)
         => WithOption(e => e.WithAdminDatabase(dbName));
 
     /// <summary>
     ///     Configures the backend version to target.
     /// </summary>
     /// <param name="postgresVersion">The backend version to target.</param>
-    public virtual NpgsqlDbContextOptionsBuilder SetPostgresVersion(Version? postgresVersion)
+    public virtual H2DbContextOptionsBuilder SetPostgresVersion(Version? postgresVersion)
         => WithOption(e => e.WithPostgresVersion(postgresVersion));
 
     /// <summary>
@@ -50,7 +50,7 @@ public class NpgsqlDbContextOptionsBuilder
     /// </summary>
     /// <param name="major">The PostgreSQL major version to target.</param>
     /// <param name="minor">The PostgreSQL minor version to target.</param>
-    public virtual NpgsqlDbContextOptionsBuilder SetPostgresVersion(int major, int minor)
+    public virtual H2DbContextOptionsBuilder SetPostgresVersion(int major, int minor)
         => SetPostgresVersion(new Version(major, minor));
 
     /// <summary>
@@ -58,7 +58,7 @@ public class NpgsqlDbContextOptionsBuilder
     ///     PostgreSQL versions.
     /// </summary>
     /// <param name="useRedshift">Whether to target Redshift.</param>
-    public virtual NpgsqlDbContextOptionsBuilder UseRedshift(bool useRedshift = true)
+    public virtual H2DbContextOptionsBuilder UseRedshift(bool useRedshift = true)
         => WithOption(e => e.WithRedshift(useRedshift));
 
     #region MapRange
@@ -80,7 +80,7 @@ public class NpgsqlDbContextOptionsBuilder
     ///     To map a range of PostgreSQL real, use the following:
     ///     <code>NpgsqlTypeMappingSource.MapRange{float}("floatrange");</code>
     /// </example>
-    public virtual NpgsqlDbContextOptionsBuilder MapRange<TSubtype>(
+    public virtual H2DbContextOptionsBuilder MapRange<TSubtype>(
         string rangeName,
         string? schemaName = null,
         string? subtypeName = null)
@@ -103,7 +103,7 @@ public class NpgsqlDbContextOptionsBuilder
     ///     To map a range of PostgreSQL real, use the following:
     ///     <code>NpgsqlTypeMappingSource.MapRange("floatrange", typeof(float));</code>
     /// </example>
-    public virtual NpgsqlDbContextOptionsBuilder MapRange(
+    public virtual H2DbContextOptionsBuilder MapRange(
         string rangeName,
         Type subtypeClrType,
         string? schemaName = null,
@@ -120,7 +120,7 @@ public class NpgsqlDbContextOptionsBuilder
     /// <param name="enumName">The name of the PostgreSQL enum type to be mapped.</param>
     /// <param name="schemaName">The name of the PostgreSQL schema in which the range is defined.</param>
     /// <param name="nameTranslator">The name translator used to map enum value names to PostgreSQL enum values.</param>
-    public virtual NpgsqlDbContextOptionsBuilder MapEnum<T>(
+    public virtual H2DbContextOptionsBuilder MapEnum<T>(
         string? enumName = null,
         string? schemaName = null,
         INpgsqlNameTranslator? nameTranslator = null)
@@ -134,7 +134,7 @@ public class NpgsqlDbContextOptionsBuilder
     /// <param name="enumName">The name of the PostgreSQL enum type to be mapped.</param>
     /// <param name="schemaName">The name of the PostgreSQL schema in which the range is defined.</param>
     /// <param name="nameTranslator">The name translator used to map enum value names to PostgreSQL enum values.</param>
-    public virtual NpgsqlDbContextOptionsBuilder MapEnum(
+    public virtual H2DbContextOptionsBuilder MapEnum(
         Type clrType,
         string? enumName = null,
         string? schemaName = null,
@@ -149,7 +149,7 @@ public class NpgsqlDbContextOptionsBuilder
     ///     accordingly, and since this isn't done this feature isn't publicly exposed.
     /// </summary>
     /// <param name="reverseNullOrdering">True to enable reverse null ordering; otherwise, false.</param>
-    internal virtual NpgsqlDbContextOptionsBuilder ReverseNullOrdering(bool reverseNullOrdering = true)
+    internal virtual H2DbContextOptionsBuilder ReverseNullOrdering(bool reverseNullOrdering = true)
         => WithOption(e => e.WithReverseNullOrdering(reverseNullOrdering));
 
     #region Authentication (obsolete)
@@ -158,24 +158,24 @@ public class NpgsqlDbContextOptionsBuilder
     ///     Configures the <see cref="DbContext" /> to use the specified <see cref="ProvideClientCertificatesCallback" />.
     /// </summary>
     /// <param name="callback">The callback to use.</param>
-    [Obsolete("Call ConfigureDataSource() and configure the client certificates on the NpgsqlDataSourceBuilder, or pass an externally-built, pre-configured NpgsqlDataSource to UseNpgsql().")]
-    public virtual NpgsqlDbContextOptionsBuilder ProvideClientCertificatesCallback(ProvideClientCertificatesCallback? callback)
+    [Obsolete("Call ConfigureDataSource() and configure the client certificates on the NpgsqlDataSourceBuilder, or pass an externally-built, pre-configured NpgsqlDataSource to UseH2().")]
+    public virtual H2DbContextOptionsBuilder ProvideClientCertificatesCallback(ProvideClientCertificatesCallback? callback)
         => WithOption(e => e.WithProvideClientCertificatesCallback(callback));
 
     /// <summary>
     ///     Configures the <see cref="DbContext" /> to use the specified <see cref="RemoteCertificateValidationCallback" />.
     /// </summary>
     /// <param name="callback">The callback to use.</param>
-    [Obsolete("Call ConfigureDataSource() and configure remote certificate validation on the NpgsqlDataSourceBuilder, or pass an externally-built, pre-configured NpgsqlDataSource to UseNpgsql().")]
-    public virtual NpgsqlDbContextOptionsBuilder RemoteCertificateValidationCallback(RemoteCertificateValidationCallback? callback)
+    [Obsolete("Call ConfigureDataSource() and configure remote certificate validation on the NpgsqlDataSourceBuilder, or pass an externally-built, pre-configured NpgsqlDataSource to UseH2().")]
+    public virtual H2DbContextOptionsBuilder RemoteCertificateValidationCallback(RemoteCertificateValidationCallback? callback)
         => WithOption(e => e.WithRemoteCertificateValidationCallback(callback));
 
     /// <summary>
     ///     Configures the <see cref="DbContext" /> to use the specified <see cref="ProvidePasswordCallback" />.
     /// </summary>
     /// <param name="callback">The callback to use.</param>
-    [Obsolete("Call ConfigureDataSource() and configure the password callback on the NpgsqlDataSourceBuilder, or pass an externally-built, pre-configured NpgsqlDataSource to UseNpgsql().")]
-    public virtual NpgsqlDbContextOptionsBuilder ProvidePasswordCallback(ProvidePasswordCallback? callback)
+    [Obsolete("Call ConfigureDataSource() and configure the password callback on the NpgsqlDataSourceBuilder, or pass an externally-built, pre-configured NpgsqlDataSource to UseH2().")]
+    public virtual H2DbContextOptionsBuilder ProvidePasswordCallback(ProvidePasswordCallback? callback)
         => WithOption(e => e.WithProvidePasswordCallback(callback));
 
     #endregion Authentication (obsolete)
@@ -186,19 +186,19 @@ public class NpgsqlDbContextOptionsBuilder
     ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.
     /// </summary>
     /// <returns>
-    ///     An instance of <see cref="NpgsqlDbContextOptionsBuilder" /> configured to use
+    ///     An instance of <see cref="H2DbContextOptionsBuilder" /> configured to use
     ///     the default retrying <see cref="IExecutionStrategy" />.
     /// </returns>
-    public virtual NpgsqlDbContextOptionsBuilder EnableRetryOnFailure()
+    public virtual H2DbContextOptionsBuilder EnableRetryOnFailure()
         => ExecutionStrategy(c => new NpgsqlRetryingExecutionStrategy(c));
 
     /// <summary>
     ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.
     /// </summary>
     /// <returns>
-    ///     An instance of <see cref="NpgsqlDbContextOptionsBuilder" /> with the specified parameters.
+    ///     An instance of <see cref="H2DbContextOptionsBuilder" /> with the specified parameters.
     /// </returns>
-    public virtual NpgsqlDbContextOptionsBuilder EnableRetryOnFailure(int maxRetryCount)
+    public virtual H2DbContextOptionsBuilder EnableRetryOnFailure(int maxRetryCount)
         => ExecutionStrategy(c => new NpgsqlRetryingExecutionStrategy(c, maxRetryCount));
 
     /// <summary>
@@ -206,9 +206,9 @@ public class NpgsqlDbContextOptionsBuilder
     /// </summary>
     /// <param name="errorCodesToAdd">Additional error codes that should be considered transient.</param>
     /// <returns>
-    ///     An instance of <see cref="NpgsqlDbContextOptionsBuilder" /> with the specified parameters.
+    ///     An instance of <see cref="H2DbContextOptionsBuilder" /> with the specified parameters.
     /// </returns>
-    public virtual NpgsqlDbContextOptionsBuilder EnableRetryOnFailure(ICollection<string>? errorCodesToAdd)
+    public virtual H2DbContextOptionsBuilder EnableRetryOnFailure(ICollection<string>? errorCodesToAdd)
         => ExecutionStrategy(c => new NpgsqlRetryingExecutionStrategy(c, errorCodesToAdd));
 
     /// <summary>
@@ -218,9 +218,9 @@ public class NpgsqlDbContextOptionsBuilder
     /// <param name="maxRetryDelay">The maximum delay between retries.</param>
     /// <param name="errorCodesToAdd">Additional error codes that should be considered transient.</param>
     /// <returns>
-    ///     An instance of <see cref="NpgsqlDbContextOptionsBuilder" /> with the specified parameters.
+    ///     An instance of <see cref="H2DbContextOptionsBuilder" /> with the specified parameters.
     /// </returns>
-    public virtual NpgsqlDbContextOptionsBuilder EnableRetryOnFailure(
+    public virtual H2DbContextOptionsBuilder EnableRetryOnFailure(
         int maxRetryCount,
         TimeSpan maxRetryDelay,
         ICollection<string>? errorCodesToAdd)

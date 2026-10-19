@@ -76,8 +76,8 @@ public class PostgresCollation
 
     private static string BuildAnnotationName(string? schema, string name)
         => schema is not null
-            ? $"{NpgsqlAnnotationNames.CollationDefinitionPrefix}{schema}.{name}"
-            : $"{NpgsqlAnnotationNames.CollationDefinitionPrefix}{name}";
+            ? $"{H2AnnotationNames.CollationDefinitionPrefix}{schema}.{name}"
+            : $"{H2AnnotationNames.CollationDefinitionPrefix}{name}";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -88,7 +88,7 @@ public class PostgresCollation
     public static IEnumerable<PostgresCollation> GetCollations(IReadOnlyAnnotatable annotatable)
         => Check.NotNull(annotatable, nameof(annotatable))
             .GetAnnotations()
-            .Where(a => a.Name.StartsWith(NpgsqlAnnotationNames.CollationDefinitionPrefix, StringComparison.Ordinal))
+            .Where(a => a.Name.StartsWith(H2AnnotationNames.CollationDefinitionPrefix, StringComparison.Ordinal))
             .Select(a => new PostgresCollation(annotatable, a.Name));
 
     /// <summary>
@@ -201,7 +201,7 @@ public class PostgresCollation
 
         // TODO: This would be a safer operation if we stored schema and name in the annotation value (see Sequence.cs).
         // Yes, this doesn't support dots in the schema/collation name, let somebody complain first.
-        var schemaAndName = annotation.Name.Substring(NpgsqlAnnotationNames.CollationDefinitionPrefix.Length).Split('.');
+        var schemaAndName = annotation.Name.Substring(H2AnnotationNames.CollationDefinitionPrefix.Length).Split('.');
         switch (schemaAndName.Length)
         {
             case 1:

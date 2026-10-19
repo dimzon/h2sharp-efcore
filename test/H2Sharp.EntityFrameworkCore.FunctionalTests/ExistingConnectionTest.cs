@@ -17,7 +17,7 @@ public class ExistingConnectionTest
     private static async Task Can_use_an_existing_closed_connection_test(bool openConnection)
     {
         var serviceProvider = new ServiceCollection()
-            .AddEntityFrameworkNpgsql()
+            .AddEntityFrameworkH2()
             .BuildServiceProvider();
 
         await using (var store = await NpgsqlTestStore.GetNorthwindStoreAsync())
@@ -77,7 +77,7 @@ public class ExistingConnectionTest
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseNpgsql(_connection)
+                .UseH2(_connection)
                 .UseInternalServiceProvider(_serviceProvider);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

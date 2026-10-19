@@ -17,12 +17,12 @@ public static class NpgsqlNetTopologySuiteServiceCollectionExtensions
     /// </summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <returns>The same service collection so that multiple calls can be chained.</returns>
-    public static IServiceCollection AddEntityFrameworkNpgsqlNetTopologySuite(
+    public static IServiceCollection AddEntityFrameworkH2NetTopologySuite(
         this IServiceCollection serviceCollection)
     {
         Check.NotNull(serviceCollection, nameof(serviceCollection));
 
-        new EntityFrameworkNpgsqlServicesBuilder(serviceCollection)
+        new EntityFrameworkH2ServicesBuilder(serviceCollection)
             .TryAdd<INpgsqlDataSourceConfigurationPlugin, NetTopologySuiteDataSourceConfigurationPlugin>()
             .TryAdd<ISingletonOptions, INpgsqlNetTopologySuiteSingletonOptions>(p => p.GetRequiredService<INpgsqlNetTopologySuiteSingletonOptions>())
             .TryAdd<IRelationalTypeMappingSourcePlugin, NpgsqlNetTopologySuiteTypeMappingSourcePlugin>()

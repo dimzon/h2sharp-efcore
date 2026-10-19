@@ -16,12 +16,12 @@ public static class NpgsqlNodaTimeServiceCollectionExtensions
     /// </summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <returns>The same service collection so that multiple calls can be chained.</returns>
-    public static IServiceCollection AddEntityFrameworkNpgsqlNodaTime(
+    public static IServiceCollection AddEntityFrameworkH2NodaTime(
         this IServiceCollection serviceCollection)
     {
         Check.NotNull(serviceCollection, nameof(serviceCollection));
 
-        new EntityFrameworkNpgsqlServicesBuilder(serviceCollection)
+        new EntityFrameworkH2ServicesBuilder(serviceCollection)
             .TryAdd<INpgsqlDataSourceConfigurationPlugin, NodaTimeDataSourceConfigurationPlugin>()
             .TryAdd<IRelationalTypeMappingSourcePlugin, NpgsqlNodaTimeTypeMappingSourcePlugin>()
             .TryAdd<IMethodCallTranslatorPlugin, NpgsqlNodaTimeMethodCallTranslatorPlugin>()

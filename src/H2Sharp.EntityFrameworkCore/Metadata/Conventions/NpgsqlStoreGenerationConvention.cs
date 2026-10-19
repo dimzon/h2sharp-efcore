@@ -73,7 +73,7 @@ public class NpgsqlStoreGenerationConvention : StoreGenerationConvention
                 }
 
                 break;
-            case NpgsqlAnnotationNames.ValueGenerationStrategy:
+            case H2AnnotationNames.ValueGenerationStrategy:
                 if (((propertyBuilder.Metadata.GetValueGenerationStrategy() != NpgsqlValueGenerationStrategy.Sequence
                             && (propertyBuilder.HasDefaultValue(null, fromDataAnnotation) == null
                                 || propertyBuilder.HasDefaultValueSql(null, fromDataAnnotation) == null

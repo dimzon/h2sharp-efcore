@@ -16,7 +16,7 @@ public abstract class TransactionInterceptionNpgsqlTestBase(TransactionIntercept
         protected override IServiceCollection InjectInterceptors(
             IServiceCollection serviceCollection,
             IEnumerable<IInterceptor> injectedInterceptors)
-            => base.InjectInterceptors(serviceCollection.AddEntityFrameworkNpgsql(), injectedInterceptors);
+            => base.InjectInterceptors(serviceCollection.AddEntityFrameworkH2(), injectedInterceptors);
     }
 
     public class TransactionInterceptionNpgsqlTest(TransactionInterceptionNpgsqlTest.InterceptionNpgsqlFixture fixture)

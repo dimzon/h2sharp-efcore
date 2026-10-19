@@ -23,7 +23,7 @@ public class TransactionNpgsqlTest(TransactionNpgsqlTest.TransactionNpgsqlFixtur
     {
         var options = Fixture.AddOptions(
                 new DbContextOptionsBuilder()
-                    .UseNpgsql(
+                    .UseH2(
                         TestStore.ConnectionString,
                         b => b.ApplyConfiguration()
                             .ExecutionStrategy(c => new NpgsqlExecutionStrategy(c))
@@ -100,7 +100,7 @@ public class TransactionNpgsqlTest(TransactionNpgsqlTest.TransactionNpgsqlFixtur
 
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
         {
-            new NpgsqlDbContextOptionsBuilder(
+            new H2DbContextOptionsBuilder(
                     base.AddOptions(builder))
                 .ExecutionStrategy(c => new NpgsqlExecutionStrategy(c));
             return builder;

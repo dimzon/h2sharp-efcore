@@ -48,7 +48,7 @@ public class NpgsqlRelationalConnection : RelationalConnection, INpgsqlRelationa
         : this(
             dependencies,
             dataSourceManager.GetDataSource(
-                options.FindExtension<NpgsqlOptionsExtension>(),
+                options.FindExtension<H2OptionsExtension>(),
                 options.FindExtension<CoreOptionsExtension>()?.ApplicationServiceProvider))
     {
     }
@@ -67,8 +67,8 @@ public class NpgsqlRelationalConnection : RelationalConnection, INpgsqlRelationa
             DataSource = dataSource;
 
 #if DEBUG
-            // We validate in NpgsqlOptionsExtensions.Validate that DataSource and these callbacks aren't specified together
-            if (dependencies.ContextOptions.FindExtension<NpgsqlOptionsExtension>() is { } npgsqlOptions)
+            // We validate in H2OptionsExtensions.Validate that DataSource and these callbacks aren't specified together
+            if (dependencies.ContextOptions.FindExtension<H2OptionsExtension>() is { } npgsqlOptions)
             {
                 Check.DebugAssert(
                     npgsqlOptions?.ProvideClientCertificatesCallback is null,
@@ -82,7 +82,7 @@ public class NpgsqlRelationalConnection : RelationalConnection, INpgsqlRelationa
             }
 #endif
         }
-        else if (dependencies.ContextOptions.FindExtension<NpgsqlOptionsExtension>() is { } npgsqlOptions)
+        else if (dependencies.ContextOptions.FindExtension<H2OptionsExtension>() is { } npgsqlOptions)
         {
             _provideClientCertificatesCallback = npgsqlOptions.ProvideClientCertificatesCallback;
             _remoteCertificateValidationCallback = npgsqlOptions.RemoteCertificateValidationCallback;
@@ -190,9 +190,9 @@ public class NpgsqlRelationalConnection : RelationalConnection, INpgsqlRelationa
     /// </summary>
     public virtual INpgsqlRelationalConnection CreateAdminConnection()
     {
-        if (Dependencies.ContextOptions.FindExtension<NpgsqlOptionsExtension>() is not { } npgsqlOptions)
+        if (Dependencies.ContextOptions.FindExtension<H2OptionsExtension>() is not { } npgsqlOptions)
         {
-            throw new InvalidOperationException($"{nameof(NpgsqlOptionsExtension)} not found in {nameof(CreateAdminConnection)}");
+            throw new InvalidOperationException($"{nameof(H2OptionsExtension)} not found in {nameof(CreateAdminConnection)}");
         }
 
         var adminConnectionString = new NpgsqlConnectionStringBuilder(ConnectionString)

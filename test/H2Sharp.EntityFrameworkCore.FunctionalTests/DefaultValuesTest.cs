@@ -7,7 +7,7 @@ namespace H2Sharp.EntityFrameworkCore;
 public class DefaultValuesTest : IDisposable
 {
     private readonly IServiceProvider _serviceProvider = new ServiceCollection()
-        .AddEntityFrameworkNpgsql()
+        .AddEntityFrameworkH2()
         .BuildServiceProvider();
 
     [Fact]
@@ -53,7 +53,7 @@ public class DefaultValuesTest : IDisposable
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseNpgsql(
+                .UseH2(
                     NpgsqlTestStore.CreateConnectionString(_databaseName),
                     o => o.SetPostgresVersion(TestEnvironment.PostgresVersion))
                 .UseInternalServiceProvider(_serviceProvider);

@@ -186,7 +186,7 @@ namespace H2Sharp.EntityFrameworkCore.Migrations
             {
                 var options = AddOptions(
                         TestStore.AddProviderOptions(new DbContextOptionsBuilder())
-                            .UseNpgsql(
+                            .UseH2(
                                 TestStore.ConnectionString, b => b.ApplyConfiguration()
                                     .SetPostgresVersion(TestEnvironment.PostgresVersion)))
                     .UseInternalServiceProvider(ServiceProvider)
@@ -220,7 +220,7 @@ namespace ModelSnapshot22
     public class BloggingContext : DbContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql(TestEnvironment.DefaultConnection);
+            => optionsBuilder.UseH2(TestEnvironment.DefaultConnection);
 
         public DbSet<Blog> Blogs { get; set; }
     }

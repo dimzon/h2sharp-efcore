@@ -3,7 +3,7 @@ namespace H2Sharp.EntityFrameworkCore.Infrastructure;
 /// <summary>
 ///     A builder API designed for Npgsql when registering services.
 /// </summary>
-public class EntityFrameworkNpgsqlServicesBuilder : EntityFrameworkRelationalServicesBuilder
+public class EntityFrameworkH2ServicesBuilder : EntityFrameworkRelationalServicesBuilder
 {
     private static readonly IDictionary<Type, ServiceCharacteristics> NpgsqlServices
         = new Dictionary<Type, ServiceCharacteristics>
@@ -19,7 +19,7 @@ public class EntityFrameworkNpgsqlServicesBuilder : EntityFrameworkRelationalSer
     ///     registration of provider services.
     /// </summary>
     /// <param name="serviceCollection">The collection to which services will be registered.</param>
-    public EntityFrameworkNpgsqlServicesBuilder(IServiceCollection serviceCollection)
+    public EntityFrameworkH2ServicesBuilder(IServiceCollection serviceCollection)
         : base(serviceCollection)
     {
     }

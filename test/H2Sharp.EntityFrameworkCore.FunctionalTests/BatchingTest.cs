@@ -260,7 +260,7 @@ public class BatchingTest(BatchingTest.BatchingTestFixture fixture) : IClassFixt
         public DbContext CreateContext(int minBatchSize)
         {
             var optionsBuilder = new DbContextOptionsBuilder(CreateOptions());
-            new NpgsqlDbContextOptionsBuilder(optionsBuilder).MinBatchSize(minBatchSize);
+            new H2DbContextOptionsBuilder(optionsBuilder).MinBatchSize(minBatchSize);
             return new BloggingContext(optionsBuilder.Options);
         }
     }

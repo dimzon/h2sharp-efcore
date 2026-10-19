@@ -773,7 +773,7 @@ WHERE @__lineString_0 IN (
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
         {
             var optionsBuilder = base.AddOptions(builder);
-            new NpgsqlDbContextOptionsBuilder(optionsBuilder).UseNetTopologySuite();
+            new H2DbContextOptionsBuilder(optionsBuilder).UseNetTopologySuite();
 
             return optionsBuilder;
         }

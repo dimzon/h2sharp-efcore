@@ -191,7 +191,7 @@ public class NpgsqlTypeMappingSource : RelationalTypeMappingSource
         TypeMappingSourceDependencies dependencies,
         RelationalTypeMappingSourceDependencies relationalDependencies,
         ISqlGenerationHelper sqlGenerationHelper,
-        INpgsqlSingletonOptions options)
+        IH2SingletonOptions options)
         : base(dependencies, relationalDependencies)
     {
         _supportsMultiranges = options.PostgresVersion.AtLeast(14);

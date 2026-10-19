@@ -5,7 +5,7 @@ public class NpgsqlNetTopologySuiteApiConsistencyTest(
     : ApiConsistencyTestBase<NpgsqlNetTopologySuiteApiConsistencyTest.NpgsqlNetTopologySuiteApiConsistencyFixture>(fixture)
 {
     protected override void AddServices(ServiceCollection serviceCollection)
-        => serviceCollection.AddEntityFrameworkNpgsqlNetTopologySuite();
+        => serviceCollection.AddEntityFrameworkH2NetTopologySuite();
 
     protected override Assembly TargetAssembly
         => typeof(NpgsqlNetTopologySuiteServiceCollectionExtensions).Assembly;

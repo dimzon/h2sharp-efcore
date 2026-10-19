@@ -9,10 +9,10 @@ public class NpgsqlTestHelpers : RelationalTestHelpers
     public static NpgsqlTestHelpers Instance { get; } = new();
 
     public override IServiceCollection AddProviderServices(IServiceCollection services)
-        => services.AddEntityFrameworkNpgsql();
+        => services.AddEntityFrameworkH2();
 
     public override DbContextOptionsBuilder UseProviderOptions(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql(new NpgsqlConnection("Host=localhost;Database=DummyDatabase"));
+        => optionsBuilder.UseH2(new NpgsqlConnection("Host=localhost;Database=DummyDatabase"));
 
     public override LoggingDefinitions LoggingDefinitions { get; } = new NpgsqlLoggingDefinitions();
 }

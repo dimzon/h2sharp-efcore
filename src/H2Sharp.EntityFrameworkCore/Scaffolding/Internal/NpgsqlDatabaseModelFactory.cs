@@ -250,7 +250,7 @@ WHERE
                 {
                     if (storageParameter.Split("=") is [var paramName, var paramValue])
                     {
-                        table[NpgsqlAnnotationNames.StorageParameterPrefix + paramName] = paramValue;
+                        table[H2AnnotationNames.StorageParameterPrefix + paramName] = paramValue;
                     }
                 }
 
@@ -409,11 +409,11 @@ ORDER BY attnum
                 switch (record.GetFieldValue<string>("attidentity"))
                 {
                     case "a":
-                        column[NpgsqlAnnotationNames.ValueGenerationStrategy] = NpgsqlValueGenerationStrategy.IdentityAlwaysColumn;
+                        column[H2AnnotationNames.ValueGenerationStrategy] = NpgsqlValueGenerationStrategy.IdentityAlwaysColumn;
                         isIdentity = true;
                         break;
                     case "d":
-                        column[NpgsqlAnnotationNames.ValueGenerationStrategy] = NpgsqlValueGenerationStrategy.IdentityByDefaultColumn;
+                        column[H2AnnotationNames.ValueGenerationStrategy] = NpgsqlValueGenerationStrategy.IdentityByDefaultColumn;
                         isIdentity = true;
                         break;
                     default:
@@ -437,14 +437,14 @@ ORDER BY attnum
                                 column.DefaultValueSql = null;
                                 // Serial is the default value generation strategy, so NpgsqlAnnotationCodeGenerator
                                 // makes sure it isn't actually rendered
-                                column[NpgsqlAnnotationNames.ValueGenerationStrategy] = NpgsqlValueGenerationStrategy.SerialColumn;
+                                column[H2AnnotationNames.ValueGenerationStrategy] = NpgsqlValueGenerationStrategy.SerialColumn;
                             }
                         }
 
                         break;
                 }
 
-                if (column[NpgsqlAnnotationNames.ValueGenerationStrategy] is not null)
+                if (column[H2AnnotationNames.ValueGenerationStrategy] is not null)
                 {
                     column.ValueGenerated = ValueGenerated.OnAdd;
                 }
@@ -465,7 +465,7 @@ ORDER BY attnum
 
                     if (!sequenceData.Equals(IdentitySequenceOptionsData.Empty))
                     {
-                        column[NpgsqlAnnotationNames.IdentityOptions] = sequenceData.Serialize();
+                        column[H2AnnotationNames.IdentityOptions] = sequenceData.Serialize();
                     }
                 }
 
@@ -481,7 +481,7 @@ ORDER BY attnum
 
                 if (record.GetValueOrDefault<string>("attcompression") is { } compressionMethodChar)
                 {
-                    column[NpgsqlAnnotationNames.CompressionMethod] = compressionMethodChar switch
+                    column[H2AnnotationNames.CompressionMethod] = compressionMethodChar switch
                     {
                         "p" => "pglz",
                         "l" => "lz4",
@@ -675,7 +675,7 @@ WHERE
                         var expressions = record.GetValueOrDefault<string>("exprs");
                         if (expressions is null)
                             throw new Exception($"Seen 0 in indkey for index {index.Name} but indexprs is null");
-                        index[NpgsqlAnnotationNames.IndexExpression] = expressions;
+                        index[H2AnnotationNames.IndexExpression] = expressions;
                         */
                     }
 
@@ -711,7 +711,7 @@ WHERE
                         }
 
                         // Scaffolding included/covered properties is currently blocked, see #2194
-                        // index[NpgsqlAnnotationNames.IndexInclude] = nonKeyColumns.ToArray();
+                        // index[H2AnnotationNames.IndexInclude] = nonKeyColumns.ToArray();
                     }
 
                     if (record.GetValueOrDefault<string>("pred") is { } predicate)
@@ -726,7 +726,7 @@ WHERE
                     // the annotation from the model entirely.
                     if (record.GetValueOrDefault<string>("amname") is { } indexMethod && indexMethod != "btree")
                     {
-                        index[NpgsqlAnnotationNames.IndexMethod] = indexMethod;
+                        index[H2AnnotationNames.IndexMethod] = indexMethod;
                     }
 
                     // Handle index operator classes, which we pre-loaded
@@ -737,7 +737,7 @@ WHERE
 
                     if (opClassNames.Any(op => op is not null))
                     {
-                        index[NpgsqlAnnotationNames.IndexOperators] = opClassNames;
+                        index[H2AnnotationNames.IndexOperators] = opClassNames;
                     }
 
                     var columnCollations = record
@@ -765,20 +765,20 @@ WHERE
 
                         if (!SortOrderHelper.IsDefaultNullSortOrder(nullSortOrders, isDescending))
                         {
-                            index[NpgsqlAnnotationNames.IndexNullSortOrder] = nullSortOrders;
+                            index[H2AnnotationNames.IndexNullSortOrder] = nullSortOrders;
                         }
                     }
 
                     if (record.GetValueOrDefault<bool>("indnullsnotdistinct"))
                     {
-                        index[NpgsqlAnnotationNames.NullsDistinct] = false;
+                        index[H2AnnotationNames.NullsDistinct] = false;
                     }
 
                     foreach (var storageParameter in record.GetValueOrDefault<string[]>("idx_reloptions") ?? [])
                     {
                         if (storageParameter.Split("=") is [var paramName, var paramValue])
                         {
-                            index[NpgsqlAnnotationNames.StorageParameterPrefix + paramName] = paramValue;
+                            index[H2AnnotationNames.StorageParameterPrefix + paramName] = paramValue;
                         }
                     }
 

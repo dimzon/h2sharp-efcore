@@ -17,5 +17,5 @@ public class NpgsqlTestStoreFactory(
         => new NpgsqlTestStore(storeName, scriptPath, additionalSql, connectionStringOptions, shared: true, useConnectionString);
 
     public override IServiceCollection AddProviderServices(IServiceCollection serviceCollection)
-        => serviceCollection.AddEntityFrameworkNpgsql();
+        => serviceCollection.AddEntityFrameworkH2();
 }

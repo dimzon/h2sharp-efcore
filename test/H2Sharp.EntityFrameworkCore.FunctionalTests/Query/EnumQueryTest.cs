@@ -316,7 +316,7 @@ WHERE s."UppercaseNamedEnum" = ANY (@__values_0)
         protected override string StoreName
             => "EnumQueryTest";
 
-        // We instruct the test store to pass a connection string to UseNpgsql() instead of a DbConnection - that's required to allow
+        // We instruct the test store to pass a connection string to UseH2() instead of a DbConnection - that's required to allow
         // EF's UseNodaTime() to function properly and instantiate an NpgsqlDataSource internally.
         protected override ITestStoreFactory TestStoreFactory
             => new NpgsqlTestStoreFactory(useConnectionString: true);
@@ -328,7 +328,7 @@ WHERE s."UppercaseNamedEnum" = ANY (@__values_0)
         {
             var optionsBuilder = base.AddOptions(builder);
 
-            new NpgsqlDbContextOptionsBuilder(optionsBuilder)
+            new H2DbContextOptionsBuilder(optionsBuilder)
                 .MapEnum<MappedEnum>("mapped_enum", "test")
                 .MapEnum<InferredEnum>("inferred_enum", "test")
                 .MapEnum<ByteEnum>("byte_enum", "test")

@@ -1977,7 +1977,7 @@ FROM "Blogs" AS b
             builder = base.AddOptions(builder);
 
             // TODO: Figure out if there's a nice way to continue using the retrying strategy
-            var npgsqlOptionsBuilder = new NpgsqlDbContextOptionsBuilder(builder);
+            var npgsqlOptionsBuilder = new H2DbContextOptionsBuilder(builder);
             npgsqlOptionsBuilder.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d));
             return builder;
         }

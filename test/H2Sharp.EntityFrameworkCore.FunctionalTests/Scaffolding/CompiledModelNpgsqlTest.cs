@@ -40,7 +40,7 @@
 //
 //     protected override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
 //     {
-//         new NpgsqlDbContextOptionsBuilder(builder).UseNetTopologySuite();
+//         new H2DbContextOptionsBuilder(builder).UseNetTopologySuite();
 //         return builder;
 //     }
 //

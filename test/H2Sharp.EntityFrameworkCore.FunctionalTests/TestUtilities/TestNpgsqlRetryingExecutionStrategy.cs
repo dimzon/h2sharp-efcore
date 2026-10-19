@@ -11,7 +11,7 @@ public class TestNpgsqlRetryingExecutionStrategy : NpgsqlRetryingExecutionStrate
             new DbContext(
                 new DbContextOptionsBuilder()
                     .EnableServiceProviderCaching(false)
-                    .UseNpgsql(TestEnvironment.DefaultConnection).Options),
+                    .UseH2(TestEnvironment.DefaultConnection).Options),
             DefaultMaxRetryCount, DefaultMaxDelay, AdditionalSqlStates)
     {
     }

@@ -569,13 +569,13 @@ public class JsonTypesNpgsqlTest : JsonTypesRelationalTestBase
     protected override ITestStoreFactory TestStoreFactory => NpgsqlTestStoreFactory.Instance;
 
     protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
-        => serviceCollection.AddEntityFrameworkNpgsqlNetTopologySuite();
+        => serviceCollection.AddEntityFrameworkH2NetTopologySuite();
 
     protected override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
     {
         // Note that the enum doesn't actually need to be created in the database, since Can_read_and_write_JSON_value doesn't access
         // the database. We just need the mapping to be picked up by H2Sharp.EntityFrameworkCore from the ADO.NET layer.
-        new NpgsqlDbContextOptionsBuilder(builder)
+        new H2DbContextOptionsBuilder(builder)
             .MapEnum<Mood>("mapped_enum", "test")
             .UseNetTopologySuite();
         return builder;

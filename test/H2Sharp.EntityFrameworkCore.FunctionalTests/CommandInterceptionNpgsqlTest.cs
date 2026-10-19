@@ -18,7 +18,7 @@ public abstract class CommandInterceptionNpgsqlTestBase(CommandInterceptionNpgsq
         protected override IServiceCollection InjectInterceptors(
             IServiceCollection serviceCollection,
             IEnumerable<IInterceptor> injectedInterceptors)
-            => base.InjectInterceptors(serviceCollection.AddEntityFrameworkNpgsql(), injectedInterceptors);
+            => base.InjectInterceptors(serviceCollection.AddEntityFrameworkH2(), injectedInterceptors);
     }
 
     public class CommandInterceptionNpgsqlTest(CommandInterceptionNpgsqlTest.InterceptionNpgsqlFixture fixture)
@@ -31,7 +31,7 @@ public abstract class CommandInterceptionNpgsqlTestBase(CommandInterceptionNpgsq
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
             {
-                new NpgsqlDbContextOptionsBuilder(base.AddOptions(builder))
+                new H2DbContextOptionsBuilder(base.AddOptions(builder))
                     .ExecutionStrategy(d => new NpgsqlExecutionStrategy(d));
                 return builder;
             }
@@ -49,7 +49,7 @@ public abstract class CommandInterceptionNpgsqlTestBase(CommandInterceptionNpgsq
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
             {
-                new NpgsqlDbContextOptionsBuilder(base.AddOptions(builder))
+                new H2DbContextOptionsBuilder(base.AddOptions(builder))
                     .ExecutionStrategy(d => new NpgsqlExecutionStrategy(d));
                 return builder;
             }

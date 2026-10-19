@@ -10,17 +10,17 @@ public class AdHocQuerySplittingQueryNpgsqlTest : AdHocQuerySplittingQueryTestBa
         DbContextOptionsBuilder optionsBuilder,
         QuerySplittingBehavior splittingBehavior)
     {
-        new NpgsqlDbContextOptionsBuilder(optionsBuilder).UseQuerySplittingBehavior(splittingBehavior);
+        new H2DbContextOptionsBuilder(optionsBuilder).UseQuerySplittingBehavior(splittingBehavior);
 
         return optionsBuilder;
     }
 
     protected override DbContextOptionsBuilder ClearQuerySplittingBehavior(DbContextOptionsBuilder optionsBuilder)
     {
-        var extension = optionsBuilder.Options.FindExtension<NpgsqlOptionsExtension>();
+        var extension = optionsBuilder.Options.FindExtension<H2OptionsExtension>();
         if (extension == null)
         {
-            extension = new NpgsqlOptionsExtension();
+            extension = new H2OptionsExtension();
         }
         else
         {

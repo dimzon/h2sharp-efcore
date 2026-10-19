@@ -325,13 +325,13 @@ public class NpgsqlTypeMappingSourceTest
     private NpgsqlTypeMappingSource CreateTypeMappingSource(Version postgresVersion = null)
     {
         var builder = new DbContextOptionsBuilder();
-        var npgsqlBuilder = new NpgsqlDbContextOptionsBuilder(builder);
+        var npgsqlBuilder = new H2DbContextOptionsBuilder(builder);
 
         npgsqlBuilder.MapRange<float>("floatrange");
         npgsqlBuilder.MapRange<DummyType>("dummyrange", subtypeName: "dummy");
         npgsqlBuilder.SetPostgresVersion(postgresVersion);
 
-        var options = new NpgsqlSingletonOptions();
+        var options = new H2SingletonOptions();
         options.Initialize(builder.Options);
 
         return new NpgsqlTypeMappingSource(

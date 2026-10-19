@@ -31,7 +31,7 @@ public class ConnectionSpecificationTest
     private class StringInOnConfiguringContext : NorthwindContextBase
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql(NpgsqlTestStore.NorthwindConnectionString, b => b.ApplyConfiguration());
+            => optionsBuilder.UseH2(NpgsqlTestStore.NorthwindConnectionString, b => b.ApplyConfiguration());
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class ConnectionSpecificationTest
     private class ConnectionInOnConfiguringContext(NpgsqlConnection connection) : NorthwindContextBase
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql(connection, b => b.ApplyConfiguration());
+            => optionsBuilder.UseH2(connection, b => b.ApplyConfiguration());
 
         public override void Dispose()
         {
@@ -72,16 +72,16 @@ public class ConnectionSpecificationTest
     private class StringInConfigContext : NorthwindContextBase
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql("Database=Crunchie", b => b.ApplyConfiguration());
+            => optionsBuilder.UseH2("Database=Crunchie", b => b.ApplyConfiguration());
     }
 
     [Fact]
-    public void Throws_if_no_connection_found_in_config_without_UseNpgsql()
+    public void Throws_if_no_connection_found_in_config_without_UseH2()
     {
         var serviceProvider = new ServiceCollection()
-            .AddDbContext<NoUseNpgsqlContext>().BuildServiceProvider();
+            .AddDbContext<NoUseH2Context>().BuildServiceProvider();
 
-        using var context = serviceProvider.GetRequiredService<NoUseNpgsqlContext>();
+        using var context = serviceProvider.GetRequiredService<NoUseH2Context>();
 
         Assert.Equal(
             CoreStrings.NoProviderConfigured,
@@ -89,11 +89,11 @@ public class ConnectionSpecificationTest
     }
 
     [Fact]
-    public void Throws_if_no_config_without_UseNpgsql()
+    public void Throws_if_no_config_without_UseH2()
     {
         var serviceProvider = new ServiceCollection()
-            .AddDbContext<NoUseNpgsqlContext>().BuildServiceProvider();
-        using var context = serviceProvider.GetRequiredService<NoUseNpgsqlContext>();
+            .AddDbContext<NoUseH2Context>().BuildServiceProvider();
+        using var context = serviceProvider.GetRequiredService<NoUseH2Context>();
 
         Assert.Equal(
             CoreStrings.NoProviderConfigured,
@@ -101,7 +101,7 @@ public class ConnectionSpecificationTest
     }
 
     // ReSharper disable once ClassNeverInstantiated.Local
-    private class NoUseNpgsqlContext : NorthwindContextBase;
+    private class NoUseH2Context : NorthwindContextBase;
 
     [Fact]
     public async Task Can_depend_on_DbContextOptions()
@@ -135,7 +135,7 @@ public class ConnectionSpecificationTest
         {
             Assert.Same(options, optionsBuilder.Options);
 
-            optionsBuilder.UseNpgsql(connection, b => b.ApplyConfiguration());
+            optionsBuilder.UseH2(connection, b => b.ApplyConfiguration());
 
             Assert.NotSame(options, optionsBuilder.Options);
         }
@@ -177,7 +177,7 @@ public class ConnectionSpecificationTest
         {
             Assert.Same(_options, optionsBuilder.Options);
 
-            optionsBuilder.UseNpgsql(NpgsqlTestStore.NorthwindConnectionString, b => b.ApplyConfiguration());
+            optionsBuilder.UseH2(NpgsqlTestStore.NorthwindConnectionString, b => b.ApplyConfiguration());
 
             Assert.NotSame(_options, optionsBuilder.Options);
         }
@@ -229,7 +229,7 @@ public class ConnectionSpecificationTest
         await using var _ = await NpgsqlTestStore.GetNorthwindStoreAsync();
 
         var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
-        optionsBuilder.UseNpgsql(dataSource, b => b.ApplyConfiguration());
+        optionsBuilder.UseH2(dataSource, b => b.ApplyConfiguration());
         await using var context = new GeneralOptionsContext(optionsBuilder.Options);
 
         var relationalConnection = context.GetService<INpgsqlRelationalConnection>();
@@ -246,7 +246,7 @@ public class ConnectionSpecificationTest
         await using var _ = await NpgsqlTestStore.GetNorthwindStoreAsync();
 
         var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
-        optionsBuilder.UseNpgsql(NpgsqlTestStore.NorthwindConnectionString, b => b.ApplyConfiguration());
+        optionsBuilder.UseH2(NpgsqlTestStore.NorthwindConnectionString, b => b.ApplyConfiguration());
         await using var context = new GeneralOptionsContext(optionsBuilder.Options);
 
         var relationalConnection = context.GetService<INpgsqlRelationalConnection>();
@@ -266,7 +266,7 @@ public class ConnectionSpecificationTest
         await using var _ = await NpgsqlTestStore.GetNorthwindStoreAsync();
 
         var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
-        optionsBuilder.UseNpgsql(connection, b => b.ApplyConfiguration());
+        optionsBuilder.UseH2(connection, b => b.ApplyConfiguration());
         await using var context = new GeneralOptionsContext(optionsBuilder.Options);
 
         var relationalConnection = context.GetService<INpgsqlRelationalConnection>();

@@ -34,14 +34,14 @@ public abstract class ConnectionInterceptionNpgsqlTestBase(ConnectionInterceptio
         protected override IServiceCollection InjectInterceptors(
             IServiceCollection serviceCollection,
             IEnumerable<IInterceptor> injectedInterceptors)
-            => base.InjectInterceptors(serviceCollection.AddEntityFrameworkNpgsql(), injectedInterceptors);
+            => base.InjectInterceptors(serviceCollection.AddEntityFrameworkH2(), injectedInterceptors);
     }
 
     protected override DbContextOptionsBuilder ConfigureProvider(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql();
+        => optionsBuilder.UseH2();
 
     protected override BadUniverseContext CreateBadUniverse(DbContextOptionsBuilder optionsBuilder)
-        => new(optionsBuilder.UseNpgsql(new FakeDbConnection()).Options);
+        => new(optionsBuilder.UseH2(new FakeDbConnection()).Options);
 
     public class FakeDbConnection : DbConnection
     {

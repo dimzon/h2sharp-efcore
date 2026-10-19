@@ -20,7 +20,7 @@ public class ComplexNavigationsQueryNpgsqlFixture : ComplexNavigationsQueryRelat
     // public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
     // {
     //     var optionsBuilder = base.AddOptions(builder);
-    //     new NpgsqlDbContextOptionsBuilder(optionsBuilder).ReverseNullOrdering();
+    //     new H2DbContextOptionsBuilder(optionsBuilder).ReverseNullOrdering();
     //     return optionsBuilder;
     // }
 }

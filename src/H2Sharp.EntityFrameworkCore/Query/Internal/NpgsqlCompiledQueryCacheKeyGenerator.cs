@@ -32,7 +32,7 @@ public class NpgsqlCompiledQueryCacheKeyGenerator : RelationalCompiledQueryCache
     public override object GenerateCacheKey(Expression query, bool async)
         => new NpgsqlCompiledQueryCacheKey(
             GenerateCacheKeyCore(query, async),
-            RelationalDependencies.ContextOptions.FindExtension<NpgsqlOptionsExtension>()?.ReverseNullOrdering ?? false);
+            RelationalDependencies.ContextOptions.FindExtension<H2OptionsExtension>()?.ReverseNullOrdering ?? false);
 
     private struct NpgsqlCompiledQueryCacheKey(
         RelationalCompiledQueryCacheKey relationalCompiledQueryCacheKey,

@@ -27,7 +27,7 @@ public class BlogContext : DbContext
     public DbSet<City> Cities { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql(
+        => optionsBuilder.UseH2(
             @"Host=myserver;Username=mylogin;Password=mypass;Database=mydatabase",
             o => o.UseNetTopologySuite());
 }

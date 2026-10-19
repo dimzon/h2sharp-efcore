@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DataSourceAndConfigNotSupported" xml:space="preserve">
-    <value>ConfigureDataSource() cannot be used when an externally-provided NpgsqlDataSource is passed to UseNpgsql(). Either perform all data source configuration on the external NpgsqlDataSource, or pass a connection string to UseNpgsql() and specify the data source configuration there.</value>
+    <value>ConfigureDataSource() cannot be used when an externally-provided NpgsqlDataSource is passed to UseH2(). Either perform all data source configuration on the external NpgsqlDataSource, or pass a connection string to UseH2() and specify the data source configuration there.</value>
   </data>
   <data name="DuplicateColumnCompressionMethodMismatch" xml:space="preserve">
     <value>'{entityType1}.{property1}' and '{entityType2}.{property2}' are both mapped to column '{columnName}' in '{table}' but are configured with different compression methods.</value>

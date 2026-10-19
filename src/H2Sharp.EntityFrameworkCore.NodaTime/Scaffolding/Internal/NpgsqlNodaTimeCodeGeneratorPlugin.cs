@@ -13,7 +13,7 @@ public class NpgsqlNodaTimeCodeGeneratorPlugin : ProviderCodeGeneratorPlugin
     private static readonly MethodInfo _useNodaTimeMethodInfo
         = typeof(NpgsqlNodaTimeDbContextOptionsBuilderExtensions).GetRequiredRuntimeMethod(
             nameof(NpgsqlNodaTimeDbContextOptionsBuilderExtensions.UseNodaTime),
-            typeof(NpgsqlDbContextOptionsBuilder));
+            typeof(H2DbContextOptionsBuilder));
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

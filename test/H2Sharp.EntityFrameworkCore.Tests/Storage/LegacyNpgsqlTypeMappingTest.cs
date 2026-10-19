@@ -53,7 +53,7 @@ public class LegacyNpgsqlTypeMappingTest : IClassFixture<LegacyNpgsqlTypeMapping
         ),
         new RelationalTypeMappingSourceDependencies([]),
         new NpgsqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
-        new NpgsqlSingletonOptions());
+        new H2SingletonOptions());
 
     private static RelationalTypeMapping GetMapping(string storeType)
         => Mapper.FindMapping(storeType);

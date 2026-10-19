@@ -19,7 +19,7 @@ public static class NpgsqlIndexExtensions
     ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
     /// </remarks>
     public static string? GetMethod(this IReadOnlyIndex index)
-        => (string?)index[NpgsqlAnnotationNames.IndexMethod];
+        => (string?)index[H2AnnotationNames.IndexMethod];
 
     /// <summary>
     ///     Sets the index method to be used, or <c>null</c> if it hasn't been specified.
@@ -29,7 +29,7 @@ public static class NpgsqlIndexExtensions
     ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
     /// </remarks>
     public static void SetMethod(this IMutableIndex index, string? method)
-        => index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.IndexMethod, method);
+        => index.SetOrRemoveAnnotation(H2AnnotationNames.IndexMethod, method);
 
     /// <summary>
     ///     Sets the index method to be used, or <c>null</c> if it hasn't been specified.
@@ -45,7 +45,7 @@ public static class NpgsqlIndexExtensions
     {
         Check.NullButNotEmpty(method, nameof(method));
 
-        index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.IndexMethod, method, fromDataAnnotation);
+        index.SetOrRemoveAnnotation(H2AnnotationNames.IndexMethod, method, fromDataAnnotation);
 
         return method;
     }
@@ -56,7 +56,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="index">The index.</param>
     /// <returns>The <see cref="ConfigurationSource" /> for the index method.</returns>
     public static ConfigurationSource? GetMethodConfigurationSource(this IConventionIndex index)
-        => index.FindAnnotation(NpgsqlAnnotationNames.IndexMethod)?.GetConfigurationSource();
+        => index.FindAnnotation(H2AnnotationNames.IndexMethod)?.GetConfigurationSource();
 
     #endregion Method
 
@@ -69,7 +69,7 @@ public static class NpgsqlIndexExtensions
     ///     https://www.postgresql.org/docs/current/static/indexes-opclass.html
     /// </remarks>
     public static IReadOnlyList<string>? GetOperators(this IReadOnlyIndex index)
-        => (IReadOnlyList<string>?)index[NpgsqlAnnotationNames.IndexOperators];
+        => (IReadOnlyList<string>?)index[H2AnnotationNames.IndexOperators];
 
     /// <summary>
     ///     Sets the column operators to be used, or <c>null</c> if they have not been specified.
@@ -78,7 +78,7 @@ public static class NpgsqlIndexExtensions
     ///     https://www.postgresql.org/docs/current/static/indexes-opclass.html
     /// </remarks>
     public static void SetOperators(this IMutableIndex index, IReadOnlyList<string>? operators)
-        => index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.IndexOperators, operators);
+        => index.SetOrRemoveAnnotation(H2AnnotationNames.IndexOperators, operators);
 
     /// <summary>
     ///     Sets the column operators to be used, or <c>null</c> if they have not been specified.
@@ -93,7 +93,7 @@ public static class NpgsqlIndexExtensions
     {
         Check.NullButNotEmpty(operators, nameof(operators));
 
-        index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.IndexOperators, operators, fromDataAnnotation);
+        index.SetOrRemoveAnnotation(H2AnnotationNames.IndexOperators, operators, fromDataAnnotation);
 
         return operators;
     }
@@ -104,7 +104,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="index">The index.</param>
     /// <returns>The <see cref="ConfigurationSource" /> for the index operators.</returns>
     public static ConfigurationSource? GetOperatorsConfigurationSource(this IConventionIndex index)
-        => index.FindAnnotation(NpgsqlAnnotationNames.IndexOperators)?.GetConfigurationSource();
+        => index.FindAnnotation(H2AnnotationNames.IndexOperators)?.GetConfigurationSource();
 
     #endregion Operators
 
@@ -119,7 +119,7 @@ public static class NpgsqlIndexExtensions
 #pragma warning disable 618
     public static IReadOnlyList<string>? GetCollation(this IReadOnlyIndex index)
         => (IReadOnlyList<string>?)(
-            index[RelationalAnnotationNames.Collation] ?? index[NpgsqlAnnotationNames.IndexCollation]);
+            index[RelationalAnnotationNames.Collation] ?? index[H2AnnotationNames.IndexCollation]);
 #pragma warning restore 618
 
     /// <summary>
@@ -168,7 +168,7 @@ public static class NpgsqlIndexExtensions
     ///     https://www.postgresql.org/docs/current/static/indexes-ordering.html
     /// </remarks>
     public static IReadOnlyList<NullSortOrder>? GetNullSortOrder(this IReadOnlyIndex index)
-        => (IReadOnlyList<NullSortOrder>?)index[NpgsqlAnnotationNames.IndexNullSortOrder];
+        => (IReadOnlyList<NullSortOrder>?)index[H2AnnotationNames.IndexNullSortOrder];
 
     /// <summary>
     ///     Sets the column NULL sort orders to be used, or <c>null</c> if they have not been specified.
@@ -177,7 +177,7 @@ public static class NpgsqlIndexExtensions
     ///     https://www.postgresql.org/docs/current/static/indexes-ordering.html
     /// </remarks>
     public static void SetNullSortOrder(this IMutableIndex index, IReadOnlyList<NullSortOrder>? nullSortOrder)
-        => index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.IndexNullSortOrder, nullSortOrder);
+        => index.SetOrRemoveAnnotation(H2AnnotationNames.IndexNullSortOrder, nullSortOrder);
 
     /// <summary>
     ///     Sets the column NULL sort orders to be used, or <c>null</c> if they have not been specified.
@@ -192,7 +192,7 @@ public static class NpgsqlIndexExtensions
     {
         Check.NullButNotEmpty(nullSortOrder, nameof(nullSortOrder));
 
-        index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.IndexNullSortOrder, nullSortOrder, fromDataAnnotation);
+        index.SetOrRemoveAnnotation(H2AnnotationNames.IndexNullSortOrder, nullSortOrder, fromDataAnnotation);
 
         return nullSortOrder;
     }
@@ -203,7 +203,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="index">The index.</param>
     /// <returns>The <see cref="ConfigurationSource" /> for the index null sort orders.</returns>
     public static ConfigurationSource? GetNullSortOrderConfigurationSource(this IConventionIndex index)
-        => index.FindAnnotation(NpgsqlAnnotationNames.IndexNullSortOrder)?.GetConfigurationSource();
+        => index.FindAnnotation(H2AnnotationNames.IndexNullSortOrder)?.GetConfigurationSource();
 
     #endregion
 
@@ -215,7 +215,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="index">The index.</param>
     /// <returns>The included property names, or <c>null</c> if they have not been specified.</returns>
     public static IReadOnlyList<string>? GetIncludeProperties(this IReadOnlyIndex index)
-        => (IReadOnlyList<string>?)index[NpgsqlAnnotationNames.IndexInclude];
+        => (IReadOnlyList<string>?)index[H2AnnotationNames.IndexInclude];
 
     /// <summary>
     ///     Sets included property names.
@@ -224,7 +224,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="properties">The value to set.</param>
     public static void SetIncludeProperties(this IMutableIndex index, IReadOnlyList<string>? properties)
         => index.SetOrRemoveAnnotation(
-            NpgsqlAnnotationNames.IndexInclude,
+            H2AnnotationNames.IndexInclude,
             properties);
 
     /// <summary>
@@ -241,7 +241,7 @@ public static class NpgsqlIndexExtensions
         Check.NullButNotEmpty(properties, nameof(properties));
 
         index.SetOrRemoveAnnotation(
-            NpgsqlAnnotationNames.IndexInclude,
+            H2AnnotationNames.IndexInclude,
             properties,
             fromDataAnnotation);
 
@@ -254,7 +254,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="index">The index.</param>
     /// <returns>The <see cref="ConfigurationSource" /> for the included property names.</returns>
     public static ConfigurationSource? GetIncludePropertiesConfigurationSource(this IConventionIndex index)
-        => index.FindAnnotation(NpgsqlAnnotationNames.IndexInclude)?.GetConfigurationSource();
+        => index.FindAnnotation(H2AnnotationNames.IndexInclude)?.GetConfigurationSource();
 
     #endregion Included properties
 
@@ -266,7 +266,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="index">The index.</param>
     /// <returns><c>true</c> if the index is created concurrently.</returns>
     public static bool? IsCreatedConcurrently(this IReadOnlyIndex index)
-        => (bool?)index[NpgsqlAnnotationNames.CreatedConcurrently];
+        => (bool?)index[H2AnnotationNames.CreatedConcurrently];
 
     /// <summary>
     ///     Sets a value indicating whether the index is created concurrently.
@@ -274,7 +274,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="index">The index.</param>
     /// <param name="createdConcurrently">The value to set.</param>
     public static void SetIsCreatedConcurrently(this IMutableIndex index, bool? createdConcurrently)
-        => index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.CreatedConcurrently, createdConcurrently);
+        => index.SetOrRemoveAnnotation(H2AnnotationNames.CreatedConcurrently, createdConcurrently);
 
     /// <summary>
     ///     Sets a value indicating whether the index is created concurrently.
@@ -287,7 +287,7 @@ public static class NpgsqlIndexExtensions
         bool? createdConcurrently,
         bool fromDataAnnotation = false)
     {
-        index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.CreatedConcurrently, createdConcurrently, fromDataAnnotation);
+        index.SetOrRemoveAnnotation(H2AnnotationNames.CreatedConcurrently, createdConcurrently, fromDataAnnotation);
 
         return createdConcurrently;
     }
@@ -298,7 +298,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="index">The index.</param>
     /// <returns>The <see cref="ConfigurationSource" /> for whether the index is created concurrently.</returns>
     public static ConfigurationSource? GetIsCreatedConcurrentlyConfigurationSource(this IConventionIndex index)
-        => index.FindAnnotation(NpgsqlAnnotationNames.CreatedConcurrently)?.GetConfigurationSource();
+        => index.FindAnnotation(H2AnnotationNames.CreatedConcurrently)?.GetConfigurationSource();
 
     #endregion Created concurrently
 
@@ -312,7 +312,7 @@ public static class NpgsqlIndexExtensions
     ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
     /// </remarks>
     public static bool? GetAreNullsDistinct(this IReadOnlyIndex index)
-        => (bool?)index[NpgsqlAnnotationNames.NullsDistinct];
+        => (bool?)index[H2AnnotationNames.NullsDistinct];
 
     /// <summary>
     ///     Sets whether for a unique index, null values should be considered distinct (not equal).
@@ -322,7 +322,7 @@ public static class NpgsqlIndexExtensions
     ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
     /// </remarks>
     public static void SetAreNullsDistinct(this IMutableIndex index, bool? nullsDistinct)
-        => index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.NullsDistinct, nullsDistinct);
+        => index.SetOrRemoveAnnotation(H2AnnotationNames.NullsDistinct, nullsDistinct);
 
     /// <summary>
     ///     Sets whether for a unique index, null values should be considered distinct (not equal).
@@ -333,7 +333,7 @@ public static class NpgsqlIndexExtensions
     /// </remarks>
     public static bool? SetAreNullsDistinct(this IConventionIndex index, bool? nullsDistinct, bool fromDataAnnotation = false)
     {
-        index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.NullsDistinct, nullsDistinct, fromDataAnnotation);
+        index.SetOrRemoveAnnotation(H2AnnotationNames.NullsDistinct, nullsDistinct, fromDataAnnotation);
 
         return nullsDistinct;
     }
@@ -344,7 +344,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="index">The index.</param>
     /// <returns>The <see cref="ConfigurationSource" />.</returns>
     public static ConfigurationSource? GetAreNullsDistinctConfigurationSource(this IConventionIndex index)
-        => index.FindAnnotation(NpgsqlAnnotationNames.NullsDistinct)?.GetConfigurationSource();
+        => index.FindAnnotation(H2AnnotationNames.NullsDistinct)?.GetConfigurationSource();
 
     #endregion NULLS distinct
 
@@ -359,7 +359,7 @@ public static class NpgsqlIndexExtensions
     ///     https://www.postgresql.org/docs/current/textsearch-tables.html#TEXTSEARCH-TABLES-INDEX
     /// </remarks>
     public static string? GetTsVectorConfig(this IReadOnlyIndex index)
-        => (string?)index[NpgsqlAnnotationNames.TsVectorConfig];
+        => (string?)index[H2AnnotationNames.TsVectorConfig];
 
     /// <summary>
     ///     Sets the text search configuration for this tsvector expression index, or <c>null</c> if this is not a
@@ -379,7 +379,7 @@ public static class NpgsqlIndexExtensions
     ///     https://www.postgresql.org/docs/current/textsearch-tables.html#TEXTSEARCH-TABLES-INDEX
     /// </remarks>
     public static void SetTsVectorConfig(this IMutableIndex index, string? config)
-        => index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.TsVectorConfig, config);
+        => index.SetOrRemoveAnnotation(H2AnnotationNames.TsVectorConfig, config);
 
     /// <summary>
     ///     Sets the index to tsvector config name to be used.
@@ -405,7 +405,7 @@ public static class NpgsqlIndexExtensions
     {
         Check.NullButNotEmpty(config, nameof(config));
 
-        index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.TsVectorConfig, config, fromDataAnnotation);
+        index.SetOrRemoveAnnotation(H2AnnotationNames.TsVectorConfig, config, fromDataAnnotation);
 
         return config;
     }
@@ -416,7 +416,7 @@ public static class NpgsqlIndexExtensions
     /// <param name="index">The index.</param>
     /// <returns>The <see cref="ConfigurationSource" /> for the tsvector config.</returns>
     public static ConfigurationSource? GetTsVectorConfigConfigurationSource(this IConventionIndex index)
-        => index.FindAnnotation(NpgsqlAnnotationNames.TsVectorConfig)?.GetConfigurationSource();
+        => index.FindAnnotation(H2AnnotationNames.TsVectorConfig)?.GetConfigurationSource();
 
     #endregion ToTsVector
 
@@ -427,9 +427,9 @@ public static class NpgsqlIndexExtensions
     /// </summary>
     public static Dictionary<string, object?> GetStorageParameters(this IReadOnlyIndex index)
         => index.GetAnnotations()
-            .Where(a => a.Name.StartsWith(NpgsqlAnnotationNames.StorageParameterPrefix, StringComparison.Ordinal))
+            .Where(a => a.Name.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal))
             .ToDictionary(
-                a => a.Name.Substring(NpgsqlAnnotationNames.StorageParameterPrefix.Length),
+                a => a.Name.Substring(H2AnnotationNames.StorageParameterPrefix.Length),
                 a => a.Value);
 
     /// <summary>
@@ -439,7 +439,7 @@ public static class NpgsqlIndexExtensions
     {
         Check.NotEmpty(parameterName, nameof(parameterName));
 
-        return (string?)index[NpgsqlAnnotationNames.StorageParameterPrefix + parameterName];
+        return (string?)index[H2AnnotationNames.StorageParameterPrefix + parameterName];
     }
 
     /// <summary>
@@ -449,7 +449,7 @@ public static class NpgsqlIndexExtensions
     {
         Check.NotEmpty(parameterName, nameof(parameterName));
 
-        index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.StorageParameterPrefix + parameterName, parameterValue);
+        index.SetOrRemoveAnnotation(H2AnnotationNames.StorageParameterPrefix + parameterName, parameterValue);
     }
 
     /// <summary>
@@ -463,7 +463,7 @@ public static class NpgsqlIndexExtensions
     {
         Check.NotEmpty(parameterName, nameof(parameterName));
 
-        index.SetOrRemoveAnnotation(NpgsqlAnnotationNames.StorageParameterPrefix + parameterName, parameterValue, fromDataAnnotation);
+        index.SetOrRemoveAnnotation(H2AnnotationNames.StorageParameterPrefix + parameterName, parameterValue, fromDataAnnotation);
 
         return parameterName;
     }
@@ -475,7 +475,7 @@ public static class NpgsqlIndexExtensions
     {
         Check.NotEmpty(parameterName, nameof(parameterName));
 
-        return index.FindAnnotation(NpgsqlAnnotationNames.StorageParameterPrefix + parameterName)?.GetConfigurationSource();
+        return index.FindAnnotation(H2AnnotationNames.StorageParameterPrefix + parameterName)?.GetConfigurationSource();
     }
 
     #endregion Storage parameters

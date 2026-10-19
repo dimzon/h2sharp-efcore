@@ -49,7 +49,7 @@ public class NpgsqlQueryableMethodTranslatingExpressionVisitor : RelationalQuery
         QueryableMethodTranslatingExpressionVisitorDependencies dependencies,
         RelationalQueryableMethodTranslatingExpressionVisitorDependencies relationalDependencies,
         RelationalQueryCompilationContext queryCompilationContext,
-        INpgsqlSingletonOptions npgsqlSingletonOptions)
+        IH2SingletonOptions npgsqlSingletonOptions)
         : base(dependencies, relationalDependencies, queryCompilationContext)
     {
         _queryCompilationContext = queryCompilationContext;

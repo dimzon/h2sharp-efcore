@@ -10,7 +10,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Internal;
 /// </summary>
 public class NpgsqlQueryableMethodTranslatingExpressionVisitorFactory : IQueryableMethodTranslatingExpressionVisitorFactory
 {
-    private readonly INpgsqlSingletonOptions _npgsqlSingletonOptions;
+    private readonly IH2SingletonOptions _npgsqlSingletonOptions;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -21,7 +21,7 @@ public class NpgsqlQueryableMethodTranslatingExpressionVisitorFactory : IQueryab
     public NpgsqlQueryableMethodTranslatingExpressionVisitorFactory(
         QueryableMethodTranslatingExpressionVisitorDependencies dependencies,
         RelationalQueryableMethodTranslatingExpressionVisitorDependencies relationalDependencies,
-        INpgsqlSingletonOptions npgsqlSingletonOptions)
+        IH2SingletonOptions npgsqlSingletonOptions)
     {
         Dependencies = dependencies;
         RelationalDependencies = relationalDependencies;

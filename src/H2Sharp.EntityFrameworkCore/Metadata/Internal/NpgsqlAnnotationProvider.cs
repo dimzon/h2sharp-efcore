@@ -39,7 +39,7 @@ public class NpgsqlAnnotationProvider : RelationalAnnotationProvider
 
         if (entityType.GetIsUnlogged())
         {
-            yield return new Annotation(NpgsqlAnnotationNames.UnloggedTable, entityType.GetIsUnlogged());
+            yield return new Annotation(H2AnnotationNames.UnloggedTable, entityType.GetIsUnlogged());
         }
 
         if (entityType[CockroachDbAnnotationNames.InterleaveInParent] is not null)
@@ -49,7 +49,7 @@ public class NpgsqlAnnotationProvider : RelationalAnnotationProvider
         }
 
         foreach (var storageParamAnnotation in entityType.GetAnnotations()
-                     .Where(a => a.Name.StartsWith(NpgsqlAnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
+                     .Where(a => a.Name.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
         {
             yield return storageParamAnnotation;
         }
@@ -85,14 +85,14 @@ public class NpgsqlAnnotationProvider : RelationalAnnotationProvider
         if (valueGeneratedProperty is not null)
         {
             var valueGenerationStrategy = valueGeneratedProperty.GetValueGenerationStrategy();
-            yield return new Annotation(NpgsqlAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy);
+            yield return new Annotation(H2AnnotationNames.ValueGenerationStrategy, valueGenerationStrategy);
 
             if (valueGenerationStrategy is NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
                 or NpgsqlValueGenerationStrategy.IdentityAlwaysColumn)
             {
-                if (valueGeneratedProperty[NpgsqlAnnotationNames.IdentityOptions] is string identityOptions)
+                if (valueGeneratedProperty[H2AnnotationNames.IdentityOptions] is string identityOptions)
                 {
-                    yield return new Annotation(NpgsqlAnnotationNames.IdentityOptions, identityOptions);
+                    yield return new Annotation(H2AnnotationNames.IdentityOptions, identityOptions);
                 }
             }
         }
@@ -100,7 +100,7 @@ public class NpgsqlAnnotationProvider : RelationalAnnotationProvider
         if (column.PropertyMappings.Select(m => m.Property.GetTsVectorConfig())
                 .FirstOrDefault(c => c is not null) is { } tsVectorConfig)
         {
-            yield return new Annotation(NpgsqlAnnotationNames.TsVectorConfig, tsVectorConfig);
+            yield return new Annotation(H2AnnotationNames.TsVectorConfig, tsVectorConfig);
         }
 
         valueGeneratedProperty = column.PropertyMappings.Select(m => m.Property)
@@ -110,7 +110,7 @@ public class NpgsqlAnnotationProvider : RelationalAnnotationProvider
             var tableIdentifier = StoreObjectIdentifier.Table(column.Table.Name, column.Table.Schema);
 
             yield return new Annotation(
-                NpgsqlAnnotationNames.TsVectorProperties,
+                H2AnnotationNames.TsVectorProperties,
                 valueGeneratedProperty.GetTsVectorProperties()!
                     .Select(p2 => valueGeneratedProperty.DeclaringType.FindProperty(p2)!.GetColumnName(tableIdentifier))
                     .ToArray());
@@ -121,7 +121,7 @@ public class NpgsqlAnnotationProvider : RelationalAnnotationProvider
             && column.PropertyMappings.FirstOrDefault()?.Property.GetCompressionMethod() is { } compressionMethod)
         {
             // Model validation ensures that these facets are the same on all mapped properties
-            yield return new Annotation(NpgsqlAnnotationNames.CompressionMethod, compressionMethod);
+            yield return new Annotation(H2AnnotationNames.CompressionMethod, compressionMethod);
         }
     }
 
@@ -148,22 +148,22 @@ public class NpgsqlAnnotationProvider : RelationalAnnotationProvider
 
         if (modelIndex.GetMethod() is { } method)
         {
-            yield return new Annotation(NpgsqlAnnotationNames.IndexMethod, method);
+            yield return new Annotation(H2AnnotationNames.IndexMethod, method);
         }
 
         if (modelIndex.GetOperators() is { } operators)
         {
-            yield return new Annotation(NpgsqlAnnotationNames.IndexOperators, operators);
+            yield return new Annotation(H2AnnotationNames.IndexOperators, operators);
         }
 
         if (modelIndex.GetNullSortOrder() is { } nullSortOrder)
         {
-            yield return new Annotation(NpgsqlAnnotationNames.IndexNullSortOrder, nullSortOrder);
+            yield return new Annotation(H2AnnotationNames.IndexNullSortOrder, nullSortOrder);
         }
 
         if (modelIndex.GetTsVectorConfig() is { } configName)
         {
-            yield return new Annotation(NpgsqlAnnotationNames.TsVectorConfig, configName);
+            yield return new Annotation(H2AnnotationNames.TsVectorConfig, configName);
         }
 
         if (modelIndex.GetIncludeProperties() is { } includeProperties)
@@ -171,7 +171,7 @@ public class NpgsqlAnnotationProvider : RelationalAnnotationProvider
             var tableIdentifier = StoreObjectIdentifier.Table(index.Table.Name, index.Table.Schema);
 
             yield return new Annotation(
-                NpgsqlAnnotationNames.IndexInclude,
+                H2AnnotationNames.IndexInclude,
                 includeProperties
                     .Select(p => modelIndex.DeclaringEntityType.FindProperty(p)!.GetColumnName(tableIdentifier))
                     .ToArray());
@@ -179,24 +179,24 @@ public class NpgsqlAnnotationProvider : RelationalAnnotationProvider
 
         if (modelIndex.IsCreatedConcurrently() is { } isCreatedConcurrently)
         {
-            yield return new Annotation(NpgsqlAnnotationNames.CreatedConcurrently, isCreatedConcurrently);
+            yield return new Annotation(H2AnnotationNames.CreatedConcurrently, isCreatedConcurrently);
         }
 
         if (modelIndex.GetAreNullsDistinct() is { } nullsDistinct)
         {
-            yield return new Annotation(NpgsqlAnnotationNames.NullsDistinct, nullsDistinct);
+            yield return new Annotation(H2AnnotationNames.NullsDistinct, nullsDistinct);
         }
 
         foreach (var storageParamAnnotation in modelIndex.GetAnnotations()
-                     .Where(a => a.Name.StartsWith(NpgsqlAnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
+                     .Where(a => a.Name.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
         {
             yield return storageParamAnnotation;
         }
 
         // Support legacy annotation for index ordering
-        if (modelIndex[NpgsqlAnnotationNames.IndexSortOrder] is IReadOnlyList<SortOrder> legacySortOrder)
+        if (modelIndex[H2AnnotationNames.IndexSortOrder] is IReadOnlyList<SortOrder> legacySortOrder)
         {
-            yield return new Annotation(NpgsqlAnnotationNames.IndexSortOrder, legacySortOrder);
+            yield return new Annotation(H2AnnotationNames.IndexSortOrder, legacySortOrder);
         }
     }
 
@@ -215,9 +215,9 @@ public class NpgsqlAnnotationProvider : RelationalAnnotationProvider
 
         return model.Model.GetAnnotations().Where(
             a =>
-                a.Name.StartsWith(NpgsqlAnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal)
-                || a.Name.StartsWith(NpgsqlAnnotationNames.EnumPrefix, StringComparison.Ordinal)
-                || a.Name.StartsWith(NpgsqlAnnotationNames.RangePrefix, StringComparison.Ordinal)
-                || a.Name.StartsWith(NpgsqlAnnotationNames.CollationDefinitionPrefix, StringComparison.Ordinal));
+                a.Name.StartsWith(H2AnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal)
+                || a.Name.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal)
+                || a.Name.StartsWith(H2AnnotationNames.RangePrefix, StringComparison.Ordinal)
+                || a.Name.StartsWith(H2AnnotationNames.CollationDefinitionPrefix, StringComparison.Ordinal));
     }
 }

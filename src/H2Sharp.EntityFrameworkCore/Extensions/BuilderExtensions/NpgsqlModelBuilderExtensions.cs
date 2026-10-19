@@ -88,8 +88,8 @@ public static class NpgsqlModelBuilderExtensions
         Check.NullButNotEmpty(name, nameof(name));
         Check.NullButNotEmpty(schema, nameof(schema));
 
-        return modelBuilder.CanSetAnnotation(NpgsqlAnnotationNames.HiLoSequenceName, name, fromDataAnnotation)
-            && modelBuilder.CanSetAnnotation(NpgsqlAnnotationNames.HiLoSequenceSchema, schema, fromDataAnnotation);
+        return modelBuilder.CanSetAnnotation(H2AnnotationNames.HiLoSequenceName, name, fromDataAnnotation)
+            && modelBuilder.CanSetAnnotation(H2AnnotationNames.HiLoSequenceSchema, schema, fromDataAnnotation);
     }
 
     #endregion HiLo
@@ -220,8 +220,8 @@ public static class NpgsqlModelBuilderExtensions
 
             if (valueGenerationStrategy != NpgsqlValueGenerationStrategy.Sequence)
             {
-                if (modelBuilder.CanSetAnnotation(NpgsqlAnnotationNames.SequenceNameSuffix, null)
-                    && modelBuilder.CanSetAnnotation(NpgsqlAnnotationNames.SequenceSchema, null))
+                if (modelBuilder.CanSetAnnotation(H2AnnotationNames.SequenceNameSuffix, null)
+                    && modelBuilder.CanSetAnnotation(H2AnnotationNames.SequenceSchema, null))
                 {
                     modelBuilder.Metadata.SetSequenceNameSuffix(null, fromDataAnnotation);
                     modelBuilder.Metadata.SetSequenceSchema(null, fromDataAnnotation);
@@ -249,7 +249,7 @@ public static class NpgsqlModelBuilderExtensions
         Check.NotNull(modelBuilder, nameof(modelBuilder));
 
         return modelBuilder.CanSetAnnotation(
-            NpgsqlAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation);
+            H2AnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation);
     }
 
     #endregion Identity

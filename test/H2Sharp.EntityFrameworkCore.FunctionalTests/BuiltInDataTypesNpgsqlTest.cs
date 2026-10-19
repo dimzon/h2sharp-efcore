@@ -992,7 +992,7 @@ FROM "MappedDataTypes" AS m
         public override bool PreservesDateTimeKind
             => false;
 
-        // We instruct the test store to pass a connection string to UseNpgsql() instead of a DbConnection - that's required to allow
+        // We instruct the test store to pass a connection string to UseH2() instead of a DbConnection - that's required to allow
         // EF's MapEnum() to function properly and instantiate an NpgsqlDataSource internally.
         protected override ITestStoreFactory TestStoreFactory
             => new NpgsqlTestStoreFactory(useConnectionString: true);
@@ -1004,7 +1004,7 @@ FROM "MappedDataTypes" AS m
             => (TestSqlLoggerFactory)ServiceProvider.GetRequiredService<ILoggerFactory>();
 
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-            => base.AddOptions(builder).UseNpgsql(o => o.MapEnum<Mood>("mood"));
+            => base.AddOptions(builder).UseH2(o => o.MapEnum<Mood>("mood"));
 
         protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
         {

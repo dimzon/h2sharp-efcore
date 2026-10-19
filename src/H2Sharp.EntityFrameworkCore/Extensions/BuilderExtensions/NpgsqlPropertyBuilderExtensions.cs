@@ -110,8 +110,8 @@ public static class NpgsqlPropertyBuilderExtensions
         Check.NullButNotEmpty(name, nameof(name));
         Check.NullButNotEmpty(schema, nameof(schema));
 
-        return propertyBuilder.CanSetAnnotation(NpgsqlAnnotationNames.HiLoSequenceName, name, fromDataAnnotation)
-            && propertyBuilder.CanSetAnnotation(NpgsqlAnnotationNames.HiLoSequenceSchema, schema, fromDataAnnotation);
+        return propertyBuilder.CanSetAnnotation(H2AnnotationNames.HiLoSequenceName, name, fromDataAnnotation)
+            && propertyBuilder.CanSetAnnotation(H2AnnotationNames.HiLoSequenceSchema, schema, fromDataAnnotation);
     }
 
     #endregion HiLo
@@ -210,8 +210,8 @@ public static class NpgsqlPropertyBuilderExtensions
         Check.NullButNotEmpty(name, nameof(name));
         Check.NullButNotEmpty(schema, nameof(schema));
 
-        return propertyBuilder.CanSetAnnotation(NpgsqlAnnotationNames.SequenceName, name, fromDataAnnotation)
-            && propertyBuilder.CanSetAnnotation(NpgsqlAnnotationNames.SequenceSchema, schema, fromDataAnnotation);
+        return propertyBuilder.CanSetAnnotation(H2AnnotationNames.SequenceName, name, fromDataAnnotation)
+            && propertyBuilder.CanSetAnnotation(H2AnnotationNames.SequenceSchema, schema, fromDataAnnotation);
     }
 
     #endregion Sequence
@@ -405,7 +405,7 @@ public static class NpgsqlPropertyBuilderExtensions
         bool fromDataAnnotation = false)
     {
         if (propertyBuilder.CanSetAnnotation(
-                NpgsqlAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation))
+                H2AnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation))
         {
             propertyBuilder.Metadata.SetValueGenerationStrategy(valueGenerationStrategy, fromDataAnnotation);
 
@@ -440,7 +440,7 @@ public static class NpgsqlPropertyBuilderExtensions
         bool fromDataAnnotation = false)
         => propertyBuilder.Metadata.FindOverrides(storeObject)?.Builder
                 .CanSetAnnotation(
-                    NpgsqlAnnotationNames.ValueGenerationStrategy,
+                    H2AnnotationNames.ValueGenerationStrategy,
                     valueGenerationStrategy,
                     fromDataAnnotation)
             ?? true;
@@ -457,7 +457,7 @@ public static class NpgsqlPropertyBuilderExtensions
         NpgsqlValueGenerationStrategy? valueGenerationStrategy,
         bool fromDataAnnotation = false)
         => propertyBuilder.CanSetAnnotation(
-            NpgsqlAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation);
+            H2AnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation);
 
     #endregion General value generation strategy
 
@@ -648,7 +648,7 @@ public static class NpgsqlPropertyBuilderExtensions
             NumbersToCache = numbersToCache ?? 1
         }.Serialize();
 
-        return propertyBuilder.CanSetAnnotation(NpgsqlAnnotationNames.IdentityOptions, value);
+        return propertyBuilder.CanSetAnnotation(H2AnnotationNames.IdentityOptions, value);
     }
 
     #endregion Identity options
@@ -907,7 +907,7 @@ public static class NpgsqlPropertyBuilderExtensions
     {
         Check.NotNull(propertyBuilder, nameof(propertyBuilder));
 
-        return propertyBuilder.CanSetAnnotation(NpgsqlAnnotationNames.CompressionMethod, compressionMethod, fromDataAnnotation);
+        return propertyBuilder.CanSetAnnotation(H2AnnotationNames.CompressionMethod, compressionMethod, fromDataAnnotation);
     }
 
     #endregion Compression method

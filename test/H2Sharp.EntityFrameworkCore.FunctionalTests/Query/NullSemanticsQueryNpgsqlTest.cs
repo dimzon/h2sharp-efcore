@@ -173,7 +173,7 @@ WHERE (e."IntA", e."StringA") <> (e."IntB", e."StringB") OR ((e."NullableBoolA" 
         var options = new DbContextOptionsBuilder(Fixture.CreateOptions());
         if (useRelationalNulls)
         {
-            new NpgsqlDbContextOptionsBuilder(options).UseRelationalNulls();
+            new H2DbContextOptionsBuilder(options).UseRelationalNulls();
         }
 
         var context = new NullSemanticsContext(options.Options);

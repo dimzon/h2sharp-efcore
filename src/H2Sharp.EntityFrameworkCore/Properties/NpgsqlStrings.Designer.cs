@@ -20,7 +20,7 @@ namespace H2Sharp.EntityFrameworkCore.Internal
             = new ResourceManager("H2Sharp.EntityFrameworkCore.Properties.NpgsqlStrings", typeof(NpgsqlStrings).Assembly);
 
         /// <summary>
-        ///     ConfigureDataSource() cannot be used when an externally-provided NpgsqlDataSource is passed to UseNpgsql(). Either perform all data source configuration on the external NpgsqlDataSource, or pass a connection string to UseNpgsql() and specify the data source configuration there.
+        ///     ConfigureDataSource() cannot be used when an externally-provided NpgsqlDataSource is passed to UseH2(). Either perform all data source configuration on the external NpgsqlDataSource, or pass a connection string to UseH2() and specify the data source configuration there.
         /// </summary>
         public static string DataSourceAndConfigNotSupported
             => GetString("DataSourceAndConfigNotSupported");

@@ -30,19 +30,19 @@ public class NpgsqlRuntimeModelConvention : RelationalRuntimeModelConvention
 
         if (!runtime)
         {
-            annotations.Remove(NpgsqlAnnotationNames.DatabaseTemplate);
-            annotations.Remove(NpgsqlAnnotationNames.Tablespace);
-            annotations.Remove(NpgsqlAnnotationNames.CollationDefinitionPrefix);
+            annotations.Remove(H2AnnotationNames.DatabaseTemplate);
+            annotations.Remove(H2AnnotationNames.Tablespace);
+            annotations.Remove(H2AnnotationNames.CollationDefinitionPrefix);
 
 #pragma warning disable CS0618
-            annotations.Remove(NpgsqlAnnotationNames.DefaultColumnCollation);
+            annotations.Remove(H2AnnotationNames.DefaultColumnCollation);
 #pragma warning restore CS0618
 
             foreach (var annotationName in annotations.Keys.Where(
                          k =>
-                             k.StartsWith(NpgsqlAnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal)
-                             || k.StartsWith(NpgsqlAnnotationNames.EnumPrefix, StringComparison.Ordinal)
-                             || k.StartsWith(NpgsqlAnnotationNames.RangePrefix, StringComparison.Ordinal)))
+                             k.StartsWith(H2AnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal)
+                             || k.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal)
+                             || k.StartsWith(H2AnnotationNames.RangePrefix, StringComparison.Ordinal)))
             {
                 annotations.Remove(annotationName);
             }
@@ -60,10 +60,10 @@ public class NpgsqlRuntimeModelConvention : RelationalRuntimeModelConvention
 
         if (!runtime)
         {
-            annotations.Remove(NpgsqlAnnotationNames.UnloggedTable);
+            annotations.Remove(H2AnnotationNames.UnloggedTable);
 
             foreach (var annotationName in annotations.Keys.Where(
-                         k => k.StartsWith(NpgsqlAnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
+                         k => k.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
             {
                 annotations.Remove(annotationName);
             }
@@ -81,13 +81,13 @@ public class NpgsqlRuntimeModelConvention : RelationalRuntimeModelConvention
 
         if (!runtime)
         {
-            annotations.Remove(NpgsqlAnnotationNames.IdentityOptions);
-            annotations.Remove(NpgsqlAnnotationNames.TsVectorConfig);
-            annotations.Remove(NpgsqlAnnotationNames.TsVectorProperties);
+            annotations.Remove(H2AnnotationNames.IdentityOptions);
+            annotations.Remove(H2AnnotationNames.TsVectorConfig);
+            annotations.Remove(H2AnnotationNames.TsVectorProperties);
 
-            if (!annotations.ContainsKey(NpgsqlAnnotationNames.ValueGenerationStrategy))
+            if (!annotations.ContainsKey(H2AnnotationNames.ValueGenerationStrategy))
             {
-                annotations[NpgsqlAnnotationNames.ValueGenerationStrategy] = property.GetValueGenerationStrategy();
+                annotations[H2AnnotationNames.ValueGenerationStrategy] = property.GetValueGenerationStrategy();
             }
         }
     }
@@ -103,16 +103,16 @@ public class NpgsqlRuntimeModelConvention : RelationalRuntimeModelConvention
 
         if (!runtime)
         {
-            annotations.Remove(NpgsqlAnnotationNames.IndexMethod);
-            annotations.Remove(NpgsqlAnnotationNames.IndexOperators);
-            annotations.Remove(NpgsqlAnnotationNames.IndexSortOrder);
-            annotations.Remove(NpgsqlAnnotationNames.IndexNullSortOrder);
-            annotations.Remove(NpgsqlAnnotationNames.IndexInclude);
-            annotations.Remove(NpgsqlAnnotationNames.CreatedConcurrently);
-            annotations.Remove(NpgsqlAnnotationNames.NullsDistinct);
+            annotations.Remove(H2AnnotationNames.IndexMethod);
+            annotations.Remove(H2AnnotationNames.IndexOperators);
+            annotations.Remove(H2AnnotationNames.IndexSortOrder);
+            annotations.Remove(H2AnnotationNames.IndexNullSortOrder);
+            annotations.Remove(H2AnnotationNames.IndexInclude);
+            annotations.Remove(H2AnnotationNames.CreatedConcurrently);
+            annotations.Remove(H2AnnotationNames.NullsDistinct);
 
             foreach (var annotationName in annotations.Keys.Where(
-                         k => k.StartsWith(NpgsqlAnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
+                         k => k.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
             {
                 annotations.Remove(annotationName);
             }

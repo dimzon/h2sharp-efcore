@@ -160,8 +160,8 @@ public class PostgresExtension
 
     internal static string BuildAnnotationName(string? schema, string name)
         => schema is not null
-            ? $"{NpgsqlAnnotationNames.PostgresExtensionPrefix}{schema}.{name}"
-            : $"{NpgsqlAnnotationNames.PostgresExtensionPrefix}{name}";
+            ? $"{H2AnnotationNames.PostgresExtensionPrefix}{schema}.{name}"
+            : $"{H2AnnotationNames.PostgresExtensionPrefix}{name}";
 
     /// <summary>
     ///     Gets the collection of <see cref="PostgresExtension" /> stored in the <see cref="IAnnotatable" />.
@@ -176,7 +176,7 @@ public class PostgresExtension
     public static IEnumerable<PostgresExtension> GetPostgresExtensions(IReadOnlyAnnotatable annotatable)
         => Check.NotNull(annotatable, nameof(annotatable))
             .GetAnnotations()
-            .Where(a => a.Name.StartsWith(NpgsqlAnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal))
+            .Where(a => a.Name.StartsWith(H2AnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal))
             .Select(a => new PostgresExtension(annotatable, a.Name));
 
     /// <summary>
@@ -224,7 +224,7 @@ public class PostgresExtension
 
         // TODO: Can't actually use schema and name...they might not be set when this is first called.
         var schemaNameValue = value.Split(',').Select(x => x.Trim()).Select(x => x is "" or "''" ? null : x).ToArray();
-        var schemaAndName = annotation.Name.Substring(NpgsqlAnnotationNames.PostgresExtensionPrefix.Length).Split('.');
+        var schemaAndName = annotation.Name.Substring(H2AnnotationNames.PostgresExtensionPrefix.Length).Split('.');
         switch (schemaAndName.Length)
         {
             case 1:

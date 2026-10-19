@@ -9,7 +9,7 @@ public class NpgsqlQuerySqlGeneratorFactory : IQuerySqlGeneratorFactory
 {
     private readonly QuerySqlGeneratorDependencies _dependencies;
     private readonly IRelationalTypeMappingSource _typeMappingSource;
-    private readonly INpgsqlSingletonOptions _npgsqlSingletonOptions;
+    private readonly IH2SingletonOptions _npgsqlSingletonOptions;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -20,7 +20,7 @@ public class NpgsqlQuerySqlGeneratorFactory : IQuerySqlGeneratorFactory
     public NpgsqlQuerySqlGeneratorFactory(
         QuerySqlGeneratorDependencies dependencies,
         IRelationalTypeMappingSource typeMappingSource,
-        INpgsqlSingletonOptions npgsqlSingletonOptions)
+        IH2SingletonOptions npgsqlSingletonOptions)
     {
         _dependencies = dependencies;
         _typeMappingSource = typeMappingSource;

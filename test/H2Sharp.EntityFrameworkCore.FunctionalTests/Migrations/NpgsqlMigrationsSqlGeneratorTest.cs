@@ -9,10 +9,10 @@ namespace H2Sharp.EntityFrameworkCore.Migrations;
 
 public class NpgsqlMigrationsSqlGeneratorTest() : MigrationsSqlGeneratorTestBase(
     NpgsqlTestHelpers.Instance,
-    new ServiceCollection().AddEntityFrameworkNpgsqlNetTopologySuite(),
+    new ServiceCollection().AddEntityFrameworkH2NetTopologySuite(),
     NpgsqlTestHelpers.Instance.AddProviderOptions(
         ((IRelationalDbContextOptionsBuilderInfrastructure)
-            new NpgsqlDbContextOptionsBuilder(new DbContextOptionsBuilder()).UseNetTopologySuite())
+            new H2DbContextOptionsBuilder(new DbContextOptionsBuilder()).UseNetTopologySuite())
         .OptionsBuilder).Options)
 {
     #region Database
@@ -498,14 +498,14 @@ ALTER SEQUENCE dbo."TestRestartSequenceOperation" RESTART;
                     Table = "Person",
                     Name = "Id",
                     ClrType = typeof(int),
-                    [NpgsqlAnnotationNames.ValueGenerationStrategy] =
+                    [H2AnnotationNames.ValueGenerationStrategy] =
                         NpgsqlValueGenerationStrategy.IdentityByDefaultColumn,
                     OldColumn = new AddColumnOperation
                     {
                         Table = "Person",
                         Name = "Id",
                         ClrType = typeof(int),
-                        [NpgsqlAnnotationNames.ValueGenerationStrategy] =
+                        [H2AnnotationNames.ValueGenerationStrategy] =
                             NpgsqlValueGenerationStrategy.SerialColumn,
                     }
                 }
@@ -600,7 +600,7 @@ INTERLEAVE IN PARENT my_schema.my_parent (col_a, col_b);
                         ClrType = typeof(int),
                         ColumnType = "int",
                         IsNullable = false,
-                        [NpgsqlAnnotationNames.ValueGeneratedOnAdd] = true
+                        [H2AnnotationNames.ValueGeneratedOnAdd] = true
                     }));
 
     public override void InsertDataOperation_throws_for_unsupported_column_types()

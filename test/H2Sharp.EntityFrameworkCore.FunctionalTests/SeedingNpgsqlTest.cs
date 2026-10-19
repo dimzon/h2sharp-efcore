@@ -13,6 +13,6 @@ public class SeedingNpgsqlTest : SeedingTestBase
     protected class SeedingNpgsqlContext(string testId) : SeedingContext(testId)
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql(NpgsqlTestStore.CreateConnectionString($"Seeds{TestId}"));
+            => optionsBuilder.UseH2(NpgsqlTestStore.CreateConnectionString($"Seeds{TestId}"));
     }
 }

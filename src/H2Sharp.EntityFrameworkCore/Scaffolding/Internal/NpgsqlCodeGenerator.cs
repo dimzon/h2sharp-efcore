@@ -8,11 +8,11 @@ namespace H2Sharp.EntityFrameworkCore.Scaffolding.Internal;
 public class NpgsqlCodeGenerator : ProviderCodeGenerator
 {
     private static readonly MethodInfo _useNpgsqlMethodInfo
-        = typeof(NpgsqlDbContextOptionsBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(NpgsqlDbContextOptionsBuilderExtensions.UseNpgsql),
+        = typeof(H2DbContextOptionsBuilderExtensions).GetRequiredRuntimeMethod(
+            nameof(H2DbContextOptionsBuilderExtensions.UseH2),
             typeof(DbContextOptionsBuilder),
             typeof(string),
-            typeof(Action<NpgsqlDbContextOptionsBuilder>));
+            typeof(Action<H2DbContextOptionsBuilder>));
 
     /// <summary>
     ///     Constructs an instance of the <see cref="NpgsqlCodeGenerator" /> class.

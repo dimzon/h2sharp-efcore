@@ -1907,7 +1907,7 @@ LIMIT 1
         // Set the PostgreSQL TimeZone parameter to something local, to ensure that operations which take TimeZone into account
         // don't depend on the database's time zone, and also that operations which shouldn't take TimeZone into account indeed
         // don't.
-        // We also instruct the test store to pass a connection string to UseNpgsql() instead of a DbConnection - that's required to allow
+        // We also instruct the test store to pass a connection string to UseH2() instead of a DbConnection - that's required to allow
         // EF's UseNodaTime() to function properly and instantiate an NpgsqlDataSource internally.
         protected override ITestStoreFactory TestStoreFactory
             => new NpgsqlTestStoreFactory(connectionStringOptions: "-c TimeZone=Europe/Berlin", useConnectionString: true);
@@ -1918,12 +1918,12 @@ LIMIT 1
         private NodaTimeData _expectedData;
 
         protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
-            => base.AddServices(serviceCollection).AddEntityFrameworkNpgsqlNodaTime();
+            => base.AddServices(serviceCollection).AddEntityFrameworkH2NodaTime();
 
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
         {
             var optionsBuilder = base.AddOptions(builder);
-            new NpgsqlDbContextOptionsBuilder(optionsBuilder).UseNodaTime();
+            new H2DbContextOptionsBuilder(optionsBuilder).UseNodaTime();
 
             return optionsBuilder;
         }

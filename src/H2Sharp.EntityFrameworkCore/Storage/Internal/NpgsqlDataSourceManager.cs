@@ -47,16 +47,16 @@ public class NpgsqlDataSourceManager : IDisposable, IAsyncDisposable
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual DbDataSource? GetDataSource(NpgsqlOptionsExtension? npgsqlOptionsExtension, IServiceProvider? applicationServiceProvider)
+    public virtual DbDataSource? GetDataSource(H2OptionsExtension? npgsqlOptionsExtension, IServiceProvider? applicationServiceProvider)
         => npgsqlOptionsExtension switch
         {
-            // If the user has explicitly passed in a data source via UseNpgsql(), use that.
+            // If the user has explicitly passed in a data source via UseH2(), use that.
             // Note that in this case, the data source is scoped (not singleton), and so can change between different
             // DbContext instances using the same internal service provider.
             { DataSource: DbDataSource dataSource }
                 => npgsqlOptionsExtension.DataSourceBuilderAction is null
                     ? dataSource
-                    // If the user has explicitly passed in a data source via UseNpgsql(), but also supplied a data source configuration
+                    // If the user has explicitly passed in a data source via UseH2(), but also supplied a data source configuration
                     // lambda, throw - we're unable to apply the configuration lambda to the externally-provided, already-built data source.
                     : throw new NotSupportedException(NpgsqlStrings.DataSourceAndConfigNotSupported),
 
@@ -68,7 +68,7 @@ public class NpgsqlDataSourceManager : IDisposable, IAsyncDisposable
             // If a data source builder action is specified, always create a data source.
             { DataSourceBuilderAction: not null } o => GetSingletonDataSource(o),
 
-            // If the user hasn't configured anything in UseNpgsql (no data source, no data source builder action, no connection,
+            // If the user hasn't configured anything in UseH2 (no data source, no data source builder action, no connection,
             // no connection string), check the application service provider to see if a data source is registered there, and return that.
             // Otherwise if there's no connection string, abort: either a connection string or DataSourceBuilderAction is required
             // to create a data source in any case.
@@ -87,7 +87,7 @@ public class NpgsqlDataSourceManager : IDisposable, IAsyncDisposable
             _ => null
         };
 
-    private DbDataSource GetSingletonDataSource(NpgsqlOptionsExtension npgsqlOptionsExtension)
+    private DbDataSource GetSingletonDataSource(H2OptionsExtension npgsqlOptionsExtension)
     {
         var connectionString = npgsqlOptionsExtension.ConnectionString;
 
@@ -124,7 +124,7 @@ public class NpgsqlDataSourceManager : IDisposable, IAsyncDisposable
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual NpgsqlDataSource CreateDataSource(NpgsqlOptionsExtension npgsqlOptionsExtension)
+    protected virtual NpgsqlDataSource CreateDataSource(H2OptionsExtension npgsqlOptionsExtension)
     {
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(npgsqlOptionsExtension.ConnectionString);
 

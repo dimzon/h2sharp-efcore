@@ -32,7 +32,7 @@ public class NpgsqlConventionSetBuilder : RelationalConventionSetBuilder
         ProviderConventionSetBuilderDependencies dependencies,
         RelationalConventionSetBuilderDependencies relationalDependencies,
         IRelationalTypeMappingSource typeMappingSource,
-        INpgsqlSingletonOptions npgsqlSingletonOptions)
+        IH2SingletonOptions npgsqlSingletonOptions)
         : base(dependencies, relationalDependencies)
     {
         _typeMappingSource = typeMappingSource;
@@ -123,10 +123,10 @@ public class NpgsqlConventionSetBuilder : RelationalConventionSetBuilder
     private static IServiceScope CreateServiceScope()
     {
         var serviceProvider = new ServiceCollection()
-            .AddEntityFrameworkNpgsql()
+            .AddEntityFrameworkH2()
             .AddDbContext<DbContext>(
                 (p, o) =>
-                    o.UseNpgsql("Server=.")
+                    o.UseH2("Server=.")
                         .UseInternalServiceProvider(p))
             .BuildServiceProvider();
 

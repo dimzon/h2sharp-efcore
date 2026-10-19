@@ -18,7 +18,7 @@ public class NpgsqlModificationCommandBatchTest
             TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
             TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
             new NpgsqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
-            new NpgsqlSingletonOptions());
+            new H2SingletonOptions());
 
         var batch = new NpgsqlModificationCommandBatch(
             new ModificationCommandBatchFactoryDependencies(

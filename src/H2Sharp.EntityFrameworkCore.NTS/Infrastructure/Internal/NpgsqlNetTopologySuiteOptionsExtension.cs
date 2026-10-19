@@ -81,7 +81,7 @@ public class NpgsqlNetTopologySuiteOptionsExtension : IDbContextOptionsExtension
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public virtual void ApplyServices(IServiceCollection services)
-        => services.AddEntityFrameworkNpgsqlNetTopologySuite();
+        => services.AddEntityFrameworkH2NetTopologySuite();
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -173,7 +173,7 @@ public class NpgsqlNetTopologySuiteOptionsExtension : IDbContextOptionsExtension
                     != true)
                 {
                     throw new InvalidOperationException(
-                        $"{nameof(NpgsqlNetTopologySuiteDbContextOptionsBuilderExtensions.UseNetTopologySuite)} requires {nameof(NpgsqlNetTopologySuiteServiceCollectionExtensions.AddEntityFrameworkNpgsqlNetTopologySuite)} to be called on the internal service provider used.");
+                        $"{nameof(NpgsqlNetTopologySuiteDbContextOptionsBuilderExtensions.UseNetTopologySuite)} requires {nameof(NpgsqlNetTopologySuiteServiceCollectionExtensions.AddEntityFrameworkH2NetTopologySuite)} to be called on the internal service provider used.");
                 }
             }
         }
@@ -203,7 +203,7 @@ public class NpgsqlNetTopologySuiteOptionsExtension : IDbContextOptionsExtension
         {
             Check.NotNull(debugInfo, nameof(debugInfo));
 
-            var prefix = "Npgsql:" + nameof(NpgsqlNetTopologySuiteDbContextOptionsBuilderExtensions.UseNetTopologySuite);
+            var prefix = "H2:" + nameof(NpgsqlNetTopologySuiteDbContextOptionsBuilderExtensions.UseNetTopologySuite);
             debugInfo[prefix] = "1";
             debugInfo[$"{prefix}:{nameof(IsGeographyDefault)}"] = Extension.IsGeographyDefault.ToString();
         }

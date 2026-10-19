@@ -71,7 +71,7 @@ namespace H2Sharp.EntityFrameworkCore
                         new NpgsqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()))
                 }),
             new NpgsqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
-            new NpgsqlSingletonOptions()
+            new H2SingletonOptions()
         );
 
         private static RelationalTypeMapping GetMapping(string storeType)

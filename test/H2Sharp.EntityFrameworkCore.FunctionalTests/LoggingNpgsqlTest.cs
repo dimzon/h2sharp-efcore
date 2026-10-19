@@ -4,28 +4,28 @@ using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-public class LoggingNpgsqlTest : LoggingRelationalTestBase<NpgsqlDbContextOptionsBuilder, NpgsqlOptionsExtension>
+public class LoggingNpgsqlTest : LoggingRelationalTestBase<H2DbContextOptionsBuilder, H2OptionsExtension>
 {
     [Fact]
     public void Logs_context_initialization_admin_database()
         => Assert.Equal(
             ExpectedMessage($"AdminDatabase=foo {DefaultOptions}"),
-            ActualMessage(s => CreateOptionsBuilder(s, b => ((NpgsqlDbContextOptionsBuilder)b).UseAdminDatabase("foo"))));
+            ActualMessage(s => CreateOptionsBuilder(s, b => ((H2DbContextOptionsBuilder)b).UseAdminDatabase("foo"))));
 
     [Fact]
     public void Logs_context_initialization_postgres_version()
         => Assert.Equal(
             ExpectedMessage($"PostgresVersion=10.7 {DefaultOptions}"),
-            ActualMessage(s => CreateOptionsBuilder(s, b => ((NpgsqlDbContextOptionsBuilder)b).SetPostgresVersion(Version.Parse("10.7")))));
+            ActualMessage(s => CreateOptionsBuilder(s, b => ((H2DbContextOptionsBuilder)b).SetPostgresVersion(Version.Parse("10.7")))));
 
-#pragma warning disable CS0618 // Authentication APIs on NpgsqlDbContextOptionsBuilder are obsolete
+#pragma warning disable CS0618 // Authentication APIs on H2DbContextOptionsBuilder are obsolete
     [Fact]
     public void Logs_context_initialization_provide_client_certificates_callback()
         => Assert.Equal(
             ExpectedMessage($"ProvideClientCertificatesCallback {DefaultOptions}"),
             ActualMessage(
                 s => CreateOptionsBuilder(
-                    s, b => ((NpgsqlDbContextOptionsBuilder)b).ProvideClientCertificatesCallback(_ => { }))));
+                    s, b => ((H2DbContextOptionsBuilder)b).ProvideClientCertificatesCallback(_ => { }))));
 
     [Fact]
     public void Logs_context_initialization_provide_password_callback()
@@ -33,7 +33,7 @@ public class LoggingNpgsqlTest : LoggingRelationalTestBase<NpgsqlDbContextOption
             ExpectedMessage($"ProvidePasswordCallback {DefaultOptions}"),
             ActualMessage(
                 s => CreateOptionsBuilder(
-                    s, b => ((NpgsqlDbContextOptionsBuilder)b).ProvidePasswordCallback((_, _, _, _) => "password"))));
+                    s, b => ((H2DbContextOptionsBuilder)b).ProvidePasswordCallback((_, _, _, _) => "password"))));
 
     [Fact]
     public void Logs_context_initialization_remote_certificate_validation_callback()
@@ -42,27 +42,27 @@ public class LoggingNpgsqlTest : LoggingRelationalTestBase<NpgsqlDbContextOption
             ActualMessage(
                 s => CreateOptionsBuilder(
                     s,
-                    b => ((NpgsqlDbContextOptionsBuilder)b).RemoteCertificateValidationCallback((_, _, _, _) => true))));
-#pragma warning restore CS0618 // Authentication APIs on NpgsqlDbContextOptionsBuilder are obsolete
+                    b => ((H2DbContextOptionsBuilder)b).RemoteCertificateValidationCallback((_, _, _, _) => true))));
+#pragma warning restore CS0618 // Authentication APIs on H2DbContextOptionsBuilder are obsolete
 
     [Fact]
     public void Logs_context_initialization_reverse_null_ordering()
         => Assert.Equal(
             ExpectedMessage($"ReverseNullOrdering {DefaultOptions}"),
-            ActualMessage(s => CreateOptionsBuilder(s, b => ((NpgsqlDbContextOptionsBuilder)b).ReverseNullOrdering())));
+            ActualMessage(s => CreateOptionsBuilder(s, b => ((H2DbContextOptionsBuilder)b).ReverseNullOrdering())));
 
     [Fact]
     public void Logs_context_initialization_user_range_definitions()
         => Assert.Equal(
             ExpectedMessage($"UserRangeDefinitions=[{typeof(int)}=>int4range] " + DefaultOptions),
-            ActualMessage(s => CreateOptionsBuilder(s, b => ((NpgsqlDbContextOptionsBuilder)b).MapRange<int>("int4range"))));
+            ActualMessage(s => CreateOptionsBuilder(s, b => ((H2DbContextOptionsBuilder)b).MapRange<int>("int4range"))));
 
     protected override DbContextOptionsBuilder CreateOptionsBuilder(
         IServiceCollection services,
-        Action<RelationalDbContextOptionsBuilder<NpgsqlDbContextOptionsBuilder, NpgsqlOptionsExtension>> relationalAction)
+        Action<RelationalDbContextOptionsBuilder<H2DbContextOptionsBuilder, H2OptionsExtension>> relationalAction)
         => new DbContextOptionsBuilder()
-            .UseInternalServiceProvider(services.AddEntityFrameworkNpgsql().BuildServiceProvider())
-            .UseNpgsql("Data Source=LoggingNpgsqlTest.db", relationalAction);
+            .UseInternalServiceProvider(services.AddEntityFrameworkH2().BuildServiceProvider())
+            .UseH2("Data Source=LoggingNpgsqlTest.db", relationalAction);
 
     protected override TestLogger CreateTestLogger()
         => new TestLogger<NpgsqlLoggingDefinitions>();
@@ -71,6 +71,6 @@ public class LoggingNpgsqlTest : LoggingRelationalTestBase<NpgsqlDbContextOption
         => "H2Sharp.EntityFrameworkCore";
 
     protected override string ProviderVersion
-        => typeof(NpgsqlOptionsExtension).Assembly
+        => typeof(H2OptionsExtension).Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 }

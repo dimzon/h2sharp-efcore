@@ -11,16 +11,16 @@ namespace H2Sharp.EntityFrameworkCore.Update;
 public class NpgsqlModificationCommandBatchFactoryTest
 {
     [Fact]
-    public void Uses_MaxBatchSize_specified_in_NpgsqlOptionsExtension()
+    public void Uses_MaxBatchSize_specified_in_H2OptionsExtension()
     {
         var optionsBuilder = new DbContextOptionsBuilder();
-        optionsBuilder.UseNpgsql("Database=Crunchie", b => b.MaxBatchSize(1));
+        optionsBuilder.UseH2("Database=Crunchie", b => b.MaxBatchSize(1));
 
         var typeMapper = new NpgsqlTypeMappingSource(
             TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
             TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
             new NpgsqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
-            new NpgsqlSingletonOptions());
+            new H2SingletonOptions());
 
         var factory = new NpgsqlModificationCommandBatchFactory(
             new ModificationCommandBatchFactoryDependencies(
@@ -50,13 +50,13 @@ public class NpgsqlModificationCommandBatchFactoryTest
     public void MaxBatchSize_is_optional()
     {
         var optionsBuilder = new DbContextOptionsBuilder();
-        optionsBuilder.UseNpgsql("Database=Crunchie");
+        optionsBuilder.UseH2("Database=Crunchie");
 
         var typeMapper = new NpgsqlTypeMappingSource(
             TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
             TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
             new NpgsqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
-            new NpgsqlSingletonOptions());
+            new H2SingletonOptions());
 
         var factory = new NpgsqlModificationCommandBatchFactory(
             new ModificationCommandBatchFactoryDependencies(

@@ -97,14 +97,14 @@ LIMIT 2
 
     protected override DbContextOptionsBuilder SetTranslateParameterizedCollectionsToConstants(DbContextOptionsBuilder optionsBuilder)
     {
-        new NpgsqlDbContextOptionsBuilder(optionsBuilder).TranslateParameterizedCollectionsToConstants();
+        new H2DbContextOptionsBuilder(optionsBuilder).TranslateParameterizedCollectionsToConstants();
 
         return optionsBuilder;
     }
 
     protected override DbContextOptionsBuilder SetTranslateParameterizedCollectionsToParameters(DbContextOptionsBuilder optionsBuilder)
     {
-        new NpgsqlDbContextOptionsBuilder(optionsBuilder).TranslateParameterizedCollectionsToParameters();
+        new H2DbContextOptionsBuilder(optionsBuilder).TranslateParameterizedCollectionsToParameters();
 
         return optionsBuilder;
     }

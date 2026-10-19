@@ -38,7 +38,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
     /// <param name="npgsqlSingletonOptions">The singleton options to use.</param>
     public NpgsqlMigrationsSqlGenerator(
         MigrationsSqlGeneratorDependencies dependencies,
-        INpgsqlSingletonOptions npgsqlSingletonOptions)
+        IH2SingletonOptions npgsqlSingletonOptions)
         : base(dependencies)
     {
         _postgresVersion = npgsqlSingletonOptions.PostgresVersion;
@@ -172,7 +172,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
 
         builder.Append("CREATE ");
 
-        if (operation[NpgsqlAnnotationNames.UnloggedTable] is true)
+        if (operation[H2AnnotationNames.UnloggedTable] is true)
         {
             builder.Append("UNLOGGED ");
         }
@@ -267,8 +267,8 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
         }
 
         // Unlogged table (null is equivalent to false)
-        var oldUnlogged = operation.OldTable[NpgsqlAnnotationNames.UnloggedTable] is true;
-        var newUnlogged = operation[NpgsqlAnnotationNames.UnloggedTable] is true;
+        var oldUnlogged = operation.OldTable[H2AnnotationNames.UnloggedTable] is true;
+        var newUnlogged = operation[H2AnnotationNames.UnloggedTable] is true;
 
         if (oldUnlogged != newUnlogged)
         {
@@ -322,7 +322,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
             return;
         }
 
-        if (operation[NpgsqlAnnotationNames.ValueGenerationStrategy] is NpgsqlValueGenerationStrategy strategy)
+        if (operation[H2AnnotationNames.ValueGenerationStrategy] is NpgsqlValueGenerationStrategy strategy)
         {
             switch (strategy)
             {
@@ -445,8 +445,8 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
         // This mechanism is obsolete, and EF Core's bulk model configuration can be used instead; but we continue to support it for
         // backwards compat.
 #pragma warning disable CS0618
-        var oldCollation = (string?)(operation.OldColumn.Collation ?? operation.OldColumn[NpgsqlAnnotationNames.DefaultColumnCollation]);
-        var newCollation = (string?)(operation.Collation ?? operation[NpgsqlAnnotationNames.DefaultColumnCollation]);
+        var oldCollation = (string?)(operation.OldColumn.Collation ?? operation.OldColumn[H2AnnotationNames.DefaultColumnCollation]);
+        var newCollation = (string?)(operation.Collation ?? operation[H2AnnotationNames.DefaultColumnCollation]);
 #pragma warning restore CS0618
 
         if (type != oldType || newCollation != oldCollation)
@@ -520,8 +520,8 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
         }
 
         // Compression
-        var oldCompressionMethod = (string?)operation.OldColumn[NpgsqlAnnotationNames.CompressionMethod];
-        var newCompressionMethod = (string?)operation[NpgsqlAnnotationNames.CompressionMethod];
+        var oldCompressionMethod = (string?)operation.OldColumn[H2AnnotationNames.CompressionMethod];
+        var newCompressionMethod = (string?)operation[H2AnnotationNames.CompressionMethod];
 
         if (newCompressionMethod != oldCompressionMethod)
         {
@@ -533,8 +533,8 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
 
         CheckForOldValueGenerationAnnotation(operation);
 
-        var oldStrategy = operation.OldColumn[NpgsqlAnnotationNames.ValueGenerationStrategy] as NpgsqlValueGenerationStrategy?;
-        var newStrategy = operation[NpgsqlAnnotationNames.ValueGenerationStrategy] as NpgsqlValueGenerationStrategy?;
+        var oldStrategy = operation.OldColumn[H2AnnotationNames.ValueGenerationStrategy] as NpgsqlValueGenerationStrategy?;
+        var newStrategy = operation[H2AnnotationNames.ValueGenerationStrategy] as NpgsqlValueGenerationStrategy?;
 
         if (oldStrategy != newStrategy)
         {
@@ -914,7 +914,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
 
         builder.Append("INDEX ");
 
-        var concurrently = operation[NpgsqlAnnotationNames.CreatedConcurrently] as bool? == true;
+        var concurrently = operation[H2AnnotationNames.CreatedConcurrently] as bool? == true;
         if (concurrently)
         {
             builder.Append("CONCURRENTLY ");
@@ -925,7 +925,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
             .Append(" ON ")
             .Append(DelimitIdentifier(operation.Table, operation.Schema));
 
-        var method = operation[NpgsqlAnnotationNames.IndexMethod] as string;
+        var method = operation[H2AnnotationNames.IndexMethod] as string;
         if (method?.Length > 0)
         {
             builder.Append(" USING ").Append(method);
@@ -933,7 +933,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
 
         var indexColumns = GetIndexColumns(operation);
 
-        var columnsExpression = operation[NpgsqlAnnotationNames.TsVectorConfig] is string tsVectorConfig
+        var columnsExpression = operation[H2AnnotationNames.TsVectorConfig] is string tsVectorConfig
             ? ColumnsToTsVector(operation.Name, indexColumns.Select(i => i.Name), tsVectorConfig, model, operation.Schema, operation.Table)
             : IndexColumnList(indexColumns, method);
 
@@ -955,7 +955,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
     /// <inheritdoc />
     protected override void IndexOptions(MigrationOperation operation, IModel? model, MigrationCommandListBuilder builder)
     {
-        if (_postgresVersion.AtLeast(11) && operation[NpgsqlAnnotationNames.IndexInclude] is string[] { Length: > 0 } includeColumns)
+        if (_postgresVersion.AtLeast(11) && operation[H2AnnotationNames.IndexInclude] is string[] { Length: > 0 } includeColumns)
         {
             builder
                 .Append(" INCLUDE (")
@@ -963,7 +963,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
                 .Append(")");
         }
 
-        if (operation[NpgsqlAnnotationNames.NullsDistinct] is false)
+        if (operation[H2AnnotationNames.NullsDistinct] is false)
         {
             builder.Append(" NULLS NOT DISTINCT");
         }
@@ -1602,7 +1602,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
         }
 
         CheckForOldValueGenerationAnnotation(operation);
-        var valueGenerationStrategy = operation[NpgsqlAnnotationNames.ValueGenerationStrategy] as NpgsqlValueGenerationStrategy?;
+        var valueGenerationStrategy = operation[H2AnnotationNames.ValueGenerationStrategy] as NpgsqlValueGenerationStrategy?;
         if (valueGenerationStrategy == NpgsqlValueGenerationStrategy.SerialColumn)
         {
             if (operation.IsNullable)
@@ -1643,7 +1643,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
             .Append(" ")
             .Append(columnType);
 
-        if (operation[NpgsqlAnnotationNames.CompressionMethod] is string compressionMethod)
+        if (operation[H2AnnotationNames.CompressionMethod] is string compressionMethod)
         {
             builder
                 .Append(" COMPRESSION ")
@@ -1656,7 +1656,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
         // This mechanism is obsolete, and EF Core's bulk model configuration can be used instead; but we continue to support it for
         // backwards compat.
 #pragma warning disable CS0618
-        var collation = (string?)(operation.Collation ?? operation[NpgsqlAnnotationNames.DefaultColumnCollation]);
+        var collation = (string?)(operation.Collation ?? operation[H2AnnotationNames.DefaultColumnCollation]);
 #pragma warning restore CS0618
         if (collation is not null)
         {
@@ -1701,25 +1701,25 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
     }
 
     /// <summary>
-    ///     Checks for a <see cref="NpgsqlAnnotationNames.TsVectorConfig" /> annotation on the given column, and if found, assigns
+    ///     Checks for a <see cref="H2AnnotationNames.TsVectorConfig" /> annotation on the given column, and if found, assigns
     ///     the appropriate SQL to <see cref="ColumnOperation.ComputedColumnSql" />.
     /// </summary>
     protected virtual void ApplyTsVectorColumnSql(ColumnOperation column, IModel? model, string name, string? schema, string table)
     {
-        if (column[NpgsqlAnnotationNames.TsVectorConfig] is string tsVectorConfig)
+        if (column[H2AnnotationNames.TsVectorConfig] is string tsVectorConfig)
         {
-            var tsVectorIncludedColumns = column[NpgsqlAnnotationNames.TsVectorProperties] as string[];
+            var tsVectorIncludedColumns = column[H2AnnotationNames.TsVectorProperties] as string[];
             if (tsVectorIncludedColumns is null)
             {
                 throw new InvalidOperationException(
-                    $"{nameof(NpgsqlAnnotationNames.TsVectorConfig)} is present in a migration but "
-                    + $"{nameof(NpgsqlAnnotationNames.TsVectorProperties)} is absent or empty");
+                    $"{nameof(H2AnnotationNames.TsVectorConfig)} is present in a migration but "
+                    + $"{nameof(H2AnnotationNames.TsVectorProperties)} is absent or empty");
             }
 
             column.ComputedColumnSql = ColumnsToTsVector(name, tsVectorIncludedColumns, tsVectorConfig, model, schema, table);
             column.IsStored = true;
 
-            column.RemoveAnnotation(NpgsqlAnnotationNames.TsVectorConfig);
+            column.RemoveAnnotation(H2AnnotationNames.TsVectorConfig);
         }
     }
 
@@ -1729,7 +1729,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
         ColumnOperation operation,
         MigrationCommandListBuilder builder)
     {
-        if (operation[NpgsqlAnnotationNames.ValueGenerationStrategy] is not NpgsqlValueGenerationStrategy strategy
+        if (operation[H2AnnotationNames.ValueGenerationStrategy] is not NpgsqlValueGenerationStrategy strategy
             || !strategy.IsIdentity())
         {
             return;
@@ -1741,7 +1741,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
                 : " GENERATED ALWAYS AS IDENTITY");
 
         // Handle sequence options for the identity column
-        if (operation[NpgsqlAnnotationNames.IdentityOptions] is string identitySequenceOptions)
+        if (operation[H2AnnotationNames.IdentityOptions] is string identitySequenceOptions)
         {
             // TODO: Potential for refactoring with regular sequences (i.e. calling SequenceOptions),
             // but some complexity to be worked out around creating/altering/restarting
@@ -1907,7 +1907,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
     // ValueGeneratedOnAdd annotation. Detect that and throw.
     private static void CheckForOldValueGenerationAnnotation(IAnnotatable annotatable)
     {
-        if (annotatable.FindAnnotation(NpgsqlAnnotationNames.ValueGeneratedOnAdd) is not null)
+        if (annotatable.FindAnnotation(H2AnnotationNames.ValueGeneratedOnAdd) is not null)
         {
             throw new NotSupportedException(
                 "The Npgsql:ValueGeneratedOnAdd annotation has been found in your migrations, but is no longer supported. Please replace it with '.Annotation(\"Npgsql:ValueGenerationStrategy\", NpgsqlValueGenerationStrategy.SerialColumn)' where you want PostgreSQL serial (autoincrement) columns, and remove it in all other cases.");
@@ -2006,7 +2006,7 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
                 {
                     yield return index;
                 }
-                else if (index[NpgsqlAnnotationNames.IndexInclude] is IReadOnlyList<string> includeColumns
+                else if (index[H2AnnotationNames.IndexInclude] is IReadOnlyList<string> includeColumns
                          && includeColumns.Contains(column.Name))
                 {
                     yield return index;
@@ -2059,9 +2059,9 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
 
     private Dictionary<string, string> GetStorageParameters(Annotatable annotatable)
         => annotatable.GetAnnotations()
-            .Where(a => a.Name.StartsWith(NpgsqlAnnotationNames.StorageParameterPrefix, StringComparison.Ordinal))
+            .Where(a => a.Name.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal))
             .ToDictionary(
-                a => a.Name.Substring(NpgsqlAnnotationNames.StorageParameterPrefix.Length),
+                a => a.Name.Substring(H2AnnotationNames.StorageParameterPrefix.Length),
                 a => a.Value switch
                 {
                     bool b => b ? "true" : "false",
@@ -2270,13 +2270,13 @@ public class NpgsqlMigrationsSqlGenerator : MigrationsSqlGenerator
     {
         var collations = operation[RelationalAnnotationNames.Collation] as string[];
 
-        var operators = operation[NpgsqlAnnotationNames.IndexOperators] as string[];
+        var operators = operation[H2AnnotationNames.IndexOperators] as string[];
 
         // We used to have our own annotation-based descending index mechanism, this got replaced with IsDescending in EF Core 7.0.
         var isDescendingValues = operation.IsDescending;
-        var legacySortOrders = operation[NpgsqlAnnotationNames.IndexSortOrder] as SortOrder[];
+        var legacySortOrders = operation[H2AnnotationNames.IndexSortOrder] as SortOrder[];
 
-        var nullSortOrders = operation[NpgsqlAnnotationNames.IndexNullSortOrder] as NullSortOrder[];
+        var nullSortOrders = operation[H2AnnotationNames.IndexNullSortOrder] as NullSortOrder[];
 
         var columns = new IndexColumn[operation.Columns.Length];
 

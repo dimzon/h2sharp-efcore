@@ -46,7 +46,7 @@ public class NpgsqlDatabaseFacadeTest
     public void IsNpgsql_when_using_constructor()
     {
         using var context = new ProviderContext(
-            new DbContextOptionsBuilder().UseNpgsql("Database=Maltesers").Options);
+            new DbContextOptionsBuilder().UseH2("Database=Maltesers").Options);
 
         Assert.True(context.Database.IsNpgsql());
     }
@@ -55,7 +55,7 @@ public class NpgsqlDatabaseFacadeTest
     public void IsNpgsql_in_OnModelCreating_when_using_constructor()
     {
         using var context = new ProviderOnModelContext(
-            new DbContextOptionsBuilder().UseNpgsql("Database=Maltesers").Options);
+            new DbContextOptionsBuilder().UseH2("Database=Maltesers").Options);
         var _ = context.Model; // Trigger context initialization
 
         Assert.True(context.IsNpgsqlSet);
@@ -65,7 +65,7 @@ public class NpgsqlDatabaseFacadeTest
     public void IsNpgsql_in_constructor_when_using_constructor()
     {
         using var context = new ProviderConstructorContext(
-            new DbContextOptionsBuilder().UseNpgsql("Database=Maltesers").Options);
+            new DbContextOptionsBuilder().UseH2("Database=Maltesers").Options);
         var _ = context.Model; // Trigger context initialization
 
         Assert.True(context.IsNpgsqlSet);
@@ -75,7 +75,7 @@ public class NpgsqlDatabaseFacadeTest
     public void Cannot_use_IsNpgsql_in_OnConfiguring_with_constructor()
     {
         using var context = new ProviderUseInOnConfiguringContext(
-            new DbContextOptionsBuilder().UseNpgsql("Database=Maltesers").Options);
+            new DbContextOptionsBuilder().UseH2("Database=Maltesers").Options);
 
         Assert.Equal(
             CoreStrings.RecursiveOnConfiguring,
@@ -113,7 +113,7 @@ public class NpgsqlDatabaseFacadeTest
     private class NpgsqlOnConfiguringContext : ProviderContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql("Database=Maltesers");
+            => optionsBuilder.UseH2("Database=Maltesers");
     }
 
     private class NpgsqlOnModelContext : NpgsqlOnConfiguringContext

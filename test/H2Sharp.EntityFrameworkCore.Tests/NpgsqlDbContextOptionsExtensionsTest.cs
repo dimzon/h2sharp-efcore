@@ -8,9 +8,9 @@ public class NpgsqlDbContextOptionsExtensionsTest
     public void Can_add_extension_with_max_batch_size()
     {
         var optionsBuilder = new DbContextOptionsBuilder();
-        optionsBuilder.UseNpgsql("Database=Crunchie", b => b.MaxBatchSize(123));
+        optionsBuilder.UseH2("Database=Crunchie", b => b.MaxBatchSize(123));
 
-        var extension = optionsBuilder.Options.Extensions.OfType<NpgsqlOptionsExtension>().Single();
+        var extension = optionsBuilder.Options.Extensions.OfType<H2OptionsExtension>().Single();
 
         Assert.Equal(123, extension.MaxBatchSize);
     }
@@ -19,9 +19,9 @@ public class NpgsqlDbContextOptionsExtensionsTest
     public void Can_add_extension_with_command_timeout()
     {
         var optionsBuilder = new DbContextOptionsBuilder();
-        optionsBuilder.UseNpgsql("Database=Crunchie", b => b.CommandTimeout(30));
+        optionsBuilder.UseH2("Database=Crunchie", b => b.CommandTimeout(30));
 
-        var extension = optionsBuilder.Options.Extensions.OfType<NpgsqlOptionsExtension>().Single();
+        var extension = optionsBuilder.Options.Extensions.OfType<H2OptionsExtension>().Single();
 
         Assert.Equal(30, extension.CommandTimeout);
     }
@@ -30,9 +30,9 @@ public class NpgsqlDbContextOptionsExtensionsTest
     public void Can_add_extension_with_connection_string()
     {
         var optionsBuilder = new DbContextOptionsBuilder();
-        optionsBuilder.UseNpgsql("Database=Crunchie");
+        optionsBuilder.UseH2("Database=Crunchie");
 
-        var extension = optionsBuilder.Options.Extensions.OfType<NpgsqlOptionsExtension>().Single();
+        var extension = optionsBuilder.Options.Extensions.OfType<H2OptionsExtension>().Single();
 
         Assert.Equal("Database=Crunchie", extension.ConnectionString);
         Assert.Null(extension.Connection);
@@ -44,9 +44,9 @@ public class NpgsqlDbContextOptionsExtensionsTest
     public void Can_add_extension_with_connection_string_using_generic_options(bool nullConnectionString)
     {
         var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
-        optionsBuilder.UseNpgsql(nullConnectionString ? null : "Database=Whisper");
+        optionsBuilder.UseH2(nullConnectionString ? null : "Database=Whisper");
 
-        var extension = optionsBuilder.Options.Extensions.OfType<NpgsqlOptionsExtension>().Single();
+        var extension = optionsBuilder.Options.Extensions.OfType<H2OptionsExtension>().Single();
 
         Assert.Equal(nullConnectionString ? null : "Database=Whisper", extension.ConnectionString);
         Assert.Null(extension.Connection);
@@ -58,9 +58,9 @@ public class NpgsqlDbContextOptionsExtensionsTest
         var optionsBuilder = new DbContextOptionsBuilder();
         var connection = new NpgsqlConnection();
 
-        optionsBuilder.UseNpgsql(connection);
+        optionsBuilder.UseH2(connection);
 
-        var extension = optionsBuilder.Options.Extensions.OfType<NpgsqlOptionsExtension>().Single();
+        var extension = optionsBuilder.Options.Extensions.OfType<H2OptionsExtension>().Single();
 
         Assert.Same(connection, extension.Connection);
         Assert.Null(extension.ConnectionString);
@@ -72,9 +72,9 @@ public class NpgsqlDbContextOptionsExtensionsTest
         var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
         var connection = new NpgsqlConnection();
 
-        optionsBuilder.UseNpgsql(connection);
+        optionsBuilder.UseH2(connection);
 
-        var extension = optionsBuilder.Options.Extensions.OfType<NpgsqlOptionsExtension>().Single();
+        var extension = optionsBuilder.Options.Extensions.OfType<H2OptionsExtension>().Single();
 
         Assert.Same(connection, extension.Connection);
         Assert.Null(extension.ConnectionString);
@@ -86,7 +86,7 @@ public class NpgsqlDbContextOptionsExtensionsTest
     public void Service_collection_extension_method_can_configure_npgsql_options(bool nullConnectionString)
     {
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddNpgsql<ApplicationDbContext>(
+        serviceCollection.AddH2<ApplicationDbContext>(
             nullConnectionString ? null : "Database=Crunchie",
             npgsqlOption =>
             {
@@ -109,7 +109,7 @@ public class NpgsqlDbContextOptionsExtensionsTest
             Assert.True(coreOptions.DetailedErrorsEnabled);
 
             var npgsqlOptions = serviceScope.ServiceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>()
-                .GetExtension<NpgsqlOptionsExtension>();
+                .GetExtension<H2OptionsExtension>();
             Assert.Equal(123, npgsqlOptions.MaxBatchSize);
             Assert.Equal(30, npgsqlOptions.CommandTimeout);
             Assert.Equal(nullConnectionString ? null : "Database=Crunchie", npgsqlOptions.ConnectionString);
@@ -123,7 +123,7 @@ public class NpgsqlDbContextOptionsExtensionsTest
         {
             var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
             var dataSource = NpgsqlDataSource.Create($"Host=localhost;Database={i};Include Error Detail=true;Username=admin;Password=admin");
-            optionsBuilder.UseNpgsql(dataSource);
+            optionsBuilder.UseH2(dataSource);
 
             using var context = new ApplicationDbContext(optionsBuilder.Options);
             _ = context.Model;

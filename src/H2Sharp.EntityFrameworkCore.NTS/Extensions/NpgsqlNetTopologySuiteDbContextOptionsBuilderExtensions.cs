@@ -5,7 +5,7 @@ using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 namespace Microsoft.EntityFrameworkCore;
 
 /// <summary>
-///     NetTopologySuite specific extension methods for <see cref="NpgsqlDbContextOptionsBuilder" />.
+///     NetTopologySuite specific extension methods for <see cref="H2DbContextOptionsBuilder" />.
 /// </summary>
 public static class NpgsqlNetTopologySuiteDbContextOptionsBuilderExtensions
 {
@@ -15,8 +15,8 @@ public static class NpgsqlNetTopologySuiteDbContextOptionsBuilderExtensions
     /// <returns>
     ///     The options builder so that further configuration can be chained.
     /// </returns>
-    public static NpgsqlDbContextOptionsBuilder UseNetTopologySuite(
-        this NpgsqlDbContextOptionsBuilder optionsBuilder,
+    public static H2DbContextOptionsBuilder UseNetTopologySuite(
+        this H2DbContextOptionsBuilder optionsBuilder,
         CoordinateSequenceFactory? coordinateSequenceFactory = null,
         PrecisionModel? precisionModel = null,
         Ordinates handleOrdinates = Ordinates.None,

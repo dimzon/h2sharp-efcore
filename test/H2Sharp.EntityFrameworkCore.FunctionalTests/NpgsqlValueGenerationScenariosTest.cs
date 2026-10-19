@@ -615,7 +615,7 @@ public class NpgsqlValueGenerationScenariosTest
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
                 .EnableServiceProviderCaching(false)
-                .UseNpgsql(
+                .UseH2(
                     NpgsqlTestStore.CreateConnectionString(databaseName),
                     b => b.ApplyConfiguration());
 
