@@ -22,24 +22,16 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// </summary>
     private readonly bool _reverseNullOrderingEnabled;
 
-    /// <summary>
-    ///     The backend version to target. If null, it means the user hasn't set a compatibility version, and the
-    ///     latest should be targeted.
-    /// </summary>
-    private readonly Version _postgresVersion;
-
     /// <inheritdoc />
     public H2QuerySqlGenerator(
         QuerySqlGeneratorDependencies dependencies,
         IRelationalTypeMappingSource typeMappingSource,
-        bool reverseNullOrderingEnabled,
-        Version postgresVersion)
+        bool reverseNullOrderingEnabled)
         : base(dependencies)
     {
         _sqlGenerationHelper = dependencies.SqlGenerationHelper;
         _typeMappingSource = typeMappingSource;
         _reverseNullOrderingEnabled = reverseNullOrderingEnabled;
-        _postgresVersion = postgresVersion;
     }
 
     /// <summary>
@@ -222,25 +214,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         switch (binary.OperatorType)
         {
             case ExpressionType.Add:
-            {
-                if (_postgresVersion >= new Version(9, 5))
-                {
-                    return base.VisitSqlBinary(binary);
-                }
-
-                // PostgreSQL 9.4 and below has some weird operator precedence fixed in 9.5 and described here:
-                // http://git.postgresql.org/gitweb/?p=postgresql.git&a=commitdiff&h=c6b3c939b7e0f1d35f4ed4996e71420a993810d2
-                // As a result we must surround string concatenation with parentheses
-                if (binary.Left.Type == typeof(string) && binary.Right.Type == typeof(string))
-                {
-                    Sql.Append("(");
-                    var exp = base.VisitSqlBinary(binary);
-                    Sql.Append(")");
-                    return exp;
-                }
-
                 return base.VisitSqlBinary(binary);
-            }
 
             case ExpressionType.ArrayIndex:
                 return VisitArrayIndex(binary);
@@ -481,8 +455,6 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                     PgExpressionType.ContainedBy
                         => "<<",
 
-                    PgExpressionType.Contains => "@>",
-                    PgExpressionType.ContainedBy => "<@",
                     PgExpressionType.Overlaps => "&&",
 
                     PgExpressionType.NetworkContainedByOrEqual => "<<=",
@@ -606,11 +578,6 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 || sqlUnaryExpression.Operand.TypeMapping.ClrType == typeof((IPAddress, int))
                 || sqlUnaryExpression.Operand.TypeMapping.ClrType == typeof(PhysicalAddress):
                 Sql.Append("~");
-                Visit(sqlUnaryExpression.Operand);
-                return sqlUnaryExpression;
-
-            // NOT operation on full-text queries
-                Sql.Append("!!");
                 Visit(sqlUnaryExpression.Operand);
                 return sqlUnaryExpression;
 

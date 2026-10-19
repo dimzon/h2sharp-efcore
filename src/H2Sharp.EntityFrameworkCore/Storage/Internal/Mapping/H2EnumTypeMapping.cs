@@ -128,7 +128,6 @@ public class H2EnumTypeMapping : RelationalTypeMapping
                 $"H2-specific type mapping {GetType().Name} being used with non-H2 parameter type {parameter.GetType().Name}");
         }
 
-        npgsqlParameter.DataTypeName = UnquotedStoreType;
     }
 
     /// <summary>

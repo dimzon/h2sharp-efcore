@@ -38,8 +38,7 @@ public class H2EvaluatableExpressionFilter : RelationalEvaluatableExpressionFilt
                 var declaringType = methodCallExpression.Method.DeclaringType;
                 var method = methodCallExpression.Method;
 
-                if (method is null                    || method == TsVectorParse
-                    || declaringType == typeof(H2DbFunctionsExtensions)
+                if (declaringType == typeof(H2DbFunctionsExtensions)
                     || declaringType == typeof(H2JsonDbFunctionsExtensions)
                     // Prevent evaluation of ValueTuple.Create, see NewExpression of ITuple below
                     || declaringType == typeof(ValueTuple) && method.Name == nameof(ValueTuple.Create))

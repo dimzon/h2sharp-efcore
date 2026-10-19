@@ -127,8 +127,6 @@ public static class H2ShapedQueryExpressionExtensions
         => expression switch
         {
             { TypeMapping: H2ArrayTypeMapping } => true,
-            { TypeMapping: object } => false,
-            { Type: var type } when type.IsMultirange() => false,
             _ => true
         };
 

@@ -37,6 +37,5 @@ public class H2QuerySqlGeneratorFactory : IQuerySqlGeneratorFactory
         => new H2QuerySqlGenerator(
             _dependencies,
             _typeMappingSource,
-            _npgsqlSingletonOptions.ReverseNullOrderingEnabled,
-            _);
+            _npgsqlSingletonOptions.ReverseNullOrderingEnabled);
 }

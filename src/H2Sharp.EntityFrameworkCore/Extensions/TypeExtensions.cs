@@ -22,19 +22,6 @@ internal static class TypeExtensions
         return elementType is not null;
     }
 
-    internal static bool IsRange(this SqlExpression expression)
-        => expression.TypeMapping is RelationalTypeMapping || expression.Type.IsRange();
-
-    internal static bool IsRange(this Type type)
-        => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(H2Range<>)
-            || type is { Name: "Interval" or "DateInterval", Namespace: "NodaTime" };
-
-    internal static bool IsMultirange(this SqlExpression expression)
-        => expression.TypeMapping is object
-            || expression.Type.IsMultirange();
-
-    internal static bool IsMultirange(this Type type)
-        => type.TryGetElementType(out var elementType) && elementType.IsRange();
 
     public static PropertyInfo? FindIndexerProperty(this Type type)
     {

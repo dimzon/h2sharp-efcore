@@ -44,7 +44,7 @@ public class H2ConventionSetBuilder : RelationalConventionSetBuilder
         var conventionSet = base.CreateConventionSet();
 
         var valueGenerationStrategyConvention =
-            new H2ValueGenerationStrategyConvention(Dependencies, RelationalDependencies, _postgresVersion);
+            new H2ValueGenerationStrategyConvention(Dependencies, RelationalDependencies, null);
         conventionSet.ModelInitializedConventions.Add(valueGenerationStrategyConvention);
         conventionSet.ModelInitializedConventions.Add(
             new RelationalMaxIdentifierLengthConvention(63, Dependencies, RelationalDependencies));

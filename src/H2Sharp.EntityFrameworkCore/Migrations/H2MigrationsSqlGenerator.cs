@@ -953,7 +953,7 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
     /// <inheritdoc />
     protected override void IndexOptions(MigrationOperation operation, IModel? model, MigrationCommandListBuilder builder)
     {
-        if (_postgresVersion.AtLeast(11) && operation[H2AnnotationNames.IndexInclude] is string[] { Length: > 0 } includeColumns)
+        if (true && operation[H2AnnotationNames.IndexInclude] is string[] { Length: > 0 } includeColumns)
         {
             builder
                 .Append(" INCLUDE (")
@@ -1055,19 +1055,10 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
         var dbName = DelimitIdentifier(operation.Name);
 
-        if (_postgresVersion.AtLeast(13))
+        if (true)
         {
             builder.AppendLine($"DROP DATABASE {dbName} WITH (FORCE);");
         }
-        else
-        {
-            builder
-                .AppendLine($"REVOKE CONNECT ON DATABASE {dbName} FROM PUBLIC;")
-                .AppendLine($"SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE datname = '{operation.Name}';")
-                .EndCommand(suppressTransaction: true)
-                .AppendLine($"DROP DATABASE {dbName};");
-        }
-
         EndStatement(builder, suppressTransaction: true);
     }
 
@@ -1378,12 +1369,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         }
 
         builder.AppendLine(";");
-
-        // Adding an enum label cannot be done in a transaction prior to PG12
-        if (_postgresVersion.IsUnder(12))
-        {
-            EndStatement(builder, suppressTransaction: true);
-        }
     }
 
     #endregion Enum management
@@ -1473,20 +1458,10 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
     {
         Check.NotNull(operation, nameof(operation));
 
-        if (_postgresVersion.AtLeast(10))
-        {
-            base.Generate(operation, model, builder);
-        }
-        else
-        {
-            // "CREATE SEQUENCE name AS type" expression is supported only in PostgreSQL 10 or above.
-            // The base MigrationsSqlGenerator.Generate method generates that expression.
-            // https://github.com/aspnet/EntityFrameworkCore/blob/master/src/EFCore.Relational/Migrations/MigrationsSqlGenerator.cs#L533-L535
-            var oldValue = operation.ClrType;
-            operation.ClrType = typeof(long);
-            base.Generate(operation, model, builder);
-            operation.ClrType = oldValue;
-        }
+        // Upstream this fell back to generating the sequence without an AS clause on PostgreSQL 9.x,
+        // because "CREATE SEQUENCE name AS type" is a 10-and-later form. H2's CREATE SEQUENCE has no
+        // AS type clause at all, so the base generator's output is what applies here unchanged.
+        base.Generate(operation, model, builder);
     }
 
     #endregion Standard migrations
@@ -1777,7 +1752,7 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         Check.NotNull(operation, nameof(operation));
         Check.NotNull(builder, nameof(builder));
 
-        if (_postgresVersion < new Version(12, 0))
+        if (false)
         {
             throw new NotSupportedException("Computed/generated columns aren't supported in PostgreSQL prior to version 12");
         }
@@ -1930,7 +1905,7 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
     #region System column utilities
 
     private bool IsSystemColumn(string name)
-        => name == "oid" && _postgresVersion.IsUnder(12) || SystemColumnNames.Contains(name);
+        => SystemColumnNames.Contains(name);
 
     /// <summary>
     ///     Tables in PostgreSQL implicitly have a set of system columns, which are always there.

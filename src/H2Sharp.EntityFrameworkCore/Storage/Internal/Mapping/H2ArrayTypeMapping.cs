@@ -232,23 +232,15 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
         }
 
         var param = base.CreateParameter(command, name, value, nullable, direction);
-        if (param is not H2Parameter npgsqlParameter)
+        if (param is not H2Parameter)
         {
             throw new InvalidOperationException(
                 $"H2-specific type mapping {GetType().Name} being used with non-H2 parameter type {param.GetType().Name}");
         }
 
-        // Enums and user-defined ranges require setting H2Parameter.DataTypeName to specify the PostgreSQL type name.
-        // Make this work for arrays over these types as well.
-        switch (ElementTypeMapping)
-        {
-            case H2EnumTypeMapping enumTypeMapping:
-                npgsqlParameter.DataTypeName = enumTypeMapping.UnquotedStoreType + "[]";
-                break;
-            case RelationalTypeMapping { UnquotedStoreType: string unquotedStoreType }:
-                npgsqlParameter.DataTypeName = unquotedStoreType + "[]";
-                break;
-        }
+        // Nothing more is set on the parameter. Upstream this named the PostgreSQL element type in
+        // DataTypeName, which an array of enums and of user-defined ranges needed; H2Sharp infers
+        // the element type from the value it is handed, and the mapping pins it in DDL instead.
         return param;
     }
 

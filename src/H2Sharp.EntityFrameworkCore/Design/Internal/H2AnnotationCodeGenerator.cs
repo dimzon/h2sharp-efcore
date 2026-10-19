@@ -31,15 +31,6 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
         = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
             nameof(H2ModelBuilderExtensions.HasPostgresEnum), typeof(ModelBuilder), typeof(string), typeof(string), typeof(string[]));
 
-    private static readonly MethodInfo ModelHasPostgresRangeMethodInfo1
-        = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(H2ModelBuilderExtensions.HasPostgresRange), typeof(ModelBuilder), typeof(string), typeof(string));
-
-    private static readonly MethodInfo ModelHasPostgresRangeMethodInfo2
-        = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(H2ModelBuilderExtensions.HasPostgresRange), typeof(ModelBuilder), typeof(string), typeof(string), typeof(string),
-            typeof(string), typeof(string), typeof(string), typeof(string));
-
     private static readonly MethodInfo ModelUseSerialColumnsMethodInfo
         = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
             nameof(H2ModelBuilderExtensions.UseSerialColumns), typeof(ModelBuilder));

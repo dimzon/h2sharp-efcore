@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using H2Sharp.EntityFrameworkCore.Metadata;
 using H2Sharp.EntityFrameworkCore.Metadata.Internal;
@@ -549,47 +550,20 @@ public static class H2ModelBuilderExtensions
 
         return modelBuilder.HasPostgresEnum(
             schema,
-            name ?? GetTypePgName<TEnum>(nameTranslator),
-            GetMemberPgNames<TEnum>(nameTranslator));
+            name ?? GetTypeStoreName<TEnum>(nameTranslator),
+            GetMemberStoreNames<TEnum>(nameTranslator));
     }
 
     #endregion
 
     #region Templates
 
-    /// <summary>
-    ///     Specifies the PostgreSQL database to use as a template when creating a new database for this model.
-    /// </summary>
-    public static ModelBuilder UseDatabaseTemplate(this ModelBuilder modelBuilder, string templateDatabaseName)
-    {
-        Check.NotNull(modelBuilder, nameof(modelBuilder));
-        Check.NotEmpty(templateDatabaseName, nameof(templateDatabaseName));
-
-        modelBuilder.Model.SetDatabaseTemplate(templateDatabaseName);
-        return modelBuilder;
-    }
+    // H2 has no template database. PostgreSQL's CREATE DATABASE ... TEMPLATE copies another
+    // database; H2 creates the database empty and has no equivalent of that clause, so there is
+    // nothing to configure here.
 
     #endregion
 
-    #region Ranges
-
-    /// <summary>
-    ///     Registers a user-defined range type in the model.
-    /// </summary>
-    /// <param name="modelBuilder">The model builder on which to create the range type.</param>
-    /// <param name="name">The name of the range type to be created.</param>
-    /// <param name="subtype">The subtype (or element type) of the range</param>
-    /// <remarks>
-    ///     See https://www.postgresql.org/docs/current/static/rangetypes.html,
-    ///     https://www.postgresql.org/docs/current/static/sql-createtype.html,
-    /// </remarks>
-    public static ModelBuilder HasPostgresRange(
-        this ModelBuilder modelBuilder,
-        string name,
-        string subtype)
-        => HasPostgresRange(modelBuilder, null, name, subtype);
-
-    #endregion
 
     #region Tablespaces
 
@@ -727,16 +701,16 @@ public static class H2ModelBuilderExtensions
     #region Helpers
 
     // See: https://github.com/npgsql/npgsql/blob/dev/src/H2/TypeMapping/TypeMapperBase.cs#L132-L138
-    private static string GetTypePgName<TEnum>(IH2NameTranslator nameTranslator)
+    private static string GetTypeStoreName<TEnum>(IH2NameTranslator nameTranslator)
         where TEnum : struct, Enum
-        => typeof(TEnum).GetCustomAttribute<ColumnAttribute>()?.PgName ?? nameTranslator.TranslateTypeName(typeof(TEnum).Name);
+        => typeof(TEnum).GetCustomAttribute<ColumnAttribute>()?.Name ?? nameTranslator.TranslateTypeName(typeof(TEnum).Name);
 
     // See: https://github.com/npgsql/npgsql/blob/dev/src/H2/TypeHandlers/EnumHandler.cs#L118-L129
-    private static string[] GetMemberPgNames<TEnum>(IH2NameTranslator nameTranslator)
+    private static string[] GetMemberStoreNames<TEnum>(IH2NameTranslator nameTranslator)
         where TEnum : struct, Enum
         => typeof(TEnum)
             .GetFields(BindingFlags.Static | BindingFlags.Public)
-            .Select(x => x.GetCustomAttribute<ColumnAttribute>()?.PgName ?? nameTranslator.TranslateMemberName(x.Name))
+            .Select(x => x.GetCustomAttribute<ColumnAttribute>()?.Name ?? nameTranslator.TranslateMemberName(x.Name))
             .ToArray();
 
     #endregion

@@ -123,14 +123,6 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
                 when unaryExpression.Type == typeof(ITuple) && unaryExpression.Operand.Type.IsAssignableTo(typeof(ITuple)):
                 return Visit(unaryExpression.Operand);
 
-            // We map both IPAddress and H2Inet to PG inet, and translate many methods accepting H2Inet, so ignore casts from
-            // IPAddress to H2Inet.
-            // On the PostgreSQL side, cidr is also implicitly convertible to inet, and at the ADO.NET level H2Cidr has a similar
-            // implicit conversion operator to H2Inet. So remove that cast as well.
-            case ExpressionType.Convert
-                when unaryExpression.Type == typeof(H2Inet)
-                && (unaryExpression.Operand.Type == typeof(IPAddress) || unaryExpression.Operand.Type == typeof(H2Cidr)):
-                return Visit(unaryExpression.Operand);
         }
 
         return base.VisitUnary(unaryExpression);

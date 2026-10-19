@@ -34,9 +34,6 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         = typeof(H2DbFunctionsExtensions).GetRuntimeMethod(
             nameof(H2DbFunctionsExtensions.ILike), [typeof(DbFunctions), typeof(string), typeof(string)])!;
 
-    private static readonly MethodInfo MatchesLQuery =
-        typeof(LTree).GetRuntimeMethod(nameof(LTree.MatchesLQuery), [typeof(string)])!;
-
     #endregion
 
     /// <summary>
@@ -676,77 +673,10 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         LambdaExpression? predicate,
         Type returnType,
         bool returnDefault)
-    {
-        // Some LTree translations (see LTreeQueryTest)
-        // Note that preprocessing normalizes FirstOrDefault(predicate) to Where(predicate).FirstOrDefault(), so the source's
-        // select expression should already contain our predicate.
-        if ((source.TryExtractArray(out var array, ignorePredicate: true)
-                || source.TryConvertValuesToArray(out array, ignorePredicate: true))
-            && source.QueryExpression is SelectExpression { Tables: [{ Alias: var tableAlias }], Predicate: var translatedPredicate }
-            && translatedPredicate is null ^ predicate is null)
-        {
-            if (translatedPredicate is null)
-            {
-                translatedPredicate = TranslateLambdaExpression(source, predicate!);
-                if (translatedPredicate is null)
-                {
-                    return null;
-                }
-            }
-
-            switch (translatedPredicate)
-            {
-                // Pattern match: new[] { "t1", "t2" }.FirstOrDefault(t => t.IsAncestorOf(e.SomeLTree))
-                // Translation: ARRAY['t1','t2'] ?@> e.SomeLTree
-                // Pattern match: new[] { "t1", "t2" }.FirstOrDefault(t => t.IsDescendant(e.SomeLTree))
-                // Translation: ARRAY['t1','t2'] ?<@ e.SomeLTree
-                case PgBinaryExpression
-                    {
-                        OperatorType: (PgExpressionType.Contains or PgExpressionType.ContainedBy) and var operatorType,
-                        Left: ColumnExpression ltreeColumn,
-                        // Contains/ContainedBy can happen for non-LTree types too, so check that
-                        Right: { TypeMapping: H2LTreeTypeMapping } ltree
-                    }
-                    when ltreeColumn.TableAlias == tableAlias:
-                {
-                    return BuildSimplifiedShapedQuery(
-                        source,
-                        new PgBinaryExpression(
-                            operatorType == PgExpressionType.Contains
-                                ? PgExpressionType.LTreeFirstAncestor
-                                : PgExpressionType.LTreeFirstDescendent,
-                            _sqlExpressionFactory.ApplyDefaultTypeMapping(array),
-                            ltree,
-                            typeof(LTree),
-                            _typeMappingSource.FindMapping(typeof(LTree))));
-                }
-
-                // Pattern match: new[] { "t1", "t2" }.FirstOrDefault(t => t.MatchesLQuery(lquery))
-                // Translation: ARRAY['t1','t2'] ?~ e.lquery
-                // Pattern match: new[] { "t1", "t2" }.FirstOrDefault(t => t.MatchesLQuery(ltxtquery))
-                // Translation: ARRAY['t1','t2'] ?@ e.ltxtquery
-                case PgBinaryExpression
-                    {
-                        OperatorType: PgExpressionType.LTreeMatches,
-                        Left: ColumnExpression ltreeColumn,
-                        Right: var lquery
-                    }
-                    when ltreeColumn.TableAlias == tableAlias:
-                {
-                    return BuildSimplifiedShapedQuery(
-                        source,
-                        new PgBinaryExpression(
-                            PgExpressionType.LTreeFirstMatches,
-                            _sqlExpressionFactory.ApplyDefaultTypeMapping(array),
-                            lquery,
-                            typeof(LTree),
-                            _typeMappingSource.FindMapping(typeof(LTree))));
-                }
-            }
-        }
-
-        return base.TranslateFirstOrDefault(source, predicate, returnType, returnDefault);
-    }
+        // Upstream this override existed only to translate ltree operators applied to an in-memory
+        // array before EF turns the query into one over the database. H2 has no ltree, so there is
+        // nothing left to intercept and the base implementation is the correct one.
+        => base.TranslateFirstOrDefault(source, predicate, returnType, returnDefault);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
