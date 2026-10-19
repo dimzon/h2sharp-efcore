@@ -21,7 +21,7 @@ public static class TestEnvironment
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
     }
 
-    private const string DefaultConnectionString = "Server=localhost;Username=npgsql_tests;Password=npgsql_tests;Port=5432";
+    private const string DefaultConnectionString = "jdbc:h2:mem:efcore_tests";
 
     public static string DefaultConnection
         => Config["DefaultConnection"] ?? DefaultConnectionString;
@@ -39,7 +39,7 @@ public static class TestEnvironment
 
             using var conn = new H2Connection(H2TestStore.CreateConnectionString("postgres"));
             conn.Open();
-            return _postgresVersion = conn.PostgreSqlVersion;
+            return _postgresVersion = Version.Parse(conn.ServerVersion);
         }
     }
 

@@ -45,7 +45,7 @@ public class TestH2Connection(RelationalConnectionDependencies dependencies, DbD
 
         if (fail.HasValue)
         {
-            throw new PostgresException("Simulated failure", "ERROR", "ERROR", ErrorCode);
+            throw new H2SharpException("Simulated failure", ErrorCode, "Simulated failure", "ERROR");
         }
     }
 }

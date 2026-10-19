@@ -65,9 +65,43 @@ public class H2TestStore : RelationalTestStore
         _additionalSql = additionalSql;
     }
 
+    /// <summary>
+    ///     The connection string for a test database.
+    /// </summary>
+    /// <remarks>
+    ///     H2Sharp takes a JDBC URL, not a key=value connection string. The database is in memory:
+    ///     the engine's file store is not ported yet, so there is nowhere else to put it.
+    /// </remarks>
+    public static string CreateConnectionString(string name, string? connectionStringOptions = null)
+        => $"jdbc:h2:mem:{name}{(connectionStringOptions is null ? string.Empty : ";" + connectionStringOptions)}";
+
+    private static DbCommand CreateCommand(DbConnection connection, string sql, IReadOnlyList<object>? parameters)
+    {
+        var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        if (parameters is not null)
+        {
+            foreach (var parameter in parameters)
+            {
+                var p = command.CreateParameter();
+                p.ParameterName = "p" + command.Parameters.Count;
+                p.Value = parameter;
+                command.Parameters.Add(p);
+            }
+        }
+
+        return command;
+    }
+
+    private void ExecuteScript(string path)
+    {
+        var sql = File.ReadAllText(path);
+
+        Execute(Connection, command => command.ExecuteNonQuery(), sql, false, null);
+    }
     private static H2Connection CreateConnection(string name, string? connectionStringOptions)
         => new(CreateConnectionString(name, connectionStringOptions));
-
     // ReSharper disable once MemberCanBePrivate.Global
     public async Task<H2TestStore> InitializeH2Async(
         IServiceProvider? serviceProvider,
@@ -84,7 +118,6 @@ public class H2TestStore : RelationalTestStore
 
     protected override async Task InitializeAsync(Func<DbContext> createContext, Func<DbContext, Task>? seed, Func<DbContext, Task>? clean)
     {
-        if (await CreateDatabaseAsync(clean))
         {
             if (_scriptPath is not null)
             {
