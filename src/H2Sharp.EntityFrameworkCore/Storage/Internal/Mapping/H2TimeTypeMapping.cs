@@ -27,7 +27,7 @@ public class H2TimeTypeMapping : H2TypeMapping
     /// </summary>
     public H2TimeTypeMapping(Type clrType)
         : base(
-            "time without time zone",
+            "time",
             clrType,
             clrType == typeof(TimeOnly)
                 ? JsonTimeOnlyReaderWriter.Instance

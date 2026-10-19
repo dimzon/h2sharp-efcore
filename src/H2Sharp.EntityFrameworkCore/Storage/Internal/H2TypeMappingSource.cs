@@ -77,9 +77,9 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     private readonly LongTypeMapping _int8 = new("bigint", DbType.Int64);
 
     // Character types
-    private readonly StringTypeMapping _text = new("character large object", DbType.String);
-    private readonly H2StringTypeMapping _varchar = new("character varying");
-    private readonly H2CharacterStringTypeMapping _char = new("character");
+    private readonly StringTypeMapping _text = new("clob", DbType.String);
+    private readonly H2StringTypeMapping _varchar = new("varchar");
+    private readonly H2CharacterStringTypeMapping _char = new("char");
     private readonly H2CharacterCharTypeMapping _singleChar = new("character(1)");
 
     // JSON mappings - EF owned entity support
