@@ -306,7 +306,7 @@ it stands. The things that wait for the engine:
 | `MERGE` | `MERGE INTO T AS t USING U AS u` — expected `statement` |
 | `OVER` | window functions |
 | `COMMENT ON` | `COMMENT ON TABLE …` |
-| large objects | `ValueLob.copyToResult: lob storage is not ported` — a string is a `clob` in H2, name the column a `varchar` |
+| large objects | `ValueLob.copyToResult: lob storage is not ported` — the storage of a large object is in the port (`ValueLob`, `LobData`, MVStore); the copy from the storage into the result is not, so a `clob` column cannot be read back — a string is a `clob` in H2, name the column a `varchar` |
 | file databases | `Not ported yet: Engine.openSession: persistent databases need the file store` |
 
 The full list, with what each of them costs, is in
