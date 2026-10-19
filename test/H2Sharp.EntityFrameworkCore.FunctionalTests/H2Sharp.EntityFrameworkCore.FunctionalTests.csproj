@@ -17,6 +17,13 @@
     <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
     <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
     <Compile Remove="H2ValueGenerationScenariosTest.cs" />
+    <!--
+      The NodaTime mapping test of the PostgreSQL provider: it needs the legacy timestamp
+      behaviour, which only PostgreSQL had, and the range types, which H2 has no answer for.
+      The file was guarded with "#if DEBUG" upstream, which hid it from a Release build and
+      left it broken in a Debug one.
+    -->
+    <Compile Remove="Query\LegacyH2NodaTimeTypeMappingTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
