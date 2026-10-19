@@ -137,7 +137,7 @@ public class PgBinaryExpression : SqlExpression
                     PgExpressionType.JsonExistsAll => "?&",
 
                     PgExpressionType.LTreeMatches
-                        when Right.TypeMapping is { StoreType: "lquery" } or NpgsqlArrayTypeMapping
+                        when Right.TypeMapping is { StoreType: "lquery" } or H2ArrayTypeMapping
                         {
                             ElementTypeMapping.StoreType: "lquery"
                         }

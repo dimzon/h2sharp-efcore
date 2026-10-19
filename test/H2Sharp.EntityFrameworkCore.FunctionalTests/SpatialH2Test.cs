@@ -1,0 +1,15 @@
+using H2Sharp.EntityFrameworkCore.TestUtilities;
+
+namespace H2Sharp.EntityFrameworkCore;
+
+[RequiresPostgis]
+public class SpatialH2Test(SpatialH2Fixture fixture) : SpatialTestBase<SpatialH2Fixture>(fixture)
+{
+    protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
+        => facade.UseTransaction(transaction.GetDbTransaction());
+
+    // This test requires DbConnection to be used with the test store, but SpatialH2Fixture must set useConnectionString to true
+    // in order to properly set up the NetTopologySuite internally with the data source.
+    public override Task Mutation_of_tracked_values_does_not_mutate_values_in_store()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Mutation_of_tracked_values_does_not_mutate_values_in_store());
+}

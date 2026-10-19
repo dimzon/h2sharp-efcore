@@ -6,7 +6,7 @@ using System.Text;
 namespace H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 
 /// <summary>
-///     Represents options managed by the Npgsql.
+///     Represents options managed by the H2.
 /// </summary>
 public class H2OptionsExtension : RelationalOptionsExtension
 {
@@ -37,9 +37,9 @@ public class H2OptionsExtension : RelationalOptionsExtension
         => _postgresVersion is not null;
 
     /// <summary>
-    ///     A lambda to configure Npgsql options on <see cref="NpgsqlDataSourceBuilder" />.
+    ///     A lambda to configure H2 options on <see cref="H2DataSourceBuilder" />.
     /// </summary>
-    public virtual Action<NpgsqlDataSourceBuilder>? DataSourceBuilderAction { get; private set; }
+    public virtual Action<H2DataSourceBuilder>? DataSourceBuilderAction { get; private set; }
 
     /// <summary>
     ///     The <see cref="DbDataSource" />, or <see langword="null" /> if a connection string or <see cref="DbConnection" /> was used
@@ -121,7 +121,7 @@ public class H2OptionsExtension : RelationalOptionsExtension
         ReverseNullOrdering = copyFrom.ReverseNullOrdering;
     }
 
-    // The following is a hack to set the default minimum batch size to 2 in Npgsql
+    // The following is a hack to set the default minimum batch size to 2 in H2
     // See https://github.com/aspnet/EntityFrameworkCore/pull/10091
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -136,9 +136,9 @@ public class H2OptionsExtension : RelationalOptionsExtension
     ///     Creates a new instance with all options the same as for this instance, but with the given option changed.
     ///     It is unusual to call this method directly. Instead use <see cref="DbContextOptionsBuilder" />.
     /// </summary>
-    /// <param name="dataSourceBuilderAction">A lambda to configure Npgsql options on <see cref="NpgsqlDataSourceBuilder" />.</param>
+    /// <param name="dataSourceBuilderAction">A lambda to configure H2 options on <see cref="H2DataSourceBuilder" />.</param>
     /// <returns>A new instance with the option changed.</returns>
-    public virtual H2OptionsExtension WithDataSourceConfiguration(Action<NpgsqlDataSourceBuilder> dataSourceBuilderAction)
+    public virtual H2OptionsExtension WithDataSourceConfiguration(Action<H2DataSourceBuilder> dataSourceBuilderAction)
     {
         var clone = (H2OptionsExtension)Clone();
 
@@ -217,7 +217,7 @@ public class H2OptionsExtension : RelationalOptionsExtension
         Type clrType,
         string? enumName,
         string? schemaName,
-        INpgsqlNameTranslator? nameTranslator)
+        IH2NameTranslator? nameTranslator)
     {
         if (clrType is not { IsEnum: true, IsClass: false})
         {
@@ -226,8 +226,8 @@ public class H2OptionsExtension : RelationalOptionsExtension
 
         var clone = (H2OptionsExtension)Clone();
 
-#pragma warning disable CS0618 // NpgsqlConnection.GlobalTypeMapper is obsolete
-        nameTranslator ??= NpgsqlConnection.GlobalTypeMapper.DefaultNameTranslator;
+#pragma warning disable CS0618 // H2Connection.GlobalTypeMapper is obsolete
+        nameTranslator ??= H2Connection.GlobalTypeMapper.DefaultNameTranslator;
 #pragma warning restore CS0618
 
         clone._enumDefinitions.Add(new EnumDefinition(clrType, enumName, schemaName, nameTranslator));
@@ -300,26 +300,26 @@ public class H2OptionsExtension : RelationalOptionsExtension
 
         // If we don't have an explicitly-configured data source, try to get one from the application service provider.
         var dataSource = DataSource
-            ?? options.FindExtension<CoreOptionsExtension>()?.ApplicationServiceProvider?.GetService<NpgsqlDataSource>();
+            ?? options.FindExtension<CoreOptionsExtension>()?.ApplicationServiceProvider?.GetService<H2DataSource>();
 
         if (dataSource is not null)
         {
             if (ProvideClientCertificatesCallback is not null)
             {
                 throw new InvalidOperationException(
-                    "When passing an NpgsqlDataSource to UseH2(), call 'ProvideClientCertificatesCallback' on NpgsqlDataSourceBuilder rather than in UseH2().");
+                    "When passing an H2DataSource to UseH2(), call 'ProvideClientCertificatesCallback' on H2DataSourceBuilder rather than in UseH2().");
             }
 
             if (RemoteCertificateValidationCallback is not null)
             {
                 throw new InvalidOperationException(
-                    "When passing an NpgsqlDataSource to UseH2(), call 'RemoteCertificateValidationCallback' on NpgsqlDataSourceBuilder rather than in UseH2().");
+                    "When passing an H2DataSource to UseH2(), call 'RemoteCertificateValidationCallback' on H2DataSourceBuilder rather than in UseH2().");
             }
 
             if (ProvidePasswordCallback is not null)
             {
                 throw new InvalidOperationException(
-                    "When passing an NpgsqlDataSource to UseH2(), 'ProviderPasswordCallback' cannot be used in UseH2(). See https://www.npgsql.org/doc/security.html for configuring passwords and token rotation on NpgsqlDataSourceBuilder.");
+                    "When passing an H2DataSource to UseH2(), 'ProviderPasswordCallback' cannot be used in UseH2(). See https://www.npgsql.org/doc/security.html for configuring passwords and token rotation on H2DataSourceBuilder.");
             }
         }
 

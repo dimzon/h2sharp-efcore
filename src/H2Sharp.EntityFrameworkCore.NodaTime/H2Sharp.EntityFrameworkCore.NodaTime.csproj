@@ -6,7 +6,7 @@
     <TargetFramework Condition="'$(DeveloperBuild)' == 'True'">net8.0</TargetFramework>
 
     <Authors>Shay Rojansky</Authors>
-    <Description>NodaTime support plugin for PostgreSQL/Npgsql Entity Framework Core provider.</Description>
+    <Description>NodaTime support plugin for PostgreSQL/H2 Entity Framework Core provider.</Description>
     <PackageTags>npgsql;postgresql;postgres;Entity Framework Core;entity-framework-core;ef;efcore;orm;sql;nodatime;date;time</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql.NodaTime" />
+    <PackageReference Include="H2.NodaTime" />
   </ItemGroup>
 
   <ItemGroup>

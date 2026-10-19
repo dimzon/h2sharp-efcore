@@ -12,7 +12,7 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
-public class TimestampTzInstantMapping : NpgsqlTypeMapping
+public class TimestampTzInstantMapping : H2TypeMapping
 {
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -29,7 +29,7 @@ public class TimestampTzInstantMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public TimestampTzInstantMapping()
-        : base("timestamp with time zone", typeof(Instant), NpgsqlDbType.TimestampTz, JsonInstantReaderWriter.Instance)
+        : base("timestamp with time zone", typeof(Instant), H2DbType.TimestampTz, JsonInstantReaderWriter.Instance)
     {
     }
 
@@ -40,7 +40,7 @@ public class TimestampTzInstantMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected TimestampTzInstantMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, NpgsqlDbType.TimestampTz)
+        : base(parameters, H2DbType.TimestampTz)
     {
     }
 
@@ -93,7 +93,7 @@ public class TimestampTzInstantMapping : NpgsqlTypeMapping
 
     private static string Format(Instant instant)
     {
-        if (!NpgsqlNodaTimeTypeMappingSourcePlugin.DisableDateTimeInfinityConversions)
+        if (!H2NodaTimeTypeMappingSourcePlugin.DisableDateTimeInfinityConversions)
         {
             if (instant == Instant.MinValue)
             {
@@ -134,7 +134,7 @@ public class TimestampTzInstantMapping : NpgsqlTypeMapping
         {
             var s = manager.CurrentReader.GetString()!;
 
-            if (!NpgsqlNodaTimeTypeMappingSourcePlugin.DisableDateTimeInfinityConversions)
+            if (!H2NodaTimeTypeMappingSourcePlugin.DisableDateTimeInfinityConversions)
             {
                 switch (s)
                 {

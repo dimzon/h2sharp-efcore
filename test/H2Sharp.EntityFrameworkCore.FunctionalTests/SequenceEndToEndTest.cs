@@ -270,7 +270,7 @@ public class SequenceEndToEndTest : IAsyncLifetime
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
                 .UseInternalServiceProvider(serviceProvider)
-                .UseH2(NpgsqlTestStore.CreateConnectionString(databaseName), b => b.ApplyConfiguration());
+                .UseH2(H2TestStore.CreateConnectionString(databaseName), b => b.ApplyConfiguration());
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
             => modelBuilder.Entity<Pegasus>(
@@ -365,7 +365,7 @@ public class SequenceEndToEndTest : IAsyncLifetime
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
                 .UseInternalServiceProvider(serviceProvider)
-                .UseH2(NpgsqlTestStore.CreateConnectionString(databaseName), b => b.ApplyConfiguration());
+                .UseH2(H2TestStore.CreateConnectionString(databaseName), b => b.ApplyConfiguration());
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
             => modelBuilder.Entity<Unicon>(
@@ -389,10 +389,10 @@ public class SequenceEndToEndTest : IAsyncLifetime
         public string Name { get; set; }
     }
 
-    protected NpgsqlTestStore TestStore { get; private set; }
+    protected H2TestStore TestStore { get; private set; }
 
     public async Task InitializeAsync()
-        => TestStore = await NpgsqlTestStore.CreateInitializedAsync("SequenceEndToEndTest");
+        => TestStore = await H2TestStore.CreateInitializedAsync("SequenceEndToEndTest");
 
     public async Task DisposeAsync()
         => await TestStore.DisposeAsync();

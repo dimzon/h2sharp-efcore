@@ -17,7 +17,7 @@ using H2Sharp.EntityFrameworkCore.ValueGeneration.Internal;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-///     Provides extension methods to configure Entity Framework Core for Npgsql.
+///     Provides extension methods to configure Entity Framework Core for H2.
 /// </summary>
 // ReSharper disable once UnusedMember.Global
 public static class H2ServiceCollectionExtensions
@@ -68,7 +68,7 @@ public static class H2ServiceCollectionExtensions
 
     /// <summary>
     ///     <para>
-    ///         Adds the services required by the Npgsql database provider for Entity Framework
+    ///         Adds the services required by the H2 database provider for Entity Framework
     ///         to an <see cref="IServiceCollection" />.
     ///     </para>
     ///     <para>
@@ -88,44 +88,44 @@ public static class H2ServiceCollectionExtensions
         Check.NotNull(serviceCollection, nameof(serviceCollection));
 
         new EntityFrameworkH2ServicesBuilder(serviceCollection)
-            .TryAdd<LoggingDefinitions, NpgsqlLoggingDefinitions>()
+            .TryAdd<LoggingDefinitions, H2LoggingDefinitions>()
             .TryAdd<IDatabaseProvider, DatabaseProvider<H2OptionsExtension>>()
-            .TryAdd<IValueGeneratorCache>(p => p.GetRequiredService<INpgsqlValueGeneratorCache>())
-            .TryAdd<IRelationalTypeMappingSource, NpgsqlTypeMappingSource>()
-            .TryAdd<ISqlGenerationHelper, NpgsqlSqlGenerationHelper>()
-            .TryAdd<IRelationalAnnotationProvider, NpgsqlAnnotationProvider>()
-            .TryAdd<IModelValidator, NpgsqlModelValidator>()
-            .TryAdd<IMigrator, NpgsqlMigrator>()
-            .TryAdd<IProviderConventionSetBuilder, NpgsqlConventionSetBuilder>()
-            .TryAdd<IUpdateSqlGenerator, NpgsqlUpdateSqlGenerator>()
-            .TryAdd<IModificationCommandFactory, NpgsqlModificationCommandFactory>()
-            .TryAdd<IModificationCommandBatchFactory, NpgsqlModificationCommandBatchFactory>()
-            .TryAdd<IValueGeneratorSelector, NpgsqlValueGeneratorSelector>()
-            .TryAdd<IRelationalConnection>(p => p.GetRequiredService<INpgsqlRelationalConnection>())
-            .TryAdd<IMigrationsSqlGenerator, NpgsqlMigrationsSqlGenerator>()
-            .TryAdd<IRelationalDatabaseCreator, NpgsqlDatabaseCreator>()
-            .TryAdd<IHistoryRepository, NpgsqlHistoryRepository>()
-            .TryAdd<ICompiledQueryCacheKeyGenerator, NpgsqlCompiledQueryCacheKeyGenerator>()
-            .TryAdd<IExecutionStrategyFactory, NpgsqlExecutionStrategyFactory>()
-            .TryAdd<IQueryableMethodTranslatingExpressionVisitorFactory, NpgsqlQueryableMethodTranslatingExpressionVisitorFactory>()
-            .TryAdd<IMethodCallTranslatorProvider, NpgsqlMethodCallTranslatorProvider>()
-            .TryAdd<IAggregateMethodCallTranslatorProvider, NpgsqlAggregateMethodCallTranslatorProvider>()
-            .TryAdd<IMemberTranslatorProvider, NpgsqlMemberTranslatorProvider>()
-            .TryAdd<IEvaluatableExpressionFilter, NpgsqlEvaluatableExpressionFilter>()
-            .TryAdd<IQuerySqlGeneratorFactory, NpgsqlQuerySqlGeneratorFactory>()
-            .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, NpgsqlSqlTranslatingExpressionVisitorFactory>()
-            .TryAdd<IQueryTranslationPostprocessorFactory, NpgsqlQueryTranslationPostprocessorFactory>()
-            .TryAdd<IRelationalParameterBasedSqlProcessorFactory, NpgsqlParameterBasedSqlProcessorFactory>()
-            .TryAdd<ISqlExpressionFactory, NpgsqlSqlExpressionFactory>()
+            .TryAdd<IValueGeneratorCache>(p => p.GetRequiredService<IH2ValueGeneratorCache>())
+            .TryAdd<IRelationalTypeMappingSource, H2TypeMappingSource>()
+            .TryAdd<ISqlGenerationHelper, H2SqlGenerationHelper>()
+            .TryAdd<IRelationalAnnotationProvider, H2AnnotationProvider>()
+            .TryAdd<IModelValidator, H2ModelValidator>()
+            .TryAdd<IMigrator, H2Migrator>()
+            .TryAdd<IProviderConventionSetBuilder, H2ConventionSetBuilder>()
+            .TryAdd<IUpdateSqlGenerator, H2UpdateSqlGenerator>()
+            .TryAdd<IModificationCommandFactory, H2ModificationCommandFactory>()
+            .TryAdd<IModificationCommandBatchFactory, H2ModificationCommandBatchFactory>()
+            .TryAdd<IValueGeneratorSelector, H2ValueGeneratorSelector>()
+            .TryAdd<IRelationalConnection>(p => p.GetRequiredService<IH2RelationalConnection>())
+            .TryAdd<IMigrationsSqlGenerator, H2MigrationsSqlGenerator>()
+            .TryAdd<IRelationalDatabaseCreator, H2DatabaseCreator>()
+            .TryAdd<IHistoryRepository, H2HistoryRepository>()
+            .TryAdd<ICompiledQueryCacheKeyGenerator, H2CompiledQueryCacheKeyGenerator>()
+            .TryAdd<IExecutionStrategyFactory, H2ExecutionStrategyFactory>()
+            .TryAdd<IQueryableMethodTranslatingExpressionVisitorFactory, H2QueryableMethodTranslatingExpressionVisitorFactory>()
+            .TryAdd<IMethodCallTranslatorProvider, H2MethodCallTranslatorProvider>()
+            .TryAdd<IAggregateMethodCallTranslatorProvider, H2AggregateMethodCallTranslatorProvider>()
+            .TryAdd<IMemberTranslatorProvider, H2MemberTranslatorProvider>()
+            .TryAdd<IEvaluatableExpressionFilter, H2EvaluatableExpressionFilter>()
+            .TryAdd<IQuerySqlGeneratorFactory, H2QuerySqlGeneratorFactory>()
+            .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, H2SqlTranslatingExpressionVisitorFactory>()
+            .TryAdd<IQueryTranslationPostprocessorFactory, H2QueryTranslationPostprocessorFactory>()
+            .TryAdd<IRelationalParameterBasedSqlProcessorFactory, H2ParameterBasedSqlProcessorFactory>()
+            .TryAdd<ISqlExpressionFactory, H2SqlExpressionFactory>()
             .TryAdd<ISingletonOptions, IH2SingletonOptions>(p => p.GetRequiredService<IH2SingletonOptions>())
-            .TryAdd<IQueryCompilationContextFactory, NpgsqlQueryCompilationContextFactory>()
+            .TryAdd<IQueryCompilationContextFactory, H2QueryCompilationContextFactory>()
             .TryAddProviderSpecificServices(
                 b => b
-                    .TryAddSingleton<INpgsqlValueGeneratorCache, NpgsqlValueGeneratorCache>()
+                    .TryAddSingleton<IH2ValueGeneratorCache, H2ValueGeneratorCache>()
                     .TryAddSingleton<IH2SingletonOptions, H2SingletonOptions>()
-                    .TryAddSingleton<INpgsqlSequenceValueGeneratorFactory, NpgsqlSequenceValueGeneratorFactory>()
-                    .TryAddSingleton<NpgsqlDataSourceManager, NpgsqlDataSourceManager>()
-                    .TryAddScoped<INpgsqlRelationalConnection, NpgsqlRelationalConnection>())
+                    .TryAddSingleton<IH2SequenceValueGeneratorFactory, H2SequenceValueGeneratorFactory>()
+                    .TryAddSingleton<H2DataSourceManager, H2DataSourceManager>()
+                    .TryAddScoped<IH2RelationalConnection, H2RelationalConnection>())
             .TryAddCoreServices();
 
         return serviceCollection;

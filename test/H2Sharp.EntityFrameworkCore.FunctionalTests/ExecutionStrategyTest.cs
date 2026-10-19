@@ -72,25 +72,25 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
                 IsolationLevel.Serializable));
     }
 
-    private void Test_commit_failure(bool realFailure, Action<TestNpgsqlRetryingExecutionStrategy, ExecutionStrategyContext> execute)
+    private void Test_commit_failure(bool realFailure, Action<TestH2RetryingExecutionStrategy, ExecutionStrategyContext> execute)
     {
         CleanContext();
 
         using (var context = CreateContext())
         {
-            var connection = (TestNpgsqlConnection)context.GetService<INpgsqlRelationalConnection>();
+            var connection = (TestH2Connection)context.GetService<IH2RelationalConnection>();
 
             connection.CommitFailures.Enqueue([realFailure]);
             Fixture.TestSqlLoggerFactory.Clear();
 
             context.Products.Add(new Product());
-            execute(new TestNpgsqlRetryingExecutionStrategy(context), context);
+            execute(new TestH2RetryingExecutionStrategy(context), context);
             context.ChangeTracker.AcceptAllChanges();
 
             var retryMessage =
                 "A transient exception occurred during execution. The operation will be retried after 0ms."
                 + Environment.NewLine
-                + "Npgsql.PostgresException (0x80004005): XX000";
+                + "H2.PostgresException (0x80004005): XX000";
             if (realFailure)
             {
                 var logEntry = Fixture.TestSqlLoggerFactory.Log.Single(l => l.Id == CoreEventId.ExecutionStrategyRetrying);
@@ -186,25 +186,25 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
 
     private async Task Test_commit_failure_async(
         bool realFailure,
-        Func<TestNpgsqlRetryingExecutionStrategy, ExecutionStrategyContext, Task> execute)
+        Func<TestH2RetryingExecutionStrategy, ExecutionStrategyContext, Task> execute)
     {
         CleanContext();
 
         await using (var context = CreateContext())
         {
-            var connection = (TestNpgsqlConnection)context.GetService<INpgsqlRelationalConnection>();
+            var connection = (TestH2Connection)context.GetService<IH2RelationalConnection>();
 
             connection.CommitFailures.Enqueue([realFailure]);
             Fixture.TestSqlLoggerFactory.Clear();
 
             context.Products.Add(new Product());
-            await execute(new TestNpgsqlRetryingExecutionStrategy(context), context);
+            await execute(new TestH2RetryingExecutionStrategy(context), context);
             context.ChangeTracker.AcceptAllChanges();
 
             var retryMessage =
                 "A transient exception occurred during execution. The operation will be retried after 0ms."
                 + Environment.NewLine
-                + "Npgsql.PostgresException (0x80004005): XX000";
+                + "H2.PostgresException (0x80004005): XX000";
             if (realFailure)
             {
                 var logEntry = Fixture.TestSqlLoggerFactory.Log.Single(l => l.Id == CoreEventId.ExecutionStrategyRetrying);
@@ -232,7 +232,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
         CleanContext();
 
         using var context1 = CreateContext();
-        var connection = (TestNpgsqlConnection)context1.GetService<INpgsqlRelationalConnection>();
+        var connection = (TestH2Connection)context1.GetService<IH2RelationalConnection>();
 
         using (var context2 = CreateContext())
         {
@@ -241,7 +241,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
             context1.Products.Add(new Product());
             context2.Products.Add(new Product());
 
-            new TestNpgsqlRetryingExecutionStrategy(context1).ExecuteInTransaction(
+            new TestH2RetryingExecutionStrategy(context1).ExecuteInTransaction(
                 context1,
                 c1 =>
                 {
@@ -274,7 +274,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
 
         await using (var context = CreateContext())
         {
-            var connection = (TestNpgsqlConnection)context.GetService<INpgsqlRelationalConnection>();
+            var connection = (TestH2Connection)context.GetService<IH2RelationalConnection>();
 
             connection.ExecutionFailures.Enqueue([null, realFailure]);
 
@@ -301,7 +301,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
             {
                 if (externalStrategy)
                 {
-                    await new TestNpgsqlRetryingExecutionStrategy(context).ExecuteInTransactionAsync(
+                    await new TestH2RetryingExecutionStrategy(context).ExecuteInTransactionAsync(
                         context,
                         (c, ct) => c.SaveChangesAsync(false, ct),
                         (_, _) =>
@@ -321,7 +321,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
             {
                 if (externalStrategy)
                 {
-                    new TestNpgsqlRetryingExecutionStrategy(context).ExecuteInTransaction(
+                    new TestH2RetryingExecutionStrategy(context).ExecuteInTransaction(
                         context,
                         c => c.SaveChanges(false),
                         _ =>
@@ -383,7 +383,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
 
         await using (var context = CreateContext())
         {
-            var connection = (TestNpgsqlConnection)context.GetService<INpgsqlRelationalConnection>();
+            var connection = (TestH2Connection)context.GetService<IH2RelationalConnection>();
 
             connection.ExecutionFailures.Enqueue([true]);
 
@@ -394,7 +394,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
             {
                 if (externalStrategy)
                 {
-                    list = await new TestNpgsqlRetryingExecutionStrategy(context)
+                    list = await new TestH2RetryingExecutionStrategy(context)
                         .ExecuteAsync(context, (c, ct) => c.Products.ToListAsync(ct), null);
                 }
                 else
@@ -406,7 +406,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
             {
                 if (externalStrategy)
                 {
-                    list = new TestNpgsqlRetryingExecutionStrategy(context)
+                    list = new TestH2RetryingExecutionStrategy(context)
                         .Execute(context, c => c.Products.ToList(), null);
                 }
                 else
@@ -439,7 +439,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
 
         await using (var context = CreateContext())
         {
-            var connection = (TestNpgsqlConnection)context.GetService<INpgsqlRelationalConnection>();
+            var connection = (TestH2Connection)context.GetService<IH2RelationalConnection>();
 
             connection.ExecutionFailures.Enqueue([true]);
 
@@ -450,7 +450,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
             {
                 if (externalStrategy)
                 {
-                    list = await new TestNpgsqlRetryingExecutionStrategy(context)
+                    list = await new TestH2RetryingExecutionStrategy(context)
                         .ExecuteAsync(
                             context, (c, ct) => c.Set<Product>().FromSqlRaw(
                                 """
@@ -469,7 +469,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
             {
                 if (externalStrategy)
                 {
-                    list = new TestNpgsqlRetryingExecutionStrategy(context)
+                    list = new TestH2RetryingExecutionStrategy(context)
                         .Execute(
                             context, c => c.Set<Product>().FromSqlRaw(
                                 """
@@ -499,7 +499,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
     public async Task Retries_OpenConnection_on_execution_failure(bool externalStrategy, bool async)
     {
         await using var context = CreateContext();
-        var connection = (TestNpgsqlConnection)context.GetService<INpgsqlRelationalConnection>();
+        var connection = (TestH2Connection)context.GetService<IH2RelationalConnection>();
 
         connection.OpenFailures.Enqueue([true]);
 
@@ -509,7 +509,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
         {
             if (externalStrategy)
             {
-                await new TestNpgsqlRetryingExecutionStrategy(context).ExecuteAsync(
+                await new TestH2RetryingExecutionStrategy(context).ExecuteAsync(
                     context,
                     c => c.Database.OpenConnectionAsync());
             }
@@ -522,7 +522,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
         {
             if (externalStrategy)
             {
-                new TestNpgsqlRetryingExecutionStrategy(context).Execute(
+                new TestH2RetryingExecutionStrategy(context).Execute(
                     context,
                     c => c.Database.OpenConnection());
             }
@@ -552,7 +552,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
     public async Task Retries_BeginTransaction_on_execution_failure(bool async)
     {
         await using var context = CreateContext();
-        var connection = (TestNpgsqlConnection)context.GetService<INpgsqlRelationalConnection>();
+        var connection = (TestH2Connection)context.GetService<IH2RelationalConnection>();
 
         connection.OpenFailures.Enqueue([true]);
 
@@ -560,7 +560,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
 
         if (async)
         {
-            var transaction = await new TestNpgsqlRetryingExecutionStrategy(context).ExecuteAsync(
+            var transaction = await new TestH2RetryingExecutionStrategy(context).ExecuteAsync(
                 context,
                 _ => context.Database.BeginTransactionAsync());
 
@@ -568,7 +568,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
         }
         else
         {
-            var transaction = new TestNpgsqlRetryingExecutionStrategy(context).Execute(
+            var transaction = new TestH2RetryingExecutionStrategy(context).Execute(
                 context,
                 _ => context.Database.BeginTransaction());
 
@@ -587,7 +587,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
 
         using (var context = CreateContext())
         {
-            var connection = (TestNpgsqlConnection)context.GetService<INpgsqlRelationalConnection>();
+            var connection = (TestH2Connection)context.GetService<IH2RelationalConnection>();
 
             connection.ExecutionFailures.Enqueue([true, null, true, true]);
             connection.CommitFailures.Enqueue([true, true, true, true]);
@@ -595,7 +595,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
             context.Products.Add(new Product());
             Assert.Throws<RetryLimitExceededException>(
                 () =>
-                    new TestNpgsqlRetryingExecutionStrategy(context, TimeSpan.FromMilliseconds(100))
+                    new TestH2RetryingExecutionStrategy(context, TimeSpan.FromMilliseconds(100))
                         .ExecuteInTransaction(
                             context,
                             c => c.SaveChanges(false),
@@ -650,14 +650,14 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
             => (TestSqlLoggerFactory)ListLoggerFactory;
 
         protected override ITestStoreFactory TestStoreFactory
-            => NpgsqlTestStoreFactory.Instance;
+            => H2TestStoreFactory.Instance;
 
         protected override Type ContextType { get; } = typeof(ExecutionStrategyContext);
 
         protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
             => base.AddServices(serviceCollection)
                 .AddSingleton<IRelationalTransactionFactory, TestRelationalTransactionFactory>()
-                .AddScoped<INpgsqlRelationalConnection, TestNpgsqlConnection>()
+                .AddScoped<IH2RelationalConnection, TestH2Connection>()
                 .AddSingleton<IRelationalCommandBuilderFactory, TestRelationalCommandBuilderFactory>();
 
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
@@ -666,7 +666,7 @@ public class ExecutionStrategyTest : IClassFixture<ExecutionStrategyTest.Executi
 
             new H2DbContextOptionsBuilder(options)
                 .MaxBatchSize(1)
-                .ExecutionStrategy(d => new TestNpgsqlRetryingExecutionStrategy(d));
+                .ExecutionStrategy(d => new TestH2RetryingExecutionStrategy(d));
 
             return options;
         }

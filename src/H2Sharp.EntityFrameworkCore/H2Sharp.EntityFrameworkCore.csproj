@@ -6,17 +6,26 @@
     <TargetFramework>net8.0</TargetFramework>
 
     <Authors>Shay Rojansky;Austin Drenski;Yoh Deadfall;</Authors>
-    <Description>PostgreSQL/Npgsql provider for Entity Framework Core.</Description>
-    <PackageTags>npgsql;postgresql;postgres;Entity Framework Core;entity-framework-core;ef;efcore;orm;sql</PackageTags>
+    <Description>H2Sharp provider for Entity Framework Core.</Description>
+    <PackageTags>h2;h2sharp;database;Entity Framework Core;entity-framework-core;ef;efcore;orm;sql</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <NoWarn>EF9100</NoWarn> <!-- Precompiled query is experimental -->
+  </PropertyGroup>
+
+  <!--
+    H2Sharp is the embedded H2 port this provider sits on. It is a sibling repository and is not
+    published to nuget.org yet, so it comes in as a project reference. Set H2SharpProject to point
+    elsewhere once the engine ships as a package.
+  -->
+  <PropertyGroup>
+    <H2SharpProject Condition="'$(H2SharpProject)' == ''">$(MSBuildThisFileDirectory)..\..\h2sharp\src\H2Sharp\H2Sharp.csproj</H2SharpProject>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- PrivateAssets="none" is set to flow the EF Core analyzer to users referencing this package https://github.com/aspnet/EntityFrameworkCore/pull/11350 -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" PrivateAssets="none" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" PrivateAssets="none" />
-    <PackageReference Include="Npgsql" />
+    <ProjectReference Include="$(H2SharpProject)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,22 +35,22 @@
   <ItemGroup>
     <Compile Include="..\Shared\*.cs" />
 
-    <None Update="Properties\NpgsqlStrings.Designer.tt">
+    <None Update="Properties\H2Strings.Designer.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>NpgsqlStrings.Designer.cs</LastGenOutput>
+      <LastGenOutput>H2Strings.Designer.cs</LastGenOutput>
     </None>
 
     <None Update="Properties\SqlServerStrings.Designer.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
 
-    <Compile Update="Properties\NpgsqlStrings.Designer.cs">
+    <Compile Update="Properties\H2Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>NpgsqlStrings.Designer.tt</DependentUpon>
+      <DependentUpon>H2Strings.Designer.tt</DependentUpon>
     </Compile>
 
-    <EmbeddedResource Update="Properties\NpgsqlStrings.resx">
+    <EmbeddedResource Update="Properties\H2Strings.resx">
       <CustomToolNamespace>H2Sharp.EntityFrameworkCore.Internal</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>

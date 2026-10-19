@@ -11,7 +11,7 @@ public class DefaultValuesTest : IDisposable
         .BuildServiceProvider();
 
     [Fact]
-    public void Can_use_Npgsql_default_values()
+    public void Can_use_H2_default_values()
     {
         using (var context = new ChipsContext(_serviceProvider, "DefaultKettleChips"))
         {
@@ -54,7 +54,7 @@ public class DefaultValuesTest : IDisposable
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
                 .UseH2(
-                    NpgsqlTestStore.CreateConnectionString(_databaseName),
+                    H2TestStore.CreateConnectionString(_databaseName),
                     o => o.SetPostgresVersion(TestEnvironment.PostgresVersion))
                 .UseInternalServiceProvider(_serviceProvider);
 

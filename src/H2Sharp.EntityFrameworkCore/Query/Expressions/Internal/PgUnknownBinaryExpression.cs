@@ -5,7 +5,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 ///     within the provider itself. Allows defining the operator as a string within the expression, and has
 ///     default (i.e. propagating) nullability semantics.
 ///     All type mappings must be applied to the operands before the expression is constructed, since there's
-///     no inference logic for it in <see cref="NpgsqlSqlExpressionFactory" />.
+///     no inference logic for it in <see cref="H2SqlExpressionFactory" />.
 /// </summary>
 public class PgUnknownBinaryExpression : SqlExpression, IEquatable<PgUnknownBinaryExpression>
 {

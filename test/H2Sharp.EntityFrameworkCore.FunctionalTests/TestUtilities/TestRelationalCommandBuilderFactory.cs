@@ -194,7 +194,7 @@ public class TestRelationalCommandBuilderFactory(RelationalCommandBuilderDepende
         private string PreExecution(IRelationalConnection connection)
         {
             string errorNumber = null;
-            var testConnection = (TestNpgsqlConnection)connection;
+            var testConnection = (TestH2Connection)connection;
 
             testConnection.ExecutionCount++;
             if (testConnection.ExecutionFailures.Count > 0)

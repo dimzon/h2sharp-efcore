@@ -1,0 +1,5 @@
+<#
+    Session["ResourceFile"] = "H2Strings.resx";
+    Session["LoggingDefinitionsClass"] = "Diagnostics.Internal.H2LoggingDefinitions";
+#>
+<#@ include file="..\..\..\tools\Resources.tt" #>

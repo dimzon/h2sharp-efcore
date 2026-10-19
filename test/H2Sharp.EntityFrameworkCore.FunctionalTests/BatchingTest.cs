@@ -153,9 +153,9 @@ public class BatchingTest(BatchingTest.BatchingTestFixture fixture) : IClassFixt
 
                 Assert.Contains(
                     minBatchSize == 3
-                        ? RelationalResources.LogBatchReadyForExecution(new TestLogger<NpgsqlLoggingDefinitions>())
+                        ? RelationalResources.LogBatchReadyForExecution(new TestLogger<H2LoggingDefinitions>())
                             .GenerateMessage(3)
-                        : RelationalResources.LogBatchSmallerThanMinBatchSize(new TestLogger<NpgsqlLoggingDefinitions>())
+                        : RelationalResources.LogBatchSmallerThanMinBatchSize(new TestLogger<H2LoggingDefinitions>())
                             .GenerateMessage(3, 4),
                     Fixture.TestSqlLoggerFactory.Log.Select(l => l.Message));
 
@@ -247,7 +247,7 @@ public class BatchingTest(BatchingTest.BatchingTestFixture fixture) : IClassFixt
             => (TestSqlLoggerFactory)ListLoggerFactory;
 
         protected override ITestStoreFactory TestStoreFactory
-            => NpgsqlTestStoreFactory.Instance;
+            => H2TestStoreFactory.Instance;
 
         protected override Type ContextType { get; } = typeof(BloggingContext);
 

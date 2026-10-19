@@ -83,7 +83,7 @@ public class NavigationTestFixture
             .AddEntityFrameworkH2()
             .BuildServiceProvider();
 
-        var connStrBuilder = new NpgsqlConnectionStringBuilder(TestEnvironment.DefaultConnection) { Database = "StateManagerBug" };
+        var connStrBuilder = new H2ConnectionStringBuilder(TestEnvironment.DefaultConnection) { Database = "StateManagerBug" };
 
         _options = new DbContextOptionsBuilder()
             .UseH2(connStrBuilder.ConnectionString)

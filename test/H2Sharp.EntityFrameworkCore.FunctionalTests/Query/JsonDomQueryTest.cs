@@ -765,7 +765,7 @@ WHERE json_typeof(j."CustomerElement" #> '{Statistics,Visits}') = 'number'
             => "JsonDomQueryTest";
 
         protected override ITestStoreFactory TestStoreFactory
-            => NpgsqlTestStoreFactory.Instance;
+            => H2TestStoreFactory.Instance;
 
         public TestSqlLoggerFactory TestSqlLoggerFactory
             => (TestSqlLoggerFactory)ListLoggerFactory;

@@ -9,7 +9,7 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
-public class DateIntervalMultirangeMapping : NpgsqlTypeMapping
+public class DateIntervalMultirangeMapping : H2TypeMapping
 {
     private readonly DateIntervalRangeMapping _dateIntervalRangeMapping;
 
@@ -20,7 +20,7 @@ public class DateIntervalMultirangeMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public DateIntervalMultirangeMapping(Type clrType, DateIntervalRangeMapping dateIntervalRangeMapping)
-        : base("datemultirange", clrType, NpgsqlDbType.DateMultirange)
+        : base("datemultirange", clrType, H2DbType.DateMultirange)
     {
         _dateIntervalRangeMapping = dateIntervalRangeMapping;
     }
@@ -32,7 +32,7 @@ public class DateIntervalMultirangeMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected DateIntervalMultirangeMapping(RelationalTypeMappingParameters parameters, DateIntervalRangeMapping dateIntervalRangeMapping)
-        : base(parameters, NpgsqlDbType.DateMultirange)
+        : base(parameters, H2DbType.DateMultirange)
     {
         _dateIntervalRangeMapping = dateIntervalRangeMapping;
     }
@@ -62,5 +62,5 @@ public class DateIntervalMultirangeMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => NpgsqlMultirangeTypeMapping.GenerateNonNullSqlLiteral(value, _dateIntervalRangeMapping, "datemultirange");
+        => H2MultirangeTypeMapping.GenerateNonNullSqlLiteral(value, _dateIntervalRangeMapping, "datemultirange");
 }

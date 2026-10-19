@@ -61,7 +61,7 @@ public sealed class EnumDefinition : IEquatable<EnumDefinition>
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public INpgsqlNameTranslator NameTranslator { get; }
+    public IH2NameTranslator NameTranslator { get; }
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -73,7 +73,7 @@ public sealed class EnumDefinition : IEquatable<EnumDefinition>
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] Type clrType,
         string? name,
         string? schema,
-        INpgsqlNameTranslator nameTranslator)
+        IH2NameTranslator nameTranslator)
     {
         if (clrType is not { IsEnum: true, IsClass: false })
         {

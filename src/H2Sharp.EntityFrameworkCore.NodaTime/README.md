@@ -1,4 +1,4 @@
-# Npgsql Entity Framework Core provider for PostgreSQL
+# H2 Entity Framework Core provider for PostgreSQL
 
 H2Sharp.EntityFrameworkCore is the open source EF Core provider for PostgreSQL. It allows you to interact with PostgreSQL via the most widely-used .NET O/RM from Microsoft, and use familiar LINQ syntax to express queries.
 

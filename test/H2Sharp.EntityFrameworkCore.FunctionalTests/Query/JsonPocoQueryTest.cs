@@ -847,9 +847,9 @@ WHERE json_typeof(j."Customer" #> '{Statistics,Visits}') = 'number'
     {
         static JsonPocoQueryFixture()
         {
-            // TODO: Switch to using NpgsqlDataSource
+            // TODO: Switch to using H2DataSource
 #pragma warning disable CS0618 // Type or member is obsolete
-            NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();
+            H2Connection.GlobalTypeMapper.EnableDynamicJson();
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
@@ -857,7 +857,7 @@ WHERE json_typeof(j."Customer" #> '{Statistics,Visits}') = 'number'
             => "JsonPocoQueryTest";
 
         protected override ITestStoreFactory TestStoreFactory
-            => NpgsqlTestStoreFactory.Instance;
+            => H2TestStoreFactory.Instance;
 
         public TestSqlLoggerFactory TestSqlLoggerFactory
             => (TestSqlLoggerFactory)ListLoggerFactory;

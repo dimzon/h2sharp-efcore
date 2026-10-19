@@ -23,7 +23,7 @@ public class TestRelationalTransaction(
     ISqlGenerationHelper sqlGenerationHelper)
     : RelationalTransaction(connection, transaction, new Guid(), logger, transactionOwned, sqlGenerationHelper)
 {
-    private readonly TestNpgsqlConnection _testConnection = (TestNpgsqlConnection)connection;
+    private readonly TestH2Connection _testConnection = (TestH2Connection)connection;
 
     public override void Commit()
     {

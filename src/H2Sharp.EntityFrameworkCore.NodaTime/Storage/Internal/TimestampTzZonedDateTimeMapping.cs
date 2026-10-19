@@ -13,7 +13,7 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
-public class TimestampTzZonedDateTimeMapping : NpgsqlTypeMapping
+public class TimestampTzZonedDateTimeMapping : H2TypeMapping
 {
     private static readonly ZonedDateTimePattern Pattern =
         ZonedDateTimePattern.CreateWithInvariantCulture(
@@ -35,7 +35,7 @@ public class TimestampTzZonedDateTimeMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public TimestampTzZonedDateTimeMapping()
-        : base("timestamp with time zone", typeof(ZonedDateTime), NpgsqlDbType.TimestampTz, JsonZonedDateTimeReaderWriter.Instance)
+        : base("timestamp with time zone", typeof(ZonedDateTime), H2DbType.TimestampTz, JsonZonedDateTimeReaderWriter.Instance)
     {
     }
 
@@ -46,7 +46,7 @@ public class TimestampTzZonedDateTimeMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected TimestampTzZonedDateTimeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, NpgsqlDbType.TimestampTz)
+        : base(parameters, H2DbType.TimestampTz)
     {
     }
 

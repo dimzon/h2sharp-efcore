@@ -2,12 +2,12 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-public class CompositeKeyEndToEndNpgsqlTest(CompositeKeyEndToEndNpgsqlTest.CompositeKeyEndToEndNpgsqlFixture fixture)
-    : CompositeKeyEndToEndTestBase<CompositeKeyEndToEndNpgsqlTest.CompositeKeyEndToEndNpgsqlFixture>(fixture)
+public class CompositeKeyEndToEndH2Test(CompositeKeyEndToEndH2Test.CompositeKeyEndToEndH2Fixture fixture)
+    : CompositeKeyEndToEndTestBase<CompositeKeyEndToEndH2Test.CompositeKeyEndToEndH2Fixture>(fixture)
 {
-    public class CompositeKeyEndToEndNpgsqlFixture : CompositeKeyEndToEndFixtureBase
+    public class CompositeKeyEndToEndH2Fixture : CompositeKeyEndToEndFixtureBase
     {
         protected override ITestStoreFactory TestStoreFactory
-            => NpgsqlTestStoreFactory.Instance;
+            => H2TestStoreFactory.Instance;
     }
 }

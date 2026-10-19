@@ -317,9 +317,9 @@ WHERE s."UppercaseNamedEnum" = ANY (@__values_0)
             => "EnumQueryTest";
 
         // We instruct the test store to pass a connection string to UseH2() instead of a DbConnection - that's required to allow
-        // EF's UseNodaTime() to function properly and instantiate an NpgsqlDataSource internally.
+        // EF's UseNodaTime() to function properly and instantiate an H2DataSource internally.
         protected override ITestStoreFactory TestStoreFactory
-            => new NpgsqlTestStoreFactory(useConnectionString: true);
+            => new H2TestStoreFactory(useConnectionString: true);
 
         public TestSqlLoggerFactory TestSqlLoggerFactory
             => (TestSqlLoggerFactory)ListLoggerFactory;

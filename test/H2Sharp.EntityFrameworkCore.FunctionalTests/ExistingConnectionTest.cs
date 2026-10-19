@@ -20,14 +20,14 @@ public class ExistingConnectionTest
             .AddEntityFrameworkH2()
             .BuildServiceProvider();
 
-        await using (var store = await NpgsqlTestStore.GetNorthwindStoreAsync())
+        await using (var store = await H2TestStore.GetNorthwindStoreAsync())
         {
             store.CloseConnection();
 
             var openCount = 0;
             var closeCount = 0;
 
-            await using (var connection = new NpgsqlConnection(store.ConnectionString))
+            await using (var connection = new H2Connection(store.ConnectionString))
             {
                 if (openConnection)
                 {
@@ -67,10 +67,10 @@ public class ExistingConnectionTest
         }
     }
 
-    private class NorthwindContext(IServiceProvider serviceProvider, NpgsqlConnection connection) : DbContext
+    private class NorthwindContext(IServiceProvider serviceProvider, H2Connection connection) : DbContext
     {
         private readonly IServiceProvider _serviceProvider = serviceProvider;
-        private readonly NpgsqlConnection _connection = connection;
+        private readonly H2Connection _connection = connection;
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
         public DbSet<Customer> Customers { get; set; }

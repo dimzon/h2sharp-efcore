@@ -56,7 +56,7 @@ public class ComputedColumnTest : IAsyncLifetime
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseH2(NpgsqlTestStore.CreateConnectionString(_databaseName), b => b.ApplyConfiguration())
+                .UseH2(H2TestStore.CreateConnectionString(_databaseName), b => b.ApplyConfiguration())
                 .UseInternalServiceProvider(_serviceProvider);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -107,7 +107,7 @@ public class ComputedColumnTest : IAsyncLifetime
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseH2(NpgsqlTestStore.CreateConnectionString(databaseName), b => b.ApplyConfiguration())
+                .UseH2(H2TestStore.CreateConnectionString(databaseName), b => b.ApplyConfiguration())
                 .UseInternalServiceProvider(serviceProvider);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -134,10 +134,10 @@ public class ComputedColumnTest : IAsyncLifetime
         Assert.Equal(FlagEnum.AValue | FlagEnum.BValue, entity.CalculatedFlagEnum);
     }
 
-    protected NpgsqlTestStore TestStore { get; private set; }
+    protected H2TestStore TestStore { get; private set; }
 
     public async Task InitializeAsync()
-        => TestStore = await NpgsqlTestStore.CreateInitializedAsync("ComputedColumnTest");
+        => TestStore = await H2TestStore.CreateInitializedAsync("ComputedColumnTest");
 
     public async Task DisposeAsync()
         => await TestStore.DisposeAsync();

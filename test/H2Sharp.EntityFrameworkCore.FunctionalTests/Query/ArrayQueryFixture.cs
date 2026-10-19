@@ -6,7 +6,7 @@ namespace H2Sharp.EntityFrameworkCore.Query;
 public abstract class ArrayQueryFixture : SharedStoreFixtureBase<ArrayQueryContext>, IQueryFixtureBase, ITestSqlLoggerFactory
 {
     protected override ITestStoreFactory TestStoreFactory
-        => NpgsqlTestStoreFactory.Instance;
+        => H2TestStoreFactory.Instance;
 
     public TestSqlLoggerFactory TestSqlLoggerFactory
         => (TestSqlLoggerFactory)ListLoggerFactory;

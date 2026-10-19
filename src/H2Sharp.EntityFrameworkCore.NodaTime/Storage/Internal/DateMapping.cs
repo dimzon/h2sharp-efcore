@@ -13,7 +13,7 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
-public class DateMapping : NpgsqlTypeMapping
+public class DateMapping : H2TypeMapping
 {
     private static readonly ConstructorInfo Constructor =
         typeof(LocalDate).GetConstructor([typeof(int), typeof(int), typeof(int)])!;
@@ -33,7 +33,7 @@ public class DateMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public DateMapping()
-        : base("date", typeof(LocalDate), NpgsqlDbType.Date, JsonLocalDateReaderWriter.Instance)
+        : base("date", typeof(LocalDate), H2DbType.Date, JsonLocalDateReaderWriter.Instance)
     {
     }
 
@@ -44,7 +44,7 @@ public class DateMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected DateMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, NpgsqlDbType.Date)
+        : base(parameters, H2DbType.Date)
     {
     }
 
@@ -86,7 +86,7 @@ public class DateMapping : NpgsqlTypeMapping
 
     private static string FormatLocalDate(LocalDate date)
     {
-        if (!NpgsqlNodaTimeTypeMappingSourcePlugin.DisableDateTimeInfinityConversions)
+        if (!H2NodaTimeTypeMappingSourcePlugin.DisableDateTimeInfinityConversions)
         {
             if (date == LocalDate.MinIsoValue)
             {
@@ -124,7 +124,7 @@ public class DateMapping : NpgsqlTypeMapping
         {
             var s = manager.CurrentReader.GetString()!;
 
-            if (!NpgsqlNodaTimeTypeMappingSourcePlugin.DisableDateTimeInfinityConversions)
+            if (!H2NodaTimeTypeMappingSourcePlugin.DisableDateTimeInfinityConversions)
             {
                 switch (s)
                 {

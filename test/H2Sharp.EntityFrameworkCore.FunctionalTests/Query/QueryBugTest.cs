@@ -5,17 +5,17 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-public class QueryBugsTest : IClassFixture<NpgsqlFixture>
+public class QueryBugsTest : IClassFixture<H2Fixture>
 {
     // ReSharper disable once UnusedParameter.Local
-    public QueryBugsTest(NpgsqlFixture fixture, ITestOutputHelper testOutputHelper)
+    public QueryBugsTest(H2Fixture fixture, ITestOutputHelper testOutputHelper)
     {
         Fixture = fixture;
         Fixture.TestSqlLoggerFactory.Clear();
         Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    protected NpgsqlFixture Fixture { get; }
+    protected H2Fixture Fixture { get; }
 
     #region Bug920
 
@@ -28,7 +28,7 @@ public class QueryBugsTest : IClassFixture<NpgsqlFixture>
         context.SaveChanges();
     }
 
-    private Task<NpgsqlTestStore> CreateDatabase920Async()
+    private Task<H2TestStore> CreateDatabase920Async()
         => CreateTestStoreAsync(() => new Bug920Context(_options), _ => ClearLog());
 
     public enum Bug920Enum { One, Two }
@@ -50,12 +50,12 @@ public class QueryBugsTest : IClassFixture<NpgsqlFixture>
 
     private DbContextOptions _options;
 
-    private async Task<NpgsqlTestStore> CreateTestStoreAsync<TContext>(
+    private async Task<H2TestStore> CreateTestStoreAsync<TContext>(
         Func<TContext> contextCreator,
         Action<TContext> contextInitializer)
         where TContext : DbContext, IDisposable
     {
-        var testStore = await NpgsqlTestStore.CreateInitializedAsync("QueryBugsTest");
+        var testStore = await H2TestStore.CreateInitializedAsync("QueryBugsTest");
 
         _options = Fixture.CreateOptions(testStore);
 

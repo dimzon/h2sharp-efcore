@@ -9,7 +9,7 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
-public class IntervalMultirangeMapping : NpgsqlTypeMapping
+public class IntervalMultirangeMapping : H2TypeMapping
 {
     private readonly IntervalRangeMapping _intervalRangeMapping;
 
@@ -20,7 +20,7 @@ public class IntervalMultirangeMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public IntervalMultirangeMapping(Type clrType, IntervalRangeMapping intervalRangeMapping)
-        : base("tstzmultirange", clrType, NpgsqlDbType.TimestampTzMultirange)
+        : base("tstzmultirange", clrType, H2DbType.TimestampTzMultirange)
     {
         _intervalRangeMapping = intervalRangeMapping;
     }
@@ -32,7 +32,7 @@ public class IntervalMultirangeMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected IntervalMultirangeMapping(RelationalTypeMappingParameters parameters, IntervalRangeMapping intervalRangeMapping)
-        : base(parameters, NpgsqlDbType.DateMultirange)
+        : base(parameters, H2DbType.DateMultirange)
     {
         _intervalRangeMapping = intervalRangeMapping;
     }
@@ -62,5 +62,5 @@ public class IntervalMultirangeMapping : NpgsqlTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => NpgsqlMultirangeTypeMapping.GenerateNonNullSqlLiteral(value, _intervalRangeMapping, "tstzmultirange");
+        => H2MultirangeTypeMapping.GenerateNonNullSqlLiteral(value, _intervalRangeMapping, "tstzmultirange");
 }

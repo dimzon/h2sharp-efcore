@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-[assembly: DesignTimeProviderServices("H2Sharp.EntityFrameworkCore.Design.Internal.NpgsqlDesignTimeServices")]
+[assembly: DesignTimeProviderServices("H2Sharp.EntityFrameworkCore.Design.Internal.H2DesignTimeServices")]
 
 [assembly:
     InternalsVisibleTo(

@@ -50,8 +50,8 @@
     <Using Include="Microsoft.EntityFrameworkCore.Utilities" />
     <Using Include="Microsoft.Extensions.Logging" />
     <Using Include="Microsoft.Extensions.DependencyInjection" />
-    <Using Include="Npgsql" />
-    <Using Include="NpgsqlTypes" />
+    <!-- H2Sharp.Data: the ADO.NET provider this one is built on. -->
+    <Using Include="H2Sharp.Data" />
   </ItemGroup>
 
 </Project>
