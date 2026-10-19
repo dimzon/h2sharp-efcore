@@ -16,6 +16,7 @@
     -->
     <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
     <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
+    <Compile Remove="H2ValueGenerationScenariosTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,7 +57,6 @@
     <Compile Remove="CustomConvertersH2Test.cs" />
     <Compile Remove="DataAnnotationH2Test.cs" />
     <Compile Remove="DataBindingH2Test.cs" />
-    <Compile Remove="DesignTimeH2Test.cs" />
     <Compile Remove="EntitySplittingH2Test.cs" />
     <Compile Remove="ExecutionStrategyTest.cs" />
     <Compile Remove="ExistingConnectionTest.cs" />
@@ -64,7 +64,6 @@
     <Compile Remove="FieldMappingH2Test.cs" />
     <Compile Remove="FindH2Test.cs" />
     <Compile Remove="H2Fixture.cs" />
-    <Compile Remove="H2ValueGenerationScenariosTest.cs" />
     <Compile Remove="JsonTypesH2Test.cs" />
     <Compile Remove="KeysWithConvertersH2Test.cs" />
     <Compile Remove="LazyLoadProxyH2Test.cs" />
@@ -73,7 +72,6 @@
     <Compile Remove="ManyToManyLoadH2Test.cs" />
     <Compile Remove="ManyToManyTrackingH2Test.cs" />
     <Compile Remove="MaterializationInterceptionH2Test.cs" />
-    <Compile Remove="Migrations\MigrationsH2Test.cs" />
     <Compile Remove="Migrations\MigrationsInfrastructureH2Test.cs" />
     <Compile Remove="MonsterFixupChangedChangingH2Test.cs" />
     <Compile Remove="MusicStoreH2Test.cs" />
@@ -179,7 +177,6 @@
     <Compile Remove="Query\SqlExecutorH2Test.cs" />
     <Compile Remove="Query\SqlQueryH2Test.cs" />
     <Compile Remove="Query\TimestampQueryTest.cs" />
-    <Compile Remove="Query\ToSqlQueryH2Test.cs" />
     <Compile Remove="Query\TPCFiltersInheritanceQueryH2Fixture.cs" />
     <Compile Remove="Query\TPCFiltersInheritanceQueryH2Test.cs" />
     <Compile Remove="Query\TPCGearsOfWarQueryH2Fixture.cs" />
@@ -233,6 +230,7 @@
     <Compile Remove="TestUtilities\TestH2RetryingExecutionStrategy.cs" />
     <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
     <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
+    <Compile Remove="H2ValueGenerationScenariosTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -241,6 +239,7 @@
     <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore.NodaTime\H2Sharp.EntityFrameworkCore.NodaTime.csproj" />
     <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
     <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
+    <Compile Remove="H2ValueGenerationScenariosTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -255,6 +254,7 @@
     <PackageReference Include="xunit.core" />
     <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
     <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
+    <Compile Remove="H2ValueGenerationScenariosTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -262,6 +262,7 @@
     <None Update="config.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
     <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
+    <Compile Remove="H2ValueGenerationScenariosTest.cs" />
   </ItemGroup>
 
 </Project>

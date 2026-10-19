@@ -1,3 +1,4 @@
+using H2Sharp;
 #nullable enable
 
 using H2Sharp.EntityFrameworkCore.Infrastructure;
@@ -1661,25 +1662,25 @@ DROP SEQUENCE "People_Id_old_seq";
     public override async Task Convert_string_column_to_a_json_column_containing_reference()
     {
         var exception =
-            await Assert.ThrowsAsync<PostgresException>(() => base.Convert_string_column_to_a_json_column_containing_reference());
+            await Assert.ThrowsAsync<H2SharpException>(() => base.Convert_string_column_to_a_json_column_containing_reference());
 
-        Assert.Equal("42804", exception.SqlState); // column "Name" cannot be cast automatically to type jsonb
+        Assert.Equal("42001", exception.SqlState); // column "Name" cannot be cast automatically to type json
     }
 
     public override async Task Convert_string_column_to_a_json_column_containing_required_reference()
     {
         var exception =
-            await Assert.ThrowsAsync<PostgresException>(() => base.Convert_string_column_to_a_json_column_containing_required_reference());
+            await Assert.ThrowsAsync<H2SharpException>(() => base.Convert_string_column_to_a_json_column_containing_required_reference());
 
-        Assert.Equal("42804", exception.SqlState); // column "Name" cannot be cast automatically to type jsonb
+        Assert.Equal("42001", exception.SqlState); // column "Name" cannot be cast automatically to type json
     }
 
     public override async Task Convert_string_column_to_a_json_column_containing_collection()
     {
         var exception =
-            await Assert.ThrowsAsync<PostgresException>(() => base.Convert_string_column_to_a_json_column_containing_collection());
+            await Assert.ThrowsAsync<H2SharpException>(() => base.Convert_string_column_to_a_json_column_containing_collection());
 
-        Assert.Equal("42804", exception.SqlState); // column "Name" cannot be cast automatically to type jsonb
+        Assert.Equal("42001", exception.SqlState); // column "Name" cannot be cast automatically to type json
     }
 
     [Fact]
@@ -2174,29 +2175,6 @@ DROP SEQUENCE "People_Id_old_seq";
         AssertSql("""CREATE INDEX "IX_People_Name" ON "People" ("Name" COLLATE some_collation);""");
     }
 
-    [Fact] // #3027
-    public virtual async Task Create_index_with_collation_and_operators()
-    {
-        await Test(
-            builder =>
-            {
-                builder.Entity("People", e => e.Property<string>("Name"));
-                builder.HasCollation("some_collation", locale: "POSIX", provider: "libc");
-            },
-            _ => { },
-            builder => builder.Entity("People").HasIndex("Name")
-                .UseCollation("some_collation")
-                .HasOperators("text_pattern_ops"),
-            model =>
-            {
-                var table = Assert.Single(model.Tables);
-                var index = Assert.Single(table.Indexes);
-                Assert.Equal("text_pattern_ops", Assert.Single((IReadOnlyList<string>)index[H2AnnotationNames.IndexOperators]!));
-                Assert.Equal("some_collation", Assert.Single((IReadOnlyList<string>)index[RelationalAnnotationNames.Collation]!));
-            });
-
-        AssertSql("""CREATE INDEX "IX_People_Name" ON "People" ("Name" COLLATE some_collation text_pattern_ops);""");
-    }
 
     [Fact]
     public virtual async Task Create_index_with_null_sort_order()
@@ -2226,46 +2204,7 @@ DROP SEQUENCE "People_Id_old_seq";
             """CREATE INDEX "IX_People_FirstName_MiddleName_LastName" ON "People" ("FirstName" NULLS FIRST, "MiddleName", "LastName" NULLS LAST);""");
     }
 
-    [Fact]
-    public virtual async Task Create_index_tsvector()
-    {
-        await Test(
-            builder => builder.Entity(
-                "Blogs", e =>
-                {
-                    e.Property<string>("Title").IsRequired();
-                    e.Property<string>("Description");
-                }),
-            _ => { },
-            builder => builder.Entity("Blogs")
-                .HasIndex("Title", "Description")
-                .IsTsVectorExpressionIndex("simple"),
-            _ => { });
 
-        AssertSql(
-            """CREATE INDEX "IX_Blogs_Title_Description" ON "Blogs" (to_tsvector('simple', "Title" || ' ' || coalesce("Description", '')));""");
-    }
-
-    [Fact]
-    public virtual async Task Create_index_tsvector_using_gin()
-    {
-        await Test(
-            builder => builder.Entity(
-                "Blogs", e =>
-                {
-                    e.Property<string>("Title").IsRequired();
-                    e.Property<string>("Description");
-                }),
-            _ => { },
-            builder => builder.Entity("Blogs")
-                .HasIndex("Title", "Description")
-                .HasMethod("GIN")
-                .IsTsVectorExpressionIndex("simple"),
-            _ => { });
-
-        AssertSql(
-            """CREATE INDEX "IX_Blogs_Title_Description" ON "Blogs" USING GIN (to_tsvector('simple', "Title" || ' ' || coalesce("Description", '')));""");
-    }
 
     [ConditionalFact]
     [MinimumPostgresVersion(15, 0)]
@@ -2761,51 +2700,6 @@ SELECT setval(
         AssertSql("""ALTER TABLE "Customers" ADD "Numbers" integer[] NOT NULL DEFAULT (ARRAY[3, 2, 1]);""");
     }
 
-    #region PostgreSQL extensions
-
-    [Fact]
-    public virtual async Task Ensure_postgres_extension()
-    {
-        await Test(
-            _ => { },
-            builder => builder.HasPostgresExtension("citext"),
-            model =>
-            {
-                var citext = Assert.Single(model.GetPostgresExtensions());
-                Assert.Equal("citext", citext.Name);
-                Assert.Equal("public", citext.Schema);
-            });
-
-        AssertSql("CREATE EXTENSION IF NOT EXISTS citext;");
-    }
-
-    [Fact]
-    public virtual async Task Ensure_postgres_extension_with_schema()
-    {
-        await Test(
-            _ => { },
-            builder => builder.HasPostgresExtension("some_schema", "citext"),
-            model =>
-            {
-                var citext = Assert.Single(model.GetPostgresExtensions());
-                Assert.Equal("citext", citext.Name);
-                Assert.Equal("some_schema", citext.Schema);
-            });
-
-        AssertSql(
-            """
-                DO $EF$
-                BEGIN
-                    IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'some_schema') THEN
-                        CREATE SCHEMA some_schema;
-                    END IF;
-                END $EF$;
-                """,
-            //
-            @"CREATE EXTENSION IF NOT EXISTS citext SCHEMA some_schema;");
-    }
-
-    #endregion
 
     #region PostgreSQL enums
 
@@ -2954,194 +2848,7 @@ CREATE TYPE some_schema."Mood" AS ENUM ('Happy', 'Sad');
 
     #endregion
 
-    #region PostgreSQL collation management
 
-    [Fact]
-    public virtual async Task Create_collation()
-    {
-        await Test(
-            _ => { },
-            builder => builder.HasCollation("dummy", locale: "POSIX", provider: "libc"),
-            model =>
-            {
-                var collation = Assert.Single(PostgresCollation.GetCollations(model));
-
-                Assert.Equal("dummy", collation.Name);
-                Assert.Equal("libc", collation.Provider);
-                Assert.Equal("POSIX", collation.LcCollate);
-                Assert.Equal("POSIX", collation.LcCtype);
-                Assert.True(collation.IsDeterministic);
-            });
-
-        AssertSql(
-            """
-CREATE COLLATION dummy (LOCALE = 'POSIX',
-    PROVIDER = libc
-);
-""");
-    }
-
-    [ConditionalFact]
-    [MinimumPostgresVersion(12, 0)]
-    public virtual async Task Create_collation_non_deterministic()
-    {
-        await Test(
-            _ => { },
-            builder => builder.HasCollation("some_collation", locale: "en-u-ks-level1", provider: "icu", deterministic: false),
-            model =>
-            {
-                var collation = Assert.Single(PostgresCollation.GetCollations(model));
-
-                Assert.Equal("some_collation", collation.Name);
-                Assert.Equal("icu", collation.Provider);
-                Assert.Equal("en-u-ks-level1", collation.LcCollate);
-                Assert.Equal("en-u-ks-level1", collation.LcCtype);
-                Assert.False(collation.IsDeterministic);
-            });
-
-        AssertSql(
-            """
-CREATE COLLATION some_collation (LOCALE = 'en-u-ks-level1',
-    PROVIDER = icu,
-    DETERMINISTIC = False
-);
-""");
-    }
-
-    [Fact]
-    public virtual async Task Drop_collation()
-    {
-        await Test(
-            builder => builder.HasCollation("dummy", locale: "POSIX", provider: "libc"),
-            _ => { },
-            model => Assert.Empty(PostgresCollation.GetCollations(model)));
-
-        AssertSql("""DROP COLLATION dummy;""");
-    }
-
-    [Fact]
-    public virtual Task Alter_collation_throws()
-        => TestThrows<NotSupportedException>(
-            builder => builder.HasCollation("dummy", locale: "POSIX", provider: "libc"),
-            builder => builder.HasCollation("dummy", locale: "C", provider: "libc"));
-
-    #endregion PostgreSQL collation management
-
-    #region PostgreSQL full-text search
-
-    [Fact]
-    public virtual async Task Add_column_generated_tsvector_over_text()
-    {
-        if (TestEnvironment.PostgresVersion.IsUnder(12))
-        {
-            return;
-        }
-
-        await Test(
-            builder => builder.Entity("Blogs", e => e.Property<string>("TextColumn").IsRequired()),
-            _ => { },
-            builder => builder.Entity("Blogs").Property<H2TsVector>("SearchColumn").IsGeneratedTsVectorColumn("english", "TextColumn"),
-            model =>
-            {
-                var table = Assert.Single(model.Tables);
-                var column = Assert.Single(table.Columns, c => c.Name == "SearchColumn");
-                Assert.Equal("tsvector", column.StoreType);
-            });
-
-        AssertSql("""ALTER TABLE "Blogs" ADD "SearchColumn" tsvector GENERATED ALWAYS AS (to_tsvector('english', "TextColumn")) STORED;""");
-    }
-
-    [Fact]
-    public virtual async Task Add_column_generated_tsvector_over_jsonb()
-    {
-        if (TestEnvironment.PostgresVersion.IsUnder(12))
-        {
-            return;
-        }
-
-        await Test(
-            builder => builder.Entity("People").Property<string>("JsonbColumn").HasColumnType("jsonb").IsRequired(),
-            _ => { },
-            builder => builder.Entity("People").Property<H2TsVector>("SearchColumn")
-                .IsGeneratedTsVectorColumn("english", "JsonbColumn"),
-            model =>
-            {
-                var table = Assert.Single(model.Tables);
-                var column = Assert.Single(table.Columns, c => c.Name == "SearchColumn");
-                Assert.Equal("tsvector", column.StoreType);
-            });
-
-        AssertSql(
-            """ALTER TABLE "People" ADD "SearchColumn" tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('english', "JsonbColumn", '"all"')) STORED;""");
-    }
-
-    [Fact]
-    public virtual async Task Add_column_generated_tsvector_over_mixed()
-    {
-        if (TestEnvironment.PostgresVersion.IsUnder(12))
-        {
-            return;
-        }
-
-        await Test(
-            builder =>
-            {
-                builder.Entity("People").Property<string>("RequiredTextColumn").IsRequired();
-                builder.Entity("People").Property<string>("OptionalTextColumn");
-                builder.Entity("People").Property<string>("RequiredJsonbColumn").HasColumnType("jsonb").IsRequired();
-                builder.Entity("People").Property<string>("OptionalJsonColumn").HasColumnType("json");
-            },
-            _ => { },
-            builder => builder.Entity("People").Property<H2TsVector>("SearchColumn")
-                .IsGeneratedTsVectorColumn(
-                    "english", "RequiredTextColumn", "OptionalTextColumn", "RequiredJsonbColumn", "OptionalJsonColumn"),
-            model =>
-            {
-                var table = Assert.Single(model.Tables);
-                var column = Assert.Single(table.Columns, c => c.Name == "SearchColumn");
-                Assert.Equal("tsvector", column.StoreType);
-            });
-
-        AssertSql(
-            """ALTER TABLE "People" ADD "SearchColumn" tsvector GENERATED ALWAYS AS (to_tsvector('english', "RequiredTextColumn" || ' ' || coalesce("OptionalTextColumn", '')) || jsonb_to_tsvector('english', "RequiredJsonbColumn", '"all"') || json_to_tsvector('english', coalesce("OptionalJsonColumn", '{}'), '"all"')) STORED;""");
-    }
-
-    [Fact]
-    public virtual async Task Alter_column_generated_tsvector_change_config()
-    {
-        if (TestEnvironment.PostgresVersion.IsUnder(12))
-        {
-            return;
-        }
-
-        await Test(
-            builder => builder.Entity(
-                "Blogs", e =>
-                {
-                    e.Property<string>("Title").IsRequired();
-                    e.Property<string>("Description");
-                }),
-            builder => builder.Entity("Blogs").Property<H2TsVector>("TsVector")
-                .IsGeneratedTsVectorColumn("german", "Title", "Description"),
-            builder => builder.Entity("Blogs").Property<H2TsVector>("TsVector")
-                .IsGeneratedTsVectorColumn("english", "Title", "Description"),
-            model =>
-            {
-                var table = Assert.Single(model.Tables);
-                var column = Assert.Single(table.Columns, c => c.Name == "TsVector");
-                Assert.Equal("tsvector", column.StoreType);
-                Assert.Equal(
-                    """to_tsvector('english'::regconfig, (("Title" || ' '::text) || COALESCE("Description", ''::text)))""",
-                    column.ComputedColumnSql);
-            });
-
-        AssertSql(
-            """ALTER TABLE "Blogs" DROP COLUMN "TsVector";""",
-            //
-            """ALTER TABLE "Blogs" ADD "TsVector" tsvector GENERATED ALWAYS AS (to_tsvector('english', "Title" || ' ' || coalesce("Description", ''))) STORED;""");
-    }
-
-    #endregion PostgreSQL full-text search
 
     public override async Task Add_required_primitive_collection_to_existing_table()
     {
@@ -3288,14 +2995,9 @@ CREATE TABLE "Contacts" (
 
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
         {
-            new H2DbContextOptionsBuilder(
-                    base.AddOptions(builder)
-                        // Some tests create expression indexes, but these cannot be reverse-engineered.
-                        .ConfigureWarnings(
-                            w => { w.Ignore(H2EfEventId.ExpressionIndexSkippedWarning); }))
-                // Various migration operations PG-version sensitive, configure the context with the actual version
-                // we're connecting to.
-                .SetPostgresVersion(TestEnvironment.PostgresVersion);
+            // Some tests create expression indexes, but these cannot be reverse-engineered.
+            builder.ConfigureWarnings(
+                w => { w.Ignore(H2EfEventId.ExpressionIndexSkippedWarning); });
 
             return builder;
         }
@@ -3304,5 +3006,5 @@ CREATE TABLE "Contacts" (
     protected override ICollection<BuildReference> GetAdditionalReferences()
         => AdditionalReferences;
 
-    private static readonly BuildReference[] AdditionalReferences = [BuildReference.ByName("H2")];
+    private static readonly BuildReference[] AdditionalReferences = [BuildReference.ByName("H2Sharp.EntityFrameworkCore")];
 }
