@@ -89,7 +89,7 @@ public sealed class EnumDefinition : IEquatable<EnumDefinition>
         Labels = clrType.GetFields(BindingFlags.Static | BindingFlags.Public)
             .ToDictionary(
                 x => x.GetValue(null)!,
-                x => x.GetCustomAttribute<ColumnAttribute>()?.PgName ?? nameTranslator.TranslateMemberName(x.Name));
+                x => x.GetCustomAttribute<ColumnAttribute>()?.Name ?? nameTranslator.TranslateMemberName(x.Name));
     }
 
     /// <inheritdoc />

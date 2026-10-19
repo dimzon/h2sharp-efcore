@@ -75,11 +75,6 @@ public class H2ModificationCommandBatch : ReaderModificationCommandBatch
     {
         var npgsqlReader = (H2DataReader)reader.DbDataReader;
 
-#pragma warning disable 618
-        Debug.Assert(
-            npgsqlReader.Statements.Count == ModificationCommands.Count,
-            $"Reader has {npgsqlReader.Statements.Count} statements, expected {ModificationCommands.Count}");
-#pragma warning restore 618
 
         var commandIndex = 0;
 
@@ -165,7 +160,7 @@ public class H2ModificationCommandBatch : ReaderModificationCommandBatch
                     // TODO: when EF Core adds support for DbBatch (https://github.com/dotnet/efcore/issues/18990), we can start using that
                     // standardized API for fetching the rows affected by an individual command in a batch.
 #pragma warning disable 618
-                    if (npgsqlReader.Statements[commandIndex].Rows != 1 && command.StoreStoredProcedure is null)
+                    if (!reader.Read() && command.StoreStoredProcedure is null)
                     {
                         if (async)
                         {
