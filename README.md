@@ -66,6 +66,10 @@ The connection string is the ADO.NET spelling. H2Sharp's ADO layer takes a JDBC 
 it is. The settings a URL carries — `MODE=PostgreSQL` and the like — are the connection
 string's other keys.
 
+**[docs/USAGE.md](docs/USAGE.md) is the guide**: connecting, the context, mapping, value
+generation, migrations, scaffolding, the functions of H2, window functions, the catalogue, the
+SQL the provider generates, and what does not work yet.
+
 ## H2's own functions
 
 `EF.Functions` reaches the built-in functions of the database. The provider offers the ones
