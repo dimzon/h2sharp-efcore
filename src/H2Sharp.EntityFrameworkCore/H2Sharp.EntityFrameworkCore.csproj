@@ -18,14 +18,19 @@
     elsewhere once the engine ships as a package.
   -->
   <PropertyGroup>
-    <H2SharpProject Condition="'$(H2SharpProject)' == ''">$(MSBuildThisFileDirectory)..\..\h2sharp\src\H2Sharp\H2Sharp.csproj</H2SharpProject>
+    <H2SharpProject Condition="'$(H2SharpProject)' == ''">$(MSBuildThisFileDirectory)..\..\..\h2sharp\src\H2Sharp\H2Sharp.csproj</H2SharpProject>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- PrivateAssets="none" is set to flow the EF Core analyzer to users referencing this package https://github.com/aspnet/EntityFrameworkCore/pull/11350 -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" PrivateAssets="none" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" PrivateAssets="none" />
-    <ProjectReference Include="$(H2SharpProject)" />
+    <!--
+      SetTargetFramework pins the engine build to its net8.0 asset. H2Sharp multi-targets net8.0 and
+      net10.0, and the automatic nearest-TFM pick reaches for the highest one, which this project's
+      SDK cannot build.
+    -->
+    <ProjectReference Include="$(H2SharpProject)" SetTargetFramework="TargetFramework=net8.0" />
   </ItemGroup>
 
   <ItemGroup>
