@@ -26,19 +26,6 @@ public static class H2DatabaseFacadeExtensions
     public static bool IsH2(this DatabaseFacade database)
         => database.ProviderName == typeof(H2OptionsExtension).GetTypeInfo().Assembly.GetName().Name;
 
-    /// <summary>
-    /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         It may not be possible to change the data source if existing connection, if any, is open.
-    ///     </para>
-    ///     <para>
-    ///         See <see href="https://aka.ms/efcore-docs-connections">Connections and connection strings</see> for more information and examples.
-    ///     </para>
-    /// </remarks>
-    /// <param name="databaseFacade">The <see cref="DatabaseFacade" /> for the context.</param>
-    /// <param name="dataSource">The connection string.</param>
-
     private static IRelationalDatabaseFacadeDependencies GetFacadeDependencies(DatabaseFacade databaseFacade)
     {
         var dependencies = ((IDatabaseFacadeDependenciesAccessor)databaseFacade).Dependencies;

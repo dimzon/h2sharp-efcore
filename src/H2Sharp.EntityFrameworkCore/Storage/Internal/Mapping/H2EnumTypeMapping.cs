@@ -24,7 +24,7 @@ public class H2EnumTypeMapping : RelationalTypeMapping
     public virtual IReadOnlyDictionary<object, string> Labels { get; }
 
     /// <summary>
-    ///     The unquoted store type, used for setting on <see cref="H2Parameter.DataTypeName" />.
+    ///     The unquoted store type, used when generating DDL.
     /// </summary>
     /// <remarks>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

@@ -146,15 +146,15 @@ public static class H2DbContextOptionsBuilderExtensions
 
     /// <summary>
     ///     <para>
-    ///         Configures the context to connect to a PostgreSQL server with H2, but without initially setting any
-    ///         <see cref="DbConnection" />, <see cref="DbDataSource" /> or connection string.
+    ///         Configures the context to connect to an H2 database, but without initially setting any
+    ///         <see cref="DbConnection" /> or connection string.
     ///     </para>
     ///     <para>
-    ///         The connection, data source or connection string must be set explicitly or registered in the DI
+    ///         The connection or connection string must be set explicitly or registered in the DI
     ///         before the <see cref="DbContext" /> is used to connect to a database.
-    ///         Set a connection using <see cref="RelationalDatabaseFacadeExtensions.SetDbConnection" />, a data source using
-    ///         <see cref="H2DatabaseFacadeExtensions.SetDbDataSource" />, or a connection string using
-    ///         <see cref="RelationalDatabaseFacadeExtensions.SetConnectionString" />.
+    ///         Set a connection using <see cref="RelationalDatabaseFacadeExtensions.SetDbConnection" />, or a
+    ///         connection string using <see cref="RelationalDatabaseFacadeExtensions.SetConnectionString" />.
+    ///         There is no data source overload: an H2 database is embedded and is addressed by its URL.
     ///     </para>
     /// </summary>
     /// <param name="optionsBuilder">The builder being used to configure the context.</param>

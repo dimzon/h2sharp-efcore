@@ -527,7 +527,7 @@ public static class H2ModelBuilderExtensions
     /// <param name="name">The name of the enum type to create.</param>
     /// <param name="nameTranslator">
     ///     The translator for name and label inference.
-    ///     Defaults to <see cref="H2SnakeCaseNameTranslator" />.
+    ///     Defaults to <see cref="H2UpperCaseNameTranslator" />.
     /// </param>
     /// <typeparam name="TEnum"></typeparam>
     /// <returns>
