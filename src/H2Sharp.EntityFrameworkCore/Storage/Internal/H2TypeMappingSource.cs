@@ -58,9 +58,6 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     protected virtual ConcurrentDictionary<Type, RelationalTypeMapping> ClrTypeMappings { get; }
 
     private readonly IReadOnlyList<EnumDefinition> _enumDefinitions;
-    private readonly IReadOnlyList<UserRangeDefinition> _userRangeDefinitions;
-
-    private readonly bool _supportsMultiranges;
 
     #region Mappings
 
@@ -71,32 +68,26 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     private readonly H2BigIntegerTypeMapping _bigInteger = H2BigIntegerTypeMapping.Default;
     private readonly H2DecimalTypeMapping _numericAsFloat = new(typeof(float));
     private readonly H2DecimalTypeMapping _numericAsDouble = new(typeof(double));
-    private readonly H2MoneyTypeMapping _money = H2MoneyTypeMapping.Default;
+    private readonly H2DecfloatTypeMapping _decfloat = H2DecfloatTypeMapping.Default;
     private readonly GuidTypeMapping _uuid = new("uuid", DbType.Guid);
+    private readonly SByteTypeMapping _int1 = new("tinyint", DbType.SByte);
     private readonly ShortTypeMapping _int2 = new("smallint", DbType.Int16);
     private readonly ByteTypeMapping _int2Byte = new("smallint", DbType.Byte);
     private readonly IntTypeMapping _int4 = new("integer", DbType.Int32);
     private readonly LongTypeMapping _int8 = new("bigint", DbType.Int64);
 
     // Character types
-    private readonly StringTypeMapping _text = new("text", DbType.String);
-    private readonly H2StringTypeMapping _varchar = new("character varying", H2DbType.Varchar);
+    private readonly StringTypeMapping _text = new("character large object", DbType.String);
+    private readonly H2StringTypeMapping _varchar = new("character varying");
     private readonly H2CharacterStringTypeMapping _char = new("character");
     private readonly H2CharacterCharTypeMapping _singleChar = new("character(1)");
-    private readonly H2StringTypeMapping _xml = new("xml", H2DbType.Xml);
-    private readonly H2StringTypeMapping _citext = new("citext", H2DbType.Citext);
-    private readonly H2StringTypeMapping _jsonpath = new("jsonpath", H2DbType.JsonPath);
 
     // JSON mappings - EF owned entity support
-    private readonly H2OwnedJsonTypeMapping _jsonbOwned = new("jsonb");
     private readonly H2OwnedJsonTypeMapping _jsonOwned = new("json");
 
     // JSON mappings - older string/weakly-typed support
-    private readonly H2JsonTypeMapping _jsonbString = new("jsonb", typeof(string));
     private readonly H2JsonTypeMapping _jsonString = new("json", typeof(string));
-    private readonly H2JsonTypeMapping _jsonbDocument = new("jsonb", typeof(JsonDocument));
     private readonly H2JsonTypeMapping _jsonDocument = new("json", typeof(JsonDocument));
-    private readonly H2JsonTypeMapping _jsonbElement = new("jsonb", typeof(JsonElement));
     private readonly H2JsonTypeMapping _jsonElement = new("json", typeof(JsonElement));
 
     // Date/Time types
@@ -111,63 +102,12 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     private readonly H2DateOnlyTypeMapping _dateDateOnly = H2DateOnlyTypeMapping.Default;
     private readonly H2TimeTypeMapping _timeTimeOnly = H2TimeTypeMapping.Default;
 
-    // Network address types
-    private readonly H2MacaddrTypeMapping _macaddr = H2MacaddrTypeMapping.Default;
-    private readonly H2Macaddr8TypeMapping _macaddr8 = H2Macaddr8TypeMapping.Default;
-    private readonly H2InetTypeMapping _inetAsIPAddress = H2InetTypeMapping.Default;
-    private readonly H2InetTypeMapping _inetAsH2Inet = new(typeof(H2Inet));
-    private readonly H2CidrTypeMapping _cidr = H2CidrTypeMapping.Default;
-
-    // Built-in geometric types
-    private readonly H2PointTypeMapping _point = H2PointTypeMapping.Default;
-    private readonly H2BoxTypeMapping _box = H2BoxTypeMapping.Default;
-    private readonly H2LineTypeMapping _line = H2LineTypeMapping.Default;
-    private readonly H2LineSegmentTypeMapping _lseg = H2LineSegmentTypeMapping.Default;
-    private readonly H2PathTypeMapping _path = H2PathTypeMapping.Default;
-    private readonly H2PolygonTypeMapping _polygon = H2PolygonTypeMapping.Default;
-    private readonly H2CircleTypeMapping _circle = H2CircleTypeMapping.Default;
-
-    // uint/ulong mappings
-    private readonly H2UIntTypeMapping _xid = new("xid", H2DbType.Xid);
-    private readonly H2ULongTypeMapping _xid8 = new("xid8", H2DbType.Xid8);
-    private readonly H2UIntTypeMapping _oid = new("oid", H2DbType.Oid);
-    private readonly H2UIntTypeMapping _cid = new("cid", H2DbType.Cid);
-    private readonly H2UIntTypeMapping _regtype = new("regtype", H2DbType.Regtype);
-    private readonly H2UIntTypeMapping _lo = new("lo", H2DbType.Oid);
-
-    // Full text search mappings
-    private readonly H2TsQueryTypeMapping _tsquery = H2TsQueryTypeMapping.Default;
-    private readonly H2TsVectorTypeMapping _tsvector = H2TsVectorTypeMapping.Default;
-    private readonly H2RegconfigTypeMapping _regconfig = H2RegconfigTypeMapping.Default;
-    private readonly H2TsRankingNormalizationTypeMapping _rankingNormalization = H2TsRankingNormalizationTypeMapping.Default;
-
-    // Unaccent mapping
-    private readonly H2RegdictionaryTypeMapping _regdictionary = new();
-
-    // Built-in ranges
-    // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
-    private readonly H2RangeTypeMapping _int4range;
-    private readonly H2RangeTypeMapping _int8range;
-    private readonly H2RangeTypeMapping _numrange;
-    private readonly H2RangeTypeMapping _tsrange;
-    private readonly H2RangeTypeMapping _tstzrange, _tstzrangeDto;
-    private readonly H2RangeTypeMapping _dateOnlyDaterange;
-    private readonly H2RangeTypeMapping _dateTimeDaterange;
-
-    // Other types
-    private readonly H2BoolTypeMapping _bool = H2BoolTypeMapping.Default;
-    private readonly H2BitTypeMapping _bit = H2BitTypeMapping.Default;
-    private readonly H2VarbitTypeMapping _varbit = H2VarbitTypeMapping.Default;
+    // Binary types
     private readonly H2ByteArrayTypeMapping _bytea = H2ByteArrayTypeMapping.Default;
-    private readonly H2HstoreTypeMapping _hstore = H2HstoreTypeMapping.Default;
-    private readonly H2HstoreTypeMapping _immutableHstore = new(typeof(ImmutableDictionary<string, string>));
-    private readonly H2TidTypeMapping _tid = H2TidTypeMapping.Default;
-    private readonly H2PgLsnTypeMapping _pgLsn = H2PgLsnTypeMapping.Default;
+    private readonly H2BlobTypeMapping _blob = H2BlobTypeMapping.Default;
 
-    private readonly H2LTreeTypeMapping _ltree = H2LTreeTypeMapping.Default;
-    private readonly H2StringTypeMapping _ltreeString = new("ltree", H2DbType.LTree);
-    private readonly H2StringTypeMapping _lquery = new("lquery", H2DbType.LQuery);
-    private readonly H2StringTypeMapping _ltxtquery = new("ltxtquery", H2DbType.LTxtQuery);
+    // Geometry. H2 stores points as GEOMETRY with a POINT subtype, unlike PostgreSQL's bare 'point'.
+    private readonly H2GeometryTypeMapping _geometry = H2GeometryTypeMapping.Default;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -194,103 +134,48 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
         IH2SingletonOptions options)
         : base(dependencies, relationalDependencies)
     {
-        _supportsMultiranges = options.PostgresVersion.AtLeast(14);
         _sqlGenerationHelper = Check.NotNull(sqlGenerationHelper, nameof(sqlGenerationHelper));
 
-        // Initialize range mappings, which reference on other mappings
-        _int4range = H2RangeTypeMapping.CreatBuiltInRangeMapping(
-            "int4range", typeof(H2Range<int>), H2DbType.IntegerRange, _int4);
-        _int8range = H2RangeTypeMapping.CreatBuiltInRangeMapping(
-            "int8range", typeof(H2Range<long>), H2DbType.BigIntRange, _int8);
-        _numrange = H2RangeTypeMapping.CreatBuiltInRangeMapping(
-            "numrange", typeof(H2Range<decimal>), H2DbType.NumericRange, _numeric);
-        _tsrange = H2RangeTypeMapping.CreatBuiltInRangeMapping(
-            "tsrange", typeof(H2Range<DateTime>), H2DbType.TimestampRange, _timestamp);
-        _tstzrange = H2RangeTypeMapping.CreatBuiltInRangeMapping(
-            "tstzrange", typeof(H2Range<DateTime>), H2DbType.TimestampTzRange, _timestamptz);
-        _tstzrangeDto = H2RangeTypeMapping.CreatBuiltInRangeMapping(
-            "tstzrange", typeof(H2Range<DateTimeOffset>), H2DbType.TimestampTzRange, _timestamptzDto);
-        _dateOnlyDaterange = H2RangeTypeMapping.CreatBuiltInRangeMapping(
-            "daterange", typeof(H2Range<DateOnly>), H2DbType.DateRange, _dateDateOnly);
-        _dateTimeDaterange = H2RangeTypeMapping.CreatBuiltInRangeMapping(
-            "daterange", typeof(H2Range<DateTime>), H2DbType.DateRange, _dateDateTime);
-
 // ReSharper disable CoVariantArrayConversion
-        // Note that PostgreSQL has aliases to some built-in type name aliases (e.g. int4 for integer),
-        // these are mapped as well.
-        // https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE
+        // H2 2.5 store types. Both the canonical spelling and the documented aliases are registered,
+        // so that scaffolding a database created with either spelling still finds its mapping.
+        // See docs/DATATYPES.md.
         var storeTypeMappings = new Dictionary<string, RelationalTypeMapping[]>(StringComparer.OrdinalIgnoreCase)
         {
+            { "tinyint", [_int1] },
             { "smallint", [_int2, _int2Byte] },
-            { "int2", [_int2, _int2Byte] },
             { "integer", [_int4] },
             { "int", [_int4] },
-            { "int4", [_int4] },
             { "bigint", [_int8] },
-            { "int8", [_int8] },
             { "real", [_float4] },
-            { "float4", [_float4] },
             { "double precision", [_float8] },
-            { "float8", [_float8] },
             { "numeric", [_numeric, _bigInteger, _numericAsFloat, _numericAsDouble] },
             { "decimal", [_numeric, _bigInteger, _numericAsFloat, _numericAsDouble] },
-            { "money", [_money] },
-            { "text", [_text] },
-            { "jsonb", [_jsonbString, _jsonbDocument, _jsonbElement] },
-            { "json", [_jsonString, _jsonDocument, _jsonElement] },
-            { "jsonpath", [_jsonpath] },
-            { "xml", [_xml] },
-            { "citext", [_citext] },
+            { "decfloat", [_decfloat] },
+
             { "character varying", [_varchar] },
             { "varchar", [_varchar] },
+            { "character large object", [_text] },
+            { "clob", [_text] },
             // See FindBaseMapping below for special treatment of 'character'
 
-            { "timestamp without time zone", [_timestamp] },
-            { "timestamp with time zone", [_timestamptz, _timestamptzDto] },
-            { "interval", [_interval] },
-            { "date", [_dateDateOnly, _dateDateTime] },
-            { "time without time zone", [_timeTimeOnly, _timeTimeSpan] },
-            { "time with time zone", [_timetz] },
             { "boolean", [_bool] },
-            { "bool", [_bool] },
-            { "bytea", [_bytea] },
+
+            { "timestamp", [_timestamp] },
+            { "timestamp with time zone", [_timestamptz, _timestamptzDto] },
+            { "time", [_timeTimeOnly, _timeTimeSpan] },
+            { "time with time zone", [_timetz] },
+            { "date", [_dateDateOnly, _dateDateTime] },
+            { "interval", [_interval] },
+
+            { "binary varying", [_bytea] },
+            { "varbinary", [_bytea] },
+            { "binary large object", [_blob] },
+            { "blob", [_blob] },
+
             { "uuid", [_uuid] },
-            { "bit", [_bit] },
-            { "bit varying", [_varbit] },
-            { "varbit", [_varbit] },
-            { "hstore", [_hstore, _immutableHstore] },
-            { "macaddr", [_macaddr] },
-            { "macaddr8", [_macaddr8] },
-            { "inet", [_inetAsIPAddress, _inetAsH2Inet] },
-            { "cidr", [_cidr] },
-            { "point", [_point] },
-            { "box", [_box] },
-            { "line", [_line] },
-            { "lseg", [_lseg] },
-            { "path", [_path] },
-            { "polygon", [_polygon] },
-            { "circle", [_circle] },
-            { "xid", [_xid] },
-            { "xid8", [_xid8] },
-            { "oid", [_oid] },
-            { "cid", [_cid] },
-            { "regtype", [_regtype] },
-            { "lo", [_lo] },
-            { "tid", [_tid] },
-            { "pg_lsn", [_pgLsn] },
-            { "int4range", [_int4range] },
-            { "int8range", [_int8range] },
-            { "numrange", [_numrange] },
-            { "tsrange", [_tsrange] },
-            { "tstzrange", [_tstzrange, _tstzrangeDto] },
-            { "daterange", [_dateOnlyDaterange, _dateTimeDaterange] },
-            { "tsquery", [_tsquery] },
-            { "tsvector", [_tsvector] },
-            { "regconfig", [_regconfig] },
-            { "ltree", [_ltree, _ltreeString] },
-            { "lquery", [_lquery] },
-            { "ltxtquery", [_ltxtquery] },
-            { "regdictionary", [_regdictionary] }
+            { "json", [_jsonString, _jsonDocument, _jsonElement] },
+            { "geometry", [_geometry] }
         };
 // ReSharper restore CoVariantArrayConversion
 

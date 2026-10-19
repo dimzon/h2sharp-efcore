@@ -4,37 +4,38 @@ using Microsoft.EntityFrameworkCore.Storage.Json;
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
 /// <summary>
-///     The base class for mapping H2-specific types. It configures parameters with the
-///     <see cref="H2DbType" /> provider-specific type enum.
+///     The base class for mapping H2-specific types.
 /// </summary>
-public abstract class H2TypeMapping : RelationalTypeMapping, IH2TypeMapping
+/// <remarks>
+///     <para>
+///         Upstream this class carried a provider-specific type enum and wrote it onto every parameter,
+///         because the Npgsql wire protocol needs it. H2Sharp's ADO layer has no such enum: a parameter
+///         is described by <see cref="DbParameter.DbType" /> and the engine infers the H2 type from the
+///         value. So the mapping's job here is the store type name and the literal rendering, and nothing
+///         else is pushed down to the parameter.
+///     </para>
+/// </remarks>
+public abstract class H2TypeMapping : RelationalTypeMapping
 {
-    /// <inheritdoc />
-    public virtual H2DbType H2DbType { get; }
-
     // ReSharper disable once PublicConstructorInAbstractClass
     /// <summary>
     ///     Constructs an instance of the <see cref="H2TypeMapping" /> class.
     /// </summary>
     /// <param name="storeType">The database type to map.</param>
     /// <param name="clrType">The CLR type to map.</param>
-    /// <param name="npgsqlDbType">The database type used by H2.</param>
     /// <param name="jsonValueReaderWriter">Handles reading and writing JSON values for instances of the mapped type.</param>
-    public H2TypeMapping(string storeType, Type clrType, H2DbType npgsqlDbType, JsonValueReaderWriter? jsonValueReaderWriter = null)
+    public H2TypeMapping(string storeType, Type clrType, JsonValueReaderWriter? jsonValueReaderWriter = null)
         : base(storeType, clrType, jsonValueReaderWriter: jsonValueReaderWriter)
     {
-        H2DbType = npgsqlDbType;
     }
 
     /// <summary>
     ///     Constructs an instance of the <see cref="H2TypeMapping" /> class.
     /// </summary>
     /// <param name="parameters">The parameters for this mapping.</param>
-    /// <param name="npgsqlDbType">The database type of the range subtype.</param>
-    protected H2TypeMapping(RelationalTypeMappingParameters parameters, H2DbType npgsqlDbType)
+    protected H2TypeMapping(RelationalTypeMappingParameters parameters)
         : base(parameters)
     {
-        H2DbType = npgsqlDbType;
     }
 
     /// <summary>
@@ -45,14 +46,13 @@ public abstract class H2TypeMapping : RelationalTypeMapping, IH2TypeMapping
     /// </summary>
     protected override void ConfigureParameter(DbParameter parameter)
     {
-        if (parameter is not H2Parameter npgsqlParameter)
+        if (parameter is not H2Parameter)
         {
             throw new InvalidOperationException(
                 $"H2-specific type mapping {GetType().Name} being used with non-H2 parameter type {parameter.GetType().Name}");
         }
 
         base.ConfigureParameter(parameter);
-        npgsqlParameter.H2DbType = H2DbType;
     }
 
     /// <summary>

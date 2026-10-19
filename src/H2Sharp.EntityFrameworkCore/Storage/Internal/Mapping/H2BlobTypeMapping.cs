@@ -1,3 +1,7 @@
+using System.Globalization;
+using System.Text;
+using Microsoft.EntityFrameworkCore.Storage.Json;
+
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
 /// <summary>
@@ -6,7 +10,14 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
-public class H2RegdictionaryTypeMapping : H2TypeMapping
+/// <remarks>
+///     <para>
+///         Maps <c>byte[]</c> to H2's BINARY LARGE OBJECT, spelled BLOB. The same CLR type also maps to
+///         VARBINARY through <see cref="H2ByteArrayTypeMapping" />; the store type name picks which.
+///         BLOB is the one to choose for values too large to keep in memory, since H2 streams it.
+///     </para>
+/// </remarks>
+public class H2BlobTypeMapping : RelationalTypeMapping
 {
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -14,7 +25,7 @@ public class H2RegdictionaryTypeMapping : H2TypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static H2RegdictionaryTypeMapping Default { get; } = new();
+    public static H2BlobTypeMapping Default { get; } = new();
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -22,8 +33,8 @@ public class H2RegdictionaryTypeMapping : H2TypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public H2RegdictionaryTypeMapping()
-        : base("regdictionary", typeof(uint), H2DbType.Oid)
+    public H2BlobTypeMapping()
+        : base("binary large object", typeof(byte[]), System.Data.DbType.Binary, jsonValueReaderWriter: JsonByteArrayReaderWriter.Instance)
     {
     }
 
@@ -33,19 +44,19 @@ public class H2RegdictionaryTypeMapping : H2TypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected H2RegdictionaryTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.Oid)
+    protected H2BlobTypeMapping(RelationalTypeMappingParameters parameters)
+        : base(parameters)
     {
     }
 
     /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+    ///     This is an internal API that supports the EntityFramework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-        => new H2RegdictionaryTypeMapping(parameters);
+        => new H2BlobTypeMapping(parameters);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -54,8 +65,19 @@ public class H2RegdictionaryTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"'{EscapeSqlLiteral((string)value)}'";
+    {
+        Check.NotNull(value, nameof(value));
+        var bytes = (byte[])value;
 
-    private string EscapeSqlLiteral(string literal)
-        => Check.NotNull(literal, nameof(literal)).Replace("'", "''");
+        var builder = new StringBuilder(bytes.Length * 2 + 3);
+        builder.Append("X'");
+        foreach (var b in bytes)
+        {
+            builder.Append(b.ToString("X2", CultureInfo.InvariantCulture));
+        }
+
+        builder.Append('\'');
+
+        return builder.ToString();
+    }
 }

@@ -10,6 +10,11 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
+/// <remarks>
+///     <para>
+///         Maps <c>byte[]</c> to H2's BINARY VARYING, spelled VARBINARY. H2 has no <c>bytea</c>.
+///     </para>
+/// </remarks>
 public class H2ByteArrayTypeMapping : RelationalTypeMapping
 {
     /// <summary>
@@ -27,7 +32,7 @@ public class H2ByteArrayTypeMapping : RelationalTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public H2ByteArrayTypeMapping()
-        : base("bytea", typeof(byte[]), System.Data.DbType.Binary, jsonValueReaderWriter: JsonByteArrayReaderWriter.Instance)
+        : base("varbinary", typeof(byte[]), System.Data.DbType.Binary, jsonValueReaderWriter: JsonByteArrayReaderWriter.Instance)
     {
     }
 
@@ -60,12 +65,13 @@ public class H2ByteArrayTypeMapping : RelationalTypeMapping
     protected override string GenerateNonNullSqlLiteral(object value)
     {
         Check.NotNull(value, nameof(value));
-        var bytea = (byte[])value;
+        var bytes = (byte[])value;
 
-        var builder = new StringBuilder(bytea.Length * 2 + 6);
-
-        builder.Append("BYTEA E'\\\\x");
-        foreach (var b in bytea)
+        // H2 spells a binary literal X'..' with uppercase hex digits; the PostgreSQL form this replaces
+        // was BYTEA E'\\x..' and does not parse in H2.
+        var builder = new StringBuilder(bytes.Length * 2 + 3);
+        builder.Append("X'");
+        foreach (var b in bytes)
         {
             builder.Append(b.ToString("X2", CultureInfo.InvariantCulture));
         }
