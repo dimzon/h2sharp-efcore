@@ -3,7 +3,14 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <!--
+      The tests run against every framework the provider is built for, so that a build that works
+      on one of them and not on the other is caught here. The provider has a net8.0 and a net10.0
+      build; the tests are on net9.0 and net10.0, because the specification tests of EF Core 9 ask
+      for net9.0, and a net9.0 test takes the net8.0 build of the provider, and a net10.0 test
+      takes the net10.0 one.
+    -->
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
 

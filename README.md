@@ -6,8 +6,11 @@ Entity Framework Core provider for **H2Sharp** — the C# port of H2 Database 2.
 > the reference engine on the JVM rather than against the port. The database-level part of
 > EF Core's own specification suite is waiting for the port to grow: identity DDL,
 > `INFORMATION_SCHEMA`, `CREATE SEQUENCE`, `JOIN`, and the `AS` in front of a table alias.
-> What is missing and who is to fix it is listed in
-> [docs/DIVERGENCES.md](docs/DIVERGENCES.md).
+   > What is missing and who is to fix it is listed in
+   > [docs/DIVERGENCES.md](docs/DIVERGENCES.md).
+
+   The provider is built for **.NET 8** and **.NET 10**; the engine under it has both as well.
+
 
 ## What it is
 

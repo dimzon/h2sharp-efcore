@@ -5,6 +5,13 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest</AnalysisLevel>
     <NoWarn>NU5105;xUnit2031</NoWarn>
+    <!--
+      The audit looks at the packages the build brings in, and among them is the task the SDK uses
+      to stamp the commit into the assembly. That task is a build-time tool: it is not in the
+      package that is published, and the finding about it is about the SDK, not about this code.
+      The audit of the packages this project depends on stays on.
+    -->
+    <NuGetAuditMode>direct</NuGetAuditMode>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)H2Sharp.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>

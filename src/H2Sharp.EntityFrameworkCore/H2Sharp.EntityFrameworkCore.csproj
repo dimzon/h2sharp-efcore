@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>H2Sharp.EntityFrameworkCore</AssemblyName>
     <RootNamespace>H2Sharp.EntityFrameworkCore</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 
     <Authors>Shay Rojansky;Austin Drenski;Yoh Deadfall;</Authors>
     <Description>H2Sharp provider for Entity Framework Core.</Description>
@@ -26,11 +26,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" PrivateAssets="none" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" PrivateAssets="none" />
     <!--
-      SetTargetFramework pins the engine build to its net8.0 asset. H2Sharp multi-targets net8.0 and
-      net10.0, and the automatic nearest-TFM pick reaches for the highest one, which this project's
-      SDK cannot build.
+      The engine is not pinned to a framework: H2Sharp multi-targets net8.0 and net10.0, and each
+      target of this provider takes the engine build that matches it.
     -->
-    <ProjectReference Include="$(H2SharpProject)" SetTargetFramework="TargetFramework=net8.0" />
+    <ProjectReference Include="$(H2SharpProject)" />
   </ItemGroup>
 
   <ItemGroup>
