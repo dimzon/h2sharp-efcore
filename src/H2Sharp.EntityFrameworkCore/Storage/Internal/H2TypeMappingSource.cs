@@ -463,7 +463,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             // Otherwise an array over the range will be returned.
             if (_supportsMultiranges)
             {
-                if (relationalElementMapping is H2RangeTypeMapping rangeMapping)
+                if (relationalElementMapping is RelationalTypeMapping rangeMapping)
                 {
                     var multirangeStoreType = rangeMapping.StoreType switch
                     {
@@ -478,7 +478,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
                             $"Cannot create multirange type mapping for range type '{rangeMapping.StoreType}'")
                     };
 
-                    return new H2MultirangeTypeMapping(multirangeStoreType, modelType, rangeMapping);
+                    return new object(multirangeStoreType, modelType, rangeMapping);
                 }
 
                 // TODO: This needs to move to the NodaTime plugin, but there's no FindCollectionMapping extension yet for plugins
@@ -560,11 +560,11 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
 
             // If no mapping was found for the element, there's no mapping for the array.
             // Also, arrays of arrays aren't supported (as opposed to multidimensional arrays) by PostgreSQL
-            if (relationalElementMapping is H2RangeTypeMapping rangeMapping
+            if (relationalElementMapping is RelationalTypeMapping rangeMapping
                 // TODO: Why exclude if there's an element converter??
                 && (relationalElementMapping.Converter is null || modelType is null || modelType.IsArrayOrGenericList()))
             {
-                return new H2MultirangeTypeMapping(
+                return new object(
                     storeType, modelType ?? typeof(List<>).MakeGenericType(relationalElementMapping.ClrType), rangeMapping);
             }
 
@@ -781,7 +781,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             ? rangeDefinition.StoreTypeName
             : rangeDefinition.StoreTypeSchema + '.' + rangeDefinition.StoreTypeName;
 
-        return H2RangeTypeMapping.CreatUserDefinedRangeMapping(
+        return RelationalTypeMapping.CreatUserDefinedRangeMapping(
             quotedRangeStoreType, unquotedRangeStoreType, rangeClrType, subtypeMapping);
     }
 

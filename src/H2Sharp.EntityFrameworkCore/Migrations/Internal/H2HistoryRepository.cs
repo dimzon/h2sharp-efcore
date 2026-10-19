@@ -1,3 +1,4 @@
+using H2DbException = H2Sharp.Message.DbException;
 using H2Sharp.EntityFrameworkCore.Metadata.Conventions;
 
 namespace H2Sharp.EntityFrameworkCore.Migrations.Internal;
@@ -146,7 +147,7 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
                     GetCreateIfNotExistsCommands(), Dependencies.Connection, new MigrationExecutionState(), commitTransaction: true)
                 != 0;
         }
-        catch (PostgresException e) when (e.SqlState is PostgresErrorCodes.UniqueViolation
+        catch (DbException e) when (e.SqlState is PostgresErrorCodes.UniqueViolation
                                               or PostgresErrorCodes.DuplicateTable
                                               or PostgresErrorCodes.DuplicateObject)
         {
@@ -166,7 +167,7 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
                     cancellationToken: cancellationToken).ConfigureAwait(false))
                 != 0;
         }
-        catch (PostgresException e) when (e.SqlState is PostgresErrorCodes.UniqueViolation
+        catch (DbException e) when (e.SqlState is PostgresErrorCodes.UniqueViolation
                                               or PostgresErrorCodes.DuplicateTable
                                               or PostgresErrorCodes.DuplicateObject)
         {
@@ -244,7 +245,7 @@ END $EF$;
         {
             return base.GetAppliedMigrations();
         }
-        catch (PostgresException e) when (e.SqlState is PostgresErrorCodes.InvalidCatalogName or PostgresErrorCodes.UndefinedTable)
+        catch (DbException e) when (e.SqlState is PostgresErrorCodes.InvalidCatalogName or PostgresErrorCodes.UndefinedTable)
         {
             return [];
         }
@@ -262,7 +263,7 @@ END $EF$;
         {
             return await base.GetAppliedMigrationsAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (PostgresException e) when (e.SqlState is PostgresErrorCodes.InvalidCatalogName or PostgresErrorCodes.UndefinedTable)
+        catch (DbException e) when (e.SqlState is PostgresErrorCodes.InvalidCatalogName or PostgresErrorCodes.UndefinedTable)
         {
             return [];
         }

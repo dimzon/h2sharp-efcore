@@ -24,7 +24,7 @@ public class H2BitTypeMapping : H2TypeMapping
     ///     Constructs an instance of the <see cref="H2BitTypeMapping" /> class.
     /// </summary>
     public H2BitTypeMapping()
-        : base("bit", typeof(BitArray), H2DbType.Bit, jsonValueReaderWriter: JsonBitArrayReaderWriter.Instance)
+        : base("bit", typeof(BitArray), jsonValueReaderWriter: JsonBitArrayReaderWriter.Instance)
     {
     }
 
@@ -35,7 +35,7 @@ public class H2BitTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected H2BitTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.Bit)
+        : base(parameters)
     {
     }
 

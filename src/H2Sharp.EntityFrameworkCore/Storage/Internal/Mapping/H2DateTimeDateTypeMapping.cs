@@ -27,7 +27,7 @@ public class H2DateTimeDateTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public H2DateTimeDateTypeMapping()
-        : base("date", typeof(DateTime), H2DbType.Date, H2JsonDateTimeReaderWriter.Instance)
+        : base("date", typeof(DateTime), H2JsonDateTimeReaderWriter.Instance)
     {
     }
 
@@ -38,7 +38,7 @@ public class H2DateTimeDateTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected H2DateTimeDateTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.Date)
+        : base(parameters)
     {
     }
 

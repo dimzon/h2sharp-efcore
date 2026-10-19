@@ -23,14 +23,14 @@ internal static class TypeExtensions
     }
 
     internal static bool IsRange(this SqlExpression expression)
-        => expression.TypeMapping is H2RangeTypeMapping || expression.Type.IsRange();
+        => expression.TypeMapping is RelationalTypeMapping || expression.Type.IsRange();
 
     internal static bool IsRange(this Type type)
         => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(H2Range<>)
             || type is { Name: "Interval" or "DateInterval", Namespace: "NodaTime" };
 
     internal static bool IsMultirange(this SqlExpression expression)
-        => expression.TypeMapping is H2MultirangeTypeMapping
+        => expression.TypeMapping is object
             || expression.Type.IsMultirange();
 
     internal static bool IsMultirange(this Type type)

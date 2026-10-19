@@ -1,6 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using H2Sharp.EntityFrameworkCore.Metadata;
 using H2Sharp.EntityFrameworkCore.Metadata.Internal;
-using H2.NameTranslation;
+using H2Sharp.EntityFrameworkCore.Infrastructure;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore;
@@ -543,7 +544,7 @@ public static class H2ModelBuilderExtensions
         where TEnum : struct, Enum
     {
 #pragma warning disable CS0618 // H2Connection.GlobalTypeMapper is obsolete
-        nameTranslator ??= H2Connection.GlobalTypeMapper.DefaultNameTranslator;
+        nameTranslator ??= H2UpperCaseNameTranslator.Instance;
 #pragma warning restore CS0618
 
         return modelBuilder.HasPostgresEnum(
@@ -571,51 +572,6 @@ public static class H2ModelBuilderExtensions
     #endregion
 
     #region Ranges
-
-    /// <summary>
-    ///     Registers a user-defined range type in the model.
-    /// </summary>
-    /// <param name="modelBuilder">The model builder on which to create the range type.</param>
-    /// <param name="schema">The schema in which to create the range type.</param>
-    /// <param name="name">The name of the range type to be created.</param>
-    /// <param name="subtype">The subtype (or element type) of the range</param>
-    /// <param name="canonicalFunction">
-    ///     An optional PostgreSQL function which converts range values to a canonical form.
-    /// </param>
-    /// <param name="subtypeOpClass">Used to specify a non-default operator class.</param>
-    /// <param name="collation">Used to specify a non-default collation in the range's order.</param>
-    /// <param name="subtypeDiff">
-    ///     An optional PostgreSQL function taking two values of the subtype type as argument, and return a double
-    ///     precision value representing the difference between the two given values.
-    /// </param>
-    /// <remarks>
-    ///     See https://www.postgresql.org/docs/current/static/rangetypes.html,
-    ///     https://www.postgresql.org/docs/current/static/sql-createtype.html,
-    /// </remarks>
-    public static ModelBuilder HasPostgresRange(
-        this ModelBuilder modelBuilder,
-        string? schema,
-        string name,
-        string subtype,
-        string? canonicalFunction = null,
-        string? subtypeOpClass = null,
-        string? collation = null,
-        string? subtypeDiff = null)
-    {
-        Check.NotNull(modelBuilder, nameof(modelBuilder));
-        Check.NotEmpty(name, nameof(name));
-        Check.NotEmpty(subtype, nameof(subtype));
-
-        modelBuilder.Model.GetOrAddPostgresRange(
-            schema,
-            name,
-            subtype,
-            canonicalFunction,
-            subtypeOpClass,
-            collation,
-            subtypeDiff);
-        return modelBuilder;
-    }
 
     /// <summary>
     ///     Registers a user-defined range type in the model.
@@ -773,14 +729,14 @@ public static class H2ModelBuilderExtensions
     // See: https://github.com/npgsql/npgsql/blob/dev/src/H2/TypeMapping/TypeMapperBase.cs#L132-L138
     private static string GetTypePgName<TEnum>(IH2NameTranslator nameTranslator)
         where TEnum : struct, Enum
-        => typeof(TEnum).GetCustomAttribute<PgNameAttribute>()?.PgName ?? nameTranslator.TranslateTypeName(typeof(TEnum).Name);
+        => typeof(TEnum).GetCustomAttribute<ColumnAttribute>()?.PgName ?? nameTranslator.TranslateTypeName(typeof(TEnum).Name);
 
     // See: https://github.com/npgsql/npgsql/blob/dev/src/H2/TypeHandlers/EnumHandler.cs#L118-L129
     private static string[] GetMemberPgNames<TEnum>(IH2NameTranslator nameTranslator)
         where TEnum : struct, Enum
         => typeof(TEnum)
             .GetFields(BindingFlags.Static | BindingFlags.Public)
-            .Select(x => x.GetCustomAttribute<PgNameAttribute>()?.PgName ?? nameTranslator.TranslateMemberName(x.Name))
+            .Select(x => x.GetCustomAttribute<ColumnAttribute>()?.PgName ?? nameTranslator.TranslateMemberName(x.Name))
             .ToArray();
 
     #endregion

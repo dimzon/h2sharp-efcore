@@ -1,3 +1,4 @@
+using H2DbException = H2Sharp.Message.DbException;
 using System.Net.Sockets;
 using System.Transactions;
 using H2Sharp.EntityFrameworkCore.Migrations.Operations;
@@ -47,7 +48,7 @@ public class H2DatabaseCreator(
                 Dependencies.MigrationCommandExecutor
                     .ExecuteNonQuery(CreateCreateOperations(), masterConnection);
             }
-            catch (PostgresException e) when (e is { SqlState: "23505", ConstraintName: "pg_database_datname_index" })
+            catch (DbException e) when (e is { SqlState: "23505", ConstraintName: "pg_database_datname_index" })
             {
                 // This occurs when two connections are trying to create the same database concurrently
                 // (happens in the tests). Simply ignore the error.
@@ -76,7 +77,7 @@ public class H2DatabaseCreator(
                     .ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (PostgresException e) when (e is { SqlState: "23505", ConstraintName: "pg_database_datname_index" })
+            catch (DbException e) when (e is { SqlState: "23505", ConstraintName: "pg_database_datname_index" })
             {
                 // This occurs when two connections are trying to create the same database concurrently
                 // (happens in the tests). Simply ignore the error.
@@ -258,11 +259,11 @@ WHERE
         => exception switch
         {
             // Login failed is thrown when database does not exist (See Issue #776)
-            PostgresException { SqlState: "3D000" }
+            DbException { SqlState: "3D000" }
                 => true,
 
             // This can happen when H2 attempts to connect to multiple hosts
-            H2Exception { InnerException: AggregateException ae } when ae.InnerExceptions.Any(ie => ie is PostgresException { SqlState: "3D000" })
+            H2Exception { InnerException: AggregateException ae } when ae.InnerExceptions.Any(ie => ie is DbException { SqlState: "3D000" })
                 => true,
 
             // Pretty awful hack around #104
@@ -348,7 +349,7 @@ WHERE
         {
             Dependencies.MigrationCommandExecutor.ExecuteNonQuery(commands, connection);
         }
-        catch (PostgresException e) when (e is { SqlState: "23505", ConstraintName: "pg_type_typname_nsp_index" })
+        catch (DbException e) when (e is { SqlState: "23505", ConstraintName: "pg_type_typname_nsp_index" })
         {
             // This occurs when two connections are trying to create the same database concurrently
             // (happens in the tests). Simply ignore the error.
@@ -385,7 +386,7 @@ WHERE
             await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(commands, connection, cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch (PostgresException e) when (e is { SqlState: "23505", ConstraintName: "pg_type_typname_nsp_index" })
+        catch (DbException e) when (e is { SqlState: "23505", ConstraintName: "pg_type_typname_nsp_index" })
         {
             // This occurs when two connections are trying to create the same database concurrently
             // (happens in the tests). Simply ignore the error.

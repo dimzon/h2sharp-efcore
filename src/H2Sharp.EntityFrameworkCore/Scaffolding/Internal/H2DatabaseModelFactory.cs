@@ -1,3 +1,4 @@
+using H2DbException = H2Sharp.Message.DbException;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -559,7 +560,7 @@ ORDER BY attnum
                     opClass.GetFieldValue<bool>("opcdefault"));
             }
         }
-        catch (PostgresException e)
+        catch (DbException e)
         {
             logger.Logger.LogWarning(
                 e,
@@ -1226,7 +1227,7 @@ WHERE
                     databaseModel, schema, name, lcCollate!, lcCtype, provider, isDeterministic);
             }
         }
-        catch (PostgresException e)
+        catch (DbException e)
         {
             logger.Logger.LogWarning(e, "Could not load database collations.");
         }

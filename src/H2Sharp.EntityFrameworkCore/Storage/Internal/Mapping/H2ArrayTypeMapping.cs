@@ -68,11 +68,6 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
         = new();
 
     /// <summary>
-    ///     The database type used by H2.
-    /// </summary>
-    public virtual H2DbType? H2DbType { get; }
-
-    /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
@@ -186,15 +181,12 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
             throw new ArgumentException($"CLR type '{parameters.CoreParameters.ClrType}' isn't an IEnumerable");
         }
 
-        // If the element mapping has an H2DbType or DbType, set our own H2DbType as an array of that.
-        // Otherwise let the ADO.NET layer infer the PostgreSQL type. We can't always let it infer, otherwise
-        // when given a byte[] it will infer byte (but we want smallint[])
-        H2DbType = H2Types.H2DbType.Array
-            | (ElementTypeMapping is IH2TypeMapping { H2DbType: not H2Types.H2DbType.Unknown } elementH2TypeMapping
-                ? elementH2TypeMapping.H2DbType
-                : ElementTypeMapping.DbType.HasValue
-                    ? new H2Parameter { DbType = ElementTypeMapping.DbType.Value }.H2DbType
-                    : default(H2DbType?));
+        // Upstream this stashed a wire-protocol type code on the parameter, built from the element
+        // mapping's provider type, so the driver would know which element type to send on the wire.
+        // H2Sharp's ADO layer has no such code and infers from the value, so there is nothing to record
+        // here. ConfigureParameter below pushes the element's DbType instead, which is what the engine
+        // is given; whether an array parameter survives that round trip is a question for the tests,
+        // not something to assert here.
     }
 
     // This constructor exists only to support the static Default property above, which is necessary to allow code generation for compiled
@@ -202,7 +194,7 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
     private H2ArrayTypeMapping()
         : base(new RelationalTypeMappingParameters(
             new CoreTypeMappingParameters(typeof(TCollection), elementMapping: NullMapping),
-            "int[]"))
+            "integer array"))
     {
     }
 
@@ -253,7 +245,7 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
             case H2EnumTypeMapping enumTypeMapping:
                 npgsqlParameter.DataTypeName = enumTypeMapping.UnquotedStoreType + "[]";
                 break;
-            case H2RangeTypeMapping { UnquotedStoreType: string unquotedStoreType }:
+            case RelationalTypeMapping { UnquotedStoreType: string unquotedStoreType }:
                 npgsqlParameter.DataTypeName = unquotedStoreType + "[]";
                 break;
         }
@@ -329,15 +321,17 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
     /// </summary>
     protected override void ConfigureParameter(DbParameter parameter)
     {
-        if (parameter is not H2Parameter npgsqlParameter)
+        if (parameter is not H2Parameter)
         {
             throw new ArgumentException(
                 $"H2-specific type mapping {GetType()} being used with non-H2 parameter type {parameter.GetType().Name}");
         }
 
-        if (H2DbType.HasValue)
+        // An H2 array is typed by its element, so the element's DbType is the only thing worth
+        // carrying down. The engine is what decides the rest from the value it is handed.
+        if (ElementTypeMapping.DbType is { } elementDbType)
         {
-            npgsqlParameter.H2DbType = H2DbType.Value;
+            ((H2Parameter)parameter).DbType = elementDbType;
         }
     }
 }

@@ -27,7 +27,7 @@ public class H2BigIntegerTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public H2BigIntegerTypeMapping()
-        : base("numeric", typeof(BigInteger), H2DbType.Numeric, jsonValueReaderWriter: JsonBigIntegerReaderWriter.Instance)
+        : base("numeric", typeof(BigInteger), jsonValueReaderWriter: JsonBigIntegerReaderWriter.Instance)
     {
     }
 
@@ -38,7 +38,7 @@ public class H2BigIntegerTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected H2BigIntegerTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.Numeric)
+        : base(parameters)
     {
     }
 

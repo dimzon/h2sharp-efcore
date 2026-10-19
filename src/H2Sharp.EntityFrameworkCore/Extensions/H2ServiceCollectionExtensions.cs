@@ -124,7 +124,6 @@ public static class H2ServiceCollectionExtensions
                     .TryAddSingleton<IH2ValueGeneratorCache, H2ValueGeneratorCache>()
                     .TryAddSingleton<IH2SingletonOptions, H2SingletonOptions>()
                     .TryAddSingleton<IH2SequenceValueGeneratorFactory, H2SequenceValueGeneratorFactory>()
-                    .TryAddSingleton<H2DataSourceManager, H2DataSourceManager>()
                     .TryAddScoped<IH2RelationalConnection, H2RelationalConnection>())
             .TryAddCoreServices();
 

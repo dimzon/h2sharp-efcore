@@ -14,54 +14,6 @@ public static class H2EntityTypeBuilderExtensions
     #region Generated tsvector column
 
     // Note: actual configuration for generated TsVector properties is on the property
-
-    /// <summary>
-    ///     Configures a property on this entity to be a full-text search tsvector column over other given properties.
-    /// </summary>
-    /// <param name="entityTypeBuilder">The builder for the entity being configured.</param>
-    /// <param name="tsVectorPropertyExpression">
-    ///     A lambda expression representing the property to be configured as a tsvector column
-    ///     (<c>blog => blog.Url</c>).
-    /// </param>
-    /// <param name="config">
-    ///     <para>
-    ///         The text search configuration for this generated tsvector property, or <c>null</c> if this is not a
-    ///         generated tsvector property.
-    ///     </para>
-    ///     <para>
-    ///         See https://www.postgresql.org/docs/current/textsearch-controls.html for more information.
-    ///     </para>
-    /// </param>
-    /// <param name="includeExpression">
-    ///     <para>
-    ///         A lambda expression representing the property(s) to be included in the tsvector column
-    ///         (<c>blog => blog.Url</c>).
-    ///     </para>
-    ///     <para>
-    ///         If multiple properties are to be included then specify an anonymous type including the
-    ///         properties (<c>post => new { post.Title, post.BlogId }</c>).
-    ///     </para>
-    /// </param>
-    /// <returns>A builder to further configure the property.</returns>
-    public static EntityTypeBuilder<TEntity> HasGeneratedTsVectorColumn<TEntity>(
-        this EntityTypeBuilder<TEntity> entityTypeBuilder,
-        Expression<Func<TEntity, H2TsVector>> tsVectorPropertyExpression,
-        string config,
-        Expression<Func<TEntity, object>> includeExpression)
-        where TEntity : class
-    {
-        Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
-        Check.NotNull(tsVectorPropertyExpression, nameof(tsVectorPropertyExpression));
-        Check.NotNull(config, nameof(config));
-        Check.NotNull(includeExpression, nameof(includeExpression));
-
-        entityTypeBuilder.Property(tsVectorPropertyExpression).IsGeneratedTsVectorColumn(
-            config,
-            includeExpression.GetPropertyAccessList().Select(EntityFrameworkMemberInfoExtensions.GetSimpleMemberName).ToArray());
-
-        return entityTypeBuilder;
-    }
-
     #endregion Generated tsvector column
 
     #region Storage parameters

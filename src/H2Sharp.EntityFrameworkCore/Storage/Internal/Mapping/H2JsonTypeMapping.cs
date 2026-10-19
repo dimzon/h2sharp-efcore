@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
 /// <summary>
-///     Supports the older H2-specific JSON mapping, allowing mapping json/jsonb to text, to e.g.
+///     Supports the older H2-specific JSON mapping, allowing mapping json to text, to e.g.
 ///     <see cref="JsonElement" /> (weakly-typed mapping) or to arbitrary POCOs (but without them being modeled).
 ///     For the standard EF JSON support, which relies on owned entity modeling, see <see cref="H2OwnedJsonTypeMapping" />.
 /// </summary>
@@ -16,7 +16,7 @@ public class H2JsonTypeMapping : H2TypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static H2JsonTypeMapping Default { get; } = new("jsonb", typeof(JsonElement));
+    public static H2JsonTypeMapping Default { get; } = new("json", typeof(JsonElement));
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -25,11 +25,12 @@ public class H2JsonTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public H2JsonTypeMapping(string storeType, Type clrType)
-        : base(storeType, clrType, storeType == "jsonb" ? H2DbType.Jsonb : H2DbType.Json)
+        : base(storeType, clrType)
     {
-        if (storeType != "json" && storeType != "jsonb")
+        // H2 has a single JSON type: no jsonb, and no binary storage format behind it.
+        if (storeType != "json")
         {
-            throw new ArgumentException($"{nameof(storeType)} must be 'json' or 'jsonb'", nameof(storeType));
+            throw new ArgumentException($"{nameof(storeType)} must be 'json'", nameof(storeType));
         }
     }
 
@@ -39,19 +40,16 @@ public class H2JsonTypeMapping : H2TypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected H2JsonTypeMapping(RelationalTypeMappingParameters parameters, H2DbType npgsqlDbType)
-        : base(parameters, npgsqlDbType)
+    protected H2JsonTypeMapping(RelationalTypeMappingParameters parameters)
+        : base(parameters)
     {
     }
 
     /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+    ///     Always false: H2 has no jsonb to tell apart from json.
     /// </summary>
     public virtual bool IsJsonb
-        => StoreType == "jsonb";
+        => false;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -60,7 +58,7 @@ public class H2JsonTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-        => new H2JsonTypeMapping(parameters, H2DbType);
+        => new H2JsonTypeMapping(parameters);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

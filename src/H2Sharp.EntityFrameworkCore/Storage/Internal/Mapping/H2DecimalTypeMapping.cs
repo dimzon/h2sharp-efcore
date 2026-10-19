@@ -50,7 +50,7 @@ public class H2DecimalTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected H2DecimalTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.Numeric)
+        : base(parameters)
     {
     }
 

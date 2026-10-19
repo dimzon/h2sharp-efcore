@@ -29,7 +29,6 @@ public class H2TimeTypeMapping : H2TypeMapping
         : base(
             "time without time zone",
             clrType,
-            H2DbType.Time,
             clrType == typeof(TimeOnly)
                 ? JsonTimeOnlyReaderWriter.Instance
                 : clrType == typeof(TimeSpan)
@@ -45,7 +44,7 @@ public class H2TimeTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected H2TimeTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.Time)
+        : base(parameters)
     {
     }
 

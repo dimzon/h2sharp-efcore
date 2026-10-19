@@ -41,7 +41,7 @@ public class H2IntervalTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected H2IntervalTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.Interval)
+        : base(parameters)
     {
     }
 

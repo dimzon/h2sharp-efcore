@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Transactions;
 using H2Sharp.Data;
 

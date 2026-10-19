@@ -1,3 +1,4 @@
+using H2DbException = H2Sharp.Message.DbException;
 using H2Sharp.EntityFrameworkCore.Storage.Internal;
 
 namespace H2Sharp.EntityFrameworkCore;
@@ -121,6 +122,6 @@ public class H2RetryingExecutionStrategy : ExecutionStrategy
     // Would be good to provide a way to add these into the additional list.
     /// <inheritdoc />
     protected override bool ShouldRetryOn(Exception? exception)
-        => exception is PostgresException postgresException && _additionalErrorCodes?.Contains(postgresException.SqlState) == true
+        => exception is DbException postgresException && _additionalErrorCodes?.Contains(postgresException.SqlState) == true
             || H2TransientExceptionDetector.ShouldRetryOn(exception);
 }

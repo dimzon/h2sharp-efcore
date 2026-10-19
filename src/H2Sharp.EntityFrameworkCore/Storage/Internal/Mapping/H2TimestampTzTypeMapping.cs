@@ -30,7 +30,6 @@ public class H2TimestampTzTypeMapping : H2TypeMapping
         : base(
             "timestamp with time zone",
             clrType,
-            H2DbType.TimestampTz,
             clrType == typeof(DateTime)
                 ? H2JsonTimestampTzDateTimeReaderWriter.Instance
                 : clrType == typeof(DateTimeOffset)
@@ -46,7 +45,7 @@ public class H2TimestampTzTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected H2TimestampTzTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.TimestampTz)
+        : base(parameters)
     {
     }
 

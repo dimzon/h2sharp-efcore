@@ -83,7 +83,7 @@ public class H2CharacterStringTypeMapping : H2StringTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected H2CharacterStringTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.Char)
+        : base(parameters)
     {
     }
 

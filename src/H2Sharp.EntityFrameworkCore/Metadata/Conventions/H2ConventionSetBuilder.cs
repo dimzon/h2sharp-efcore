@@ -36,7 +36,6 @@ public class H2ConventionSetBuilder : RelationalConventionSetBuilder
         : base(dependencies, relationalDependencies)
     {
         _typeMappingSource = typeMappingSource;
-        _postgresVersion = npgsqlSingletonOptions.PostgresVersion;
         _enumDefinitions = npgsqlSingletonOptions.EnumDefinitions;
     }
 

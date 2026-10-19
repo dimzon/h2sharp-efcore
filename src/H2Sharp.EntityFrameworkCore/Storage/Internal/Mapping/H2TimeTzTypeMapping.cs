@@ -26,7 +26,7 @@ public class H2TimeTzTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public H2TimeTzTypeMapping()
-        : base("time with time zone", typeof(DateTimeOffset), H2DbType.TimeTz, JsonTimeTzReaderWriter.Instance)
+        : base("time with time zone", typeof(DateTimeOffset), JsonTimeTzReaderWriter.Instance)
     {
     }
 
@@ -37,7 +37,7 @@ public class H2TimeTzTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected H2TimeTzTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.TimeTz)
+        : base(parameters)
     {
     }
 

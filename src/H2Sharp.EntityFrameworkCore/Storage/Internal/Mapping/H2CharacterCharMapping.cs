@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Storage.Json;
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
 /// <summary>
-///     Type mapping for the PostgreSQL 'character' data type. Handles both CLR strings and chars.
+///     Type mapping for the H2 CHARACTER data type, which handles both CLR strings and chars.
 /// </summary>
 /// <remarks>
-///     See: https://www.postgresql.org/docs/current/static/datatype-character.html
+///     See docs/DATATYPES.md
 /// </remarks>
-public class H2CharacterCharTypeMapping : CharTypeMapping, IH2TypeMapping
+public class H2CharacterCharTypeMapping : CharTypeMapping
 {
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -17,11 +17,7 @@ public class H2CharacterCharTypeMapping : CharTypeMapping, IH2TypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static new H2CharacterCharTypeMapping Default { get; } = new("text");
-
-    /// <inheritdoc />
-    public virtual H2DbType H2DbType
-        => H2DbType.Char;
+    public static new H2CharacterCharTypeMapping Default { get; } = new("character");
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -69,13 +65,12 @@ public class H2CharacterCharTypeMapping : CharTypeMapping, IH2TypeMapping
     /// </summary>
     protected override void ConfigureParameter(DbParameter parameter)
     {
-        if (parameter is not H2Parameter npgsqlParameter)
+        if (parameter is not H2Parameter)
         {
             throw new InvalidOperationException(
                 $"H2-specific type mapping {GetType().Name} being used with non-H2 parameter type {parameter.GetType().Name}");
         }
 
         base.ConfigureParameter(parameter);
-        npgsqlParameter.H2DbType = H2DbType;
     }
 }

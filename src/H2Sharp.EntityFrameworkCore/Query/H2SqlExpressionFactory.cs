@@ -862,8 +862,8 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                 // If we couldn't find a type mapping on the containee, try inferring it from the container
                 containeeMapping = containerMapping switch
                 {
-                    H2RangeTypeMapping rangeTypeMapping => rangeTypeMapping.SubtypeMapping,
-                    H2MultirangeTypeMapping multirangeTypeMapping
+                    RelationalTypeMapping rangeTypeMapping => rangeTypeMapping.SubtypeMapping,
+                    object multirangeTypeMapping
                         => containee.Type.IsGenericType && containee.Type.GetGenericTypeDefinition() == typeof(H2Range<>)
                             ? multirangeTypeMapping.RangeMapping
                             : multirangeTypeMapping.SubtypeMapping,

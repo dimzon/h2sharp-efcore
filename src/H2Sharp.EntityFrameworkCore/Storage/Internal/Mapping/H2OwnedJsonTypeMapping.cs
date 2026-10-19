@@ -11,11 +11,6 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 /// </summary>
 public class H2OwnedJsonTypeMapping : JsonTypeMapping
 {
-    /// <summary>
-    ///     The database type used by H2 (<see cref="H2DbType.Json" /> or <see cref="H2DbType.Jsonb" />.
-    /// </summary>
-    public virtual H2DbType H2DbType { get; }
-
     private static readonly MethodInfo GetStringMethod
         = typeof(DbDataReader).GetRuntimeMethod(nameof(DbDataReader.GetString), [typeof(int)])!;
 
@@ -37,12 +32,10 @@ public class H2OwnedJsonTypeMapping : JsonTypeMapping
     public H2OwnedJsonTypeMapping(string storeType)
         : base(storeType, typeof(JsonElement), dbType: null)
     {
-        H2DbType = storeType switch
+        if (storeType != "json")
         {
-            "json" => H2DbType.Json,
-            "jsonb" => H2DbType.Jsonb,
-            _ => throw new ArgumentException("Only the json and jsonb types are supported", nameof(storeType))
-        };
+            throw new ArgumentException("Only the json type is supported", nameof(storeType));
+        }
     }
 
     /// <summary>
@@ -74,10 +67,9 @@ public class H2OwnedJsonTypeMapping : JsonTypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected H2OwnedJsonTypeMapping(RelationalTypeMappingParameters parameters, H2DbType npgsqlDbType)
+    protected H2OwnedJsonTypeMapping(RelationalTypeMappingParameters parameters)
         : base(parameters)
     {
-        H2DbType = npgsqlDbType;
     }
 
     /// <summary>
@@ -88,14 +80,13 @@ public class H2OwnedJsonTypeMapping : JsonTypeMapping
     /// </summary>
     protected override void ConfigureParameter(DbParameter parameter)
     {
-        if (parameter is not H2Parameter npgsqlParameter)
+        if (parameter is not H2Parameter)
         {
             throw new InvalidOperationException(
                 $"H2-specific type mapping {nameof(H2OwnedJsonTypeMapping)} being used with non-H2 parameter type {parameter.GetType().Name}");
         }
 
         base.ConfigureParameter(parameter);
-        npgsqlParameter.H2DbType = H2DbType;
     }
 
     /// <summary>
@@ -123,5 +114,5 @@ public class H2OwnedJsonTypeMapping : JsonTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-        => new H2OwnedJsonTypeMapping(parameters, H2DbType);
+        => new H2OwnedJsonTypeMapping(parameters);
 }

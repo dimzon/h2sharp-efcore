@@ -28,7 +28,6 @@ public class H2ModelValidator : RelationalModelValidator
         IH2SingletonOptions npgsqlSingletonOptions)
         : base(dependencies, relationalDependencies)
     {
-        _postgresVersion = npgsqlSingletonOptions.PostgresVersion;
     }
 
     /// <summary>
@@ -63,7 +62,6 @@ public class H2ModelValidator : RelationalModelValidator
             throw new InvalidOperationException(
                 $"'{strategy}' requires PostgreSQL 10.0 or later. "
                 + "If you're using an older version, set PostgreSQL compatibility mode by calling "
-                + $"'optionsBuilder.{nameof(H2DbContextOptionsBuilder.SetPostgresVersion)}()' in your model's OnConfiguring. "
                 + "See the docs for more info.");
         }
 

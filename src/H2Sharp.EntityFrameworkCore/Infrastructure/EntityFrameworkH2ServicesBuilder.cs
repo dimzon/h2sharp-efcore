@@ -9,7 +9,6 @@ public class EntityFrameworkH2ServicesBuilder : EntityFrameworkRelationalService
         = new Dictionary<Type, ServiceCharacteristics>
         {
             {
-                typeof(IH2DataSourceConfigurationPlugin),
                 new ServiceCharacteristics(ServiceLifetime.Singleton, multipleRegistrations: true)
             }
         };

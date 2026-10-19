@@ -77,7 +77,7 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
             H2StringTypeMapping => H2StringTypeMapping.Default,
             H2UIntTypeMapping => H2UIntTypeMapping.Default,
             H2ULongTypeMapping => H2ULongTypeMapping.Default,
-            // H2MultirangeTypeMapping => H2MultirangeTypeMapping.Default,
+            // object => object.Default,
             _ => (IH2TypeMapping?)null
         };
 
@@ -147,11 +147,11 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
 
                 break;
 
-            case H2RangeTypeMapping rangeTypeMapping:
+            case RelationalTypeMapping rangeTypeMapping:
             {
                 CheckElementTypeMapping();
 
-                var defaultInstance = H2RangeTypeMapping.Default;
+                var defaultInstance = RelationalTypeMapping.Default;
 
                 var npgsqlDbTypeDifferent = rangeTypeMapping.H2DbType != defaultInstance.H2DbType;
                 var subtypeTypeMappingIsDifferent = rangeTypeMapping.SubtypeMapping != defaultInstance.SubtypeMapping;
@@ -161,7 +161,7 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
                     mainBuilder.AppendLine(";");
 
                     mainBuilder.AppendLine(
-                        $"{parameters.TargetName}.TypeMapping = ((H2RangeTypeMapping){parameters.TargetName}.TypeMapping).Clone(")
+                        $"{parameters.TargetName}.TypeMapping = ((RelationalTypeMapping){parameters.TargetName}.TypeMapping).Clone(")
                         .IncrementIndent();
 
                     mainBuilder

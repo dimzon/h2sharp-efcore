@@ -41,7 +41,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         IH2SingletonOptions npgsqlSingletonOptions)
         : base(dependencies)
     {
-        _postgresVersion = npgsqlSingletonOptions.PostgresVersion;
         _stringTypeMapping = dependencies.TypeMappingSource.GetMapping(typeof(string))
             ?? throw new InvalidOperationException("No string type mapping found");
     }
@@ -1391,95 +1390,8 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
     #endregion Enum management
 
-    #region Range management
-
-    /// <inheritdoc />
-    protected virtual void GenerateRangeStatements(AlterDatabaseOperation operation, IModel? model, MigrationCommandListBuilder builder)
-    {
-        foreach (var rangeTypeToCreate in operation.GetPostgresRanges()
-                     .Where(ne => operation.GetOldPostgresRanges().All(oe => oe.Name != ne.Name)))
-        {
-            GenerateCreateRange(rangeTypeToCreate, model, builder);
-        }
-
-        foreach (var rangeTypeToDrop in operation.GetOldPostgresRanges()
-                     .Where(oe => operation.GetPostgresRanges().All(ne => ne.Name != oe.Name)))
-        {
-            GenerateDropRange(rangeTypeToDrop, model, builder);
-        }
-
-        if (operation.GetPostgresRanges().FirstOrDefault(
-                nr =>
-                    operation.GetOldPostgresRanges().Any(or => or.Name == nr.Name)
-            ) is { } rangeTypeToAlter)
-        {
-            throw new NotSupportedException($"Altering range type ${rangeTypeToAlter} isn't supported.");
-        }
-    }
-
-    /// <inheritdoc />
-    protected virtual void GenerateCreateRange(PostgresRange rangeType, IModel? model, MigrationCommandListBuilder builder)
-    {
-        var schema = rangeType.Schema ?? model?.GetDefaultSchema();
-
-        // Schemas are normally created (or rather ensured) by the model differ, which scans all tables, sequences
-        // and other database objects. However, it isn't aware of ranges, so we always ensure schema on range creation.
-        if (schema is not null)
-        {
-            Generate(new EnsureSchemaOperation { Name = schema }, model, builder);
-        }
-
-        builder
-            .Append("CREATE TYPE ")
-            .Append(DelimitIdentifier(rangeType.Name, schema))
-            .AppendLine(" AS RANGE (")
-            .IncrementIndent();
-
-        var def = new List<string> { $"SUBTYPE = {rangeType.Subtype}" };
-        if (rangeType.CanonicalFunction is not null)
-        {
-            def.Add($"CANONICAL = {rangeType.CanonicalFunction}");
-        }
-
-        if (rangeType.SubtypeOpClass is not null)
-        {
-            def.Add($"SUBTYPE_OPCLASS = {rangeType.SubtypeOpClass}");
-        }
-
-        if (rangeType.CanonicalFunction is not null)
-        {
-            def.Add($"COLLATION = {rangeType.Collation}");
-        }
-
-        if (rangeType.SubtypeDiff is not null)
-        {
-            def.Add($"SUBTYPE_DIFF = {rangeType.SubtypeDiff}");
-        }
-
-        for (var i = 0; i < def.Count; i++)
-        {
-            builder
-                .Append(def[i] + (i == def.Count - 1 ? null : ","))
-                .AppendLine();
-        }
-
-        builder
-            .DecrementIndent()
-            .AppendLine(");");
-    }
-
-    /// <inheritdoc />
-    protected virtual void GenerateDropRange(PostgresRange rangeType, IModel? model, MigrationCommandListBuilder builder)
-    {
-        var schema = rangeType.Schema ?? model?.GetDefaultSchema();
-
-        builder
-            .Append("DROP TYPE ")
-            .Append(DelimitIdentifier(rangeType.Name, schema))
-            .AppendLine(";");
-    }
-
-    #endregion Range management
+    // Range management: PostgreSQL has user-defined range types and EF can create and drop them as part
+    // of a migration. H2 has no range types at all, so there is nothing to generate here.
 
     /// <inheritdoc />
     protected override void Generate(

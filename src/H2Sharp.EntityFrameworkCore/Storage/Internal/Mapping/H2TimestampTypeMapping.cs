@@ -27,7 +27,7 @@ public class H2TimestampTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public H2TimestampTypeMapping()
-        : base("timestamp without time zone", typeof(DateTime), H2DbType.Timestamp, H2JsonTimestampReaderWriter.Instance)
+        : base("timestamp without time zone", typeof(DateTime), H2JsonTimestampReaderWriter.Instance)
     {
     }
 
@@ -38,7 +38,7 @@ public class H2TimestampTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected H2TimestampTypeMapping(RelationalTypeMappingParameters parameters)
-        : base(parameters, H2DbType.Timestamp)
+        : base(parameters)
     {
     }
 

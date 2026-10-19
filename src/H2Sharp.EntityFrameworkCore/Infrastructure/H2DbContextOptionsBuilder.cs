@@ -18,99 +18,6 @@ public class H2DbContextOptionsBuilder
     {
     }
 
-    /// <summary>
-    ///     Configures lower-level H2 options at the ADO.NET driver level.
-    /// </summary>
-    /// <param name="dataSourceBuilderAction">A lambda to configure H2 options on <see cref="H2DataSourceBuilder" />.</param>
-    /// <remarks>
-    ///     Changes made by <see cref="ConfigureDataSource" /> are untracked; When using <see cref="DbContext.OnConfiguring" />, EF Core
-    ///     will by default resolve the same <see cref="H2DataSource" /> internally, disregarding differing configuration across calls
-    ///     to <see cref="ConfigureDataSource" />. Either make sure that <see cref="ConfigureDataSource" /> always sets the same
-    ///     configuration, or pass externally-provided, pre-configured data source instances when configuring the provider.
-    /// </remarks>
-    public virtual H2DbContextOptionsBuilder ConfigureDataSource(Action<H2DataSourceBuilder> dataSourceBuilderAction)
-        => WithOption(e => e.WithDataSourceConfiguration(dataSourceBuilderAction));
-
-    /// <summary>
-    ///     Connect to this database for administrative operations (creating/dropping databases).
-    /// </summary>
-    /// <param name="dbName">The name of the database for administrative operations.</param>
-    public virtual H2DbContextOptionsBuilder UseAdminDatabase(string? dbName)
-        => WithOption(e => e.WithAdminDatabase(dbName));
-
-    /// <summary>
-    ///     Configures the backend version to target.
-    /// </summary>
-    /// <param name="postgresVersion">The backend version to target.</param>
-    public virtual H2DbContextOptionsBuilder SetPostgresVersion(Version? postgresVersion)
-        => WithOption(e => e.WithPostgresVersion(postgresVersion));
-
-    /// <summary>
-    ///     Configures the backend version to target.
-    /// </summary>
-    /// <param name="major">The PostgreSQL major version to target.</param>
-    /// <param name="minor">The PostgreSQL minor version to target.</param>
-    public virtual H2DbContextOptionsBuilder SetPostgresVersion(int major, int minor)
-        => SetPostgresVersion(new Version(major, minor));
-
-    /// <summary>
-    ///     Configures the provider to work in Redshift compatibility mode, which avoids certain unsupported features from modern
-    ///     PostgreSQL versions.
-    /// </summary>
-    /// <param name="useRedshift">Whether to target Redshift.</param>
-    public virtual H2DbContextOptionsBuilder UseRedshift(bool useRedshift = true)
-        => WithOption(e => e.WithRedshift(useRedshift));
-
-    #region MapRange
-
-    /// <summary>
-    ///     Maps a user-defined PostgreSQL range type for use.
-    /// </summary>
-    /// <typeparam name="TSubtype">
-    ///     The CLR type of the range's subtype (or element).
-    ///     The actual mapped type will be an <see cref="H2Range{T}" /> over this type.
-    /// </typeparam>
-    /// <param name="rangeName">The name of the PostgreSQL range type to be mapped.</param>
-    /// <param name="schemaName">The name of the PostgreSQL schema in which the range is defined.</param>
-    /// <param name="subtypeName">
-    ///     Optionally, the name of the range's PostgreSQL subtype (or element).
-    ///     This is usually not needed - the subtype will be inferred based on <typeparamref name="TSubtype" />.
-    /// </param>
-    /// <example>
-    ///     To map a range of PostgreSQL real, use the following:
-    ///     <code>H2TypeMappingSource.MapRange{float}("floatrange");</code>
-    /// </example>
-    public virtual H2DbContextOptionsBuilder MapRange<TSubtype>(
-        string rangeName,
-        string? schemaName = null,
-        string? subtypeName = null)
-        => MapRange(rangeName, typeof(TSubtype), schemaName, subtypeName);
-
-    /// <summary>
-    ///     Maps a user-defined PostgreSQL range type for use.
-    /// </summary>
-    /// <param name="rangeName">The name of the PostgreSQL range type to be mapped.</param>
-    /// <param name="schemaName">The name of the PostgreSQL schema in which the range is defined.</param>
-    /// <param name="subtypeClrType">
-    ///     The CLR type of the range's subtype (or element).
-    ///     The actual mapped type will be an <see cref="H2Range{T}" /> over this type.
-    /// </param>
-    /// <param name="subtypeName">
-    ///     Optionally, the name of the range's PostgreSQL subtype (or element).
-    ///     This is usually not needed - the subtype will be inferred based on <paramref name="subtypeClrType" />.
-    /// </param>
-    /// <example>
-    ///     To map a range of PostgreSQL real, use the following:
-    ///     <code>H2TypeMappingSource.MapRange("floatrange", typeof(float));</code>
-    /// </example>
-    public virtual H2DbContextOptionsBuilder MapRange(
-        string rangeName,
-        Type subtypeClrType,
-        string? schemaName = null,
-        string? subtypeName = null)
-        => WithOption(e => e.WithUserRangeDefinition(rangeName, schemaName, subtypeClrType, subtypeName));
-
-    #endregion MapRange
 
     #region MapEnum
 
@@ -153,30 +60,6 @@ public class H2DbContextOptionsBuilder
         => WithOption(e => e.WithReverseNullOrdering(reverseNullOrdering));
 
     #region Authentication (obsolete)
-
-    /// <summary>
-    ///     Configures the <see cref="DbContext" /> to use the specified <see cref="ProvideClientCertificatesCallback" />.
-    /// </summary>
-    /// <param name="callback">The callback to use.</param>
-    [Obsolete("Call ConfigureDataSource() and configure the client certificates on the H2DataSourceBuilder, or pass an externally-built, pre-configured H2DataSource to UseH2().")]
-    public virtual H2DbContextOptionsBuilder ProvideClientCertificatesCallback(ProvideClientCertificatesCallback? callback)
-        => WithOption(e => e.WithProvideClientCertificatesCallback(callback));
-
-    /// <summary>
-    ///     Configures the <see cref="DbContext" /> to use the specified <see cref="RemoteCertificateValidationCallback" />.
-    /// </summary>
-    /// <param name="callback">The callback to use.</param>
-    [Obsolete("Call ConfigureDataSource() and configure remote certificate validation on the H2DataSourceBuilder, or pass an externally-built, pre-configured H2DataSource to UseH2().")]
-    public virtual H2DbContextOptionsBuilder RemoteCertificateValidationCallback(RemoteCertificateValidationCallback? callback)
-        => WithOption(e => e.WithRemoteCertificateValidationCallback(callback));
-
-    /// <summary>
-    ///     Configures the <see cref="DbContext" /> to use the specified <see cref="ProvidePasswordCallback" />.
-    /// </summary>
-    /// <param name="callback">The callback to use.</param>
-    [Obsolete("Call ConfigureDataSource() and configure the password callback on the H2DataSourceBuilder, or pass an externally-built, pre-configured H2DataSource to UseH2().")]
-    public virtual H2DbContextOptionsBuilder ProvidePasswordCallback(ProvidePasswordCallback? callback)
-        => WithOption(e => e.WithProvidePasswordCallback(callback));
 
     #endregion Authentication (obsolete)
 
