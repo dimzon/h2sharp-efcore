@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>H2Sharp.EntityFrameworkCore.NodaTime</AssemblyName>
+    <RootNamespace>H2Sharp.EntityFrameworkCore.NodaTime</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework Condition="'$(DeveloperBuild)' == 'True'">net8.0</TargetFramework>
+
+    <Authors>Shay Rojansky</Authors>
+    <Description>NodaTime support plugin for PostgreSQL/Npgsql Entity Framework Core provider.</Description>
+    <PackageTags>npgsql;postgresql;postgres;Entity Framework Core;entity-framework-core;ef;efcore;orm;sql;nodatime;date;time</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\H2Sharp.EntityFrameworkCore\H2Sharp.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.NodaTime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NodaTime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\*.cs" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="build\**\*">
+      <Pack>True</Pack>
+      <PackagePath>build</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

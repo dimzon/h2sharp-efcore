@@ -1,12 +1,12 @@
 # Npgsql Entity Framework Core provider for PostgreSQL
 
-[![stable](https://img.shields.io/nuget/v/Npgsql.EntityFrameworkCore.PostgreSQL.svg?label=stable)](https://www.nuget.org/packages/Npgsql.EntityFrameworkCore.PostgreSQL/)
-[![next patch](https://img.shields.io/myget/npgsql/v/Npgsql.EntityFrameworkCore.PostgreSQL.svg?label=next%20patch)](https://www.myget.org/feed/npgsql/package/nuget/Npgsql.EntityFrameworkCore.PostgreSQL)
-[![daily builds (vnext)](https://img.shields.io/myget/npgsql-vnext/v/Npgsql.EntityFrameworkCore.PostgreSQL.svg?label=vNext)](https://www.myget.org/feed/npgsql-vnext/package/nuget/Npgsql.EntityFrameworkCore.PostgreSQL)
+[![stable](https://img.shields.io/nuget/v/H2Sharp.EntityFrameworkCore.svg?label=stable)](https://www.nuget.org/packages/H2Sharp.EntityFrameworkCore/)
+[![next patch](https://img.shields.io/myget/npgsql/v/H2Sharp.EntityFrameworkCore.svg?label=next%20patch)](https://www.myget.org/feed/npgsql/package/nuget/H2Sharp.EntityFrameworkCore)
+[![daily builds (vnext)](https://img.shields.io/myget/npgsql-vnext/v/H2Sharp.EntityFrameworkCore.svg?label=vNext)](https://www.myget.org/feed/npgsql-vnext/package/nuget/H2Sharp.EntityFrameworkCore)
 [![build](https://github.com/npgsql/efcore.pg/actions/workflows/build.yml/badge.svg)](https://github.com/npgsql/efcore.pg/actions/workflows/build.yml)
 [![gitter](https://img.shields.io/badge/gitter-join%20chat-brightgreen.svg)](https://gitter.im/npgsql/npgsql)
 
-Npgsql.EntityFrameworkCore.PostgreSQL is the open source EF Core provider for PostgreSQL. It allows you to interact with PostgreSQL via the most widely-used .NET O/RM from Microsoft, and use familiar LINQ syntax to express queries. It's built on top of [Npgsql](https://github.com/npgsql/npgsql).
+H2Sharp.EntityFrameworkCore is the open source EF Core provider for PostgreSQL. It allows you to interact with PostgreSQL via the most widely-used .NET O/RM from Microsoft, and use familiar LINQ syntax to express queries. It's built on top of [Npgsql](https://github.com/npgsql/npgsql).
 
 The provider looks and feels just like any other Entity Framework Core provider. Here's a quick sample to get you started:
 
@@ -41,6 +41,6 @@ Aside from providing general EF Core support for PostgreSQL, the provider also e
 
 ## Related packages
 
-* Spatial plugin to work with PostgreSQL PostGIS: [Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite](https://www.nuget.org/packages/Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite)
-* NodaTime plugin to use better date/time types with PostgreSQL: [Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime](https://www.nuget.org/packages/Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime)
+* Spatial plugin to work with PostgreSQL PostGIS: [H2Sharp.EntityFrameworkCore.NetTopologySuite](https://www.nuget.org/packages/H2Sharp.EntityFrameworkCore.NetTopologySuite)
+* NodaTime plugin to use better date/time types with PostgreSQL: [H2Sharp.EntityFrameworkCore.NodaTime](https://www.nuget.org/packages/H2Sharp.EntityFrameworkCore.NodaTime)
 * The underlying Npgsql ADO.NET provider is [Npgsql](https://www.nuget.org/packages/Npgsql).

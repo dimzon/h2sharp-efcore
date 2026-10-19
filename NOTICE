@@ -1,0 +1,22 @@
+# NOTICE
+
+## H2Sharp.EntityFrameworkCore
+
+Этот продукт является производным от **EFCore.PG**
+(<https://github.com/npgsql/efcore.pg>), тег `v9.0.5`, коммит
+`bd7de7b71e9c0dd135cccc47bc7ea1c1ab48c0c9`.
+
+EFCore.PG распространяется по PostgreSQL License (см. `LICENSE`). Исходный код EFCore.PG
+использован без изменений, кроме переименования пространства имён и имён сборок,
+перечисленных в `UPSTREAM.md`.
+
+Авторы EFCore.PG: Shay Rojansky, Austin Drenski, Yoh Deadfall и другие участники проекта.
+Список участников см. в истории коммитов upstream.
+
+## H2Sharp (ядро)
+
+Провайдер этого репозитория работает поверх **H2Sharp** — порта H2 Database 2.5 с Java на
+C# (<https://github.com/dimzon/h2sharp>). H2 распространяется под двойной лицензией
+MPL-2.0 OR EPL-1.0; H2Sharp наследует эту лицензию.
+
+Код ядра H2Sharp в этот репозиторий **не входит** и поставляется отдельным пакетом.

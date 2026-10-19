@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>H2Sharp.EntityFrameworkCore.NodaTime.FunctionalTests</AssemblyName>
+    <RootNamespace>H2Sharp.EntityFrameworkCore</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore.NodaTime\H2Sharp.EntityFrameworkCore.NodaTime.csproj" />
+    <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore\H2Sharp.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\H2Sharp.EntityFrameworkCore.FunctionalTests\H2Sharp.EntityFrameworkCore.FunctionalTests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NodaTime" />
+  </ItemGroup>
+
+</Project>

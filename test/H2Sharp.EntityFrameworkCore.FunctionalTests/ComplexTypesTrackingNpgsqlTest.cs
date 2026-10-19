@@ -1,0 +1,25 @@
+using H2Sharp.EntityFrameworkCore.TestUtilities;
+
+namespace H2Sharp.EntityFrameworkCore;
+
+public class ComplexTypesTrackingNpgsqlTest : ComplexTypesTrackingTestBase<ComplexTypesTrackingNpgsqlTest.NpgsqlFixture>
+{
+    public ComplexTypesTrackingNpgsqlTest(NpgsqlFixture fixture, ITestOutputHelper testOutputHelper)
+        : base(fixture)
+    {
+        fixture.TestSqlLoggerFactory.Clear();
+        fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+    }
+
+    protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
+        => facade.UseTransaction(transaction.GetDbTransaction());
+
+    public class NpgsqlFixture : FixtureBase
+    {
+        protected override ITestStoreFactory TestStoreFactory
+            => NpgsqlTestStoreFactory.Instance;
+
+        public TestSqlLoggerFactory TestSqlLoggerFactory
+            => (TestSqlLoggerFactory)ListLoggerFactory;
+    }
+}
