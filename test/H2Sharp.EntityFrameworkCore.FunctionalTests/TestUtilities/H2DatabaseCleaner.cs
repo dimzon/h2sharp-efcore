@@ -1,3 +1,4 @@
+using System.Data;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -27,6 +28,16 @@ namespace H2Sharp.EntityFrameworkCore.TestUtilities;
 /// </remarks>
 public class H2DatabaseCleaner : RelationalDatabaseCleaner
 {
+    /// <inheritdoc />
+    protected override IDatabaseModelFactory CreateDatabaseModelFactory(ILoggerFactory loggerFactory)
+        // The base cleaner builds a database model to find the tables to drop. H2's catalogue is
+        // INFORMATION_SCHEMA, which the port does not have yet, so the model would come out empty.
+        // The cleaner does not use it -- DROP ALL OBJECTS does the whole job -- but the abstract member
+        // still has to be answered.
+        => throw new NotSupportedException(
+            "The database model factory is not used: H2DatabaseCleaner cleans with DROP ALL OBJECTS, " +
+            "which does not need a catalogue.");
+
     /// <inheritdoc />
     public override void Clean(DatabaseFacade facade)
     {

@@ -32,23 +32,6 @@ public class TestH2RetryingExecutionStrategy : H2RetryingExecutionStrategy
     {
     }
 
-    protected override bool ShouldRetryOn(Exception exception)
-    {
-        if (base.ShouldRetryOn(exception))
-        {
-            return true;
-        }
-
-#pragma warning disable 162
-        if (ErrorNumberDebugMode && exception is PostgresException postgresException)
-        {
-            var message = $"Didn't retry on {postgresException.SqlState}";
-            throw new InvalidOperationException(message, exception);
-        }
-#pragma warning restore 162
-
-        return exception is InvalidOperationException { Message: "Internal .Net Framework Data Provider error 6." };
-    }
 
     public new virtual TimeSpan? GetNextDelay(Exception lastException)
     {

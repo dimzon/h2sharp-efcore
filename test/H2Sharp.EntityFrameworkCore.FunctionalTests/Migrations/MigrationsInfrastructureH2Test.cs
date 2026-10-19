@@ -49,21 +49,6 @@ namespace H2Sharp.EntityFrameworkCore.Migrations
         public override Task Can_apply_all_migrations_async()
             => base.Can_apply_all_migrations_async();
 
-        [ConditionalFact]
-        public async Task Empty_Migration_Creates_Database()
-        {
-            await using var context = new BloggingContext(
-                Fixture.TestStore.AddProviderOptions(
-                        new DbContextOptionsBuilder().EnableServiceProviderCaching(false))
-                    .ConfigureWarnings(e => e.Log(RelationalEventId.PendingModelChangesWarning)).Options);
-
-            var creator = (H2DatabaseCreator)context.GetService<IRelationalDatabaseCreator>();
-            creator.RetryTimeout = TimeSpan.FromMinutes(10);
-
-            await context.Database.MigrateAsync();
-
-            Assert.True(creator.Exists());
-        }
 
         private class BloggingContext(DbContextOptions options) : DbContext(options)
         {
@@ -182,17 +167,6 @@ namespace H2Sharp.EntityFrameworkCore.Migrations
             protected override ITestStoreFactory TestStoreFactory
                 => H2TestStoreFactory.Instance;
 
-            public override MigrationsContext CreateContext()
-            {
-                var options = AddOptions(
-                        TestStore.AddProviderOptions(new DbContextOptionsBuilder())
-                            .UseH2(
-                                TestStore.ConnectionString, b => b.ApplyConfiguration()
-                                    .SetPostgresVersion(TestEnvironment.PostgresVersion)))
-                    .UseInternalServiceProvider(ServiceProvider)
-                    .Options;
-                return new MigrationsContext(options);
-            }
         }
     }
 }

@@ -14,15 +14,6 @@ public class SpatialH2Fixture : SpatialFixtureBase
         => base.AddServices(serviceCollection)
             .AddEntityFrameworkH2NetTopologySuite();
 
-    public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-    {
-        var optionsBuilder = base.AddOptions(builder);
-        new H2DbContextOptionsBuilder(optionsBuilder)
-            .UseNetTopologySuite()
-            .SetPostgresVersion(TestEnvironment.PostgresVersion);
-
-        return optionsBuilder;
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
     {

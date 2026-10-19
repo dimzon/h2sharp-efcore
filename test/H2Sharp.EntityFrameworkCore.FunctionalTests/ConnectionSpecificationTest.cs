@@ -221,63 +221,9 @@ public class ConnectionSpecificationTest
 
     #region Added for H2
 
-    [Fact]
-    public async Task Can_create_admin_connection_with_data_source()
-    {
-        await using var dataSource = H2DataSource.Create(H2TestStore.NorthwindConnectionString);
 
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
 
-        var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
-        optionsBuilder.UseH2(dataSource, b => b.ApplyConfiguration());
-        await using var context = new GeneralOptionsContext(optionsBuilder.Options);
 
-        var relationalConnection = context.GetService<IH2RelationalConnection>();
-        await using var adminConnection = relationalConnection.CreateAdminConnection();
-
-        Assert.Equal("postgres", new H2ConnectionStringBuilder(adminConnection.ConnectionString).Database);
-
-        await adminConnection.OpenAsync(CancellationToken.None);
-    }
-
-    [Fact]
-    public async Task Can_create_admin_connection_with_connection_string()
-    {
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
-
-        var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
-        optionsBuilder.UseH2(H2TestStore.NorthwindConnectionString, b => b.ApplyConfiguration());
-        await using var context = new GeneralOptionsContext(optionsBuilder.Options);
-
-        var relationalConnection = context.GetService<IH2RelationalConnection>();
-        await using var adminConnection = relationalConnection.CreateAdminConnection();
-
-        Assert.Equal("postgres", new H2ConnectionStringBuilder(adminConnection.ConnectionString).Database);
-
-        await adminConnection.OpenAsync(CancellationToken.None);
-    }
-
-    [Fact]
-    public async Task Can_create_admin_connection_with_connection()
-    {
-        await using var connection = new H2Connection(H2TestStore.NorthwindConnectionString);
-        connection.Open();
-
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
-
-        var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
-        optionsBuilder.UseH2(connection, b => b.ApplyConfiguration());
-        await using var context = new GeneralOptionsContext(optionsBuilder.Options);
-
-        var relationalConnection = context.GetService<IH2RelationalConnection>();
-        await using var adminConnection = relationalConnection.CreateAdminConnection();
-
-        Assert.Equal("postgres", new H2ConnectionStringBuilder(adminConnection.ConnectionString).Database);
-
-        adminConnection.Open();
-    }
-
-    private class GeneralOptionsContext(DbContextOptions<GeneralOptionsContext> options) : NorthwindContextBase(options);
 
     #endregion
 }

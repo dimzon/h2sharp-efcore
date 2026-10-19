@@ -14,12 +14,6 @@ public class NorthwindQueryH2Fixture<TModelCustomizer> : NorthwindQueryRelationa
     protected override Type ContextType
         => typeof(NorthwindH2Context);
 
-    public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-    {
-        var optionsBuilder = base.AddOptions(builder);
-        new H2DbContextOptionsBuilder(optionsBuilder).SetPostgresVersion(TestEnvironment.PostgresVersion);
-        return optionsBuilder;
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
     {

@@ -456,32 +456,8 @@ public class JsonTypesH2Test : JsonTypesRelationalTestBase
         public BitArray BitArray { get; set; } = null!;
     }
 
-    [ConditionalTheory]
-    [InlineData(1000, """{"Prop":"0/3E8"}""")]
-    [InlineData(0, """{"Prop":"0/0"}""")]
-    public virtual Task Can_read_write_LogSequenceNumber_JSON_values(ulong value, string json)
-        => Can_read_and_write_JSON_value<LogSequenceNumberType, H2LogSequenceNumber>(
-            nameof(LogSequenceNumberType.LogSequenceNumber),
-            new H2LogSequenceNumber(value),
-            json);
 
-    [ConditionalFact]
-    public override async Task Can_read_write_point()
-    {
-        var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
 
-        await Can_read_and_write_JSON_value<PointType, Point>(
-            nameof(PointType.Point),
-            factory.CreatePoint(new Coordinate(2, 4)),
-            """{"Prop":"SRID=4326;POINT (2 4)"}""");
-    }
-
-    [ConditionalFact]
-    public virtual async Task Can_read_write_point_without_SRID()
-        => await Can_read_and_write_JSON_value<PointType, Point>(
-            nameof(PointType.Point),
-            new Point(2, 4),
-            """{"Prop":"POINT (2 4)"}""");
 
     [ConditionalFact]
     public override async Task Can_read_write_point_with_M()

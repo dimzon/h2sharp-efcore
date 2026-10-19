@@ -51,12 +51,6 @@ public class DefaultValuesTest : IDisposable
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
         public DbSet<KettleChips> Chips { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder
-                .UseH2(
-                    H2TestStore.CreateConnectionString(_databaseName),
-                    o => o.SetPostgresVersion(TestEnvironment.PostgresVersion))
-                .UseInternalServiceProvider(_serviceProvider);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
             => modelBuilder.Entity<KettleChips>()

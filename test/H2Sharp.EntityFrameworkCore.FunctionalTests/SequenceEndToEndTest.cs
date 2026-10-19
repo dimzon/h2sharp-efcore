@@ -263,23 +263,6 @@ public class SequenceEndToEndTest : IAsyncLifetime
         context.SaveChanges();
     }
 
-    private class BronieContext(IServiceProvider serviceProvider, string databaseName) : DbContext
-    {
-        public DbSet<Pegasus> Pegasuses { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder
-                .UseInternalServiceProvider(serviceProvider)
-                .UseH2(H2TestStore.CreateConnectionString(databaseName), b => b.ApplyConfiguration());
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-            => modelBuilder.Entity<Pegasus>(
-                b =>
-                {
-                    b.HasKey(e => e.Identifier);
-                    b.Property(e => e.Identifier).UseHiLo();
-                });
-    }
 
     private class Pegasus
     {
@@ -357,31 +340,6 @@ public class SequenceEndToEndTest : IAsyncLifetime
         context.SaveChanges();
     }
 
-    private class NullableBronieContext(IServiceProvider serviceProvider, string databaseName, bool useSequence)
-        : DbContext
-    {
-        public DbSet<Unicon> Unicons { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder
-                .UseInternalServiceProvider(serviceProvider)
-                .UseH2(H2TestStore.CreateConnectionString(databaseName), b => b.ApplyConfiguration());
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-            => modelBuilder.Entity<Unicon>(
-                b =>
-                {
-                    b.HasKey(e => e.Identifier);
-                    if (useSequence)
-                    {
-                        b.Property(e => e.Identifier).UseHiLo();
-                    }
-                    else
-                    {
-                        b.Property(e => e.Identifier).UseIdentityColumn();
-                    }
-                });
-    }
 
     private class Unicon
     {

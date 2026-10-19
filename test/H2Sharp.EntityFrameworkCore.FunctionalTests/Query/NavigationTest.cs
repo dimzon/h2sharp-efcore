@@ -69,8 +69,6 @@ public class GoTContext(DbContextOptions options) : DbContext(options)
     public DbSet<GoTPerson> People { get; set; }
     public Func<ModelBuilder, int> ConfigAction { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-        => ConfigAction.Invoke(modelBuilder);
 }
 
 public class NavigationTestFixture

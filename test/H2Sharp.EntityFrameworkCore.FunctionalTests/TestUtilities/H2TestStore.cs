@@ -129,59 +129,8 @@ public class H2TestStore : RelationalTestStore
             : builder.UseH2(_connectionString, npgsqlOptionsBuilder);
     }
 
-    private async Task<bool> CreateDatabaseAsync(Func<DbContext, Task>? clean)
-    {
-        await using var master = new H2Connection(CreateAdminConnectionString());
-
-        if (await DatabaseExistsAsync(Name))
-        {
-            if (_scriptPath is not null)
-            {
-                return false;
-            }
-
-            await using var context = new DbContext(
-                AddProviderOptions(new DbContextOptionsBuilder().EnableServiceProviderCaching(false)).Options);
-            clean?.Invoke(context);
-            await CleanAsync(context);
-            return true;
-        }
-
-        await ExecuteNonQueryAsync(master, GetCreateDatabaseStatement(Name));
-        await WaitForExistsAsync((H2Connection)Connection);
-
-        return true;
-    }
 
     // ReSharper disable once MemberCanBePrivate.Global
-    public void ExecuteScript(string scriptPath)
-    {
-        var script = File.ReadAllText(scriptPath);
-        Execute(
-            Connection, command =>
-            {
-                foreach (var batch in
-                         new Regex("^GO", RegexOptions.IgnoreCase | RegexOptions.Multiline, TimeSpan.FromMilliseconds(1000.0))
-                             .Split(script).Where(b => !string.IsNullOrEmpty(b)))
-                {
-                    command.CommandText = batch;
-                    command.ExecuteNonQuery();
-                }
-
-                return 0;
-            }, "");
-    }
-    public async Task DeleteDatabaseAsync()
-    {
-        // H2 has no database to drop: the objects go, and the database itself goes with the last
-        // connection. DROP ALL OBJECTS is what clears the schema the test created.
-        if (Connection.State != ConnectionState.Open)
-        {
-            await Connection.OpenAsync();
-        }
-
-        await ExecuteNonQueryAsync(Connection, "DROP ALL OBJECTS");
-    }
     // Kill all connection to the database
     private static string GetDisconnectDatabaseSql(string name)
         => $"""
@@ -357,41 +306,8 @@ SELECT pg_terminate_backend (pg_stat_activity.pid)
         }
     }
 
-    private static DbCommand CreateCommand(
-        DbConnection connection,
-        string commandText,
-        IReadOnlyList<object>? parameters = null)
-    {
-        var command = (H2Command)connection.CreateCommand();
 
-        command.CommandText = commandText;
-        command.CommandTimeout = CommandTimeout;
 
-        if (parameters is not null)
-        {
-            for (var i = 0; i < parameters.Count; i++)
-            {
-                command.Parameters.AddWithValue("p" + i, parameters[i]);
-            }
-        }
-
-        return command;
-    }
-
-    public static string CreateConnectionString(string name, string? options = null)
-    {
-        var builder = new H2ConnectionStringBuilder(TestEnvironment.DefaultConnection) { Database = name };
-
-        if (options is not null)
-        {
-            builder.Options = options;
-        }
-
-        return builder.ConnectionString;
-    }
-
-    private static string CreateAdminConnectionString()
-        => CreateConnectionString("postgres");
 
     public override Task CleanAsync(DbContext context)
     {

@@ -30,7 +30,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextSequence(string databaseName) : ContextBase(databaseName);
 
     [Fact]
     public async Task Insert_with_sequence_HiLo()
@@ -55,15 +54,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextHiLo(string databaseName) : ContextBase(databaseName)
-    {
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.UseHiLo();
-        }
-    }
 
     [Fact]
     public async Task Insert_with_default_value_from_sequence()
@@ -106,36 +96,7 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextDefaultValue(string databaseName) : ContextBase(databaseName)
-    {
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
 
-            modelBuilder
-                .HasSequence("MySequence")
-                .HasMin(0)
-                .StartsAt(0);
-
-            modelBuilder
-                .Entity<Blog>()
-                .Property(e => e.Id)
-                .HasDefaultValueSql("nextval('\"MySequence\"')");
-        }
-    }
-
-    public class BlogContextDefaultValueNoMigrations(string databaseName) : ContextBase(databaseName)
-    {
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder
-                .Entity<Blog>()
-                .Property(e => e.Id)
-                .HasDefaultValue();
-        }
-    }
 
     public class BlogWithStringKey
     {
@@ -166,23 +127,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextKeyColumnWithDefaultValue(string databaseName) : ContextBase(databaseName)
-    {
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder
-                .HasSequence("MySequence")
-                .StartsAt(77);
-
-            modelBuilder
-                .Entity<Blog>()
-                .Property(e => e.Id)
-                .HasDefaultValueSql("nextval('\"MySequence\"')")
-                .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Throw);
-        }
-    }
 
     [ConditionalFact]
     public async Task Insert_uint_to_Identity_column_using_value_converter()
@@ -207,20 +151,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextUIntToIdentityUsingValueConverter(string databaseName) : ContextBase(databaseName)
-    {
-        public DbSet<BlogWithUIntKey> UnsignedBlogs { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder
-                .Entity<BlogWithUIntKey>()
-                .Property(e => e.Id)
-                .HasConversion<int>();
-        }
-    }
 
     public class BlogWithUIntKey
     {
@@ -251,27 +181,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextStringToIdentityUsingValueConverter(string databaseName) : ContextBase(databaseName)
-    {
-        public DbSet<BlogWithStringKey> StringyBlogs { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            Guid guid;
-            modelBuilder
-                .Entity<BlogWithStringKey>()
-                .Property(e => e.Id)
-                .HasValueGenerator<TemporaryStringValueGenerator>()
-                .HasConversion(
-                    v => Guid.TryParse(v, out guid)
-                        ? default
-                        : int.Parse(v),
-                    v => v.ToString())
-                .ValueGeneratedOnAdd();
-        }
-    }
 
     [Fact]
     public async Task  Insert_with_explicit_non_default_keys()
@@ -296,18 +205,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextNoKeyGeneration(string databaseName) : ContextBase(databaseName)
-    {
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder
-                .Entity<Blog>()
-                .Property(e => e.Id)
-                .ValueGeneratedNever();
-        }
-    }
 
     [Fact]
     public async Task  Insert_with_explicit_with_default_keys()
@@ -332,18 +229,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextNoKeyGenerationNullableKey(string databaseName) : ContextBase(databaseName)
-    {
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder
-                .Entity<NullableKeyBlog>()
-                .Property(e => e.Id)
-                .ValueGeneratedNever();
-        }
-    }
 
     [Fact]
     public async Task  Insert_with_non_key_default_value()
@@ -385,18 +270,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextNonKeyDefaultValue(string databaseName) : ContextBase(databaseName)
-    {
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Blog>()
-                .Property(e => e.CreatedOn)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("now()");
-        }
-    }
 
     [Fact]
     public async Task  Insert_with_non_key_default_value_readonly()
@@ -439,18 +312,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextNonKeyReadOnlyDefaultValue(string databaseName) : ContextBase(databaseName)
-    {
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Blog>()
-                .Property(e => e.CreatedOn)
-                .HasDefaultValueSql("now()")
-                .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Throw);
-        }
-    }
 
     [Fact]
     public async Task  Insert_with_serial_non_id()
@@ -477,18 +338,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextSequenceNonId(string databaseName) : ContextBase(databaseName)
-    {
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder
-                .Entity<Blog>()
-                .Property(e => e.OtherId)
-                .ValueGeneratedOnAdd();
-        }
-    }
 
     [Fact]
     public async Task  Insert_with_client_generated_GUID_key()
@@ -513,7 +362,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContext(string databaseName) : ContextBase(databaseName);
 
     [Fact]
     public async Task  Insert_with_server_generated_GUID_key()
@@ -550,22 +398,6 @@ public class H2ValueGenerationScenariosTest
         }
     }
 
-    public class BlogContextServerGuidKey(string databaseName) : ContextBase(databaseName)
-    {
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.HasPostgresExtension("uuid-ossp");
-            modelBuilder
-                .Entity<GuidBlog>(
-                    eb =>
-                    {
-                        eb.Property(e => e.Id)
-                            .HasDefaultValueSql("uuid_generate_v4()");
-                        eb.Property(e => e.NotId)
-                            .HasDefaultValueSql("uuid_generate_v4()");
-                    });
-        }
-    }
 
     public class Blog
     {
@@ -604,29 +436,4 @@ public class H2ValueGenerationScenariosTest
         public byte[] Timestamp { get; set; }
     }
 
-    public abstract class ContextBase(string databaseName) : DbContext
-    {
-        public DbSet<Blog> Blogs { get; set; }
-        public DbSet<NullableKeyBlog> NullableKeyBlogs { get; set; }
-        public DbSet<FullNameBlog> FullNameBlogs { get; set; }
-        public DbSet<GuidBlog> GuidBlogs { get; set; }
-        public DbSet<ConcurrentBlog> ConcurrentBlogs { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder
-                .EnableServiceProviderCaching(false)
-                .UseH2(
-                    H2TestStore.CreateConnectionString(databaseName),
-                    b => b.ApplyConfiguration());
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // We default to mapping DateTime to 'timestamp with time zone', but the seeding data has Unspecified DateTimes which aren't
-            // supported.
-            modelBuilder.Entity<Blog>().Property(b => b.CreatedOn).HasColumnType("timestamp without time zone");
-            modelBuilder.Entity<NullableKeyBlog>().Property(b => b.CreatedOn).HasColumnType("timestamp without time zone");
-        }
-    }
 }

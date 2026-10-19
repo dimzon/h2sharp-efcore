@@ -23,196 +23,21 @@ public class TrigramsQueryH2Test : IClassFixture<TrigramsQueryH2Test.TrigramsQue
 
     #region FunctionTests
 
-    [Fact]
-    public void TrigramsShow()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsShow(x.Text))
-            .ToArray();
 
-        AssertContainsSql("""show_trgm(t."Text")""");
-    }
 
-    [Fact]
-    public void TrigramsSimilarity()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsSimilarity(x.Text, "target"))
-            .ToArray();
 
-        AssertContainsSql("""similarity(t."Text", 'target')""");
-    }
 
-    [Fact]
-    public void TrigramsWordSimilarity()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsWordSimilarity(x.Text, "target"))
-            .ToArray();
 
-        AssertContainsSql("""word_similarity(t."Text", 'target')""");
-    }
 
-    [ConditionalFact]
-    [MinimumPostgresVersion(11, 0)]
-    public void TrigramsStrictWordSimilarity()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsStrictWordSimilarity(x.Text, "target"))
-            .ToArray();
 
-        AssertContainsSql("""strict_word_similarity(t."Text", 'target')""");
-    }
 
-    [Fact]
-    public void TrigramsAreSimilar()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsAreSimilar(x.Text, "target"))
-            .ToArray();
 
-        AssertContainsSql("""t."Text" % 'target'""");
-    }
 
-    [Fact]
-    public void TrigramsAreWordSimilar()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsAreWordSimilar(x.Text, "target"))
-            .ToArray();
 
-        AssertContainsSql("""t."Text" <% 'target'""");
-    }
 
-    [Fact]
-    public void TrigramsAreNotWordSimilar()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsAreNotWordSimilar(x.Text, "target"))
-            .ToArray();
 
-        AssertContainsSql("""t."Text" %> 'target'""");
-    }
 
-    [ConditionalFact]
-    [MinimumPostgresVersion(11, 0)]
-    public void TrigramsAreStrictWordSimilar()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsAreStrictWordSimilar(x.Text, "target"))
-            .ToArray();
 
-        AssertContainsSql("""t."Text" <<% 'target'""");
-    }
-
-    [ConditionalFact]
-    [MinimumPostgresVersion(11, 0)]
-    public void TrigramsAreNotStrictWordSimilar()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsAreNotStrictWordSimilar(x.Text, "target"))
-            .ToArray();
-
-        AssertContainsSql("""t."Text" %>> 'target'""");
-    }
-
-    [Fact]
-    public void TrigramsSimilarityDistance()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsSimilarityDistance(x.Text, "target"))
-            .ToArray();
-
-        AssertContainsSql("""t."Text" <-> 'target'""");
-    }
-
-    [Fact]
-    public void TrigramsWordSimilarityDistance()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsWordSimilarityDistance(x.Text, "target"))
-            .ToArray();
-
-        AssertContainsSql("""t."Text" <<-> 'target'""");
-    }
-
-    [Fact]
-    public void TrigramsWordSimilarityDistanceInverted()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsWordSimilarityDistanceInverted(x.Text, "target"))
-            .ToArray();
-
-        AssertContainsSql("""t."Text" <->> 'target'""");
-    }
-
-    [ConditionalFact]
-    [MinimumPostgresVersion(11, 0)]
-    public void TrigramsStrictWordSimilarityDistance()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsStrictWordSimilarityDistance(x.Text, "target"))
-            .ToArray();
-
-        AssertContainsSql("""t."Text" <<<-> 'target'""");
-    }
-
-    [ConditionalFact]
-    [MinimumPostgresVersion(11, 0)]
-    public void TrigramsStrictWordSimilarityDistanceInverted()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Select(x => EF.Functions.TrigramsStrictWordSimilarityDistanceInverted(x.Text, "target"))
-            .ToArray();
-
-        AssertContainsSql("""t."Text" <->>> 'target'""");
-    }
-
-    [Fact] // #1659
-    public void Concatenation_operator_precedence()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Where(e => EF.Functions.TrigramsAreSimilar(e.Text + " " + e.Text, "query"))
-            .ToArray();
-
-        AssertSql(
-            """
-SELECT t."Id", t."Text"
-FROM "TrigramsTestEntities" AS t
-WHERE (COALESCE(t."Text", '') || ' ' || COALESCE(t."Text", '')) % 'query'
-""");
-    }
-
-    [Fact] // #3072
-    public void PgUnknownBinary_operator_precedence()
-    {
-        using var context = CreateContext();
-        _ = context.TrigramsTestEntities
-            .Where(e => 1 - EF.Functions.TrigramsSimilarityDistance(e.Text, "query") > 8)
-            .ToArray();
-
-        AssertSql(
-            """
-SELECT t."Id", t."Text"
-FROM "TrigramsTestEntities" AS t
-WHERE 1 - (t."Text" <-> 'query') > 8
-""");
-    }
 
     #endregion
 

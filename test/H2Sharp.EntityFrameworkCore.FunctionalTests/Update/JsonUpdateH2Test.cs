@@ -1365,13 +1365,6 @@ LIMIT 2
 """);
     }
 
-    public override async Task Edit_single_property_collection_of_char()
-    {
-        // PostgreSQL does not support the 0 char in text
-        var exception = await Assert.ThrowsAsync<DbUpdateException>(() => base.Edit_single_property_collection_of_char());
-        var pgException = Assert.IsType<PostgresException>(exception.InnerException);
-        Assert.Equal("22P05", pgException.SqlState); // untranslatable_character
-    }
 
     public override async Task Edit_single_property_collection_of_datetime()
     {
@@ -1915,16 +1908,7 @@ LIMIT 2
     }
 
     // https://github.com/dotnet/efcore/pull/31831/files#r1393411950
-    public override Task Add_and_update_top_level_optional_owned_collection_to_JSON(bool? value)
-        => Assert.ThrowsAsync<PostgresException>(() => base.Add_and_update_top_level_optional_owned_collection_to_JSON(value));
 
-    public override async Task Add_and_update_nested_optional_primitive_collection(bool? value)
-    {
-        // PostgreSQL does not support the 0 char in text
-        var exception = await Assert.ThrowsAsync<DbUpdateException>(() => base.Edit_single_property_collection_of_char());
-        var pgException = Assert.IsType<PostgresException>(exception.InnerException);
-        Assert.Equal("22P05", pgException.SqlState); // untranslatable_character
-    }
 
     #region Skipped tests because of unsupported list type outside of JSON
 

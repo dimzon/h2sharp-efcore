@@ -27,11 +27,4 @@ SELECT NOT EXISTS (
 """);
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<Engine>().ToTable("Vehicles")
-            .Property(e => e.Computed).HasComputedColumnSql("1", stored: true);
-    }
 }

@@ -114,6 +114,8 @@ public static class H2DbContextOptionsBuilderExtensions
 
         var extension = (H2OptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnection(connection, contextOwnsConnection);
 
+        ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
+
         ConfigureWarnings(optionsBuilder);
 
         h2OptionsAction?.Invoke(new H2DbContextOptionsBuilder(optionsBuilder));
