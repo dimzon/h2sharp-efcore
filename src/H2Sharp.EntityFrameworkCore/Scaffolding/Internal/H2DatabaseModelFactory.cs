@@ -1,4 +1,4 @@
-using H2DbException = H2Sharp.Message.DbException;
+using H2SharpException = H2Sharp.H2SharpException;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -560,7 +560,7 @@ ORDER BY attnum
                     opClass.GetFieldValue<bool>("opcdefault"));
             }
         }
-        catch (DbException e)
+        catch (H2SharpException e)
         {
             logger.Logger.LogWarning(
                 e,
@@ -1227,7 +1227,7 @@ WHERE
                     databaseModel, schema, name, lcCollate!, lcCtype, provider, isDeterministic);
             }
         }
-        catch (DbException e)
+        catch (H2SharpException e)
         {
             logger.Logger.LogWarning(e, "Could not load database collations.");
         }

@@ -249,30 +249,6 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
                 : new MethodCallCodeFragment(ModelHasPostgresEnumMethodInfo2, enumTypeDef.Schema, enumTypeDef.Name, enumTypeDef.Labels);
         }
 
-        if (annotation.Name.StartsWith(H2AnnotationNames.RangePrefix, StringComparison.Ordinal))
-        {
-            var rangeTypeDef = new PostgresRange(model, annotation.Name);
-
-            if (rangeTypeDef.Schema is null
-                && rangeTypeDef.CanonicalFunction is null
-                && rangeTypeDef.SubtypeOpClass is null
-                && rangeTypeDef.Collation is null
-                && rangeTypeDef.SubtypeDiff is null)
-            {
-                return new MethodCallCodeFragment(ModelHasPostgresRangeMethodInfo1, rangeTypeDef.Name, rangeTypeDef.Subtype);
-            }
-
-            return new MethodCallCodeFragment(
-                ModelHasPostgresRangeMethodInfo2,
-                rangeTypeDef.Schema,
-                rangeTypeDef.Name,
-                rangeTypeDef.Subtype,
-                rangeTypeDef.CanonicalFunction,
-                rangeTypeDef.SubtypeOpClass,
-                rangeTypeDef.Collation,
-                rangeTypeDef.SubtypeDiff);
-        }
-
         return null;
     }
 

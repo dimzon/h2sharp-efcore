@@ -72,41 +72,10 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
     {
         var mainBuilder = parameters.MainBuilder;
 
-        var npgsqlDbTypeBasedDefaultInstance = typeMapping switch
-        {
-            H2StringTypeMapping => H2StringTypeMapping.Default,
-            H2UIntTypeMapping => H2UIntTypeMapping.Default,
-            H2ULongTypeMapping => H2ULongTypeMapping.Default,
-            // object => object.Default,
-            _ => (IH2TypeMapping?)null
-        };
-
-        if (npgsqlDbTypeBasedDefaultInstance is not null)
-        {
-            CheckElementTypeMapping();
-
-            var npgsqlDbType = ((IH2TypeMapping)typeMapping).H2DbType;
-
-            if (npgsqlDbType != npgsqlDbTypeBasedDefaultInstance.H2DbType)
-            {
-                mainBuilder.AppendLine(";");
-
-                mainBuilder.Append(
-                    $"{parameters.TargetName}.TypeMapping = (({typeMapping.GetType().Name}){parameters.TargetName}.TypeMapping).Clone(npgsqlDbType: ");
-
-                mainBuilder
-                    .Append(nameof(H2Types))
-                    .Append(".")
-                    .Append(nameof(H2DbType))
-                    .Append(".")
-                    .Append(npgsqlDbType.ToString());
-
-                mainBuilder
-                    .Append(")")
-                    .DecrementIndent();
-            }
-
-        }
+        // Upstream this also emitted a Clone(npgsqlDbType: ...) call for any mapping whose provider
+        // type enum differed from the default instance. There is no such enum here, so the only
+        // mapping that still needs its store type pinned into the compiled model is an enum type,
+        // whose labels have to travel with it.
 
         switch (typeMapping)
         {
@@ -147,43 +116,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
 
                 break;
 
-            case RelationalTypeMapping rangeTypeMapping:
-            {
-                CheckElementTypeMapping();
-
-                var defaultInstance = RelationalTypeMapping.Default;
-
-                var npgsqlDbTypeDifferent = rangeTypeMapping.H2DbType != defaultInstance.H2DbType;
-                var subtypeTypeMappingIsDifferent = rangeTypeMapping.SubtypeMapping != defaultInstance.SubtypeMapping;
-
-                if (npgsqlDbTypeDifferent || subtypeTypeMappingIsDifferent)
-                {
-                    mainBuilder.AppendLine(";");
-
-                    mainBuilder.AppendLine(
-                        $"{parameters.TargetName}.TypeMapping = ((RelationalTypeMapping){parameters.TargetName}.TypeMapping).Clone(")
-                        .IncrementIndent();
-
-                    mainBuilder
-                        .Append("npgsqlDbType: ")
-                        .Append(nameof(H2Types))
-                        .Append(".")
-                        .Append(nameof(H2DbType))
-                        .Append(".")
-                        .Append(rangeTypeMapping.H2DbType.ToString())
-                        .AppendLine(",");
-
-                    mainBuilder.Append("subtypeTypeMapping: ");
-
-                    Create(rangeTypeMapping.SubtypeMapping, parameters);
-
-                    mainBuilder
-                        .Append(")")
-                        .DecrementIndent();
-                }
-
-                break;
-            }
         }
 
         void CheckElementTypeMapping()

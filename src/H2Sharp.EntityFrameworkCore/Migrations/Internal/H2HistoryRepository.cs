@@ -1,4 +1,6 @@
-using H2DbException = H2Sharp.Message.DbException;
+using System.Data.Common;
+using H2SharpException = H2Sharp.H2SharpException;
+using H2ErrorCode = H2Sharp.Api.ErrorCode;
 using H2Sharp.EntityFrameworkCore.Metadata.Conventions;
 
 namespace H2Sharp.EntityFrameworkCore.Migrations.Internal;
@@ -147,9 +149,9 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
                     GetCreateIfNotExistsCommands(), Dependencies.Connection, new MigrationExecutionState(), commitTransaction: true)
                 != 0;
         }
-        catch (DbException e) when (e.SqlState is PostgresErrorCodes.UniqueViolation
-                                              or PostgresErrorCodes.DuplicateTable
-                                              or PostgresErrorCodes.DuplicateObject)
+        catch (H2SharpException e) when (e.H2ErrorCode is H2ErrorCode.DuplicateKey1
+                                              or H2ErrorCode.TableOrViewAlreadyExists1
+                                              or H2ErrorCode.SchemaAlreadyExists1)
         {
             return false;
         }
@@ -167,9 +169,9 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
                     cancellationToken: cancellationToken).ConfigureAwait(false))
                 != 0;
         }
-        catch (DbException e) when (e.SqlState is PostgresErrorCodes.UniqueViolation
-                                              or PostgresErrorCodes.DuplicateTable
-                                              or PostgresErrorCodes.DuplicateObject)
+        catch (H2SharpException e) when (e.H2ErrorCode is H2ErrorCode.DuplicateKey1
+                                              or H2ErrorCode.TableOrViewAlreadyExists1
+                                              or H2ErrorCode.SchemaAlreadyExists1)
         {
             return false;
         }
@@ -245,7 +247,7 @@ END $EF$;
         {
             return base.GetAppliedMigrations();
         }
-        catch (DbException e) when (e.SqlState is PostgresErrorCodes.InvalidCatalogName or PostgresErrorCodes.UndefinedTable)
+        catch (H2SharpException e) when (e.H2ErrorCode is H2ErrorCode.SchemaNotFound1 or H2ErrorCode.TableOrViewNotFound1)
         {
             return [];
         }
@@ -263,7 +265,7 @@ END $EF$;
         {
             return await base.GetAppliedMigrationsAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (DbException e) when (e.SqlState is PostgresErrorCodes.InvalidCatalogName or PostgresErrorCodes.UndefinedTable)
+        catch (H2SharpException e) when (e.H2ErrorCode is H2ErrorCode.SchemaNotFound1 or H2ErrorCode.TableOrViewNotFound1)
         {
             return [];
         }
