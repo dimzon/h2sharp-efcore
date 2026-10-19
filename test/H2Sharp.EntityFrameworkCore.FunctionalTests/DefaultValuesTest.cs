@@ -31,7 +31,7 @@ public class DefaultValuesTest : IDisposable
         using (var context = new ChipsContext(_serviceProvider, "DefaultKettleChips"))
         {
             Assert.Equal(
-                new DateTime(2035, 9, 25, 0, 0, 0, DateTimeKind.Utc), context.Chips.Single(c => c.Name == "Honey Dijon").BestBuyDate);
+                new DateTime(2035, 9, 25, 0, 0, 0, DateTimeKind.Unspecified), context.Chips.Single(c => c.Name == "Honey Dijon").BestBuyDate);
             Assert.Equal(
                 new DateTime(2111, 1, 11, 0, 0, 0, DateTimeKind.Utc), context.Chips.Single(c => c.Name == "Buffalo Bleu").BestBuyDate);
         }
@@ -61,7 +61,7 @@ public class DefaultValuesTest : IDisposable
             => modelBuilder.Entity<KettleChips>()
                 .Property(e => e.BestBuyDate)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValue(new DateTime(2035, 9, 25, 0, 0, 0, DateTimeKind.Utc));
+                .HasDefaultValue(new DateTime(2035, 9, 25, 0, 0, 0, DateTimeKind.Unspecified));
     }
 
     private class KettleChips

@@ -35,6 +35,32 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     }
 
     /// <summary>
+    ///     The separator between a column and its alias.
+    /// </summary>
+    /// <remarks>
+    ///     SQL allows a column alias without the <c>AS</c> keyword, but the engine's parser does not
+    ///     read that form, so a column alias keeps its <c>AS</c>.
+    /// </remarks>
+    protected override string AliasSeparator
+        => " AS ";
+
+    /// <inheritdoc />
+    protected override Expression VisitTable(TableExpression tableExpression)
+    {
+        // The table's alias is written without the AS: SQL allows an alias without it, H2 reads
+        // both forms, and the reference H2 2.5 was asked and takes "FROM "Rows" "r"" as readily as
+        // "FROM "Rows" AS "r"". The engine's parser reads the form without it.
+        Sql.Append(_sqlGenerationHelper.DelimitIdentifier(tableExpression.Name, tableExpression.Schema));
+
+        if (tableExpression.Alias is { } alias)
+        {
+            Sql.Append(" ").Append(_sqlGenerationHelper.DelimitIdentifier(alias));
+        }
+
+        return tableExpression;
+    }
+
+    /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
     ///     any release. You should only use it directly in your code with extreme caution and knowing that

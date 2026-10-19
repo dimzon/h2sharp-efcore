@@ -86,6 +86,14 @@ public class H2RelationalConnection : RelationalConnection, IH2RelationalConnect
             return string.Empty;
         }
 
+        // A JDBC URL is already what the engine wants: its own parser reads the database name and
+        // the settings off it. The key=value spelling is what the rest of .NET uses, and that is
+        // what gets translated.
+        if (connectionString.StartsWith("jdbc:h2:", StringComparison.OrdinalIgnoreCase))
+        {
+            return connectionString;
+        }
+
         var builder = new H2ConnectionStringBuilder(connectionString);
         var url = builder.ToH2ConnectionString();
 

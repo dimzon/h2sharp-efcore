@@ -185,6 +185,22 @@ public class H2DbFunctionsTest
     }
 
     [Fact]
+    public void Table_aliases_are_written_without_AS()
+    {
+        var sql = SqlOf(
+            "functions-alias",
+            (f, rows) => rows.Select(r => new { Renamed = r.Name, r.Price }));
+
+        // H2 reads an alias with or without the AS, and the reference was asked: it takes both.
+        // The engine's parser reads the form without it, so that is the form the provider writes.
+        Assert.Contains("\"Rows\" \"r\"", sql);
+        Assert.DoesNotContain("\"Rows\" AS", sql);
+
+        // A column alias still needs its AS: the engine does not read a bare one.
+        Assert.Contains("AS ", sql);
+    }
+
+    [Fact]
     public void Date_arithmetic_is_translated_to_TIMESTAMPADD()
     {
         var sql = SqlOf(
@@ -201,6 +217,47 @@ public class H2DbFunctionsTest
         Assert.Contains("TIMESTAMPADD('MONTH',", sql);
         Assert.Contains("TIMESTAMPADD('YEAR',", sql);
         Assert.DoesNotContain("INTERVAL", sql);
+    }
+
+    [Fact]
+    public void An_EF_query_runs_against_the_engine()
+    {
+        var databaseName = "functions-query";
+
+        using var context = CreateContext(databaseName);
+        context.Database.OpenConnection();
+
+        context.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE "Rows" (
+                "Id" integer NOT NULL,
+                "Name" varchar(50),
+                "Price" decimal(10,2) NOT NULL,
+                "Stamp" timestamp,
+                CONSTRAINT "PK_Rows" PRIMARY KEY ("Id")
+            )
+            """);
+
+        context.Rows.AddRange(
+            new Row { Id = 1, Name = "abc", Price = 5m, Stamp = new DateTime(2020, 1, 1) },
+            new Row { Id = 2, Name = "def", Price = 15m, Stamp = new DateTime(2020, 1, 2) });
+
+        context.SaveChanges();
+
+        // The query goes through EF: the alias is written the way the engine's parser reads it,
+        // so this is the first EF query that the port can run at all.
+        var rows = context.Rows.Where(r => r.Price > 10m).OrderBy(r => r.Id).ToList();
+
+        Assert.Single(rows);
+        Assert.Equal("def", rows[0].Name);
+
+        var projected = context.Rows.Select(r => new { r.Id, Padded = EF.Functions.LeftPad(r.Name, 5, "0") }).ToList();
+
+        Assert.Equal(2, projected.Count);
+        Assert.Equal("00abc", projected[0].Padded);
+        Assert.Equal("00def", projected[1].Padded);
+
+        context.Database.EnsureDeleted();
     }
 
     [Fact]

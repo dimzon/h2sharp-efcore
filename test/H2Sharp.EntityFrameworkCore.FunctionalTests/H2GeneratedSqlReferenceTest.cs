@@ -110,6 +110,31 @@ public class H2GeneratedSqlReferenceTest
     }
 
     [Fact]
+    public void The_generated_query_is_accepted_by_the_reference_engine()
+    {
+        Assert.True(H2ReferenceOracle.IsAvailable, "The reference H2 jar is not available; skipping.");
+
+        using var context = new BlogContext();
+
+        // A query, not a script: the table alias is written without the AS, and the reference
+        // engine is asked whether it reads that. It does -- but the reference is the authority,
+        // not the port.
+        var query = context.Blogs.Select(b => new { b.Id, b.Title }).ToQueryString();
+
+        Assert.Contains("\"Blogs\" \"b\"", query);
+        Assert.DoesNotContain("AS", query);
+
+        var script = $"""
+            CREATE TABLE "Blogs" ("Id" integer NOT NULL, "Title" varchar(50), CONSTRAINT "PK_Blogs" PRIMARY KEY ("Id"));
+            {query};
+            """;
+
+        var (accepted, output) = H2ReferenceOracle.Run(script);
+
+        Assert.True(accepted, $"The reference engine rejected the generated query:{Environment.NewLine}{output}{Environment.NewLine}{script}");
+    }
+
+    [Fact]
     public void The_generated_create_script_for_the_NodaTime_plugin_is_accepted_by_the_reference_engine()
     {
         Assert.True(H2ReferenceOracle.IsAvailable, "The reference H2 jar is not available; skipping.");
