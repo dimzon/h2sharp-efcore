@@ -27,7 +27,6 @@ public static class H2DatabaseFacadeExtensions
         => database.ProviderName == typeof(H2OptionsExtension).GetTypeInfo().Assembly.GetName().Name;
 
     /// <summary>
-    ///     Sets the underlying <see cref="DbDataSource" /> configured for this <see cref="DbContext" />.
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -39,8 +38,6 @@ public static class H2DatabaseFacadeExtensions
     /// </remarks>
     /// <param name="databaseFacade">The <see cref="DatabaseFacade" /> for the context.</param>
     /// <param name="dataSource">The connection string.</param>
-    public static void SetDbDataSource(this DatabaseFacade databaseFacade, DbDataSource dataSource)
-        => ((H2RelationalConnection)GetFacadeDependencies(databaseFacade).RelationalConnection).DbDataSource = dataSource;
 
     private static IRelationalDatabaseFacadeDependencies GetFacadeDependencies(DatabaseFacade databaseFacade)
     {

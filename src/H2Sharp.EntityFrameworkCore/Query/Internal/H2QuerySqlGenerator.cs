@@ -123,9 +123,6 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 e.Type == typeof(string)
                 || e.Left.TypeMapping?.ClrType == typeof(string)
                 || e.Right.TypeMapping?.ClrType == typeof(string)
-                || e.Type == typeof(H2TsVector)
-                || e.Left.TypeMapping?.ClrType == typeof(H2TsVector)
-                || e.Right.TypeMapping?.ClrType == typeof(H2TsVector)
                 || e.Left.TypeMapping is H2ArrayTypeMapping && e.Right.TypeMapping is H2ArrayTypeMapping
                 => " || ",
 
@@ -479,11 +476,9 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 binaryExpression.OperatorType switch
                 {
                     PgExpressionType.Contains
-                        when binaryExpression.Left.TypeMapping is H2InetTypeMapping or H2CidrTypeMapping
                         => ">>",
 
                     PgExpressionType.ContainedBy
-                        when binaryExpression.Left.TypeMapping is H2InetTypeMapping or H2CidrTypeMapping
                         => "<<",
 
                     PgExpressionType.Contains => "@>",
@@ -615,7 +610,6 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 return sqlUnaryExpression;
 
             // NOT operation on full-text queries
-            case ExpressionType.Not when sqlUnaryExpression.Operand.TypeMapping.ClrType == typeof(H2TsQuery):
                 Sql.Append("!!");
                 Visit(sqlUnaryExpression.Operand);
                 return sqlUnaryExpression;

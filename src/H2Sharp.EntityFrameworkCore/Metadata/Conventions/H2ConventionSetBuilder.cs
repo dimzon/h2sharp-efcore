@@ -18,7 +18,6 @@ namespace H2Sharp.EntityFrameworkCore.Metadata.Conventions;
 public class H2ConventionSetBuilder : RelationalConventionSetBuilder
 {
     private readonly IRelationalTypeMappingSource _typeMappingSource;
-    private readonly Version _postgresVersion;
     private readonly IReadOnlyList<EnumDefinition> _enumDefinitions;
 
     /// <summary>

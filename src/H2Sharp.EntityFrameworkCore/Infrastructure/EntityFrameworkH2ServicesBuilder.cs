@@ -6,12 +6,7 @@ namespace H2Sharp.EntityFrameworkCore.Infrastructure;
 public class EntityFrameworkH2ServicesBuilder : EntityFrameworkRelationalServicesBuilder
 {
     private static readonly IDictionary<Type, ServiceCharacteristics> H2Services
-        = new Dictionary<Type, ServiceCharacteristics>
-        {
-            {
-                new ServiceCharacteristics(ServiceLifetime.Singleton, multipleRegistrations: true)
-            }
-        };
+        = new Dictionary<Type, ServiceCharacteristics>();
 
     /// <summary>
     ///     Used by relational database providers to create a new <see cref="EntityFrameworkRelationalServicesBuilder" /> for

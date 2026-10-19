@@ -55,7 +55,6 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         _queryCompilationContext = queryCompilationContext;
         _typeMappingSource = (H2TypeMappingSource)relationalDependencies.TypeMappingSource;
         _sqlExpressionFactory = (H2SqlExpressionFactory)relationalDependencies.SqlExpressionFactory;
-        _isRedshift = npgsqlSingletonOptions.UseRedshift;
     }
 
     /// <summary>
@@ -436,95 +435,6 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                     return BuildSimplifiedShapedQuery(source, _sqlExpressionFactory.Overlaps(array, otherArray));
                 }
 
-                #region LTree translations
-
-                // Pattern match: new[] { "q1", "q2" }.Any(q => e.SomeLTree.MatchesLQuery(q))
-                // Translation: s.SomeLTree ? ARRAY['q1','q2']
-                case PgBinaryExpression
-                    {
-                        OperatorType: PgExpressionType.LTreeMatches,
-                        Left: var ltree,
-                        Right: SqlUnaryExpression { OperatorType: ExpressionType.Convert, Operand: ColumnExpression lqueryColumn }
-                    }
-                    when lqueryColumn.TableAlias == tableAlias:
-                {
-                    return BuildSimplifiedShapedQuery(
-                        source,
-                        new PgBinaryExpression(
-                            PgExpressionType.LTreeMatchesAny,
-                            ltree,
-                            _sqlExpressionFactory.ApplyTypeMapping(array, _typeMappingSource.FindMapping("lquery[]")),
-                            typeof(bool),
-                            typeMapping: _typeMappingSource.FindMapping(typeof(bool))));
-                }
-
-                // Pattern match: new[] { "t1", "t2" }.Any(t => t.IsAncestorOf(e.SomeLTree))
-                // Translation: ARRAY['t1','t2'] @> s.SomeLTree
-                // Pattern match: new[] { "t1", "t2" }.Any(t => t.IsDescendantOf(e.SomeLTree))
-                // Translation: ARRAY['t1','t2'] <@ s.SomeLTree
-                case PgBinaryExpression
-                    {
-                        OperatorType: (PgExpressionType.Contains or PgExpressionType.ContainedBy) and var operatorType,
-                        Left: ColumnExpression ltreeColumn,
-                        // Contains/ContainedBy can happen for non-LTree types too, so check that
-                        Right: { TypeMapping: H2LTreeTypeMapping } ltree
-                    }
-                    when ltreeColumn.TableAlias == tableAlias:
-                {
-                    return BuildSimplifiedShapedQuery(
-                        source,
-                        new PgBinaryExpression(
-                            operatorType,
-                            _sqlExpressionFactory.ApplyDefaultTypeMapping(array),
-                            ltree,
-                            typeof(bool),
-                            typeMapping: _typeMappingSource.FindMapping(typeof(bool))));
-                }
-
-                // Pattern match: new[] { "t1", "t2" }.Any(t => t.MatchesLQuery(lquery))
-                // Translation: ARRAY['t1','t2'] ~ lquery
-                // Pattern match: new[] { "t1", "t2" }.Any(t => t.MatchesLTxtQuery(ltxtquery))
-                // Translation: ARRAY['t1','t2'] @ ltxtquery
-                case PgBinaryExpression
-                    {
-                        OperatorType: PgExpressionType.LTreeMatches,
-                        Left: ColumnExpression ltreeColumn,
-                        Right: var lquery
-                    }
-                    when ltreeColumn.TableAlias == tableAlias:
-                {
-                    return BuildSimplifiedShapedQuery(
-                        source,
-                        new PgBinaryExpression(
-                            PgExpressionType.LTreeMatches,
-                            _sqlExpressionFactory.ApplyDefaultTypeMapping(array),
-                            lquery,
-                            typeof(bool),
-                            typeMapping: _typeMappingSource.FindMapping(typeof(bool))));
-                }
-
-                // Any within Any (i.e. intersection)
-                // Pattern match: ltrees.Any(t => lqueries.Any(q => t.MatchesLQuery(q)))
-                // Translate: ltrees ? lqueries
-                case PgBinaryExpression
-                    {
-                        OperatorType: PgExpressionType.LTreeMatchesAny,
-                        Left: ColumnExpression ltreeColumn,
-                        Right: var lqueries
-                    }
-                    when ltreeColumn.TableAlias == tableAlias:
-                {
-                    return BuildSimplifiedShapedQuery(
-                        source,
-                        new PgBinaryExpression(
-                            PgExpressionType.LTreeMatchesAny,
-                            _sqlExpressionFactory.ApplyDefaultTypeMapping(array),
-                            lqueries,
-                            typeof(bool),
-                            typeMapping: _typeMappingSource.FindMapping(typeof(bool))));
-                }
-
-                #endregion LTree translations
             }
         }
 

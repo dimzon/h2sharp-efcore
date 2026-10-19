@@ -166,33 +166,6 @@ public class H2MiscAggregateMethodTranslator : IAggregateMethodCallTranslator
             }
         }
 
-        if (method.DeclaringType == typeof(H2RangeDbFunctionsExtensions))
-        {
-            switch (method.Name)
-            {
-                case nameof(H2RangeDbFunctionsExtensions.RangeAgg):
-                    var arrayClrType = sqlExpression.Type.MakeArrayType();
-
-                    return _sqlExpressionFactory.AggregateFunction(
-                        "range_agg",
-                        [sqlExpression],
-                        source,
-                        nullable: true,
-                        argumentsPropagateNullability: FalseArrays[1],
-                        returnType: arrayClrType,
-                        _typeMappingSource.FindMapping(arrayClrType));
-
-                case nameof(H2RangeDbFunctionsExtensions.RangeIntersectAgg):
-                    return _sqlExpressionFactory.AggregateFunction(
-                        "range_intersect_agg",
-                        [sqlExpression],
-                        source,
-                        nullable: true,
-                        argumentsPropagateNullability: FalseArrays[1],
-                        returnType: sqlExpression.Type,
-                        sqlExpression.TypeMapping);
-            }
-        }
 
         return null;
     }

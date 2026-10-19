@@ -29,7 +29,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
     /// <summary>
     ///     The backend version to target.
     /// </summary>
-    private readonly Version _postgresVersion;
 
     /// <summary>
     ///     Creates a new <see cref="H2MigrationsSqlGenerator" /> instance.
@@ -1088,7 +1087,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
         GenerateCollationStatements(operation, model, builder);
         GenerateEnumStatements(operation, model, builder);
-        GenerateRangeStatements(operation, model, builder);
 
         foreach (var extension in operation.GetPostgresExtensions())
         {

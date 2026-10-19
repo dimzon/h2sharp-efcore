@@ -14,7 +14,6 @@ public class H2ModelValidator : RelationalModelValidator
     /// <summary>
     ///     The backend version to target.
     /// </summary>
-    private readonly Version _postgresVersion;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

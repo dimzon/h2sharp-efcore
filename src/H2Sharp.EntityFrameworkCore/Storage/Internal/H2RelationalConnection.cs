@@ -56,7 +56,7 @@ public class H2RelationalConnection : RelationalConnection, IH2RelationalConnect
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override DbConnection CreateDbConnection()
-        => new H2Connection(ConnectionString);
+        => new H2Connection(ConnectionString!);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

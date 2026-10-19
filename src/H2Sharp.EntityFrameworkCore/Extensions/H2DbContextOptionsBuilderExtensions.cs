@@ -57,7 +57,6 @@ public static class H2DbContextOptionsBuilderExtensions
         Check.NotNull(optionsBuilder, nameof(optionsBuilder));
 
         var extension = (H2OptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
-        ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
         ConfigureWarnings(optionsBuilder);
 
@@ -112,7 +111,6 @@ public static class H2DbContextOptionsBuilderExtensions
         Check.NotNull(connection, nameof(connection));
 
         var extension = (H2OptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnection(connection, contextOwnsConnection);
-        ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
         ConfigureWarnings(optionsBuilder);
 
@@ -138,8 +136,6 @@ public static class H2DbContextOptionsBuilderExtensions
         Check.NotNull(optionsBuilder, nameof(optionsBuilder));
         Check.NotNull(dataSource, nameof(dataSource));
 
-        var extension = (H2OptionsExtension)GetOrCreateExtension(optionsBuilder).WithDataSource(dataSource);
-        ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
         ConfigureWarnings(optionsBuilder);
 

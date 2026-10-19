@@ -38,5 +38,5 @@ public class H2QuerySqlGeneratorFactory : IQuerySqlGeneratorFactory
             _dependencies,
             _typeMappingSource,
             _npgsqlSingletonOptions.ReverseNullOrderingEnabled,
-            _npgsqlSingletonOptions.PostgresVersion);
+            _);
 }

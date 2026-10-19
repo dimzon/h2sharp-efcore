@@ -29,7 +29,6 @@ public class H2MemberTranslatorProvider : RelationalMemberTranslatorProvider
         : base(dependencies)
     {
         var npgsqlOptions = contextOptions.FindExtension<H2OptionsExtension>() ?? new H2OptionsExtension();
-        var supportsMultiranges = npgsqlOptions.PostgresVersion.AtLeast(14);
 
         var sqlExpressionFactory = (H2SqlExpressionFactory)dependencies.SqlExpressionFactory;
         JsonPocoTranslator = new H2JsonPocoTranslator(typeMappingSource, sqlExpressionFactory, model);
@@ -39,9 +38,7 @@ public class H2MemberTranslatorProvider : RelationalMemberTranslatorProvider
             new H2BigIntegerMemberTranslator(sqlExpressionFactory),
                 new H2DateTimeMemberTranslator(typeMappingSource, sqlExpressionFactory),
                 new H2JsonDomTranslator(typeMappingSource, sqlExpressionFactory, model),
-                new H2LTreeTranslator(typeMappingSource, sqlExpressionFactory, model),
                 JsonPocoTranslator,
-                new H2RangeTranslator(typeMappingSource, sqlExpressionFactory, model, supportsMultiranges),
                 new H2StringMemberTranslator(sqlExpressionFactory),
                 new H2TimeSpanMemberTranslator(sqlExpressionFactory)
         ]);

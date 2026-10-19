@@ -10,11 +10,6 @@ namespace H2Sharp.EntityFrameworkCore.Query.Internal;
 /// </summary>
 public class H2EvaluatableExpressionFilter : RelationalEvaluatableExpressionFilter
 {
-    private static readonly MethodInfo TsQueryParse =
-        typeof(H2TsQuery).GetRuntimeMethod(nameof(H2TsQuery.Parse), [typeof(string)])!;
-
-    private static readonly MethodInfo TsVectorParse =
-        typeof(H2TsVector).GetRuntimeMethod(nameof(H2TsVector.Parse), [typeof(string)])!;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -43,14 +38,9 @@ public class H2EvaluatableExpressionFilter : RelationalEvaluatableExpressionFilt
                 var declaringType = methodCallExpression.Method.DeclaringType;
                 var method = methodCallExpression.Method;
 
-                if (method == TsQueryParse
-                    || method == TsVectorParse
+                if (method is null                    || method == TsVectorParse
                     || declaringType == typeof(H2DbFunctionsExtensions)
-                    || declaringType == typeof(H2FullTextSearchDbFunctionsExtensions)
-                    || declaringType == typeof(H2FullTextSearchLinqExtensions)
-                    || declaringType == typeof(H2NetworkDbFunctionsExtensions)
                     || declaringType == typeof(H2JsonDbFunctionsExtensions)
-                    || declaringType == typeof(H2RangeDbFunctionsExtensions)
                     // Prevent evaluation of ValueTuple.Create, see NewExpression of ITuple below
                     || declaringType == typeof(ValueTuple) && method.Name == nameof(ValueTuple.Create))
                 {
