@@ -52,6 +52,11 @@ public class DefaultValuesTest : IDisposable
         public DbSet<KettleChips> Chips { get; set; }
 
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder
+                .UseH2($"jdbc:h2:mem:{_databaseName}")
+                .UseInternalServiceProvider(_serviceProvider);
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
             => modelBuilder.Entity<KettleChips>()
                 .Property(e => e.BestBuyDate)

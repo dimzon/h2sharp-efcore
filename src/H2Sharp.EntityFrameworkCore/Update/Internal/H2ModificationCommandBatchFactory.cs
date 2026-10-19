@@ -3,10 +3,7 @@ using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 namespace H2Sharp.EntityFrameworkCore.Update.Internal;
 
 /// <summary>
-///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-///     any release. You should only use it directly in your code with extreme caution and knowing that
-///     doing so can result in application failures when updating to a new Entity Framework Core release.
+/// Creates the batches that carry a set of modification commands through the database.
 /// </summary>
 public class H2ModificationCommandBatchFactory : IModificationCommandBatchFactory
 {
@@ -44,5 +41,5 @@ public class H2ModificationCommandBatchFactory : IModificationCommandBatchFactor
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public virtual ModificationCommandBatch Create()
-        => new SingularModificationCommandBatch(_dependencies);
+        => new H2ModificationCommandBatch(_dependencies, _maxBatchSize);
 }

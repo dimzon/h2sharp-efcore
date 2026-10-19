@@ -6,16 +6,16 @@ namespace H2Sharp.EntityFrameworkCore.Storage;
 public class H2SqlGenerationHelperTest
 {
     [Theory]
-    [InlineData("all_lowercase", null, "all_lowercase", "all_lowercase")]
-    [InlineData("digit", null, "digit", "digit")]
-    [InlineData("under_score", null, "under_score", "under_score")]
-    [InlineData("dollar$", null, "dollar$", "dollar$")]
+    [InlineData("all_lowercase", null, "\"all_lowercase\"", "\"all_lowercase\"")]
+    [InlineData("digit", null, "\"digit\"", "\"digit\"")]
+    [InlineData("under_score", null, "\"under_score\"", "\"under_score\"")]
+    [InlineData("dollar$", null, "\"dollar$\"", "\"dollar$\"")]
     [InlineData("ALL_CAPS", null, "\"ALL_CAPS\"", "\"ALL_CAPS\"")]
     [InlineData("oneCap", null, "\"oneCap\"", "\"oneCap\"")]
     [InlineData("0starts_with_digit", null, "\"0starts_with_digit\"", "\"0starts_with_digit\"")]
-    [InlineData("all_lowercase", "all_lowercase", "all_lowercase.all_lowercase", "all_lowercase")]
-    [InlineData("all_lowercase", "oneCap", "\"oneCap\".all_lowercase", "all_lowercase")]
-    [InlineData("oneCap", "all_lowercase", "all_lowercase.\"oneCap\"", "\"oneCap\"")]
+    [InlineData("all_lowercase", "all_lowercase", "\"all_lowercase\".\"all_lowercase\"", "\"all_lowercase\"")]
+    [InlineData("all_lowercase", "oneCap", "\"oneCap\".\"all_lowercase\"", "\"all_lowercase\"")]
+    [InlineData("oneCap", "all_lowercase", "\"all_lowercase\".\"oneCap\"", "\"oneCap\"")]
     [InlineData("CAPS", "CAPS", "\"CAPS\".\"CAPS\"", "\"CAPS\"")]
     [InlineData("select", "null", "\"null\".\"select\"", "\"select\"")]
     public virtual void DelimitIdentifier_quotes_properly(

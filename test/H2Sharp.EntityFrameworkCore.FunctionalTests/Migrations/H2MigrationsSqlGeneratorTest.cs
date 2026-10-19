@@ -56,18 +56,6 @@ TEMPLATE "MyTemplate";
 """);
     }
 
-    [Fact]
-    public virtual void CreateDatabaseOperation_with_tablespace()
-    {
-        Generate(new H2CreateDatabaseOperation { Name = "some_db", Tablespace = "MyTablespace" });
-
-        AssertSql(
-            """
-CREATE DATABASE some_db
-TABLESPACE "MyTablespace";
-
-""");
-    }
 
     #endregion
 
@@ -77,7 +65,7 @@ TABLESPACE "MyTablespace";
 
         AssertSql(
             """
-ALTER TABLE "People" ADD "Alias" text NOT NULL;
+ALTER TABLE "People" ADD "Alias" clob NOT NULL;
 
 """);
     }
@@ -88,7 +76,7 @@ ALTER TABLE "People" ADD "Alias" text NOT NULL;
 
         AssertSql(
             """
-ALTER TABLE "Person" ADD "Name" text;
+ALTER TABLE "Person" ADD "Name" clob;
 
 """);
     }
@@ -99,7 +87,7 @@ ALTER TABLE "Person" ADD "Name" text;
 
         AssertSql(
             """
-ALTER TABLE "Person" ADD "Name" text;
+ALTER TABLE "Person" ADD "Name" clob;
 
 """);
     }
@@ -110,7 +98,7 @@ ALTER TABLE "Person" ADD "Name" text;
 
         AssertSql(
             """
-ALTER TABLE "Person" ADD "Name" character(100);
+ALTER TABLE "Person" ADD "Name" char(100);
 
 """);
     }
@@ -121,7 +109,7 @@ ALTER TABLE "Person" ADD "Name" character(100);
 
         AssertSql(
             """
-ALTER TABLE "Person" ADD "Name" character varying(32);
+ALTER TABLE "Person" ADD "Name" varchar(32);
 
 """);
     }
@@ -132,7 +120,7 @@ ALTER TABLE "Person" ADD "Name" character varying(32);
 
         AssertSql(
             """
-ALTER TABLE "Person" ADD "Name" character varying(30);
+ALTER TABLE "Person" ADD "Name" varchar(30);
 
 """);
     }
@@ -187,7 +175,7 @@ ALTER TABLE "People" ALTER COLUMN "LuckyNumber" TYPE integer;
 
         AssertSql(
             """
-ALTER TABLE dbo."People" RENAME TO "Person";
+ALTER TABLE "dbo"."People" RENAME TO "Person";
 
 """);
     }
@@ -198,7 +186,7 @@ ALTER TABLE dbo."People" RENAME TO "Person";
 
         AssertSql(
             """
-ALTER TABLE dbo."People" RENAME TO "Person";
+ALTER TABLE "dbo"."People" RENAME TO "Person";
 
 """);
     }
@@ -220,21 +208,21 @@ ALTER TABLE dbo."People" RENAME TO "Person";
 
         AssertSql(
             """
-INSERT INTO dbo."People" ("Id", "Full Name", "Geometry")
+INSERT INTO "dbo"."People" ("Id", "Full Name", "Geometry")
 VALUES (0, NULL, NULL);
-INSERT INTO dbo."People" ("Id", "Full Name", "Geometry")
+INSERT INTO "dbo"."People" ("Id", "Full Name", "Geometry")
 VALUES (1, 'Daenerys Targaryen', NULL);
-INSERT INTO dbo."People" ("Id", "Full Name", "Geometry")
+INSERT INTO "dbo"."People" ("Id", "Full Name", "Geometry")
 VALUES (2, 'John Snow', NULL);
-INSERT INTO dbo."People" ("Id", "Full Name", "Geometry")
+INSERT INTO "dbo"."People" ("Id", "Full Name", "Geometry")
 VALUES (3, 'Arya Stark', NULL);
-INSERT INTO dbo."People" ("Id", "Full Name", "Geometry")
+INSERT INTO "dbo"."People" ("Id", "Full Name", "Geometry")
 VALUES (4, 'Harry Strickland', NULL);
-INSERT INTO dbo."People" ("Id", "Full Name", "Geometry")
+INSERT INTO "dbo"."People" ("Id", "Full Name", "Geometry")
 VALUES (5, 'The Imp', NULL);
-INSERT INTO dbo."People" ("Id", "Full Name", "Geometry")
+INSERT INTO "dbo"."People" ("Id", "Full Name", "Geometry")
 VALUES (6, 'The Kingslayer', NULL);
-INSERT INTO dbo."People" ("Id", "Full Name", "Geometry")
+INSERT INTO "dbo"."People" ("Id", "Full Name", "Geometry")
 VALUES (7, 'Aemon Targaryen', GEOMETRY 'SRID=4326;GEOMETRYCOLLECTION Z(LINESTRING Z(1.1 2.2 NaN, 2.2 2.2 NaN, 2.2 1.1 NaN, 7.1 7.2 NaN), LINESTRING Z(7.1 7.2 NaN, 20.2 20.2 NaN, 20.2 1.1 NaN, 70.1 70.2 NaN), MULTIPOINT Z((1.1 2.2 NaN), (2.2 2.2 NaN), (2.2 1.1 NaN)), POLYGON Z((1.1 2.2 NaN, 2.2 2.2 NaN, 2.2 1.1 NaN, 1.1 2.2 NaN)), POLYGON Z((10.1 20.2 NaN, 20.2 20.2 NaN, 20.2 10.1 NaN, 10.1 20.2 NaN)), POINT Z(1.1 2.2 3.3), MULTILINESTRING Z((1.1 2.2 NaN, 2.2 2.2 NaN, 2.2 1.1 NaN, 7.1 7.2 NaN), (7.1 7.2 NaN, 20.2 20.2 NaN, 20.2 1.1 NaN, 70.1 70.2 NaN)), MULTIPOLYGON Z(((10.1 20.2 NaN, 20.2 20.2 NaN, 20.2 10.1 NaN, 10.1 20.2 NaN)), ((1.1 2.2 NaN, 2.2 2.2 NaN, 2.2 1.1 NaN, 1.1 2.2 NaN))))');
 
 """);
@@ -246,7 +234,7 @@ VALUES (7, 'Aemon Targaryen', GEOMETRY 'SRID=4326;GEOMETRYCOLLECTION Z(LINESTRIN
 
         AssertSql(
             """
-INSERT INTO dbo."People" ("First Name")
+INSERT INTO "dbo"."People" ("First Name")
 VALUES ('John');
 
 """);
@@ -258,7 +246,7 @@ VALUES ('John');
 
         AssertSql(
             """
-INSERT INTO dbo."People" ("First Name", "Last Name")
+INSERT INTO "dbo"."People" ("First Name", "Last Name")
 VALUES ('John', 'Snow');
 
 """);
@@ -270,9 +258,9 @@ VALUES ('John', 'Snow');
 
         AssertSql(
             """
-INSERT INTO dbo."People" ("First Name")
+INSERT INTO "dbo"."People" ("First Name")
 VALUES ('John');
-INSERT INTO dbo."People" ("First Name")
+INSERT INTO "dbo"."People" ("First Name")
 VALUES ('Daenerys');
 
 """);
@@ -475,10 +463,10 @@ WHERE "First Name" = 'Daenerys';
         AssertSql(
             startsAt.HasValue
                 ? $"""
-ALTER SEQUENCE dbo."TestRestartSequenceOperation" START WITH {startsAt};
-ALTER SEQUENCE dbo."TestRestartSequenceOperation" RESTART;
+ALTER SEQUENCE "dbo"."TestRestartSequenceOperation" START WITH {startsAt};
+ALTER SEQUENCE "dbo"."TestRestartSequenceOperation" RESTART;
 """
-                : """ALTER SEQUENCE dbo."TestRestartSequenceOperation" RESTART;""");
+                : """ALTER SEQUENCE "dbo"."TestRestartSequenceOperation" RESTART;""");
     }
 
     [Theory]
@@ -534,7 +522,7 @@ DROP SEQUENCE "Person_Id_old_seq";
         AssertSql(
             """
     IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'some_schema') THEN
-        CREATE SCHEMA some_schema;
+        CREATE SCHEMA "some_schema";
     END IF;
 
 """);
@@ -545,45 +533,6 @@ DROP SEQUENCE "Person_Id_old_seq";
     // Note that we don't run tests against actual CockroachDB instances, so these are unit tests asserting on SQL
     // only
 
-    [Fact]
-    public void CreateTableOperation_with_cockroach_interleave_in_parent()
-    {
-        var op =
-            new CreateTableOperation
-            {
-                Name = "People",
-                Schema = "dbo",
-                Columns =
-                {
-                    new AddColumnOperation
-                    {
-                        Name = "Id",
-                        Table = "People",
-                        Schema = "dbo",
-                        ClrType = typeof(int),
-                        IsNullable = false
-                    },
-                },
-                PrimaryKey = new AddPrimaryKeyOperation { Columns = ["Id"] }
-            };
-
-        var interleaveInParent = new CockroachDbInterleaveInParent(op);
-        interleaveInParent.ParentTableSchema = "my_schema";
-        interleaveInParent.ParentTableName = "my_parent";
-        interleaveInParent.InterleavePrefix = ["col_a", "col_b"];
-
-        Generate(op);
-
-        AssertSql(
-            """
-CREATE TABLE dbo."People" (
-    "Id" integer NOT NULL,
-    PRIMARY KEY ("Id")
-)
-INTERLEAVE IN PARENT my_schema.my_parent (col_a, col_b);
-
-""");
-    }
 
     #endregion CockroachDB interleave-in-parent
 

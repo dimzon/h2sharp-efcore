@@ -12,8 +12,8 @@ public class H2HistoryRepositoryTest
         Assert.Equal(
             """
 CREATE TABLE "__EFMigrationsHistory" (
-    "MigrationId" character varying(150) NOT NULL,
-    "ProductVersion" character varying(32) NOT NULL,
+    "MigrationId" varchar(150) NOT NULL,
+    "ProductVersion" varchar(32) NOT NULL,
     CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
 );
 
@@ -30,12 +30,12 @@ CREATE TABLE "__EFMigrationsHistory" (
 DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'my') THEN
-        CREATE SCHEMA my;
+        CREATE SCHEMA "my";
     END IF;
 END $EF$;
-CREATE TABLE my."__EFMigrationsHistory" (
-    "MigrationId" character varying(150) NOT NULL,
-    "ProductVersion" character varying(32) NOT NULL,
+CREATE TABLE "my"."__EFMigrationsHistory" (
+    "MigrationId" varchar(150) NOT NULL,
+    "ProductVersion" varchar(32) NOT NULL,
     CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
 );
 
@@ -50,8 +50,8 @@ CREATE TABLE my."__EFMigrationsHistory" (
         Assert.Equal(
             """
 CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
-    "MigrationId" character varying(150) NOT NULL,
-    "ProductVersion" character varying(32) NOT NULL,
+    "MigrationId" varchar(150) NOT NULL,
+    "ProductVersion" varchar(32) NOT NULL,
     CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
 );
 
@@ -68,12 +68,12 @@ CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
 DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'my') THEN
-        CREATE SCHEMA my;
+        CREATE SCHEMA "my";
     END IF;
 END $EF$;
-CREATE TABLE IF NOT EXISTS my."__EFMigrationsHistory" (
-    "MigrationId" character varying(150) NOT NULL,
-    "ProductVersion" character varying(32) NOT NULL,
+CREATE TABLE IF NOT EXISTS "my"."__EFMigrationsHistory" (
+    "MigrationId" varchar(150) NOT NULL,
+    "ProductVersion" varchar(32) NOT NULL,
     CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
 );
 

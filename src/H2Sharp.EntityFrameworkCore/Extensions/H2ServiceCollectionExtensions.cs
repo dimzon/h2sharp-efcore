@@ -98,7 +98,7 @@ public static class H2ServiceCollectionExtensions
             .TryAdd<IMigrator, H2Migrator>()
             .TryAdd<IProviderConventionSetBuilder, H2ConventionSetBuilder>()
             .TryAdd<IUpdateSqlGenerator, H2UpdateSqlGenerator>()
-            .TryAdd<IModificationCommandFactory, H2ModificationCommandFactory>()
+
             .TryAdd<IModificationCommandBatchFactory, H2ModificationCommandBatchFactory>()
             .TryAdd<IValueGeneratorSelector, H2ValueGeneratorSelector>()
             .TryAdd<IRelationalConnection>(p => p.GetRequiredService<IH2RelationalConnection>())

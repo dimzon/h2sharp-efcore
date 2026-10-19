@@ -90,17 +90,11 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
     /// <inheritdoc />
     public override void Delete()
     {
-        if (Schema is not { } schema)
-        {
-            throw new InvalidOperationException(
-                "Dropping the engine default schema is not supported: H2 has no way to remove PUBLIC, " +
-                "and dropping it would take the session's own unqualified object namespace with it. " +
-                "Set a schema on the model if you want this creator to manage its lifetime.");
-        }
-
-        // DROP ALL OBJECTS removes the schema's contents but leaves the schema itself; the DROP does that.
-        Execute($"DROP ALL OBJECTS {_sqlGenerationHelper.DelimitIdentifier(schema)}");
-        Execute($"DROP SCHEMA {_sqlGenerationHelper.DelimitIdentifier(schema)} CASCADE");
+        // H2 has no database to drop: the schema is part of the connection's URL, and what a "delete
+        // the database" means for it is the objects in it. DROP ALL OBJECTS removes everything the
+        // session can see and leaves the schema in place for the next EnsureCreated, which is the
+        // closest thing H2 has to dropping the database.
+        Execute("DROP ALL OBJECTS");
     }
 
     /// <inheritdoc />
