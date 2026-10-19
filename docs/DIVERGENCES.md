@@ -11,9 +11,9 @@
 
 | Набор | Прошло | Упало | Всего |
 |---|---:|---:|---:|
-| `H2Sharp.EntityFrameworkCore.FunctionalTests` | 932 | 177 | 1109 |
+| `H2Sharp.EntityFrameworkCore.FunctionalTests` | 938 | 175 | 1115 |
 | `H2Sharp.EntityFrameworkCore.Tests` | 111 | 0 | 111 |
-| **Итого** | **1043** | **177** | **1220** |
+| **Итого** | **1049** | **175** | **1226** |
 
 Оставшиеся два — не сбой провайдера.
 
@@ -175,3 +175,68 @@ EF-овым (полнотекстовый поиск `tsvector`, `CREATE COLLATI
 `H2DatabaseCreator.Delete()`, и в `H2DatabaseCleaner`, и в тестовом сторе. Для тестов этого
 достаточно — имена таблиц известны, — но для скаффолдинга не хватает: там таблицы перечисляет
 **база**, а не модель.
+## Встроенные функции H2: что выставлено провайдером
+
+Список функций взят не из памяти, а из исходников эталонной H2
+(`h2/src/main/org/h2/expression/function/BuiltinFunctions.java` — тот же список, что у
+движка в `BuiltinFunctions.cs`).
+
+| Множество | Сколько |
+|---|---:|
+| документировано в H2 2.5 | 146 |
+| портировано в H2Sharp | 96 |
+| выставлено провайдером через `H2DbFunctionsExtensions` | 54 метода / 56 функций |
+| закрыто переводами самого EF Core (`System.Math`, строковые методы, `coalesce`, `nullif`, `greatest`) | ~40 |
+
+Функция не выставляется, если движок её не читает: выставленная функция, которая падает на
+сервере, хуже отсутствующей. Каждая из 56 проверена пробой против движка.
+
+### Что выставлено
+
+| Группа | Функции |
+|---|---|
+| даты и время | `DATEADD`, `DATEDIFF`, `DATE_TRUNC`, `EXTRACT` (через `YEAR`/`MONTH`/`DAY`/`DAY_OF_MONTH`/`DAY_OF_WEEK`/`DAY_OF_YEAR`/`HOUR`/`MINUTE`/`SECOND`/`QUARTER`/`WEEK`), `DAYNAME`, `MONTHNAME` |
+| строки | `LOCATE`, `LPAD`, `RPAD`, `TRANSLATE`, `REPEAT`, `SPACE`, `QUOTE_IDENT`, `SOUNDEX`, `DIFFERENCE`, `INSERT`, `ASCII`, `CHAR`, `CHR`, `STRINGDECODE`, `STRINGENCODE`, `CONCAT_WS` |
+| двоичные | `STRINGTOUTF8`, `UTF8TOSTRING`, `HEXTORAW`, `RAWTOHEX`, `COMPRESS`, `EXPAND` |
+| числа | `SIGN`, `TRUNC`, `TRUNCATE`, `COT`, `ROUNDMAGIC` |
+| биты | `BITAND`, `BITOR`, `BITXOR`, `BITNOT`, `BITNAND`, `BITNOR`, `BITXNOR`, `BITGET`, `BITCOUNT`, `LSHIFT`, `RSHIFT`, `ULSHIFT`, `URSHIFT`, `ROTATELEFT`, `ROTATERIGHT` |
+
+Две особенности, о которых надо знать:
+
+- **`LOCATE` берёт подстроку первой.** H2 — единственная из SQL, где `LOCATE(подстрока, строка)`,
+  а не как везде. Переводчик меняет порядок аргументов; в C# подпись сделана как у EF —
+  `Locate(value, substring)`.
+- **Часть даты берётся своей функцией на каждое поле.** H2 не имеет `EXTRACT(field FROM x)` как
+  единой формы, поэтому `Extract("YEAR", x)` переводится в `YEAR(x)`.
+
+### Что движок ещё не портировал (50 функций)
+
+`TO_CHAR`, `FORMATDATETIME`, `PARSEDATETIME`, `REGEXP_LIKE`, `REGEXP_REPLACE`, `REGEXP_SUBSTR`,
+`XMLATTR`, `XMLCDATA`, `XMLCOMMENT`, `XMLNODE`, `XMLSTARTDOC`, `XMLTEXT`, `TRIM_ARRAY`,
+`ARRAY_CONTAINS`, `ARRAY_SLICE`, `JSON_OBJECT`, `JSON_ARRAY`, `ENCRYPT`, `DECRYPT`, `HASH`,
+`ORA_HASH`, `ABORT_SESSION`, `CANCEL_SESSION`, `AUTOCOMMIT`, `DATABASE_PATH`, `H2VERSION`,
+`LOCK_MODE`, `LOCK_TIMEOUT`, `MEMORY_FREE`, `MEMORY_USED`, `READONLY`, `SESSION_ID`,
+`TRANSACTION_ID`, `DISK_SPACE_USED`, `ESTIMATED_ENVELOPE`, `FILE_READ`, `FILE_WRITE`,
+`DATA_TYPE_SQL`, `DB_OBJECT_ID`, `DB_OBJECT_SQL`, `CSVWRITE`, `SIGNAL`, `TRUNCATE_VALUE`,
+`CURRVAL`, `NEXTVAL`, `CSVREAD`, `TABLE_DISTINCT`, `LINK_SCHEMA`, `ZERO`, `PI`.
+
+Когда движок их дотянет, они belong в `H2DbFunctionsExtensions` — место для них там уже есть.
+
+### Дефекты провайдера, которые вскрылись при этом
+
+| Что | Было | Стало |
+|---|---|---|
+| `Guid.NewGuid()` | `gen_random_uuid()` — функции PostgreSQL, у H2 нет | `RANDOM_UUID()` |
+| `string.IndexOf` | `strpos(...)` — функции PostgreSQL, у H2 нет | `LOCATE(...)` с обратным порядком аргументов |
+| `DateTime.AddDays` и прочая арифметика дат | `INTERVAL '1 days'` и `CAST($1 \|\| ' days' AS interval)` — движок не читает ни того, ни другого | `TIMESTAMPADD('DAY', 1, x)` |
+| `EnsureDeleted()` при подключении строкой | `H2DatabaseCreator` открывал соединение сырой ADO-строкой, а движок ждёт URL | перевод через `H2RelationalConnection.H2Url` |
+| `Reverse`, `StringToArray`, `ToDate`, `ToTimestamp`, `Distance` | методы в `DbFunctions`, которые никогда не переводились и всегда падали | убраны: таких функций в H2 нет |
+
+### Два новых пробела движка
+
+- **`AS` перед алиасом таблицы не разбирается.** `SELECT a.Id FROM T3 a` — работает,
+  `SELECT a.Id FROM T3 AS a` — нет: `Синтаксическая ошибка ... FROM T3 AS [*]a`. EF строит
+  `FROM "Rows" AS "r"` в каждом запросе, то есть **ни один запрос EF не выполняется**, пока
+  движок это не прочитает. Это самый дорогой пробел из всех.
+- **Литерал типа `TIMESTAMP '2020-01-01 00:00:00'` не разбирается.** Даты приходится брать
+  из столбца, а не из литерала.

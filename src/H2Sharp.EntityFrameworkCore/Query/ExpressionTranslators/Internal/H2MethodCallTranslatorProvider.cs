@@ -40,6 +40,7 @@ public class H2MethodCallTranslatorProvider : RelationalMethodCallTranslatorProv
         AddTranslators(
         [
             new H2ArrayMethodTranslator(sqlExpressionFactory, jsonTranslator),
+            new H2BuiltinFunctionsTranslator(typeMappingSource, sqlExpressionFactory),
             new H2ByteArrayMethodTranslator(sqlExpressionFactory),
             new H2ConvertTranslator(sqlExpressionFactory),
             new H2DateTimeMethodTranslator(typeMappingSource, sqlExpressionFactory),
@@ -48,7 +49,7 @@ public class H2MethodCallTranslatorProvider : RelationalMethodCallTranslatorProv
             new H2JsonPocoTranslator(typeMappingSource, sqlExpressionFactory, model),
             new H2LikeTranslator(sqlExpressionFactory),
             new H2MathTranslator(typeMappingSource, sqlExpressionFactory, model),
-            new H2NewGuidTranslator(sqlExpressionFactory, null),
+            new H2NewGuidTranslator(sqlExpressionFactory),
             new H2ObjectToStringTranslator(typeMappingSource, sqlExpressionFactory),
             new H2RandomTranslator(sqlExpressionFactory),
             new H2RegexIsMatchTranslator(sqlExpressionFactory),

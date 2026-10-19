@@ -1,5 +1,6 @@
 using H2Sharp.EntityFrameworkCore.Query.Expressions;
 using H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
+using static H2Sharp.EntityFrameworkCore.Utilities.Statics;
 
 namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 
@@ -13,25 +14,25 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
 {
     private static readonly Dictionary<MethodInfo, string> MethodInfoDatePartMapping = new()
     {
-        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddYears), [typeof(int)])!, "years" },
-        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddMonths), [typeof(int)])!, "months" },
-        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddDays), [typeof(double)])!, "days" },
-        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddHours), [typeof(double)])!, "hours" },
-        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddMinutes), [typeof(double)])!, "mins" },
-        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddSeconds), [typeof(double)])!, "secs" },
+        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddYears), [typeof(int)])!, "YEAR" },
+        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddMonths), [typeof(int)])!, "MONTH" },
+        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddDays), [typeof(double)])!, "DAY" },
+        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddHours), [typeof(double)])!, "HOUR" },
+        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddMinutes), [typeof(double)])!, "MINUTE" },
+        { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddSeconds), [typeof(double)])!, "SECOND" },
         //{ typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddMilliseconds), new[] { typeof(double) })!, "milliseconds" },
 
-        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddYears), [typeof(int)])!, "years" },
-        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMonths), [typeof(int)])!, "months" },
-        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddDays), [typeof(double)])!, "days" },
-        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddHours), [typeof(double)])!, "hours" },
-        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMinutes), [typeof(double)])!, "mins" },
-        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddSeconds), [typeof(double)])!, "secs" },
+        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddYears), [typeof(int)])!, "YEAR" },
+        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMonths), [typeof(int)])!, "MONTH" },
+        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddDays), [typeof(double)])!, "DAY" },
+        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddHours), [typeof(double)])!, "HOUR" },
+        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMinutes), [typeof(double)])!, "MINUTE" },
+        { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddSeconds), [typeof(double)])!, "SECOND" },
         //{ typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMilliseconds), new[] { typeof(double) })!, "milliseconds" }
 
         // DateOnly.AddDays, AddMonths and AddYears have a specialized translation, see below
-        { typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.AddHours), [typeof(int)])!, "hours" },
-        { typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.AddMinutes), [typeof(int)])!, "mins" },
+        { typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.AddHours), [typeof(int)])!, "HOUR" },
+        { typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.AddMinutes), [typeof(int)])!, "MINUTE" },
     };
 
     // ReSharper disable InconsistentNaming
@@ -44,9 +45,6 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
     private static readonly MethodInfo DateTime_SpecifyKind
         = typeof(DateTime).GetRuntimeMethod(nameof(DateTime.SpecifyKind), [typeof(DateTime), typeof(DateTimeKind)])!;
 
-    private static readonly MethodInfo DateTime_Distance
-        = typeof(H2DbFunctionsExtensions).GetRuntimeMethod(
-            nameof(H2DbFunctionsExtensions.Distance), [typeof(DbFunctions), typeof(DateTime), typeof(DateTime)])!;
 
     private static readonly MethodInfo DateOnly_FromDateTime
         = typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.FromDateTime), [typeof(DateTime)])!;
@@ -54,9 +52,6 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
     private static readonly MethodInfo DateOnly_ToDateTime
         = typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.ToDateTime), [typeof(TimeOnly)])!;
 
-    private static readonly MethodInfo DateOnly_Distance
-        = typeof(H2DbFunctionsExtensions).GetRuntimeMethod(
-            nameof(H2DbFunctionsExtensions.Distance), [typeof(DbFunctions), typeof(DateOnly), typeof(DateOnly)])!;
 
     private static readonly MethodInfo DateOnly_AddDays
         = typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.AddDays), [typeof(int)])!;
@@ -141,8 +136,7 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
         IReadOnlyList<SqlExpression> arguments)
         => instance is not null
             && MethodInfoDatePartMapping.TryGetValue(method, out var datePart)
-            && CreateIntervalExpression(arguments[0], datePart) is SqlExpression interval
-                ? _sqlExpressionFactory.Add(instance, interval, instance.TypeMapping)
+                ? TimestampAdd(instance, arguments[0], datePart)
                 : null;
 
     private SqlExpression? TranslateDateTime(
@@ -181,10 +175,6 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
                 }
             }
 
-            if (method == DateTime_Distance)
-            {
-                return _sqlExpressionFactory.MakePostgresBinary(PgExpressionType.Distance, arguments[1], arguments[2]);
-            }
         }
         else
         {
@@ -226,10 +216,6 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
                 return _sqlExpressionFactory.Convert(dateTime, typeof(DateOnly), _typeMappingSource.FindMapping(typeof(DateOnly)));
             }
 
-            if (method == DateOnly_Distance)
-            {
-                return _sqlExpressionFactory.MakePostgresBinary(PgExpressionType.Distance, arguments[1], arguments[2]);
-            }
 
             if (method == DateOnly_FromDayNumber)
             {
@@ -255,26 +241,19 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
                     _timestampMapping);
             }
 
-            // In PG, date + int = date (int interpreted as days)
             if (method == DateOnly_AddDays)
             {
-                return _sqlExpressionFactory.Add(instance, arguments[0]);
+                return TimestampAdd(instance, arguments[0], "DAY");
             }
 
-            // For months and years, date + interval yields a timestamp (since interval could have a time component), so we need to cast
-            // the results back to date
-            if (method == DateOnly_AddMonths
-                && CreateIntervalExpression(arguments[0], "months") is SqlExpression interval1)
+            if (method == DateOnly_AddMonths)
             {
-                return _sqlExpressionFactory.Convert(
-                    _sqlExpressionFactory.Add(instance, interval1, instance.TypeMapping), typeof(DateOnly));
+                return TimestampAdd(instance, arguments[0], "MONTH");
             }
 
-            if (method == DateOnly_AddYears
-                && CreateIntervalExpression(arguments[0], "years") is SqlExpression interval2)
+            if (method == DateOnly_AddYears)
             {
-                return _sqlExpressionFactory.Convert(
-                    _sqlExpressionFactory.Add(instance, interval2, instance.TypeMapping), typeof(DateOnly));
+                return TimestampAdd(instance, arguments[0], "YEAR");
             }
         }
 
@@ -367,35 +346,19 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
         return null;
     }
 
-    private SqlExpression? CreateIntervalExpression(SqlExpression intervalNum, string datePart)
-    {
-        // Note: ideally we'd simply generate a PostgreSQL interval expression, but the .NET mapping of that is TimeSpan,
-        // which does not work for months, years, etc. So we generate special fragments instead.
-        if (intervalNum is SqlConstantExpression constantExpression)
-        {
-            // We generate constant intervals as INTERVAL '1 days'
-            if (constantExpression.Type == typeof(double)
-                && ((double)constantExpression.Value! >= int.MaxValue || (double)constantExpression.Value <= int.MinValue))
-            {
-                return null;
-            }
-
-            return _sqlExpressionFactory.Fragment(FormattableString.Invariant($"INTERVAL '{constantExpression.Value} {datePart}'"));
-        }
-
-        // For non-constants, we can't parameterize INTERVAL '1 days'. Instead, we use CAST($1 || ' days' AS interval).
-        // Note that a make_interval() function also exists, but accepts only int (for all fields except for
-        // seconds), so we don't use it.
-        // Note: we instantiate SqlBinaryExpression manually rather than via sqlExpressionFactory because
-        // of the non-standard Add expression (concatenate int with text)
-        return _sqlExpressionFactory.Convert(
-            new SqlBinaryExpression(
-                ExpressionType.Add,
-                _sqlExpressionFactory.Convert(intervalNum, typeof(string), _textMapping),
-                _sqlExpressionFactory.Constant(' ' + datePart, _textMapping),
-                typeof(string),
-                _textMapping),
-            typeof(TimeSpan),
-            _intervalMapping);
-    }
-}
+    /// <summary>
+    ///     Adds to a date or timestamp.
+    /// </summary>
+    /// <remarks>
+    ///     H2 has no interval literal: <c>INTERVAL '1 days'</c> is PostgreSQL's way of saying it, and
+    ///     the engine reads neither that nor the <c>CAST(... AS interval)</c> PostgreSQL uses for an
+    ///     interval that is not a constant. H2 adds with <c>TIMESTAMPADD</c>, which takes the unit
+    ///     as a string and the amount as a number.
+    /// </remarks>
+    private SqlExpression TimestampAdd(SqlExpression instance, SqlExpression amount, string unit)
+        => _sqlExpressionFactory.Function(
+            "TIMESTAMPADD",
+            [_sqlExpressionFactory.Constant(unit, _textMapping), amount, instance],
+            nullable: true,
+            argumentsPropagateNullability: TrueArrays[3],
+            instance.Type);}

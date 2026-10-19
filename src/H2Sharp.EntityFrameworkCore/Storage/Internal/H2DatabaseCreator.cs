@@ -193,7 +193,7 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
                 $"{nameof(H2DatabaseCreator)} needs a connection string: an H2 database is addressed by " +
                 "URL, and a context configured with a bare DbConnection instance cannot be duplicated here.");
 
-        var connection = new H2Connection(connectionString);
+        var connection = new H2Connection(H2RelationalConnection.H2Url(connectionString));
         connection.Open();
         return connection;
     }

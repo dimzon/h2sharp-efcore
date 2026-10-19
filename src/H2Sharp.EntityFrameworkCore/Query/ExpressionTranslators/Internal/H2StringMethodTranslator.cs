@@ -69,20 +69,10 @@ public class H2StringMethodTranslator : IMethodCallTranslator
     private static readonly MethodInfo TrimStartWithSingleChar =
         typeof(string).GetRuntimeMethod(nameof(string.TrimStart), [typeof(char)])!;
 
-    private static readonly MethodInfo Reverse = typeof(H2DbFunctionsExtensions).GetRuntimeMethod(
-        nameof(H2DbFunctionsExtensions.Reverse), [typeof(DbFunctions), typeof(string)])!;
 
-    private static readonly MethodInfo StringToArray = typeof(H2DbFunctionsExtensions).GetRuntimeMethod(
-        nameof(H2DbFunctionsExtensions.StringToArray), [typeof(DbFunctions), typeof(string), typeof(string)])!;
 
-    private static readonly MethodInfo StringToArrayNullString = typeof(H2DbFunctionsExtensions).GetRuntimeMethod(
-        nameof(H2DbFunctionsExtensions.StringToArray), [typeof(DbFunctions), typeof(string), typeof(string), typeof(string)])!;
 
-    private static readonly MethodInfo ToDate = typeof(H2DbFunctionsExtensions).GetRuntimeMethod(
-        nameof(H2DbFunctionsExtensions.ToDate), [typeof(DbFunctions), typeof(string), typeof(string)])!;
 
-    private static readonly MethodInfo ToTimestamp = typeof(H2DbFunctionsExtensions).GetRuntimeMethod(
-        nameof(H2DbFunctionsExtensions.ToTimestamp), [typeof(DbFunctions), typeof(string), typeof(string)])!;
 
     private static readonly MethodInfo FirstOrDefaultMethodInfoWithoutArgs
         = typeof(Enumerable).GetRuntimeMethods().Single(
@@ -207,7 +197,7 @@ public class H2StringMethodTranslator : IMethodCallTranslator
 
             return _sqlExpressionFactory.Subtract(
                 _sqlExpressionFactory.Function(
-                    "strpos",
+                    "LOCATE",
                     [
                         _sqlExpressionFactory.ApplyTypeMapping(instance!, stringTypeMapping),
                         _sqlExpressionFactory.ApplyTypeMapping(argument, stringTypeMapping)
@@ -392,64 +382,10 @@ public class H2StringMethodTranslator : IMethodCallTranslator
 
     private SqlExpression? TranslateDbFunctionsMethod(SqlExpression? instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
     {
-        if (method == Reverse)
-        {
-            return _sqlExpressionFactory.Function(
-                "reverse",
-                [arguments[1]],
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[1],
-                typeof(string),
-                arguments[1].TypeMapping);
-        }
 
-        if (method == StringToArray)
-        {
-            // Note that string_to_array always returns text[], regardless of the input type
-            return _sqlExpressionFactory.Function(
-                "string_to_array",
-                [arguments[1], arguments[2]],
-                nullable: true,
-                argumentsPropagateNullability: [true, false],
-                typeof(string[]),
-                _typeMappingSource.FindMapping(typeof(string[])));
-        }
 
-        if (method == StringToArrayNullString)
-        {
-            // Note that string_to_array always returns text[], regardless of the input type
-            return _sqlExpressionFactory.Function(
-                "string_to_array",
-                [arguments[1], arguments[2], arguments[3]],
-                nullable: true,
-                argumentsPropagateNullability: [true, false, false],
-                typeof(string[]),
-                _typeMappingSource.FindMapping(typeof(string[])));
-        }
 
-        if (method == ToDate)
-        {
-            return _sqlExpressionFactory.Function(
-                "to_date",
-                [arguments[1], arguments[2]],
-                nullable: true,
-                argumentsPropagateNullability: [true, true],
-                typeof(DateOnly),
-                _typeMappingSource.FindMapping(typeof(DateOnly))
-            );
-        }
 
-        if (method == ToTimestamp)
-        {
-            return _sqlExpressionFactory.Function(
-                "to_timestamp",
-                [arguments[1], arguments[2]],
-                nullable: true,
-                argumentsPropagateNullability: [true, true],
-                typeof(DateTime),
-                _typeMappingSource.FindMapping(typeof(DateTime))
-            );
-        }
 
         return null;
     }

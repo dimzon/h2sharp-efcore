@@ -13,7 +13,7 @@ public class H2NewGuidTranslator : IMethodCallTranslator
     private static readonly MethodInfo MethodInfo = typeof(Guid).GetRuntimeMethod(nameof(Guid.NewGuid), [])!;
 
     private readonly ISqlExpressionFactory _sqlExpressionFactory;
-    private readonly string _uuidGenerationFunction;
+    private const string UuidGenerationFunction = "RANDOM_UUID";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -21,10 +21,9 @@ public class H2NewGuidTranslator : IMethodCallTranslator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public H2NewGuidTranslator(ISqlExpressionFactory sqlExpressionFactory, Version? postgresVersion)
+    public H2NewGuidTranslator(ISqlExpressionFactory sqlExpressionFactory)
     {
         _sqlExpressionFactory = sqlExpressionFactory;
-        _uuidGenerationFunction = postgresVersion.AtLeast(13) ? "gen_random_uuid" : "uuid_generate_v4";
     }
 
     /// <summary>
@@ -40,7 +39,7 @@ public class H2NewGuidTranslator : IMethodCallTranslator
         IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         => MethodInfo.Equals(method)
             ? _sqlExpressionFactory.Function(
-                _uuidGenerationFunction,
+                UuidGenerationFunction,
                 [],
                 nullable: false,
                 argumentsPropagateNullability: FalseArrays[0],
