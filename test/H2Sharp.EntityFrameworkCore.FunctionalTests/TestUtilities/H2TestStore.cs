@@ -153,37 +153,6 @@ public class H2TestStore : RelationalTestStore
         return true;
     }
 
-    private static async Task WaitForExistsAsync(H2Connection connection)
-    {
-        var retryCount = 0;
-        while (true)
-        {
-            try
-            {
-                if (connection.State != ConnectionState.Closed)
-                {
-                    await connection.CloseAsync();
-                }
-
-                H2Connection.ClearPool(connection);
-
-                await connection.OpenAsync();
-                await connection.CloseAsync();
-                return;
-            }
-            catch (PostgresException e)
-            {
-                if (++retryCount >= 30
-                    || e.SqlState != "08001" && e.SqlState != "08000" && e.SqlState != "08006")
-                {
-                    throw;
-                }
-
-                await Task.Delay(100);
-            }
-        }
-    }
-
     // ReSharper disable once MemberCanBePrivate.Global
     public void ExecuteScript(string scriptPath)
     {
@@ -202,34 +171,17 @@ public class H2TestStore : RelationalTestStore
                 return 0;
             }, "");
     }
-
-    private static string GetCreateDatabaseStatement(string name)
-        => $"""
-            CREATE DATABASE "{name}"
-            """;
-
-    private static async Task<bool> DatabaseExistsAsync(string name)
-    {
-        await using var master = new H2Connection(CreateAdminConnectionString());
-
-        return await ExecuteScalarAsync<long>(master, $@"SELECT COUNT(*) FROM pg_database WHERE datname = '{name}'") > 0;
-    }
-
     public async Task DeleteDatabaseAsync()
     {
-        if (!await DatabaseExistsAsync(Name))
+        // H2 has no database to drop: the objects go, and the database itself goes with the last
+        // connection. DROP ALL OBJECTS is what clears the schema the test created.
+        if (Connection.State != ConnectionState.Open)
         {
-            return;
+            await Connection.OpenAsync();
         }
 
-        await using var master = new H2Connection(CreateAdminConnectionString());
-
-        await ExecuteNonQueryAsync(master, GetDisconnectDatabaseSql(Name));
-        await ExecuteNonQueryAsync(master, GetDropDatabaseSql(Name));
-
-        H2Connection.ClearAllPools();
+        await ExecuteNonQueryAsync(Connection, "DROP ALL OBJECTS");
     }
-
     // Kill all connection to the database
     private static string GetDisconnectDatabaseSql(string name)
         => $"""
@@ -238,11 +190,6 @@ SELECT pg_terminate_backend (pg_stat_activity.pid)
    FROM pg_stat_activity
    WHERE datname = '{name}'
 """;
-
-    private static string GetDropDatabaseSql(string name)
-        => $"""
-            DROP DATABASE "{name}"
-            """;
 
     public override void OpenConnection()
         => Connection.Open();
