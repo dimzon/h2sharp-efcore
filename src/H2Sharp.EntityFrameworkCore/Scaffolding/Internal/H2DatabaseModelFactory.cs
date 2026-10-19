@@ -1,6 +1,7 @@
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using H2Sharp.EntityFrameworkCore.Storage.Internal;
 
 namespace H2Sharp.EntityFrameworkCore.Scaffolding.Internal;
 
@@ -46,7 +47,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         Check.NotEmpty(connectionString, nameof(connectionString));
         Check.NotNull(options, nameof(options));
 
-        using var connection = new H2Sharp.Data.H2Connection(connectionString);
+        using var connection = new H2Sharp.Data.H2Connection(H2RelationalConnection.H2Url(connectionString));
         return Create(connection, options);
     }
 

@@ -1492,23 +1492,25 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         {
             if (operation.IsNullable)
             {
-                throw new NotSupportedException("SERIAL columns can't be nullable");
+                throw new NotSupportedException("Identity columns can't be nullable");
             }
 
+            // H2 has no serial, bigserial or smallserial. An auto-generated integer column is declared as
+            // GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY, and the integer type is spelled the H2 way.
             switch (operation.ColumnType)
             {
                 case "int":
                 case "int4":
                 case "integer":
-                    operation.ColumnType = "serial";
+                    operation.ColumnType = "integer";
                     break;
                 case "bigint":
                 case "int8":
-                    operation.ColumnType = "bigserial";
+                    operation.ColumnType = "bigint";
                     break;
                 case "smallint":
                 case "int2":
-                    operation.ColumnType = "smallserial";
+                    operation.ColumnType = "smallint";
                     break;
             }
         }

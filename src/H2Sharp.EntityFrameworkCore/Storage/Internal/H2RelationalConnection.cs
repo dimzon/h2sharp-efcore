@@ -56,7 +56,50 @@ public class H2RelationalConnection : RelationalConnection, IH2RelationalConnect
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override DbConnection CreateDbConnection()
-        => new H2Connection(ConnectionString!);
+        // H2Connection takes an H2 URL, not an ADO.NET connection string. "Data Source=mem:x" is the
+        // spelling the rest of .NET uses and the one an application will hand to UseH2, so it is
+        // translated here; passing it through unchanged makes the engine's URL parser fail on the
+        // "Data Source=" prefix rather than on anything the caller wrote wrong.
+        => new H2Connection(H2Url(ConnectionString));
+
+    /// <summary>
+    ///     The H2 URL for an ADO.NET connection string.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         H2Connection takes an H2 URL, not an ADO.NET connection string. "Data Source=mem:x" is the
+    ///         spelling the rest of .NET uses and the one an application hands to UseH2, so it is
+    ///         translated here; passing it through unchanged makes the engine's URL parser fail on the
+    ///         "Data Source=" prefix rather than on anything the caller wrote wrong.
+    ///     </para>
+    ///     <para>
+    ///         An H2 URL also carries settings -- MODE=PostgreSQL, DATABASE_TO_LOWER, DB_CLOSE_DELAY and
+    ///         so on. Those arrive as further keys of the connection string, so the translation cannot
+    ///         only swap the prefix: whatever is not the database name is put back as the ";Key=Value"
+    ///         tail H2 expects on a URL, which is where those settings belong.
+    ///     </para>
+    /// </remarks>
+    public static string H2Url(string? connectionString)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            return string.Empty;
+        }
+
+        var builder = new H2ConnectionStringBuilder(connectionString);
+        var url = builder.ToH2ConnectionString();
+
+        var settings = new List<string>();
+        foreach (string key in builder.Keys)
+        {
+            if (!string.Equals(key, "Data Source", StringComparison.OrdinalIgnoreCase))
+            {
+                settings.Add($"{key}={builder[key]}");
+            }
+        }
+
+        return settings.Count == 0 ? url : url + ";" + string.Join(";", settings);
+    }
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
