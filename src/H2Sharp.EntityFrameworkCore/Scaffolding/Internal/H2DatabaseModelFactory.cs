@@ -20,12 +20,12 @@ namespace H2Sharp.EntityFrameworkCore.Scaffolding.Internal;
 ///         reference engine rather than assumed; see <c>docs/DIALECT.md</c> for the probes.
 ///     </para>
 ///     <para>
-///         Three properties of H2's catalogue shape are load-bearing and worth stating:
-///         an index's <em>columns</em> are not exposed (INFORMATION_SCHEMA.INDEXES names the index but has
-///         no COLUMN_NAME), so only constraint-backed keys can be attributed to columns; an unquoted
-///         identifier is folded to upper case, so every name read back is upper case unless the original
-///         was quoted; and the type as written in the DDL is DECLARED_DATA_TYPE, while DATA_TYPE is the
-///         base name, so precision and length are read from the former rather than from separate columns.
+///         Three properties of H2's catalogue shape are load-bearing and worth stating: index columns
+///         live in INFORMATION_SCHEMA.INDEX_COLUMNS rather than on INDEXES, which carries no
+///         COLUMN_NAME; an unquoted identifier is folded to upper case, so every name read back is upper
+///         case unless the original was quoted; and the type as written in the DDL is
+///         DECLARED_DATA_TYPE, while DATA_TYPE is the base name, so precision and length are read from
+///         the former rather than from separate columns.
 ///     </para>
 /// </remarks>
 public class H2DatabaseModelFactory : DatabaseModelFactory
@@ -203,8 +203,8 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         {
             using var command = connection.CreateCommand();
 
-            // Only constraint-backed keys are resolvable to columns, because H2's INFORMATION_SCHEMA.INDEXES
-            // exposes no column list for a plain CREATE INDEX.
+            // H2 keeps index columns in INFORMATION_SCHEMA.INDEX_COLUMNS rather than on INDEXES, which is
+            // why joining only TABLE_CONSTRAINTS to KEY_COLUMN_USAGE would miss a plain CREATE INDEX.
             command.CommandText = """
                 SELECT tc.TABLE_NAME, tc.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, kcu.COLUMN_NAME
                 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
