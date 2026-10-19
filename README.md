@@ -20,6 +20,23 @@ network address types, full-text search, PostGIS, and the rest are listed in
 The point of the fork is to keep EF Core's own specification suite as the measure of the
 provider: the tests are inherited from EF Core, not written for H2.
 
+## Tests
+
+The suite is split in two, because a test that fails because the engine does not read a
+function yet is a **port defect**, not a provider defect — and it stays in the suite, marked,
+so the gap remains visible:
+
+```sh
+# green: everything that can pass does pass
+dotnet test H2Sharp.EntityFrameworkCore.sln -c Release --no-build --filter "Category!=BlockedByPort"
+
+# the port's defects, listed
+dotnet test H2Sharp.EntityFrameworkCore.sln -c Release --no-build --filter "Category=BlockedByPort"
+```
+
+What each defect is and who fixes it is in [docs/DIVERGENCES.md](docs/DIVERGENCES.md). The
+rules the work follows are in [AGENTS.md](AGENTS.md).
+
 ## Using it
 
 ```csharp
