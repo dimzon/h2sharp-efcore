@@ -212,7 +212,6 @@
     <Compile Remove="Query\WarningsH2Test.cs" />
     <Compile Remove="QueryExpressionInterceptionH2TestBase.cs" />
     <Compile Remove="SaveChangesInterceptionH2Test.cs" />
-    <Compile Remove="Scaffolding\H2DatabaseModelFactoryTest.cs" />
     <Compile Remove="SeedingH2Test.cs" />
     <Compile Remove="SequenceEndToEndTest.cs" />
     <Compile Remove="SerializationH2Test.cs" />

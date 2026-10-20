@@ -10,7 +10,7 @@ Keep this file in step with the probes. A row that stops being true is worse tha
 
 | Construct | Reference H2 2.5.259 | H2Sharp today |
 |---|---|---|
-| `INFORMATION_SCHEMA` catalogue | present, 35 tables | **absent** — `Table "INFORMATION_SCHEMA" not found` |
+| `INFORMATION_SCHEMA` catalogue | present, 35 tables | **present** — but the catalog is named by the path of the database in the URL, where the reference names it by the name of the database, and the collation of a column is empty, where the reference gives the collation of the database |
 | `INFORMATION_SCHEMA.INDEXES` | 11 columns, **no `COLUMN_NAME`** | — |
 | `INFORMATION_SCHEMA.INDEX_COLUMNS` | present — this is where index columns live | — |
 | `INFORMATION_SCHEMA.SEQUENCES` | 18 columns, `START_VALUE`/`CYCLE_OPTION`, no `CYCLE` | — |
@@ -29,6 +29,8 @@ Keep this file in step with the probes. A row that stops being true is worse tha
 against `INFORMATION_SCHEMA`, verified above, and refuses with a message naming the missing engine
 feature rather than returning an empty model. An empty model would be indistinguishable from an
 empty database, and every migration generated from it would try to recreate existing tables.
+The catalogue is in the port now; what the scaffolding still needs is `CREATE SCHEMA`, because it
+makes a schema of its own before it asks about the tables in it.
 
 **Value generation must be sequence-based, not RETURNING-based.** The reference engine has no
 `INSERT … RETURNING`; it has `NEXT VALUE FOR`. The Npgsql model of "insert, then read back the key"

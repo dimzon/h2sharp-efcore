@@ -12,6 +12,10 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 // ReSharper disable StringLiteralTypo
 namespace H2Sharp.EntityFrameworkCore.Scaffolding;
 
+// The scaffolding reads the catalogue of the database, and the catalogue is in the port now.
+// What the test needs from it and does not have is the schemas: CREATE SCHEMA is not ported, and
+// the test makes a schema of its own before it asks about the tables in it.
+[Trait("Category", "BlockedByPort")]
 public class H2DatabaseModelFactoryTest : IClassFixture<H2DatabaseModelFactoryTest.H2DatabaseModelFixture>
 {
     // ReSharper disable once MemberCanBePrivate.Global
