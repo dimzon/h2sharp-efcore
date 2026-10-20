@@ -75,15 +75,16 @@
 |---|---|---|---|
 | 1 | **Кавыченная ссылка на колонку** | `SELECT "e"."Id" FROM T` → `Not ported yet: SessionLocal.getResolver: the query layer is not ported` | досоставить resolver: путь выражения к значению |
 | 2 | **Алиас таблицы через `AS`** | `FROM T AS "e"` → `Синтаксическая ошибка … ожидалось "statement"` | `AS`-алиасы в `SELECT`; неявный алиас (`FROM T e`) уже работает |
-| 3 | **`FINAL TABLE`** | `SELECT "Id" FROM FINAL TABLE (INSERT …)` → `Table "FINAL" not found` | `FINAL TABLE` в грамматике: `{ OLD \| NEW \| FINAL } TABLE` — без него значение identity не вернуться к вызывающему |
-| 4 | **Типизированный литерал в `DEFAULT`** | `DEFAULT TIMESTAMP '2035-09-25T00:00:00'` → `ожидалось ")"` | разбор умолчания со значением: сейчас читается только литерал без типа |
-| 5 | **`FOREIGN KEY` в `CREATE TABLE`** | ошибка `ожидалось "PRIMARY"` | констрейнты (фаза 7 ROADMAP h2sharp) |
-| 6 | **Типы `INTERVAL`** | `interval day to second` → `ожидалось "INTERVAL"` | интервальные типы в парсере; без квалификатора `INTERVAL` типом не является |
-| 7 | **`DB_CLOSE_DELAY` для in-memory базы** | база исчезает вместе с последним соединением, настройка не действует | `DB_CLOSE_DELAY`, иначе in-memory база не переживает `EnsureCreated` |
-   | 8 | **`CREATE SCHEMA`** | `CREATE [*]SCHEMA IF NOT EXISTS db2` | схемы; скаффолдинг делает схему себе перед тем, как спросить о её таблицах |
-   | 9 | **`CREATE SEQUENCE`, `NEXT VALUE FOR`** | парсер их не знает | генерация ключей через последовательности, если identity не будет |
-   | 10 | **`ALTER TABLE`** | `ALTER TABLE … ALTER COLUMN …` → `Not ported yet: Parser.readAlterTable: only ADD and DROP CONSTRAINT are ported` | `ALTER TABLE` целиком: пока читаются только `ADD` и `DROP CONSTRAINT` |
-   | 11 | **Каталог отличается от эталонного** | имя каталога — путь базы в URL, а не имя базы; collation колонки пуст | каталог как в H2 2.5 |
+| 3 | **Производная таблица** | `SELECT * FROM (SELECT …) "t"` → `Table "(" not found` | `FROM (SELECT …) [AS] alias`: подзапрос в `FROM` — а без него не работает ни один `FromSql` над сущностью с ключом и ни один `FromSql` в linq2db-провайдере |
+| 4 | **`FINAL TABLE`** | `SELECT "Id" FROM FINAL TABLE (INSERT …)` → `Table "FINAL" not found` | `FINAL TABLE` в грамматике: `{ OLD \| NEW \| FINAL } TABLE` — без него значение identity не вернуться к вызывающему |
+| 5 | **Типизированный литерал в `DEFAULT`** | `DEFAULT TIMESTAMP '2035-09-25T00:00:00'` → `ожидалось ")"` | разбор умолчания со значением: сейчас читается только литерал без типа |
+| 6 | **`FOREIGN KEY` в `CREATE TABLE`** | ошибка `ожидалось "PRIMARY"` | констрейнты (фаза 7 ROADMAP h2sharp) |
+| 7 | **Типы `INTERVAL`** | `interval day to second` → `ожидалось "INTERVAL"` | интервальные типы в парсере; без квалификатора `INTERVAL` типом не является |
+| 8 | **`DB_CLOSE_DELAY` для in-memory базы** | база исчезает вместе с последним соединением, настройка не действует | `DB_CLOSE_DELAY`, иначе in-memory база не переживает `EnsureCreated` |
+   | 9 | **`CREATE SCHEMA`** | `CREATE [*]SCHEMA IF NOT EXISTS db2` | схемы; скаффолдинг делает схему себе перед тем, как спросить о её таблицах |
+   | 10 | **`CREATE SEQUENCE`, `NEXT VALUE FOR`** | парсер их не знает | генерация ключей через последовательности, если identity не будет |
+   | 11 | **`ALTER TABLE`** | `ALTER TABLE … ALTER COLUMN …` → `Not ported yet: Parser.readAlterTable: only ADD and DROP CONSTRAINT are ported` | `ALTER TABLE` целиком: пока читаются только `ADD` и `DROP CONSTRAINT` |
+   | 12 | **Каталог отличается от эталонного** | имя каталога — путь базы в URL, а не имя базы; collation колонки пуст | каталог как в H2 2.5 |
 
    Пробел про identity (`GENERATED … AS IDENTITY`) закрыт: порт перенёс identity-колонки,
    и DDL, который провайдер пишет для identity-столбца, теперь принимается.

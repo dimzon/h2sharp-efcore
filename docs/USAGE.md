@@ -295,6 +295,32 @@ column of it with the reference and names both.
 The provider's part is written and checked against the reference; see
 [docs/DIALECT.md](DIALECT.md).
 
+## The range table
+
+H2 has a table function that gives a row per number of a range: `SYSTEM_RANGE(min, max[, step])`.
+The engine reads it, and the provider asks for it the way a caller asks for any statement it
+writes itself — through `FromSqlRaw`, over an entity type without a key:
+
+```csharp
+public class RangeRow
+{
+    public long X { get; set; }
+}
+
+// modelBuilder.Entity<RangeRow>().HasNoKey();
+
+var rows = context.RangeRows
+    .FromSqlRaw("SELECT * FROM SYSTEM_RANGE(1, 10)")
+    .ToList();          // ten rows: X = 1 … 10
+```
+
+The step is added to the start and the range stops at the end, so
+`SYSTEM_RANGE(1, 10, 2)` gives 1, 3, 5, 7, 9 — the same as the reference gives.
+
+The engine reads the range table as a plain source: an alias after it (`FROM SYSTEM_RANGE(1, 10) AS r`)
+and a derived table around it are not read yet, and EF Core's own queries of an entity with a key
+put the raw SQL into a derived table, so a keyless type is the one that works.
+
 ## The SQL it generates
 
 | | |
