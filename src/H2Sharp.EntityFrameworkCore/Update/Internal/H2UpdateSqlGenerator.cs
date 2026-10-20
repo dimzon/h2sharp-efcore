@@ -67,14 +67,62 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+    ///     doing so can result in application failures when upgrading to a new Entity Framework Core release.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         H2 2.5 has no <c>RETURNING</c>. The reference was asked, and it refuses the clause: the
+    ///         row an insert made is read through <c>FINAL TABLE</c>, which is the form the H2 grammar
+    ///         has for it (<c>{ OLD | NEW | FINAL } TABLE</c>).
+    ///     </para>
+    ///     <para>
+    ///         The upstream base class appends <c>OUTPUT INSERTED.[...]</c>, which is neither H2's nor
+    ///         PostgreSQL's, and the PostgreSQL provider it was forked from replaces it with
+    ///         <c>RETURNING</c>. Both are wrong here, and both fail on the first insert of a row with
+    ///         an identity key. The form below is H2's own, and the reference accepts it:
+    ///         <c>SELECT "Id" FROM FINAL TABLE (INSERT INTO "Items" ("Name") VALUES (?))</c>.
+    ///     </para>
+    /// </remarks>
     protected virtual void AppendInsertCommand(
         StringBuilder commandStringBuilder,
         string name,
         string? schema,
         IReadOnlyList<IColumnModification> writeOperations,
         IReadOnlyList<IColumnModification> readOperations,
+        bool overridingSystemValue)
+    {
+        if (readOperations.Count == 0)
+        {
+            AppendInsertBody(commandStringBuilder, name, schema, writeOperations, overridingSystemValue);
+            commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
+            return;
+        }
+
+        commandStringBuilder.Append("SELECT ");
+        for (var i = 0; i < readOperations.Count; i++)
+        {
+            if (i > 0)
+            {
+                commandStringBuilder.Append(", ");
+            }
+
+            commandStringBuilder.Append(SqlGenerationHelper.DelimitIdentifier(readOperations[i].ColumnName));
+        }
+
+        commandStringBuilder.Append(" FROM FINAL TABLE (");
+        AppendInsertBody(commandStringBuilder, name, schema, writeOperations, overridingSystemValue);
+        commandStringBuilder.Append(')');
+        commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
+    }
+
+    /// <summary>
+    ///     Writes the insert itself: the table, the columns, the values.
+    /// </summary>
+    private void AppendInsertBody(
+        StringBuilder commandStringBuilder,
+        string name,
+        string? schema,
+        IReadOnlyList<IColumnModification> writeOperations,
         bool overridingSystemValue)
     {
         AppendInsertCommandHeader(commandStringBuilder, name, schema, writeOperations);
@@ -86,8 +134,6 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
 
         AppendValuesHeader(commandStringBuilder, writeOperations);
         AppendValues(commandStringBuilder, name, schema, writeOperations);
-        AppendReturningClause(commandStringBuilder, readOperations);
-        commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
     }
 
     /// <summary>

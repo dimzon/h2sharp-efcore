@@ -91,8 +91,10 @@ new CreateTableStatement
 Провайдер генерирует H2-корректный SQL; пока движок не догонит, часть DDL не выполнится.
 Каждый пункт — в `docs/DIVERGENCES.md` с пометкой «пробел движка», а не обходится.
 
-* парсер не умеет `CREATE SEQUENCE`, `GENERATED … AS IDENTITY`, `NEXT VALUE FOR`;
+* парсер не умеет `CREATE SEQUENCE`, `NEXT VALUE FOR`; `GENERATED … AS IDENTITY` он теперь
+  умеет — identity-колонки перенесены;
 * парсер не умеет `FOREIGN KEY` в `CREATE TABLE`;
+* парсер не умеет `FINAL TABLE` — без него значение identity не вернуться к вызывающему;
 * парсер не умеет `INFORMATION_SCHEMA` (нет вообще);
 * парсер читает только однословные имена типов плюс `DOUBLE PRECISION` и
   `TIMESTAMP WITH TIME ZONE`;
