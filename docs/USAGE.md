@@ -89,7 +89,7 @@ provider's, and the engine's own builder does the same thing — see
 [docs/DIALECT.md](DIALECT.md).
 
 A database in memory is gone when the last connection to it is closed, and the engine has no
-file store yet, so `EnsureCreated` and friends work in memory and nowhere else for now. A
+file database yet, so `EnsureCreated` and friends work in memory and nowhere else for now. A
 context that opens and closes its connection between commands loses the database with it, so
 hold a connection open while the context works:
 
@@ -316,7 +316,7 @@ it stands. The things that wait for the engine:
 | `OVER` | window functions |
 | `COMMENT ON` | `COMMENT ON TABLE …` |
 | large objects | `ValueLob.copyToResult: lob storage is not ported` — the storage of a large object is in the port (`ValueLob`, `LobData`, MVStore); the copy from the storage into the result is not, so a column asked for as `clob` cannot be read back |
-| file databases | `Not ported yet: Engine.openSession: persistent databases need the file store` |
+| a file database | `Not ported yet: Engine.openSession: persistent databases need the file store` — the store itself is in the port and its format is compatible with H2 2.5, but a session does not open a file database |
 
 The full list, with what each of them costs, is in
 [docs/DIVERGENCES.md](DIVERGENCES.md).
