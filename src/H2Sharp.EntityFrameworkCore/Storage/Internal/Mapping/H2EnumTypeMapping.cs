@@ -136,8 +136,13 @@ public class H2EnumTypeMapping : RelationalTypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
+    /// <remarks>
+    ///     The cast is written the way H2 writes it. The short form "x::y" is PostgreSQL's and is
+    ///     not in the grammar of H2 2.5 at all: the reference refuses "'a'::my_enum" with a syntax
+    ///     error, and takes "CAST('a' AS my_enum)".
+    /// </remarks>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"'{Labels[value]}'::{StoreType}";
+        => $"CAST('{Labels[value]}' AS {StoreType})";
 
     // This is public for the compiled model
     /// <summary>

@@ -20,26 +20,26 @@
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 931 | 0 | 931 |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 937 | 0 | 937 |
    | `H2Sharp.EntityFrameworkCore.Tests` | 113 | 2 | 115 |
-   | **Итого** | **1044** | **2** | **1046** |
+   | **Итого** | **1050** | **2** | **1052** |
 
    Разделение по трейту:
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 931 | 0 | 931 |
-   | `Category=BlockedByPort` | 17 | 190 | 209 |
+   | `Category!=BlockedByPort` | 937 | 0 | 937 |
+   | `Category=BlockedByPort` | 17 | 191 | 210 |
 
    Два теста пропущены в обоих прогонах. Числа выше — на `net10.0`, против движка с
    `FINAL TABLE`, с последовательностями и с `AS` у псевдонима.
 
-   **Прогон с трейтом обрывается.** Тестовое оборудование скаффолдинга выполняет блок
-   `DO … IF NOT EXISTS (SELECT …)`, движок его не читает, и тестовый хост падает вместе с
-   ним — оставшиеся тесты не доходят. Поэтому прогон измерен по частям: миграционный набор
-   (194 теста: 16 прошло, 176 упало, 2 пропущено), набор скаффолдинга (9 тестов до падения
-   хоста), наборы `DefaultValuesTest`, `H2ComplianceTest` и `LegacyTimestampQueryTest`
-   (6 тестов: 1 прошло, 5 упало).
+   **Прогон с трейтом больше не обрывается.** Раньше тестовое оборудование скаффолдинга
+   выполняло блок `DO … IF NOT EXISTS (SELECT …)`, движок его не читал, и тестовый хост падал
+   вместе с ним — оставшиеся тесты не доходили. Блок `DO` заменён на H2'овскую форму, и
+   прогон идёт целиком, поэтому числа ниже измерены одним прогоном: миграционный набор
+   (194 теста: 16 прошло, 176 упало, 2 пропущено), набор скаффолдинга (9 тестов, 13 случаев
+   — все красные), наборы `DefaultValuesTest` и `H2ComplianceTest` (2 теста, оба красные).
 
    Два теста в `H2Sharp.EntityFrameworkCore.Tests` красные и не связаны с портом: они
    проверяют `LegacyTimestampBehavior`, и их результат зависит от порядка, в котором
@@ -64,6 +64,40 @@
 | `H2PostgresModelFinalizingConventionTest` | 1 | `xmin` — столбец PostgreSQL, в H2 такого нет; тест убран |
 | `H2QuerySqlGenerator` | 1 | приведение типа пишется как `CAST(x AS y)`, а не как PostgreSQL'овское `x::y`: короткой записи в H2 2.5 нет, и `count(*)::int` эталон не берёт |
 | `H2MigrationsSqlGenerator`, `H2HistoryRepository` | 6 | блок `DO $EF$` — анонимный блок PL/pgSQL — заменён на H2'овское `CREATE SCHEMA IF NOT EXISTS` и на условие внутри самой вставки: `INSERT … SELECT … WHERE NOT EXISTS (…)` |
+
+## Формы типов: что провайдер пишет и почему именно так
+
+Провайдер унаследовал от Npgsql не только форму, но и *названия* вещей, которых в H2 2.5 нет.
+Сверка с эталоном (`h2-2.5.259-SNAPSHOT.jar` на JVM) и с исходниками оригинала
+(`reference/h2/h2/src/main/org/h2/command/Parser.java`, `value/DataType.java`) показала:
+
+| Что | Было (PostgreSQL) | Стало (H2 2.5) | Что говорит эталон |
+|---|---|---|---|
+| тип массива | `integer[]` | `integer ARRAY` | `CREATE TABLE t (x integer[]);` → `Syntax error … expected ")"` |
+| литерал массива | `ARRAY[1,2]::integer[]` | `ARRAY[1,2]` | короткой записи `::` в H2 2.5 нет вовсе |
+| литерал времени с зоной | `TIMESTAMPTZ '…'` | `TIMESTAMP WITH TIME ZONE '…'` | `SELECT TIMESTAMPTZ '…'` → `Syntax error` |
+| литерал времени с зоной (время) | `TIMETZ '…'` | `TIME WITH TIME ZONE '…'` | то же |
+| литерал интервала | `INTERVAL '1 2:3:4'` | `CAST('1 2:3:4' AS INTERVAL DAY TO SECOND)` | `Cannot parse "INTERVAL" constant "1 2:3:4"`: у H2 литерал интервала несёт квалификатор, а приведение текста к тому же типу даёт то же значение |
+| литерал перечисления | `'a'::my_enum` | `CAST('a' AS my_enum)` | короткой записи `::` нет |
+| часть даты | `date_part('year', x)` | `year(x)` | `Function "DATE_PART" not found`: часть даты в H2 берётся своей функцией |
+| день недели | `floor(date_part('dow', x))::int` | `mod(iso_day_of_week(x), 7)` | ISO нумерует неделю с понедельника, .NET — с воскресенья |
+| «содержит» | `strpos(x, y) > 0` | `locate(y, x) > 0` | `strpos` у H2 нет, а у `LOCATE` аргументы в обратном порядке |
+| сейчас | `now()` | `current_timestamp` | `NOW()` у H2 — другое имя `LOCALTIMESTAMP`, то есть время без зоны |
+
+Проверено на эталоне: `SELECT YEAR(TIMESTAMP '2020-01-02 10:20:30')` → 2020,
+`SELECT MOD(ISO_DAY_OF_WEEK(TIMESTAMP '2020-01-05 00:00:00'), 7)` → 0 (воскресенье),
+`SELECT LOCATE('bc', 'abcd')` → 2, `SELECT EXTRACT(EPOCH FROM INTERVAL '1 2:3:4' DAY TO SECOND)` → 93784.
+
+`EXTRACT` в H2 2.5 — синтаксис, а не вызов функции: `EXTRACT(field FROM value)`. Вызов
+`extract('epoch', x)` эталон отвергает («expected "FROM"»). Поэтому генератор запросов
+провайдера пишет `EXTRACT` синтаксисом, а полем может быть и слово, и строка в кавычках —
+эталон берёт оба.
+
+**Что из этого провайдер может, а что ждёт движок.** Таблицу с массивом создать нельзя:
+движок не читает тип `ARRAY` (в `TypeInfo` порта нет места для типа элемента), и литерал
+массива не разбирается. Остальное движок читает: `LOCATE`, `MOD`, `YEAR`, `MONTH`, `DAY`,
+`DAY_OF_YEAR`, `HOUR`, `MINUTE`, `SECOND`, `ISO_DAY_OF_WEEK`, `EXTRACT` у него есть. Пробел
+движка с типом `ARRAY` записан в issue #14 движка.
 
 ## Проверено против эталона
 

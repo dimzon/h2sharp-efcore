@@ -158,6 +158,12 @@ The types are H2's:
 | `DateTimeOffset` | `timestamp with time zone` |
 | `DateOnly` | `date` |
 | `TimeOnly` | `time` |
+| `TimeSpan` | `interval day to second` |
+| `int[]`, `string[]` | `integer ARRAY`, `varchar ARRAY` — H2 writes the type of the elements and the word `ARRAY` after it |
+
+The array is the one type the port cannot create yet: it does not read the type `ARRAY` yet, so
+a table with an array column cannot be created against it. The form the provider writes is
+H2's own, and the reference engine takes it — see docs/DIVERGENCES.md.
 
 An identifier is quoted the way H2 documents it, and an unquoted one folds to upper case, so
 the default name translator folds to upper case too — that is both H2's rule and the spelling a

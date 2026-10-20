@@ -44,19 +44,17 @@ public class H2TimeSpanMemberTranslator : IMemberTranslator
         {
             return member.Name switch
             {
-                nameof(TimeSpan.Days) => Floor(DatePart("day", instance)),
-                nameof(TimeSpan.Hours) => Floor(DatePart("hour", instance)),
-                nameof(TimeSpan.Minutes) => Floor(DatePart("minute", instance)),
-                nameof(TimeSpan.Seconds) => Floor(DatePart("second", instance)),
-                nameof(TimeSpan.Milliseconds) => _sqlExpressionFactory.Modulo(
-                    Floor(DatePart("millisecond", instance)),
-                    _sqlExpressionFactory.Constant(1000)),
+                nameof(TimeSpan.Days) => Extract("day", instance, typeof(int)),
+                nameof(TimeSpan.Hours) => Extract("hour", instance, typeof(int)),
+                nameof(TimeSpan.Minutes) => Extract("minute", instance, typeof(int)),
+                nameof(TimeSpan.Seconds) => Extract("second", instance, typeof(int)),
+                nameof(TimeSpan.Milliseconds) => Extract("millisecond", instance, typeof(int)),
 
-                nameof(TimeSpan.TotalDays) => TranslateDurationTotalMember(instance, 86400),
-                nameof(TimeSpan.TotalHours) => TranslateDurationTotalMember(instance, 3600),
-                nameof(TimeSpan.TotalMinutes) => TranslateDurationTotalMember(instance, 60),
-                nameof(TimeSpan.TotalSeconds) => DatePart("epoch", instance),
-                nameof(TimeSpan.TotalMilliseconds) => TranslateDurationTotalMember(instance, 0.001),
+                nameof(TimeSpan.TotalDays) => Divide(Epoch(instance), 86400),
+                nameof(TimeSpan.TotalHours) => Divide(Epoch(instance), 3600),
+                nameof(TimeSpan.TotalMinutes) => Divide(Epoch(instance), 60),
+                nameof(TimeSpan.TotalSeconds) => Epoch(instance),
+                nameof(TimeSpan.TotalMilliseconds) => Multiply(Epoch(instance), 1000),
 
                 _ => null
             };
@@ -64,24 +62,27 @@ public class H2TimeSpanMemberTranslator : IMemberTranslator
 
         return null;
 
-        SqlExpression Floor(SqlExpression value)
-            => _sqlExpressionFactory.Convert(
-                _sqlExpressionFactory.Function(
-                    "floor",
-                    [value],
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
-                    typeof(double)),
-                typeof(int));
-
-        SqlExpression DatePart(string part, SqlExpression value)
+        // The part of an interval is taken by EXTRACT, which in H2 2.5 is a syntax and not a
+        // function: EXTRACT(field FROM value). The reference refuses the call of a function
+        // ("expected "FROM"") and the whole of date_part with it ("Function "DATE_PART" not
+        // found"). The field may be a word or a string: the reference takes both
+        // (EXTRACT(DAY FROM x) and EXTRACT('day' FROM x) answer the same).
+        SqlExpression Extract(string field, SqlExpression value, Type type)
             => _sqlExpressionFactory.Function(
-                "date_part", [_sqlExpressionFactory.Constant(part), value],
+                "extract",
+                [_sqlExpressionFactory.Constant(field), value],
                 nullable: true,
                 argumentsPropagateNullability: FalseTrueArray,
-                returnType);
+                type);
 
-        SqlExpression TranslateDurationTotalMember(SqlExpression instance, double divisor)
-            => _sqlExpressionFactory.Divide(DatePart("epoch", instance), _sqlExpressionFactory.Constant(divisor));
+        // The seconds of an interval since the epoch, with the fraction of the second.
+        SqlExpression Epoch(SqlExpression value)
+            => Extract("epoch", value, typeof(double));
+
+        SqlExpression Divide(SqlExpression value, int divisor)
+            => _sqlExpressionFactory.Divide(value, _sqlExpressionFactory.Constant(divisor));
+
+        SqlExpression Multiply(SqlExpression value, int factor)
+            => _sqlExpressionFactory.Multiply(value, _sqlExpressionFactory.Constant(factor));
     }
 }

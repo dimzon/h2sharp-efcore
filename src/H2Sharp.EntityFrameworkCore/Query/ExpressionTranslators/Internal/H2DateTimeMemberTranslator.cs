@@ -133,8 +133,9 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
 
             nameof(DateTime.Millisecond) => null, // Too annoying
 
-            // .NET's DayOfWeek is an enum, but its int values happen to correspond to PostgreSQL
-            nameof(DateTime.DayOfWeek) => DatePart(instance!, "dow", floor: true),
+            // .NET's DayOfWeek counts the week from Sunday, and the ISO numbering counts it
+            // from Monday, so the number of .NET is the ISO one by seven.
+            nameof(DateTime.DayOfWeek) => DatePart(instance!, "dow"),
 
             // Casting a timestamptz to time (to get the time component) converts it to a local timestamp based on TimeZone.
             // Convert to a timestamp without time zone at UTC to get the right values.
@@ -151,8 +152,13 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
         };
 
         SqlExpression UtcNow()
+            // CURRENT_TIMESTAMP and not NOW(): in H2 2.5 NOW() is another name of
+            // LOCALTIMESTAMP, which is a timestamp without a time zone, while
+            // CURRENT_TIMESTAMP is the one with a time zone. The reference answers
+            // "2026-10-20 22:53:05.427709+03" for CURRENT_TIMESTAMP and
+            // "2026-10-20 22:53:05.427709" for NOW().
             => _sqlExpressionFactory.Function(
-                "now",
+                "current_timestamp",
                 [],
                 nullable: false,
                 argumentsPropagateNullability: TrueArrays[0],
@@ -165,34 +171,57 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
 
     private SqlExpression? DatePart(
         SqlExpression instance,
-        string partName,
-        bool floor = false)
+        string partName)
     {
-        // date_part exists only for timestamp without time zone, so if we pass in a timestamptz it gets converted to a local
-        // timestamp based on TimeZone. Convert to a timestamp without time zone at UTC to get the right values.
+        // H2 has no date_part. The part of a date is taken by a function of its own --
+        // YEAR, MONTH, DAY, DAY_OF_YEAR, HOUR, MINUTE, SECOND -- and the reference refuses
+        // date_part with "Function "DATE_PART" not found". The day of the week is
+        // ISO_DAY_OF_WEEK, and its number is taken by seven, because .NET counts the week
+        // from Sunday and ISO counts it from Monday.
+        //
+        // The value is brought to a timestamp without a time zone first, the way the
+        // date_part of PostgreSQL worked: a value with a zone is read in the zone of the
+        // session, and .NET wants the fields of the value as they were written.
         if (!TryConvertAwayFromTimestampTz(instance, out instance!))
         {
             return null;
         }
 
-        var result = _sqlExpressionFactory.Function(
-            "date_part",
-            [_sqlExpressionFactory.Constant(partName), instance],
-            nullable: true,
-            argumentsPropagateNullability: TrueArrays[2],
-            typeof(double));
-
-        if (floor)
+        if (partName == "dow")
         {
-            result = _sqlExpressionFactory.Function(
-                "floor",
-                [result],
+            var dayOfWeek = _sqlExpressionFactory.Function(
+                "iso_day_of_week",
+                [instance],
                 nullable: true,
                 argumentsPropagateNullability: TrueArrays[1],
-                typeof(double));
+                typeof(int));
+
+            return _sqlExpressionFactory.Function(
+                "mod",
+                [dayOfWeek, _sqlExpressionFactory.Constant(7)],
+                nullable: true,
+                argumentsPropagateNullability: TrueArrays[2],
+                typeof(int));
         }
 
-        return _sqlExpressionFactory.Convert(result, typeof(int));
+        var functionName = partName switch
+        {
+            "year" => "year",
+            "month" => "month",
+            "doy" => "day_of_year",
+            "day" => "day",
+            "hour" => "hour",
+            "minute" => "minute",
+            "second" => "second",
+            _ => throw new ArgumentOutOfRangeException(nameof(partName), partName, "Unknown date part")
+        };
+
+        return _sqlExpressionFactory.Function(
+            functionName,
+            [instance],
+            nullable: true,
+            argumentsPropagateNullability: TrueArrays[1],
+            typeof(int));
     }
 
     private SqlExpression? TranslateDateTimeOffset(SqlExpression instance, MemberInfo member)

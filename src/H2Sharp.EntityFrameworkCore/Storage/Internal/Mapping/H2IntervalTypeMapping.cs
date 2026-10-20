@@ -72,8 +72,16 @@ public class H2IntervalTypeMapping : H2TypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
+    /// <remarks>
+    ///     The value is written as a cast of its text and not as an interval literal. H2 2.5 knows
+    ///     the literal "INTERVAL '1 2:3:4' DAY TO SECOND" and refuses the bare "INTERVAL '1 2:3:4'"
+    ///     (the reference answers "Cannot parse "INTERVAL" constant "1 2:3:4""), and it knows the
+    ///     cast of the same text to the same type, which is the form the engine of this port
+    ///     reads. Both are H2's own forms of one thing, and the value they give is the same:
+    ///     the reference answers "INTERVAL '1 02:03:04' DAY TO SECOND" for either.
+    /// </remarks>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"INTERVAL '{FormatTimeSpanAsInterval((TimeSpan)value)}'";
+        => $"CAST('{FormatTimeSpanAsInterval((TimeSpan)value)}' AS INTERVAL DAY TO SECOND)";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

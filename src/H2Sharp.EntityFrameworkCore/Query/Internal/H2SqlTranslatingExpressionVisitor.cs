@@ -512,8 +512,11 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
 
                         break;
 
-                    // For Contains, just use strpos and check if the result is greater than 0. Note that strpos returns 1 when the pattern
-                    // is an empty string, just like .NET Contains (so no need to compensate)
+                    // For Contains, just use LOCATE and check if the result is greater than 0. H2 has
+                    // no strpos: the function that finds a substring is LOCATE, and its arguments
+                    // are the other way round -- LOCATE(substring, string). The reference takes
+                    // LOCATE('bc', 'abcd') and answers 2, just like strpos answers 2 for the
+                    // same pair written the PostgreSQL way.
                     case StartsEndsWithContains.Contains:
                         translation =
                             _sqlExpressionFactory.AndAlso(
@@ -522,7 +525,7 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
                                     _sqlExpressionFactory.IsNotNull(translatedPattern),
                                     _sqlExpressionFactory.GreaterThan(
                                         _sqlExpressionFactory.Function(
-                                            "strpos", [translatedInstance, translatedPattern], nullable: true,
+                                            "locate", [translatedPattern, translatedInstance], nullable: true,
                                             argumentsPropagateNullability: [true, true], typeof(int)),
                                         _sqlExpressionFactory.Constant(0))));
                         break;

@@ -73,8 +73,14 @@ public class H2TimestampTzTypeMapping : H2TypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
+    /// <remarks>
+    ///     The prefix is the whole name of the type and not the short one. H2 2.5 knows
+    ///     <c>TIMESTAMP WITH TIME ZONE '…'</c> and does not know <c>TIMESTAMPTZ '…'</c>: the short
+    ///     spelling is PostgreSQL's, and the reference refuses it with a syntax error. The same is
+    ///     true of the type in the DDL, where the provider writes "timestamp with time zone".
+    /// </remarks>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"TIMESTAMPTZ '{Format(value)}'";
+        => $"TIMESTAMP WITH TIME ZONE '{Format(value)}'";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

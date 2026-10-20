@@ -267,6 +267,34 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
+    /// <remarks>
+    ///     H2's EXTRACT is a syntax and not a call of a function: EXTRACT(field FROM value). The
+    ///     reference refuses the call -- "SELECT extract('epoch', x)" answers "expected "FROM"" --
+    ///     and takes the syntax with the field in single quotes as well as with a bare word.
+    /// </remarks>
+    protected override Expression VisitSqlFunction(SqlFunctionExpression expression)
+    {
+        if (expression.Name.Equals("extract", StringComparison.OrdinalIgnoreCase)
+            && expression.Arguments is { Count: 2 })
+        {
+            Sql.Append("EXTRACT(");
+            Visit(expression.Arguments[0]);
+            Sql.Append(" FROM ");
+            Visit(expression.Arguments[1]);
+            Sql.Append(")");
+
+            return expression;
+        }
+
+        return base.VisitSqlFunction(expression);
+    }
+
+    /// <summary>
+    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+    ///     any release. You should only use it directly in your code with extreme caution and knowing that
+    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+    /// </summary>
     protected virtual Expression VisitPgDelete(PgDeleteExpression pgDeleteExpression)
     {
         Sql.Append("DELETE FROM ");
@@ -435,11 +463,9 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             Visit(initializer);
         }
 
-        // Not sure if the explicit store type is necessary, but just to be sure.
-        Sql
-            .Append("]::")
-            .Append(pgNewArrayExpression.TypeMapping.StoreType);
-
+        // No cast after the brackets. PostgreSQL needs one to say what the array holds
+        // ("ARRAY[1,2]::integer[]"), and H2 2.5 has no such cast: the type of the array
+        // follows from the elements and from the place the array stands in.
         return pgNewArrayExpression;
     }
 
@@ -1144,7 +1170,9 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 }
             }
 
-            Sql.Append("]::text[]");
+            // No cast after the brackets: H2 2.5 has no "::" and the type of the array
+            // follows from the elements and from the place the array stands in.
+            Sql.Append("]");
         }
     }
 

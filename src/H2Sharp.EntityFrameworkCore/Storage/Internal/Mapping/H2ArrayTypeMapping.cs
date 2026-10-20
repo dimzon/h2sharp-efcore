@@ -51,10 +51,19 @@ public abstract class H2ArrayTypeMapping : RelationalTypeMapping
 }
 
 /// <summary>
-///     Type mapping for PostgreSQL arrays.
+///     Type mapping for H2 arrays.
 /// </summary>
 /// <remarks>
-///     See: https://www.postgresql.org/docs/current/static/arrays.html
+///     <para>
+///         H2 2.5 writes an array as the type of its elements and the word ARRAY after it:
+///         <c>INTEGER ARRAY</c>, <c>VARCHAR(20) ARRAY</c>, <c>INTEGER ARRAY[10]</c> for an array of
+///         at most ten elements. The brackets of PostgreSQL (<c>integer[]</c>) H2 does not know.
+///     </para>
+///     <para>
+///         The reference takes the form above; it was checked on the reference engine, and the
+///         engine of this port does not read arrays yet, so a table with an array column cannot
+///         be created yet. See docs/DIVERGENCES.md.
+///     </para>
 /// </remarks>
 public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2ArrayTypeMapping
 {
@@ -75,7 +84,7 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
     /// </summary>
     [UsedImplicitly]
     public H2ArrayTypeMapping(RelationalTypeMapping elementTypeMapping)
-        : this(elementTypeMapping.StoreType + "[]", elementTypeMapping)
+        : this(elementTypeMapping.StoreType + " ARRAY", elementTypeMapping)
     {
     }
 
@@ -89,7 +98,7 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
     public H2ArrayTypeMapping(string storeType, RelationalTypeMapping elementTypeMapping)
         : this(CreateParameters(storeType, elementTypeMapping))
     {
-        Check.DebugAssert(storeType.EndsWith("[]", StringComparison.Ordinal), "H2ArrayTypeMapping created for a non-array store type");
+        Check.DebugAssert(storeType.EndsWith(" ARRAY", StringComparison.Ordinal), "H2ArrayTypeMapping created for a non-array store type");
     }
 
     private static RelationalTypeMappingParameters CreateParameters(string storeType, RelationalTypeMapping elementMapping)
@@ -194,7 +203,7 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
     private H2ArrayTypeMapping()
         : base(new RelationalTypeMappingParameters(
             new CoreTypeMappingParameters(typeof(TCollection), elementMapping: NullMapping),
-            "integer array"))
+            "integer ARRAY"))
     {
     }
 
@@ -299,9 +308,13 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
             sb.Append(ElementTypeMapping.GenerateProviderValueSqlLiteral(element));
         }
 
-        sb.Append("]::");
-        sb.Append(ElementTypeMapping.StoreType);
-        sb.Append("[]");
+        sb.Append("]");
+
+        // No cast after the brackets. PostgreSQL needs one to say what the array holds
+        // ("ARRAY[1,2]::integer[]"), and H2 2.5 has no such cast at all: the short form
+        // "x::y" is not in the grammar, and the type of the array follows from the
+        // elements and from the place the array stands in. The reference takes
+        // "ARRAY[1,2,3]" as it is.
         return sb.ToString();
     }
 

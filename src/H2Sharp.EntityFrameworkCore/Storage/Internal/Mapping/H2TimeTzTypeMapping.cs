@@ -65,8 +65,13 @@ public class H2TimeTzTypeMapping : H2TypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
+    /// <remarks>
+    ///     The prefix is the whole name of the type and not the short one. H2 2.5 knows
+    ///     <c>TIME WITH TIME ZONE '…'</c> and does not know <c>TIMETZ '…'</c>: the short spelling
+    ///     is PostgreSQL's, and the reference refuses it with a syntax error.
+    /// </remarks>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => FormattableString.Invariant($"TIMETZ '{(DateTimeOffset)value:HH:mm:ss.FFFFFFz}'");
+        => FormattableString.Invariant($"TIME WITH TIME ZONE '{(DateTimeOffset)value:HH:mm:ss.FFFFFFz}'");
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
