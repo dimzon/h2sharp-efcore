@@ -46,11 +46,10 @@ public class Blog
 }
 ```
 
-Two things in it wait for the engine, and the guide says where. The key of a new row is drawn
-by the database, and H2 draws it with an identity column — the port reads that DDL now, but it
-cannot give the value back yet, so the quick start as written stands red.
-
-The way round is to give the key to the application, and the guide shows how.
+The key of a new row is drawn by the database, and H2 draws it with an identity column. The
+port reads that DDL and gives the value back, so the quick start as written stands green —
+as long as the connection stays open: an in-memory database goes when the last connection
+closes, and the engine has no `DB_CLOSE_DELAY` yet.
 
 ## Getting the provider
 
@@ -185,17 +184,10 @@ that way:
 SELECT "Id" FROM FINAL TABLE (INSERT INTO "Blogs" ("Name") VALUES (?));
 ```
 
-The port does not read `FINAL TABLE` yet, so the value does not come back and the quick start
-stands red. Until the port grows, the key is given by the application:
+The port reads `FINAL TABLE`, so the value comes back to the entity.
 
-```csharp
-modelBuilder.Entity<Article>()
-    .Property(a => a.Id)
-    .ValueGeneratedNever();
-```
-
-A sequence is the other way — `NEXT VALUE FOR` and `CURRENT VALUE FOR` — and the port does
-not read those either.
+A sequence is the other way — `NEXT VALUE FOR` and `CURRENT VALUE FOR` — and the port reads
+those too.
 
 ### Strings
 
@@ -343,16 +335,13 @@ it stands. The things that wait for the engine:
    | What | What happens |
    |---|---|
    | `CREATE SCHEMA` | `CREATE [*]SCHEMA IF NOT EXISTS db2` — and the scaffolding makes a schema of its own before it asks about the tables in it |
-| `FINAL TABLE` | `Table "FINAL" not found` — the row the insert made is read through it, and the parser does not read it; without it the value of an identity column does not come back |
-| `CREATE SEQUENCE` | `CREATE SEQUENCE … START WITH n` — the parser |
-| `NEXT VALUE FOR` / `CURRENT VALUE FOR` | the parser |
-| `JOIN` | `FROM T3 a LEFT JOIN T3 b` — expected `statement` |
+| `JOIN` | `FROM T3 a LEFT JOIN T3 b` — expected `statement`; and no join of any form is read, not a comma join and not `CROSS JOIN` either |
 | `AS` in front of a table alias | `SELECT a.Id FROM T3 AS a` — expected `statement` |
+| a derived table | `FROM (SELECT …) "t"` — `Table "(" not found` |
 | `IN (subquery)` | `IN with a subquery is not ported` |
 | `MERGE` | `MERGE INTO T AS t USING U AS u` — expected `statement` |
 | `OVER` | window functions |
 | `COMMENT ON` | `COMMENT ON TABLE …` |
-| a column default with a typed literal | `DEFAULT TIMESTAMP '2035-09-25T00:00:00'` — expected `)` |
 | large objects | `ValueLob.copyToResult: lob storage is not ported` — the storage of a large object is in the port (`ValueLob`, `LobData`, MVStore); the copy from the storage into the result is not, so a column asked for as `clob` cannot be read back |
 | a file database | `Not ported yet: Engine.openSession: persistent databases need the file store` — the store itself is in the port and its format is compatible with H2 2.5, but a session does not open a file database |
 

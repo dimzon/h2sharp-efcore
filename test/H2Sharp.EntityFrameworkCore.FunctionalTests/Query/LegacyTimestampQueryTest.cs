@@ -9,10 +9,10 @@ namespace H2Sharp.EntityFrameworkCore.Query
     // Because we can't play around with the LegacyTimestampBehavior flag at the ADO level (different assembly already compile in
     // RELEASE), this test suite is limited to playing around at the EF Core level only.
     [Trait("Category", "BlockedByPort")]
-    // The fixture of this suite seeds rows into a table with an identity column, and the engine
-    // cannot run the insert that seeds them: the row the insert made is read through FINAL TABLE,
-    // and the engine does not read it yet. The failure is the port's, not the provider's: see
-    // docs/DIVERGENCES.md.
+    // The fixture of this suite seeds rows into a table with an identity column, and the
+    // engine does not keep the in-memory database between the connections: it goes when
+    // the last one closes, and the test store opens a new one for every step. The failure
+    // is the port's, not the provider's: see docs/DIVERGENCES.md.
     // The test run without this trait is the green one; the run with it is the list of defects.
     [Collection("LegacyTimestampQueryTest")]
     public class LegacyTimestampQueryTest : IClassFixture<LegacyTimestampQueryTest.LegacyTimestampQueryFixture>

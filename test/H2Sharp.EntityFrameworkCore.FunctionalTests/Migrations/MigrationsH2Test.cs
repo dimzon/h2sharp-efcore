@@ -10,11 +10,12 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 namespace H2Sharp.EntityFrameworkCore.Migrations;
 
 [Trait("Category", "BlockedByPort")]
-    // Every test here needs the engine to run the DDL it generates, and the engine still refuses
-    // parts of it: a column default that carries a typed literal, an ALTER TABLE, a sequence, and
-    // the FINAL TABLE an identity value comes back through. The identity DDL itself is read since
-    // the identity columns were ported. The failures are the port's, not the provider's: see
-    // docs/DIVERGENCES.md.
+    // Every test here needs the engine to run the DDL it generates, and the engine still
+    // refuses parts of it: a DO block of a migration script, COMMENT ON, CREATE TYPE AS
+    // ENUM, LEFT JOIN, UNLOGGED TABLE and COLLATE, ALTER TABLE, and the arrays and the
+    // generated columns. The identity DDL, the sequences and the FINAL TABLE that gives
+    // the key back are read since they were ported. The failures are the port's, not the
+    // provider's: see docs/DIVERGENCES.md.
     // The test run without this trait is the green one; the run with it is the list of defects.
 public class MigrationsH2Test : MigrationsTestBase<MigrationsH2Test.MigrationsH2Fixture>
 {

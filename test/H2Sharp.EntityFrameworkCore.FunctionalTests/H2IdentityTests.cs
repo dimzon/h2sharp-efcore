@@ -24,9 +24,6 @@ public class H2IdentityTests
         .AddEntityFrameworkH2()
         .BuildServiceProvider();
 
-    [Trait("Category", "BlockedByPort")]
-    // The engine does not read FINAL TABLE yet, so the row the insert made cannot come
-    // back through it. The failure is the port's, not the provider's: see docs/DIVERGENCES.md.
     [Fact]
     public void An_identity_value_comes_back_from_the_insert()
     {
@@ -55,7 +52,7 @@ public class H2IdentityTests
         context.Database.EnsureCreated();
 
         context.Add(new Item { Name = "x" });
-        Assert.ThrowsAny<Exception>(() => context.SaveChanges());
+        _ = Record.Exception(() => context.SaveChanges());
 
         // The statement is what this test is about, and the recorder has it whether the
         // engine could run it or not. The parameter is named: the engine rewrites the

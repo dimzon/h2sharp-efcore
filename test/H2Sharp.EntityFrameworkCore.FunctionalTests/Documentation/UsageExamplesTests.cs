@@ -65,7 +65,6 @@ public class UsageExamplesTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public async Task The_quick_start_works()
     {
         using var connection = new H2Connection("jdbc:h2:mem:documentation");
