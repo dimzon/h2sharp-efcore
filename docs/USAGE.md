@@ -48,11 +48,9 @@ public class Blog
 
 Two things in it wait for the engine, and the guide says where. The key of a new row is drawn
 by the database, and H2 draws it with an identity column — the port does not read that yet, so
-the quick start as written stands red. And a string is a `CHARACTER LARGE OBJECT` in H2, because
-H2 2.5 has no type named `text`, and the port has no storage for a large object yet.
+the quick start as written stands red.
 
-Both have a way round, and both ways round are in the guide below: give the key yourself, and
-name the column a `varchar`.
+The way round is to give the key to the application, and the guide shows how.
 
 ## Getting the provider
 
@@ -154,7 +152,7 @@ The types are H2's:
 | `decimal` | `numeric` |
 | `string` | `varchar` |
 | `char` | `char` |
-| `string` (long) | `clob` |
+| `string` (long) | `clob` — H2 keeps such values out of memory and streams them; asked for by name |
 | `byte[]` | `varbinary` |
 | `Guid` | `uuid` |
 | `DateTime` | `timestamp` |
@@ -190,15 +188,20 @@ modelBuilder.Entity<Article>()
 
 ### Strings
 
-Entity Framework Core has a string in a `text` column, and H2 2.5 has no type named `text`: the
-nearest is `CHARACTER LARGE OBJECT`. The port has no storage for a large object yet, so a
-column that is read back is named a `varchar`:
+A string is a `CHARACTER VARYING` in H2 2.5 — the documentation says it plainly: *for
+variable-length strings use CHARACTER VARYING*. Without a length it takes the maximum, so a
+string of any size fits. `CHARACTER LARGE OBJECT` is a different thing: H2 keeps such values
+out of memory and streams them, and it is meant for documents and texts of arbitrary size. A
+column that is one is asked for by name:
 
 ```csharp
 modelBuilder.Entity<Article>()
     .Property(a => a.Title)
-    .HasColumnType("varchar");
+    .HasColumnType("clob");
 ```
+
+The port has the storage of a large object (`ValueLob`, `LobData`, MVStore) but not the way out
+of it into a result, so such a column cannot be read back yet.
 
 ## Migrations
 
@@ -306,7 +309,7 @@ it stands. The things that wait for the engine:
 | `MERGE` | `MERGE INTO T AS t USING U AS u` — expected `statement` |
 | `OVER` | window functions |
 | `COMMENT ON` | `COMMENT ON TABLE …` |
-| large objects | `ValueLob.copyToResult: lob storage is not ported` — the storage of a large object is in the port (`ValueLob`, `LobData`, MVStore); the copy from the storage into the result is not, so a `clob` column cannot be read back — a string is a `clob` in H2, name the column a `varchar` |
+| large objects | `ValueLob.copyToResult: lob storage is not ported` — the storage of a large object is in the port (`ValueLob`, `LobData`, MVStore); the copy from the storage into the result is not, so a column asked for as `clob` cannot be read back |
 | file databases | `Not ported yet: Engine.openSession: persistent databases need the file store` |
 
 The full list, with what each of them costs, is in

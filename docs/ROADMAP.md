@@ -73,7 +73,7 @@ new CreateTableStatement
     Columns =
     {
         new ColumnDefinition("Id", "integer", NotNull: true, IsIdentity: true),
-        new ColumnDefinition("Title", "clob"),
+        new ColumnDefinition("Title", "varchar"),
     },
     Constraints = { new TableConstraintDefinition("PK_Blogs", Columns: ["Id"]) },
 }

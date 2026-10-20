@@ -53,14 +53,7 @@ public class UsageExamplesTests
             // By its convention Entity Framework Core has the database draw the key of a new row,
             // and H2 draws it with an identity column. The key is given here instead, so that the
             // table can be made without one.
-            //
-            // A string is a CHARACTER LARGE OBJECT in H2 -- there is no type named text -- and the
-            // engine has no storage for a large object yet, so the column is named a varchar.
-            => modelBuilder.Entity<Article>(article =>
-            {
-                article.Property(a => a.Id).ValueGeneratedNever();
-                article.Property(a => a.Title).HasColumnType("varchar");
-            });
+            => modelBuilder.Entity<Article>().Property(a => a.Id).ValueGeneratedNever();
 
         public DbSet<Article> Articles { get; set; } = null!;
     }

@@ -77,7 +77,15 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     private readonly LongTypeMapping _int8 = new("bigint", DbType.Int64);
 
     // Character types
-    private readonly StringTypeMapping _text = new("clob", DbType.String);
+    //
+    // A string is a CHARACTER VARYING in H2 2.5: "for variable-length strings use CHARACTER
+    // VARYING". Without a length it takes the maximum, so a string of any size fits.
+    //
+    // CHARACTER LARGE OBJECT is a different thing: H2 keeps such values out of memory and
+    // streams them, and it is meant for documents and texts of arbitrary size. PostgreSQL's text
+    // is such a value, which is why the text of PostgreSQL became a clob here; but the string of
+    // a program is a string, and H2's own type for one is a varchar.
+    private readonly StringTypeMapping _text = new("varchar", DbType.String);
     private readonly H2StringTypeMapping _varchar = new("varchar");
     private readonly H2CharacterStringTypeMapping _char = new("char");
     private readonly H2CharacterCharTypeMapping _singleChar = new("character(1)");

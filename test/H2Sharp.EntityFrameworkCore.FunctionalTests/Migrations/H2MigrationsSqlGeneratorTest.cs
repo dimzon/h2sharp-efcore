@@ -65,7 +65,7 @@ TEMPLATE "MyTemplate";
 
         AssertSql(
             """
-ALTER TABLE "People" ADD "Alias" clob NOT NULL;
+ALTER TABLE "People" ADD "Alias" varchar NOT NULL;
 
 """);
     }
@@ -76,7 +76,7 @@ ALTER TABLE "People" ADD "Alias" clob NOT NULL;
 
         AssertSql(
             """
-ALTER TABLE "Person" ADD "Name" clob;
+ALTER TABLE "Person" ADD "Name" varchar;
 
 """);
     }
@@ -87,7 +87,7 @@ ALTER TABLE "Person" ADD "Name" clob;
 
         AssertSql(
             """
-ALTER TABLE "Person" ADD "Name" clob;
+ALTER TABLE "Person" ADD "Name" varchar;
 
 """);
     }
