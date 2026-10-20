@@ -21,8 +21,12 @@
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 937 | 0 | 937 |
-   | `H2Sharp.EntityFrameworkCore.Tests` | 113 | 2 | 115 |
-   | **Итого** | **1050** | **2** | **1052** |
+   | `H2Sharp.EntityFrameworkCore.Tests` | 111 | 0 | 111 |
+   | **Итого** | **1048** | **0** | **1048** |
+
+   Набор `H2Sharp.EntityFrameworkCore.Tests` собирается по-разному в Debug и в Release: четыре
+   теста `LegacyH2TypeMappingTest` написаны под `#if DEBUG`. В Debug их 115, и два из них
+   красные — см. ниже; в Release их 111, и все зелёные.
 
    Разделение по трейту:
 
@@ -43,7 +47,7 @@
 
    Два теста в `H2Sharp.EntityFrameworkCore.Tests` красные и не связаны с портом: они
    проверяют `LegacyTimestampBehavior`, и их результат зависит от порядка, в котором
-   отработали тесты функционального набора.
+   отработали тесты функционального набора. В Release их нет вовсе (см. выше).
 
 Оставшиеся два — не сбой провайдера.
 

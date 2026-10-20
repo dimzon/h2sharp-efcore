@@ -25,21 +25,25 @@ public class LegacyH2TypeMappingTest : IClassFixture<LegacyH2TypeMappingTest.Leg
     public void GenerateSqlLiteral_returns_timestamptz_datetime_literal()
     {
         var mapping = GetMapping("timestamptz");
+
+        // The whole name of the type and not the short one: H2 2.5 knows
+        // "TIMESTAMP WITH TIME ZONE '...'" and does not know "TIMESTAMPTZ '...'" -- the short
+        // spelling is PostgreSQL's, and the reference refuses it with a syntax error.
         Assert.Equal(
-            "TIMESTAMPTZ '1997-12-17T07:37:16Z'",
+            "TIMESTAMP WITH TIME ZONE '1997-12-17T07:37:16Z'",
             mapping.GenerateSqlLiteral(new DateTime(1997, 12, 17, 7, 37, 16, DateTimeKind.Utc)));
         Assert.Equal(
-            "TIMESTAMPTZ '1997-12-17T07:37:16Z'",
+            "TIMESTAMP WITH TIME ZONE '1997-12-17T07:37:16Z'",
             mapping.GenerateSqlLiteral(new DateTime(1997, 12, 17, 7, 37, 16, DateTimeKind.Unspecified)));
 
         var offset = TimeZoneInfo.Local.BaseUtcOffset;
         var offsetStr = (offset < TimeSpan.Zero ? '-' : '+') + offset.ToString(@"hh\:mm");
         Assert.StartsWith(
-            $"TIMESTAMPTZ '1997-12-17T07:37:16{offsetStr}",
+            $"TIMESTAMP WITH TIME ZONE '1997-12-17T07:37:16{offsetStr}",
             mapping.GenerateSqlLiteral(new DateTime(1997, 12, 17, 7, 37, 16, DateTimeKind.Local)));
 
         Assert.Equal(
-            "TIMESTAMPTZ '1997-12-17T07:37:16.345678Z'",
+            "TIMESTAMP WITH TIME ZONE '1997-12-17T07:37:16.345678Z'",
             mapping.GenerateSqlLiteral(new DateTime(1997, 12, 17, 7, 37, 16, 345, DateTimeKind.Utc).AddTicks(6780)));
     }
 
