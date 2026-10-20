@@ -203,12 +203,7 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public override string GetBeginIfNotExistsScript(string migrationId)
-        => $"""
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE "{MigrationIdColumnName}" = '{migrationId}') THEN
-""";
+        => "";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -217,11 +212,7 @@ BEGIN
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public override string GetBeginIfExistsScript(string migrationId)
-        => $"""
-DO $EF$
-BEGIN
-    IF EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE "{MigrationIdColumnName}" = '{migrationId}') THEN
-""";
+        => "";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -230,10 +221,39 @@ BEGIN
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public override string GetEndIfScript()
-        => """
-    END IF;
-END $EF$;
+        => "";
+
+    /// <summary>
+    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+    ///     any release. You should only use it directly in your code with extreme caution and knowing that
+    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+    /// </summary>
+    /// <remarks>
+    ///     The row of the history goes in only if it is not there yet. H2 2.5 has no DO block -- that
+    ///     is PostgreSQL's anonymous block of PL/pgSQL, and the reference refuses it -- so the condition
+    ///     is the condition of the insert itself: <c>INSERT … SELECT … WHERE NOT EXISTS (…)</c>. The
+    ///     reference takes that form, and the row is there once and only once.
+    /// </remarks>
+    public override string GetInsertScript(HistoryRow row)
+    {
+        var table = SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema);
+        var id = SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName);
+        var version = SqlGenerationHelper.DelimitIdentifier(ProductVersionColumnName);
+
+        return $"""
+INSERT INTO {table} ({id}, {version})
+SELECT {Literal(row.MigrationId)}, {Literal(row.ProductVersion)}
+WHERE NOT EXISTS (SELECT 1 FROM {table} WHERE {id} = {Literal(row.MigrationId)});
+
 """;
+    }
+
+    /// <summary>
+    ///     A string as a literal of H2: in single quotes, with a quote inside doubled.
+    /// </summary>
+    private static string Literal(string value)
+        => $"'{value.Replace("'", "''", StringComparison.Ordinal)}'";
 
     /// <summary>
     ///     Calls the base implementation, but catches "table not found" exceptions; we do this rather than try to detect whether the

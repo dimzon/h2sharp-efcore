@@ -27,12 +27,7 @@ CREATE TABLE "__EFMigrationsHistory" (
 
         Assert.Equal(
             """
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'my') THEN
-        CREATE SCHEMA "my";
-    END IF;
-END $EF$;
+CREATE SCHEMA IF NOT EXISTS "my";
 CREATE TABLE "my"."__EFMigrationsHistory" (
     "MigrationId" varchar(150) NOT NULL,
     "ProductVersion" varchar(32) NOT NULL,
@@ -65,12 +60,7 @@ CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
 
         Assert.Equal(
             """
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'my') THEN
-        CREATE SCHEMA "my";
-    END IF;
-END $EF$;
+CREATE SCHEMA IF NOT EXISTS "my";
 CREATE TABLE IF NOT EXISTS "my"."__EFMigrationsHistory" (
     "MigrationId" varchar(150) NOT NULL,
     "ProductVersion" varchar(32) NOT NULL,
@@ -99,10 +89,13 @@ WHERE "MigrationId" = 'Migration1';
         var sql = CreateHistoryRepository().GetInsertScript(
             new HistoryRow("Migration1", "7.0.0"));
 
+        // The row goes in only if it is not there yet, and H2 2.5 says that with the
+        // condition of the insert: there is no DO block in H2.
         Assert.Equal(
             """
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('Migration1', '7.0.0');
+SELECT 'Migration1', '7.0.0'
+WHERE NOT EXISTS (SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = 'Migration1');
 
 """, sql, ignoreLineEndingDifferences: true);
     }
@@ -112,13 +105,7 @@ VALUES ('Migration1', '7.0.0');
     {
         var sql = CreateHistoryRepository().GetBeginIfNotExistsScript("Migration1");
 
-        Assert.Equal(
-            """
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = 'Migration1') THEN
-""", sql, ignoreLineEndingDifferences: true);
+        Assert.Equal("", sql, ignoreLineEndingDifferences: true);
     }
 
     [ConditionalFact]
@@ -126,12 +113,7 @@ BEGIN
     {
         var sql = CreateHistoryRepository().GetBeginIfExistsScript("Migration1");
 
-        Assert.Equal(
-            """
-DO $EF$
-BEGIN
-    IF EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = 'Migration1') THEN
-""", sql, ignoreLineEndingDifferences: true);
+        Assert.Equal("", sql, ignoreLineEndingDifferences: true);
     }
 
     [ConditionalFact]
@@ -139,11 +121,7 @@ BEGIN
     {
         var sql = CreateHistoryRepository().GetEndIfScript();
 
-        Assert.Equal(
-            """
-    END IF;
-END $EF$;
-""", sql, ignoreLineEndingDifferences: true);
+        Assert.Equal("", sql, ignoreLineEndingDifferences: true);
     }
 
     private static IHistoryRepository CreateHistoryRepository(string schema = null)

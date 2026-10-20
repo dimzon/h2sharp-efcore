@@ -982,28 +982,15 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
             return;
         }
 
-        // PostgreSQL has CREATE SCHEMA IF NOT EXISTS, but that requires CREATE privileges on the database even if the schema already
-        // exists. This blocks multi-tenant scenarios where the user has no database privileges.
-        // So we procedurally check if the schema exists instead, and create it if not.
-        var schemaName = operation.Name.Replace("'", "''");
-
-        // If we're generating an idempotent migration, we're already in a PL/PGSQL DO block; otherwise we need to start one.
-        if (!Options.HasFlag(MigrationsSqlGenerationOptions.Idempotent))
-        {
-            builder
-                .AppendLine(@"DO $EF$")
-                .AppendLine("BEGIN");
-        }
-
+        // H2 2.5 has CREATE SCHEMA IF NOT EXISTS, and the reference takes it -- twice over,
+        // the second time as a no-op. PostgreSQL has the clause too, but it asks for CREATE
+        // privileges on the database, and the provider wrapped the DDL in a DO block to get
+        // around that. H2 has no DO block at all, and its catalogue is INFORMATION_SCHEMA,
+        // not pg_namespace.
         builder
-            .AppendLine($"    IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = '{schemaName}') THEN")
-            .AppendLine($"        CREATE SCHEMA {DelimitIdentifier(operation.Name)};")
-            .AppendLine("    END IF;");
-
-        if (!Options.HasFlag(MigrationsSqlGenerationOptions.Idempotent))
-        {
-            builder.AppendLine("END $EF$;");
-        }
+            .Append("CREATE SCHEMA IF NOT EXISTS ")
+            .Append(DelimitIdentifier(operation.Name))
+            .AppendLine(";");
 
         EndStatement(builder);
     }

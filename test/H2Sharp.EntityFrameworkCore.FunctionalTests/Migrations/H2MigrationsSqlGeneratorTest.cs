@@ -519,14 +519,14 @@ DROP SEQUENCE "Person_Id_old_seq";
             [new EnsureSchemaOperation { Name = "some_schema" }],
             MigrationsSqlGenerationOptions.Idempotent);
 
+        // H2 2.5 has CREATE SCHEMA IF NOT EXISTS, and the reference takes it. The
+        // PostgreSQL form of this -- a DO block that checks pg_namespace -- is not
+        // H2's: H2 has no DO block, and its catalogue is INFORMATION_SCHEMA.
         AssertSql(
             """
-    IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'some_schema') THEN
-        CREATE SCHEMA "some_schema";
-    END IF;
+CREATE SCHEMA IF NOT EXISTS "some_schema";
 
-""");
-    }
+""");    }
 
     #region CockroachDB interleave-in-parent
 
