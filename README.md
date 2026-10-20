@@ -4,8 +4,8 @@ Entity Framework Core provider for **H2Sharp** — the C# port of H2 Database 2.
 
 > **Status: in progress.** The provider generates H2's SQL, and that SQL is checked against
 > the reference engine on the JVM rather than against the port. The database-level part of
-> EF Core's own specification suite is waiting for the port to grow: `CREATE SCHEMA`,
-> `JOIN`, the `AS` in front of a table alias, and the `EXISTS` of a migration script.
+> EF Core's own specification suite is waiting for the port to grow: `CREATE SCHEMA`, the
+> joins, and the `EXISTS` of a migration script.
    > What is missing and who is to fix it is listed in
    > [docs/DIVERGENCES.md](docs/DIVERGENCES.md).
 

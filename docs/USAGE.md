@@ -309,9 +309,9 @@ var rows = context.RangeRows
 The step is added to the start and the range stops at the end, so
 `SYSTEM_RANGE(1, 10, 2)` gives 1, 3, 5, 7, 9 — the same as the reference gives.
 
-The engine reads the range table as a plain source: an alias after it (`FROM SYSTEM_RANGE(1, 10) AS r`)
-and a derived table around it are not read yet, and EF Core's own queries of an entity with a key
-put the raw SQL into a derived table, so a keyless type is the one that works.
+The engine reads the range table as a plain source: a derived table around it is not read yet,
+and EF Core's own queries of an entity with a key put the raw SQL into a derived table, so a
+keyless type is the one that works.
 
 ## The SQL it generates
 
@@ -323,6 +323,7 @@ put the raw SQL into a derived table, so a keyless type is the one that works.
 | Concatenation | `\|\|`, which H2 has |
 | Parameters | named `@name`, which the engine rewrites into `?` before the statement is parsed |
 | Table alias | without the `AS`: `FROM "Blogs" "b"` — the grammar allows both spellings ("[ [ AS ] newTableAlias ]"), and this is the one the engine reads |
+| Type cast | `CAST(x AS y)` — the shorter `x::y` is PostgreSQL's, and H2 2.5 does not have it |
 
 The capabilities the provider declares are H2 2.5's, not the engine's current ones: a provider
 that declared the engine's abilities would be describing a database that does not exist.
@@ -336,7 +337,6 @@ it stands. The things that wait for the engine:
    |---|---|
    | `CREATE SCHEMA` | `CREATE [*]SCHEMA IF NOT EXISTS db2` — and the scaffolding makes a schema of its own before it asks about the tables in it |
 | `JOIN` | `FROM T3 a LEFT JOIN T3 b` — expected `statement`; and no join of any form is read, not a comma join and not `CROSS JOIN` either |
-| `AS` in front of a table alias | `SELECT a.Id FROM T3 AS a` — expected `statement` |
 | a derived table | `FROM (SELECT …) "t"` — `Table "(" not found` |
 | `IN (subquery)` | `IN with a subquery is not ported` |
 | `MERGE` | `MERGE INTO T AS t USING U AS u` — expected `statement` |

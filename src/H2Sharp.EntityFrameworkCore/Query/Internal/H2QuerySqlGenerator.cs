@@ -571,31 +571,15 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         {
             case ExpressionType.Convert:
             {
-                // PostgreSQL supports the standard CAST(x AS y), but also a lighter x::y which we use
-                // where there's no precedence issues
-                switch (sqlUnaryExpression.Operand)
-                {
-                    case SqlConstantExpression:
-                    case SqlParameterExpression:
-                    case SqlUnaryExpression { OperatorType: ExpressionType.Convert }:
-                    case ColumnExpression:
-                    case SqlFunctionExpression:
-                    case ScalarSubqueryExpression:
-                        var storeType = sqlUnaryExpression.TypeMapping.StoreType switch
-                        {
-                            "integer" => "int",
-                            "timestamp with time zone" => "timestamptz",
-                            "timestamp without time zone" => "timestamp",
-                            var s => s
-                        };
-
-                        Visit(sqlUnaryExpression.Operand);
-                        Sql.Append("::");
-                        Sql.Append(storeType);
-                        return sqlUnaryExpression;
-                }
-
-                break;
+                // H2 2.5 has no x::y: that is PostgreSQL's shorter cast, and the reference
+                // refuses it. The standard CAST(x AS y) is what H2 takes, and the type in it
+                // is the type of H2 -- "integer", not PostgreSQL's "int".
+                Sql.Append("CAST(");
+                Visit(sqlUnaryExpression.Operand);
+                Sql.Append(" AS ");
+                Sql.Append(sqlUnaryExpression.TypeMapping.StoreType);
+                Sql.Append(")");
+                return sqlUnaryExpression;
             }
 
             // Bitwise complement on networking types
