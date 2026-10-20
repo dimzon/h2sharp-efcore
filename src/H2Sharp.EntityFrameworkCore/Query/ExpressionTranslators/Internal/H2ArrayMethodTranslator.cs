@@ -79,15 +79,15 @@ public class H2ArrayMethodTranslator : IMethodCallTranslator
         // During preprocessing, ArrayIndex and List[] get normalized to ElementAt; so we handle indexing into array/list here
         if (method.IsClosedFormOf(Enumerable_ElementAt))
         {
-            // Indexing over bytea is special, we have to use function rather than subscript
+            // The byte at a position of a binary is not a thing H2 2.5 can say. PostgreSQL has
+            // get_byte for it; H2 has neither get_byte nor a cast of a binary to a number
+            // ("Data conversion error converting "BINARY VARYING to INTEGER""), and CONV -- the
+            // function that would read the hexadecimal -- H2 does not have either. What H2 has
+            // is SUBSTRING(b, i, 1), and that is a binary of one byte, not the number of the
+            // byte. The translation is therefore refused, and the byte is taken on the client.
             if (arguments[0].TypeMapping is H2ByteArrayTypeMapping)
             {
-                return _sqlExpressionFactory.Function(
-                    "get_byte",
-                    [arguments[0], arguments[1]],
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[2],
-                    typeof(byte));
+                return null;
             }
 
             // Try translating indexing inside JSON column
@@ -128,26 +128,19 @@ public class H2ArrayMethodTranslator : IMethodCallTranslator
         SqlExpression? TranslateCommon(SqlExpression arrayOrList, IReadOnlyList<SqlExpression> arguments)
 #pragma warning restore CS8321
         {
+            // The place of an element in an array is not a thing H2 2.5 can say. PostgreSQL has
+            // array_position for it, and the reference answers "Function "ARRAY_POSITION" not
+            // found" for it. What H2 has is ARRAY_CONTAINS, and that answers whether the array
+            // holds the element, not where. The translation is therefore refused, and the place
+            // is taken on the client.
+            //
+            // The same holds for the byte of a binary: see the ElementAt case above.
             if (method.IsClosedFormOf(Array_IndexOf1)
                 || method.Name == nameof(List<int>.IndexOf)
                 && method.DeclaringType.IsGenericList()
                 && method.GetParameters().Length == 1)
             {
-                var (item, array) = _sqlExpressionFactory.ApplyTypeMappingsOnItemAndArray(arguments[0], arrayOrList);
-
-                return _sqlExpressionFactory.Coalesce(
-                    _sqlExpressionFactory.Subtract(
-                        _sqlExpressionFactory.Function(
-                            "array_position",
-                            [array, item],
-                            nullable: true,
-                            // array_position can return NULL even if both its arguments are non-nullable;
-                            // this is currently the way to express that (see
-                            // https://github.com/dotnet/efcore/pull/33814#issuecomment-2687857927).
-                            FalseArrays[2],
-                            arrayOrList.Type),
-                        _sqlExpressionFactory.Constant(1)),
-                    _sqlExpressionFactory.Constant(-1));
+                return null;
             }
 
             if (method.IsClosedFormOf(Array_IndexOf2)
@@ -155,22 +148,7 @@ public class H2ArrayMethodTranslator : IMethodCallTranslator
                 && method.DeclaringType.IsGenericList()
                 && method.GetParameters().Length == 2)
             {
-                var (item, array) = _sqlExpressionFactory.ApplyTypeMappingsOnItemAndArray(arguments[0], arrayOrList);
-                var startIndex = _sqlExpressionFactory.GenerateOneBasedIndexExpression(arguments[1]);
-
-                return _sqlExpressionFactory.Coalesce(
-                    _sqlExpressionFactory.Subtract(
-                        _sqlExpressionFactory.Function(
-                            "array_position",
-                            [array, item, startIndex],
-                            nullable: true,
-                            // array_position can return NULL even if both its arguments are non-nullable;
-                            // this is currently the way to express that (see
-                            // https://github.com/dotnet/efcore/pull/33814#issuecomment-2687857927).
-                            FalseArrays[3],
-                            arrayOrList.Type),
-                        _sqlExpressionFactory.Constant(1)),
-                    _sqlExpressionFactory.Constant(-1));
+                return null;
             }
 
             // TODO: Enumerable Append and Concat are only here because primitive collections aren't handled in ExecuteUpdate,

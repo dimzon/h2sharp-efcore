@@ -494,33 +494,23 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         {
             (translatedItem, array) = _sqlExpressionFactory.ApplyTypeMappingsOnItemAndArray(translatedItem, array);
 
-            // When the array is a column, we translate Contains to array @> ARRAY[item]. GIN indexes on array are used, but null
-            // semantics is impossible without preventing index use.
+            // When the array is a column, we ask H2 whether the array holds the element.
+            // H2 2.5 has no containment operator for arrays: PostgreSQL's "arr @> ARRAY[item]"
+            // and the JSON "arr >> ARRAY[item]" are both unknown to it. What H2 has is
+            // ARRAY_CONTAINS(arr, item), and it answers the nulls the way .NET's Contains
+            // does: the reference answers TRUE for ARRAY_CONTAINS(ARRAY[1,NULL], NULL) and
+            // FALSE for ARRAY_CONTAINS(ARRAY[1,2], NULL).
             switch (array)
             {
                 case ColumnExpression:
-                    if (translatedItem is SqlConstantExpression { Value: null })
-                    {
-                        // We special-case null constant item and use array_position instead, since it does
-                        // nulls correctly (but doesn't use indexes)
-                        // TODO: once lambda-based caching is implemented, move this to H2SqlNullabilityProcessor
-                        // (https://github.com/dotnet/efcore/issues/17598) and do for parameters as well.
-                        return BuildSimplifiedShapedQuery(
-                            source,
-                            _sqlExpressionFactory.IsNotNull(
-                                _sqlExpressionFactory.Function(
-                                    "array_position",
-                                    [array, translatedItem],
-                                    nullable: true,
-                                    argumentsPropagateNullability: FalseArrays[2],
-                                    typeof(int))));
-                    }
-
                     return BuildSimplifiedShapedQuery(
                         source,
-                        _sqlExpressionFactory.Contains(
-                            array,
-                            _sqlExpressionFactory.NewArrayOrConstant([translatedItem], array.Type, array.TypeMapping)));
+                        _sqlExpressionFactory.Function(
+                            "array_contains",
+                            [array, translatedItem],
+                            nullable: true,
+                            argumentsPropagateNullability: TrueArrays[2],
+                            typeof(bool)));
 
                 // For constant arrays (new[] { 1, 2, 3 }) or inline arrays (new[] { 1, param, 3 }), don't do anything PG-specific for since
                 // the general EF Core mechanism is fine for that case: item IN (1, 2, 3).

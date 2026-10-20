@@ -95,10 +95,6 @@
     <Compile Remove="Query\AdHocPrecompiledQueryH2Test.cs" />
     <Compile Remove="Query\AdHocQueryFiltersQueryH2Test.cs" />
     <Compile Remove="Query\AdHocQuerySplittingQueryH2Test.cs" />
-    <Compile Remove="Query\ArrayArrayQueryTest.cs" />
-    <Compile Remove="Query\ArrayListQueryTest.cs" />
-    <Compile Remove="Query\ArrayQueryFixture.cs" />
-    <Compile Remove="Query\ArrayQueryTest.cs" />
     <Compile Remove="Query\BigIntegerQueryTest.cs" />
     <Compile Remove="Query\CharacterQueryH2Test.cs" />
     <Compile Remove="Query\CitextQueryTest.cs" />
@@ -272,3 +268,4 @@
   </ItemGroup>
 
 </Project>
+

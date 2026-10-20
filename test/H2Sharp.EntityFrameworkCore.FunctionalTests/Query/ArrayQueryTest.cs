@@ -254,10 +254,6 @@ public abstract class ArrayQueryTest<TFixture> : QueryTestBase<TFixture>
 
     [ConditionalTheory]
     [MemberData(nameof(IsAsyncData))]
-    public abstract Task Array_param_Contains_value_converted_array_column(bool async);
-
-    [ConditionalTheory]
-    [MemberData(nameof(IsAsyncData))]
     public virtual async Task Array_column_Contains_in_scalar_subquery(bool async)
         => await AssertQuery(
             async,
@@ -317,75 +313,6 @@ public abstract class ArrayQueryTest<TFixture> : QueryTestBase<TFixture>
     [MemberData(nameof(IsAsyncData))]
     public abstract Task All_ilike(bool async);
 
-    [ConditionalTheory]
-    [MemberData(nameof(IsAsyncData))]
-    public virtual async Task Any_Contains_on_constant_array(bool async)
-        => await AssertQuery(
-            async,
-            ss => ss.Set<ArrayEntity>().Where(e => new[] { 2, 3 }.Any(p => e.IntArray.Contains(p))));
-
-    [ConditionalTheory]
-    [MemberData(nameof(IsAsyncData))]
-    public virtual async Task Any_Contains_between_column_and_List(bool async)
-    {
-        var ints = new List<int> { 2, 3 };
-
-        await AssertQuery(
-            async,
-            ss => ss.Set<ArrayEntity>().Where(e => e.IntArray.Any(i => ints.Contains(i))));
-    }
-
-    [ConditionalTheory]
-    [MemberData(nameof(IsAsyncData))]
-    public virtual async Task Any_Contains_between_column_and_array(bool async)
-    {
-        var ints = new[] { 2, 3 };
-
-        await AssertQuery(
-            async,
-            ss => ss.Set<ArrayEntity>().Where(e => e.IntArray.Any(i => ints.Contains(i))));
-    }
-
-    [ConditionalTheory]
-    [MemberData(nameof(IsAsyncData))]
-    public abstract Task Any_Contains_between_column_and_other_type(bool async);
-
-    [ConditionalTheory]
-    [MemberData(nameof(IsAsyncData))]
-    public virtual async Task All_Contains(bool async)
-        => await AssertQuery(
-            async,
-            ss => ss.Set<ArrayEntity>().Where(e => new[] { 5, 6 }.All(p => e.IntArray.Contains(p))));
-
-    [ConditionalTheory]
-    [MemberData(nameof(IsAsyncData))]
-    public virtual async Task Any_like_column(bool async)
-        => await AssertQuery(
-            async,
-            ss => ss.Set<ArrayEntity>().Where(e => e.StringArray.Any(s => EF.Functions.Like(s, "3"))),
-            ss => ss.Set<ArrayEntity>().Where(e => e.StringArray.Any(s => s.Contains("3"))));
-
-    #endregion Any/All
-
-    #region New
-
-    [Theory]
-    [MemberData(nameof(IsAsyncData))]
-    public async Task New_array_with_columns(bool async)
-    {
-        await AssertQuery(
-            async,
-            ss => ss.Set<ArrayEntity>().Select(e => new[] { e.NullableText, e.NonNullableText }),
-            elementAsserter: Assert.Equal,
-            elementSorter: strings => strings != null ? string.Join(separator: "", strings) : null);
-
-        AssertSql(
-            """
-SELECT ARRAY[s."NullableText",s."NonNullableText"]::text[]
-FROM "SomeEntities" AS s
-""");
-    }
-
     [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task New_array_with_heterogeneous_columns_throws(bool async)
@@ -416,7 +343,7 @@ FROM "SomeEntities" AS s
 
         AssertSql(
             """
-SELECT ARRAY[s."Varchar10",s."Varchar15"]::varchar(15)[]
+SELECT ARRAY[s."Varchar10",s."Varchar15"]
 FROM "SomeEntities" AS s
 """);
     }
@@ -433,7 +360,7 @@ FROM "SomeEntities" AS s
 
         AssertSql(
             """
-SELECT ARRAY[s."NonNullableText",s."Varchar15"]::text[]
+SELECT ARRAY[s."NonNullableText",s."Varchar15"]
 FROM "SomeEntities" AS s
 """);
     }
@@ -450,7 +377,7 @@ FROM "SomeEntities" AS s
 
         AssertSql(
             """
-SELECT ARRAY[s."Id"::text,s."Varchar15"]::text[]
+SELECT ARRAY[CAST(s."Id" AS varchar),s."Varchar15"]
 FROM "SomeEntities" AS s
 """);
     }
@@ -467,7 +394,7 @@ FROM "SomeEntities" AS s
 
         AssertSql(
             """
-SELECT ARRAY[s."NonNullableText",COALESCE(s."NullableText", '')]::text[]
+SELECT ARRAY[s."NonNullableText",COALESCE(s."NullableText", '')]
 FROM "SomeEntities" AS s
 """);
     }
@@ -491,14 +418,6 @@ FROM "SomeEntities" AS s
             async,
             ss => ss.Set<ArrayEntity>()
                 .Where(e => e.IntArray.Concat(new[] { 5, 6 }).SequenceEqual(new[] { 3, 4, 5, 6 })));
-
-    [ConditionalTheory]
-    [MemberData(nameof(IsAsyncData))]
-    public abstract Task Array_IndexOf1(bool async);
-
-    [ConditionalTheory]
-    [MemberData(nameof(IsAsyncData))]
-    public abstract Task Array_IndexOf2(bool async);
 
     // Note: see NorthwindFunctionsQueryH2Test.String_Join_non_aggregate for regular use without an array column/parameter
     [ConditionalTheory]

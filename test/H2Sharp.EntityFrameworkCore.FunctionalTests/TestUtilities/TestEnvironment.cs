@@ -43,24 +43,16 @@ public static class TestEnvironment
         }
     }
 
-    private static bool? _isPostgisAvailable;
-
-    public static bool IsPostgisAvailable
-    {
-        get
-        {
-            if (_isPostgisAvailable.HasValue)
-            {
-                return _isPostgisAvailable.Value;
-            }
-
-            using var conn = new H2Connection(H2TestStore.CreateConnectionString("postgres"));
-            conn.Open();
-            using var cmd = conn.CreateCommand();
-
-            cmd.CommandText = "SELECT EXISTS (SELECT 1 FROM pg_available_extensions WHERE \"name\" = 'postgis' LIMIT 1)";
-            _isPostgisAvailable = (bool)cmd.ExecuteScalar();
-            return _isPostgisAvailable.Value;
-        }
-    }
+    /// <summary>
+    ///     Whether the database has PostGIS.
+    /// </summary>
+    /// <remarks>
+    ///     H2 has no PostGIS, and the answer does not depend on the database: it is "no". The
+    ///     question was asked of the database before ("SELECT EXISTS (SELECT 1 FROM
+    ///     pg_available_extensions …)"), and that question killed the test host: the engine does
+    ///     not read EXISTS, the exception came out of the check of the condition of a test, and
+    ///     an exception there is not caught by anybody -- xunit rethrows it on the thread pool,
+    ///     and the process dies with it. The rest of the run never happens.
+    /// </remarks>
+    public static bool IsPostgisAvailable => false;
 }

@@ -20,9 +20,9 @@
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 937 | 0 | 937 |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 940 | 0 | 940 |
    | `H2Sharp.EntityFrameworkCore.Tests` | 111 | 0 | 111 |
-   | **Итого** | **1048** | **0** | **1048** |
+   | **Итого** | **1051** | **0** | **1051** |
 
    Набор `H2Sharp.EntityFrameworkCore.Tests` собирается по-разному в Debug и в Release: четыре
    теста `LegacyH2TypeMappingTest` написаны под `#if DEBUG`. В Debug их 115, и два из них
@@ -32,8 +32,8 @@
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 937 | 0 | 937 |
-   | `Category=BlockedByPort` | 17 | 191 | 210 |
+   | `Category!=BlockedByPort` | 940 | 0 | 940 |
+   | `Category=BlockedByPort` | 17 | 442 | 465 |
 
    Два теста пропущены в обоих прогонах. Числа выше — на `net10.0`, против движка с
    `FINAL TABLE`, с последовательностями и с `AS` у псевдонима.
@@ -102,6 +102,39 @@
 массива не разбирается. Остальное движок читает: `LOCATE`, `MOD`, `YEAR`, `MONTH`, `DAY`,
 `DAY_OF_YEAR`, `HOUR`, `MINUTE`, `SECOND`, `ISO_DAY_OF_WEEK`, `EXTRACT` у него есть. Пробел
 движка с типом `ARRAY` записан в issue #14 движка.
+
+## Массивы: что провайдер пишет, а чего у H2 2.5 нет вовсе
+
+Набор тестов массивов (`ArrayArrayQueryTest`, `ArrayListQueryTest`) вернулся в сборку: он был
+исключён из неё вместе с файлами, которые «ещё не перенесены». Формы в нём переписаны на H2'овские,
+а то, для чего у H2 ответа нет, из него убрано.
+
+| Что | Форма PostgreSQL | Форма H2 2.5 | Что говорит эталон |
+|---|---|---|---|
+| «содержит элемент» | `arr @> ARRAY[item]` | `array_contains(arr, item)` | операторов-вместимости у H2 нет; `ARRAY_CONTAINS(ARRAY[1,NULL], NULL)` → TRUE, как и .NET'овский `Contains` |
+| «содержит null» | `array_position(arr, NULL) IS NOT NULL` | `array_contains(arr, NULL)` | то же |
+| «не содержит null» | `array_position(arr, NULL) IS NULL` | `not array_contains(arr, NULL)` | то же |
+| элемент по номеру | `arr[1]` | `arr[1]` | у H2 такая же нумерация с единицы |
+| срез массива | `arr[1:2]` | `array_slice(arr, 1, 2)` | синтаксиса среза у H2 нет: `expected "[, ., ::, AT, FORMAT, …"` |
+| массив из подзапроса | `= ANY ((SELECT …)::integer[])` | `= ANY (CAST((SELECT …) AS integer ARRAY))` | без приведения H2 считает правую часть запросом, а не массивом: «Values of types "INTEGER" and "INTEGER ARRAY[3]" are not comparable» |
+| квантованное сравнение | `x = ANY (arr)` | `x = ANY (arr)` | форма общая: `SELECT 1 = ANY(ARRAY[1,2,3])` → TRUE |
+
+**Чего у H2 2.5 нет, и потому перевода нет:**
+
+| Поведение | Форма PostgreSQL | Почему её нет у H2 |
+|---|---|---|
+| место элемента в массиве | `array_position(arr, item)` | `Function "ARRAY_POSITION" not found`; `ARRAY_CONTAINS` отвечает, есть ли элемент, а не где он |
+| байт двоичного по номеру | `get_byte(b, i)` | функции `get_byte` у H2 нет, и двоичное не приводится к числу («Data conversion error converting "BINARY VARYING to INTEGER"») |
+| пересечение двух массивов | `arr1 && arr2` | оператора `&&` у H2 нет |
+| один массив в другом | `arr1 <@ arr2` | оператора `<@` у H2 нет |
+| элементы массива строками | `LEFT JOIN LATERAL unnest(arr) WITH ORDINALITY` | и `UNNEST`, и `LATERAL` у H2 нет; форма H2 — таблица-диапазон и элемент по номеру: `SELECT t.id, r.x, array_get(t.arr, r.x) FROM t, system_range(1, 65536) r WHERE r.x <= array_length(t.arr)`, но элемент там — выражение над строкой, а в модели EF коллекция это столбец присоединённой таблицы ⇒ форму H2 в модель EF не записать |
+
+Первые три поведения переводятся на клиентскую сторону (EF читает значение и считает на клиенте),
+последние два — у H2 ответа нет, и тесты на них из набора убраны.
+
+**Что осталось в наборе.** 204 теста, и все они красные по одной причине: движок не читает тип
+`ARRAY`, таблица фикстуры не создаётся, и тест падает, не начавшись. Набор помечен трейтом
+`BlockedByPort` — это пробел движка, а не провайдера (issue #14 движка).
 
 ## Проверено против эталона
 

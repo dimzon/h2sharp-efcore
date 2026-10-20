@@ -182,26 +182,12 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// </summary>
     protected override Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
     {
-        Sql.Append("JOIN LATERAL ");
-
-        if (crossApplyExpression.Table is TableExpression table)
-        {
-            // PostgreSQL doesn't support LATERAL JOIN over table, and it doesn't really make sense to do it - but EF Core
-            // will sometimes generate that. #1560
-            Sql
-                .Append("(SELECT * FROM ")
-                .Append(_sqlGenerationHelper.DelimitIdentifier(table.Name, table.Schema))
-                .Append(")")
-                .Append(AliasSeparator)
-                .Append(_sqlGenerationHelper.DelimitIdentifier(table.Alias));
-        }
-        else
-        {
-            Visit(crossApplyExpression.Table);
-        }
-
-        Sql.Append(" ON TRUE");
-        return crossApplyExpression;
+        // H2 2.5 has no LATERAL: the word is not in its grammar, and the reference refuses
+        // "JOIN LATERAL" with a syntax error. A cross apply over a table can still be written
+        // as a cross join with the condition in the where clause, but a cross apply over a
+        // subquery that reads the row of the outer table cannot be written at all.
+        throw new InvalidOperationException(
+            "H2 2.5 has no LATERAL, so a cross apply cannot be written as SQL. See docs/DIVERGENCES.md.");
     }
 
     /// <summary>
@@ -212,26 +198,10 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// </summary>
     protected override Expression VisitOuterApply(OuterApplyExpression outerApplyExpression)
     {
-        Sql.Append("LEFT JOIN LATERAL ");
-
-        if (outerApplyExpression.Table is TableExpression table)
-        {
-            // PostgreSQL doesn't support LATERAL JOIN over table, and it doesn't really make sense to do it - but EF Core
-            // will sometimes generate that. #1560
-            Sql
-                .Append("(SELECT * FROM ")
-                .Append(_sqlGenerationHelper.DelimitIdentifier(table.Name, table.Schema))
-                .Append(")")
-                .Append(AliasSeparator)
-                .Append(_sqlGenerationHelper.DelimitIdentifier(table.Alias));
-        }
-        else
-        {
-            Visit(outerApplyExpression.Table);
-        }
-
-        Sql.Append(" ON TRUE");
-        return outerApplyExpression;
+        // H2 2.5 has no LATERAL: the word is not in its grammar, and the reference refuses
+        // "LEFT JOIN LATERAL" with a syntax error.
+        throw new InvalidOperationException(
+            "H2 2.5 has no LATERAL, so an outer apply cannot be written as SQL. See docs/DIVERGENCES.md.");
     }
 
     /// <inheritdoc />
@@ -899,25 +869,42 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// </summary>
     protected virtual Expression VisitArraySlice(PgArraySliceExpression expression)
     {
-        var requiresParentheses = RequiresParentheses(expression, expression.Array);
+        // A slice of an array is a function in H2 2.5 and not a piece of syntax: the reference
+        // refuses "arr[1:2]" ("expected "[, ., ::, AT, FORMAT, *, /, %, +, -, ||, NOT, IS,
+        // ILIKE, REGEXP, AND, OR, ]"") and takes ARRAY_SLICE(arr, 1, 2), which answers the same
+        // "[10, 20]" for the array [10, 20, 30]. The positions are counted from one in both, and
+        // the ends are included in both.
+        Sql.Append("ARRAY_SLICE(");
+        Visit(expression.Array);
+        Sql.Append(", ");
 
-        if (requiresParentheses)
+        // An open end is the first or the last element. H2's function takes both ends, and a
+        // missing one is NULL there ("ARRAY_SLICE" answers NULL for a NULL bound), so the open
+        // ends are written out: the first element is 1, the last is the size of the array.
+        if (expression.LowerBound is null)
         {
-            Sql.Append("(");
+            Sql.Append("1");
+        }
+        else
+        {
+            Visit(expression.LowerBound);
         }
 
-        Visit(expression.Array);
+        Sql.Append(", ");
 
-        if (requiresParentheses)
+        if (expression.UpperBound is null)
         {
+            Sql.Append("CARDINALITY(");
+            Visit(expression.Array);
             Sql.Append(")");
         }
+        else
+        {
+            Visit(expression.UpperBound);
+        }
 
-        Sql.Append("[");
-        Visit(expression.LowerBound);
-        Sql.Append(":");
-        Visit(expression.UpperBound);
-        Sql.Append("]");
+        Sql.Append(")");
+
         return expression;
     }
 
@@ -1184,6 +1171,26 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// </summary>
     protected virtual Expression VisitPgTableValuedFunctionExpression(PgTableValuedFunctionExpression tableValuedFunctionExpression)
     {
+        // The elements of an array as rows are not a thing H2 2.5 can say: there is no UNNEST,
+        // and no LATERAL either. The reference reads the elements of an array with a range
+        // table and the element at a place:
+        //
+        //   SELECT t.id, r.x, ARRAY_GET(t.arr, r.x)
+        //     FROM t, SYSTEM_RANGE(1, 65536) r
+        //    WHERE r.x <= ARRAY_LENGTH(t.arr)
+        //
+        // The element there is an expression over the row of the table, and not a column of a
+        // table that is joined -- and the model EF has of a collection is exactly a table whose
+        // column is the element. So the form H2 has cannot be written in the model EF has, and
+        // the table of the elements is refused rather than written in PostgreSQL's words:
+        // PostgreSQL's "unnest(arr) WITH ORDINALITY" the reference refuses ("expected
+        // "statement"").
+        if (tableValuedFunctionExpression is PgUnnestExpression)
+        {
+            throw new InvalidOperationException(
+                "H2 2.5 has no UNNEST and no LATERAL, so the elements of an array cannot be rows here. See docs/DIVERGENCES.md.");
+        }
+
         // PostgresTableValuedFunctionExpression extends the standard TableValuedFunctionExpression, adding the possibility to specify
         // column names and types at the end, as well as an optional WITH ORDINALITY to project an index out.
 
