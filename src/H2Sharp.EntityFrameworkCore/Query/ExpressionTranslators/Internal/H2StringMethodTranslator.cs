@@ -195,12 +195,15 @@ public class H2StringMethodTranslator : IMethodCallTranslator
             var argument = arguments[0];
             var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance!, argument);
 
+            // H2 2.5 writes the searched string first: LOCATE(searchString, string). The
+            // position LOCATE gives is one-based, and .NET's IndexOf is zero-based, hence
+            // the one that is taken off.
             return _sqlExpressionFactory.Subtract(
                 _sqlExpressionFactory.Function(
                     "LOCATE",
                     [
-                        _sqlExpressionFactory.ApplyTypeMapping(instance!, stringTypeMapping),
-                        _sqlExpressionFactory.ApplyTypeMapping(argument, stringTypeMapping)
+                        _sqlExpressionFactory.ApplyTypeMapping(argument, stringTypeMapping),
+                        _sqlExpressionFactory.ApplyTypeMapping(instance!, stringTypeMapping)
                     ],
                     nullable: true,
                     argumentsPropagateNullability: TrueArrays[2],

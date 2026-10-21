@@ -654,9 +654,12 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                 // Special-case arrays of objects, not taking the array CLR type into account in the lookup (it would never succeed).
                 // Note that we provide both the array CLR type *and* an array store type constructed from the element's store type.
                 // If we use only the array CLR type, byte[] will yield bytea which we don't want.
+                // The store type of the array is written the way H2 2.5 writes it: the type of the
+                // element and the word ARRAY after it ("integer ARRAY"). The brackets of
+                // PostgreSQL ("integer[]") H2 does not know.
                 arrayMapping = arrayExpression.Type.TryGetSequenceType() == typeof(object)
-                    ? _typeMappingSource.FindMapping(itemMapping.StoreType + "[]")
-                    : _typeMappingSource.FindMapping(arrayExpression.Type, itemMapping.StoreType + "[]");
+                    ? _typeMappingSource.FindMapping(itemMapping.StoreType + " ARRAY")
+                    : _typeMappingSource.FindMapping(arrayExpression.Type, itemMapping.StoreType + " ARRAY");
             }
 
             if (arrayMapping is null)
@@ -1002,10 +1005,12 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         else
         {
             // An element type mapping was successfully inferred from one of the expressions (there was a column).
-            // Infer the array's type mapping from it.
+            // Infer the array's type mapping from it. The store type of the array is written the
+            // way H2 2.5 writes it: the type of the element and the word ARRAY after it
+            // ("varchar ARRAY"). The brackets of PostgreSQL ("varchar[]") H2 does not know.
             arrayTypeMapping = (H2ArrayTypeMapping?)_typeMappingSource.FindMapping(
                 pgNewArrayExpression.Type,
-                elementTypeMapping.StoreType + "[]");
+                elementTypeMapping.StoreType + " ARRAY");
 
             // If the array's CLR type doesn't match the type mapping inferred from the element (e.g. CLR object[] with up-casted
             // elements). Just return the original expression, which has no type mapping and will fail translation.

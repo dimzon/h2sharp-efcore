@@ -1,3 +1,5 @@
+using System.Data;
+using System.Data.Common;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
@@ -92,4 +94,42 @@ public class H2TimeTypeMapping : H2TypeMapping
                 : t.ToString(@"HH\:mm\:ss\.FFFFFF", CultureInfo.InvariantCulture),
             _ => throw new InvalidCastException($"Can't generate a time SQL literal for CLR type {value.GetType()}")
         };
+
+    /// <summary>
+    ///     The parameter that carries the time to the database.
+    /// </summary>
+    /// <remarks>
+    ///     The ADO layer of the engine reads a time back as a <see cref="TimeSpan" />, but it takes
+    ///     a time into the database as a <see cref="TimeOnly" />: a <see cref="TimeSpan" /> would
+    ///     arrive as an interval, and the engine refuses to put an interval into a time. The value
+    ///     that comes from the conversion of the model type is therefore turned back into the type
+    ///     the engine takes.
+    /// </remarks>
+    /// <param name="command">The command the parameter belongs to.</param>
+    /// <param name="name">The name of the parameter.</param>
+    /// <param name="value">The value of the parameter.</param>
+    /// <param name="nullable">Whether the parameter holds nothing.</param>
+    /// <param name="direction">The direction of the parameter.</param>
+    /// <returns>The parameter.</returns>
+    public override DbParameter CreateParameter(
+        DbCommand command,
+        string name,
+        object? value,
+        bool? nullable = null,
+        ParameterDirection direction = ParameterDirection.Input)
+    {
+        var parameter = base.CreateParameter(command, name, value, nullable, direction);
+
+        // The conversion of the model type has already turned the time into a TimeSpan by now,
+        // and the ADO layer of the engine takes a time into the database as a TimeOnly: a
+        // TimeSpan would arrive as an interval, and the engine refuses to put an interval into
+        // a time. The value of the parameter is therefore turned back into the type the engine
+        // takes.
+        if (parameter.Value is TimeSpan span)
+        {
+            parameter.Value = TimeOnly.FromTimeSpan(span);
+        }
+
+        return parameter;
+    }
 }

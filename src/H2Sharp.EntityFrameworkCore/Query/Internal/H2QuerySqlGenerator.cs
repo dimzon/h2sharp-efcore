@@ -578,6 +578,19 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 return sqlUnaryExpression;
             }
 
+            case ExpressionType.Negate:
+            {
+                // The engine does not read the negation of an expression: "SELECT -N FROM T" is
+                // refused with "expected number", and so is "SELECT ABS(-N) FROM T". The
+                // difference from zero is the same thing written the way the engine reads it,
+                // and H2 2.5 takes both. The whole difference is in brackets, so that the
+                // negation keeps its place in the expression around it.
+                Sql.Append("(0 - ");
+                Visit(sqlUnaryExpression.Operand);
+                Sql.Append(")");
+                return sqlUnaryExpression;
+            }
+
             // Bitwise complement on networking types
             case ExpressionType.Not when
                 sqlUnaryExpression.Operand.TypeMapping.ClrType == typeof(IPAddress)

@@ -137,22 +137,21 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
     /// <inheritdoc />
     public override bool HasTables()
     {
-        if (Schema is { } schema)
-        {
-            using var connection = OpenConnection();
-            using var command = connection.CreateCommand();
-            command.CommandText =
-                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @p";
+        // The tables of the model live in the schema of the model, and the schema of the model
+        // is the one H2 makes for the database when the model does not name one: PUBLIC.
+        var schema = Schema ?? "PUBLIC";
 
-            var parameter = command.CreateParameter();
-            parameter.ParameterName = "p";
-            parameter.Value = schema;
-            command.Parameters.Add(parameter);
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @p";
 
-            return Convert.ToInt64(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0;
-        }
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "p";
+        parameter.Value = schema;
+        command.Parameters.Add(parameter);
 
-        return false;
+        return Convert.ToInt64(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0;
     }
 
     /// <inheritdoc />

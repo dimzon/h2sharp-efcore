@@ -316,6 +316,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             }
 
             if ((storeTypeName.EndsWith("[]", StringComparison.Ordinal)
+                    || storeTypeName.EndsWith(" ARRAY", StringComparison.Ordinal)
                     || storeTypeName is "int4multirange" or "int8multirange" or "nummultirange" or "datemultirange" or "tsmultirange"
                         or "tstzmultirange")
                 && FindCollectionMapping(mappingInfo, mappingInfo.ClrType, providerType: null, elementMapping: null) is
@@ -438,10 +439,16 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
                 relationalElementMapping)!;
         }
 
-        if (storeType.EndsWith("[]", StringComparison.Ordinal))
+        if (storeType.EndsWith("[]", StringComparison.Ordinal) || storeType.EndsWith(" ARRAY", StringComparison.Ordinal))
         {
-            // We have an array store type (either because we're reverse engineering or the user explicitly specified it)
-            var elementStoreType = storeType.Substring(0, storeType.Length - 2);
+            // We have an array store type (either because we're reverse engineering or the user explicitly specified it).
+            // H2 2.5 writes the type of an array as the type of its elements and the word ARRAY after
+            // it ("integer ARRAY"); the brackets of PostgreSQL ("integer[]") it does not know, but a
+            // store type written that way is still read, so that the mapping of an array found in a
+            // database is the same as the one the model asks for.
+            var elementStoreType = storeType.EndsWith(" ARRAY", StringComparison.Ordinal)
+                ? storeType.Substring(0, storeType.Length - " ARRAY".Length)
+                : storeType.Substring(0, storeType.Length - 2);
 
             // Note that we ignore the elementMapping argument here (but not in the CLR type-only path above).
             // This is because the user-provided storeType for the array should take precedence over the element type mapping that gets

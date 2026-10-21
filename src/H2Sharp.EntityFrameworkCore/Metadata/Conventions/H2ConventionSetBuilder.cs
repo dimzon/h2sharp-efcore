@@ -50,6 +50,7 @@ public class H2ConventionSetBuilder : RelationalConventionSetBuilder
             new RelationalMaxIdentifierLengthConvention(63, Dependencies, RelationalDependencies));
 
         conventionSet.PropertyAddedConventions.Add(new H2JsonElementHackConvention());
+        conventionSet.PropertyAddedConventions.Add(new H2DateAndTimeConvention());
 
         ValueGenerationConvention valueGenerationConvention = new H2ValueGenerationConvention(Dependencies, RelationalDependencies);
         ReplaceConvention(conventionSet.EntityTypeBaseTypeChangedConventions, valueGenerationConvention);

@@ -86,6 +86,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
 
             PopulateTables(dbConnection, databaseModel, schemas, tables);
             PopulateKeys(dbConnection, databaseModel, schemas);
+            PopulateIndexes(dbConnection, databaseModel, schemas);
             PopulateSequences(dbConnection, databaseModel, schemas);
             PopulateForeignKeys(dbConnection, databaseModel);
 
@@ -154,7 +155,10 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
 
                 if (current is null || !string.Equals(current.Name, tableName, StringComparison.Ordinal))
                 {
-                    current = wanted.Any(t => Matches(t, schema, tableName))
+                    // An empty list of the wanted tables means every table of the schema, the way
+                    // it means it in EF Core: a list that names a table asks for that table and
+                    // only that one.
+                    current = wanted.Count == 0 || wanted.Any(t => Matches(t, schema, tableName))
                         ? new DatabaseTable { Database = databaseModel, Schema = schema, Name = tableName }
                         : null;
 
@@ -174,28 +178,43 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         // DECLARED_DATA_TYPE is the type as written in the DDL ("VARCHAR(50)", "NUMERIC(10, 2)"); DATA_TYPE
         // is only the base name. EF Core's scaffolding model keeps the whole thing in StoreType and has no
         // separate precision or length, so the declared form is what has to be carried.
+        // The numbers are the numbers of the columns of the query above: TABLE_NAME,
+        // ORDINAL_POSITION, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, IS_IDENTITY,
+        // IDENTITY_GENERATION, IS_GENERATED, GENERATION_EXPRESSION, COLUMN_DEFAULT,
+        // DECLARED_DATA_TYPE.
         var column = new DatabaseColumn
         {
             Name = reader.GetString(2),
             StoreType = reader.IsDBNull(10) ? reader.GetString(3) : reader.GetString(10),
-            IsNullable = reader.GetString(5) == "YES",
-            DefaultValueSql = reader.IsDBNull(9) ? null : reader.GetString(9)
+            IsNullable = reader.GetString(4) == "YES",
+            DefaultValueSql = Text(reader, 9)
         };
 
-        if (reader.GetString(6) == "YES")
+        // The columns of the catalogue that say how a column is made are empty when the column
+        // is made in the ordinary way, and the reference leaves them empty too.
+        if (reader.GetString(5) == "YES")
         {
-            column.ValueGenerated = reader.GetString(7) == "ALWAYS"
+            column.ValueGenerated = Text(reader, 6) == "ALWAYS"
                 ? ValueGenerated.OnAddOrUpdate
                 : ValueGenerated.OnAdd;
         }
-        else if (reader.GetString(8) == "ALWAYS")
+        else if (reader.GetString(7) == "ALWAYS")
         {
             column.ValueGenerated = ValueGenerated.OnAddOrUpdate;
-            column.ComputedColumnSql = reader.IsDBNull(9) ? null : reader.GetString(9);
+            column.ComputedColumnSql = Text(reader, 8);
         }
 
         return column;
     }
+
+    /// <summary>
+    ///     The text of a column of the catalogue, or nothing when the column is empty.
+    /// </summary>
+    /// <param name="reader">The reader over the catalogue.</param>
+    /// <param name="ordinal">The number of the column.</param>
+    /// <returns>The text, or null.</returns>
+    private static string? Text(DbDataReader reader, int ordinal)
+        => reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);
 
     private static void PopulateKeys(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
     {
@@ -239,6 +258,11 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 if (constraintType == "PRIMARY KEY")
                 {
                     table.PrimaryKey ??= new DatabasePrimaryKey { Name = constraintName, Table = table };
+
+                    if (!reader.IsDBNull(3) && Find(table, reader.GetString(3)) is { } keyColumn)
+                    {
+                        table.PrimaryKey.Columns.Add(keyColumn);
+                    }
                 }
                 else
                 {
@@ -253,6 +277,75 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                     {
                         existing.Columns.Add(column);
                     }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Reads the indexes of the tables.
+    /// </summary>
+    /// <remarks>
+    ///     H2 keeps the columns of an index in INFORMATION_SCHEMA.INDEX_COLUMNS rather than on the
+    ///     index itself, and the indexes that stand for the primary keys are marked as generated:
+    ///     they are the keys, and the keys are read on their own.
+    /// </remarks>
+    /// <param name="connection">The connection to the database.</param>
+    /// <param name="databaseModel">The model to fill.</param>
+    /// <param name="schemas">The schemas to read.</param>
+    private static void PopulateIndexes(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
+    {
+        foreach (var schema in schemas)
+        {
+            using var command = connection.CreateCommand();
+
+            command.CommandText = """
+                SELECT i.INDEX_NAME, i.TABLE_NAME, i.INDEX_TYPE_NAME, c.COLUMN_NAME
+                FROM INFORMATION_SCHEMA.INDEXES i
+                JOIN INFORMATION_SCHEMA.INDEX_COLUMNS c
+                     ON c.INDEX_SCHEMA = i.INDEX_SCHEMA
+                    AND c.INDEX_NAME = i.INDEX_NAME
+                WHERE i.INDEX_SCHEMA = @p_schema
+                  AND i.IS_GENERATED = FALSE
+                ORDER BY i.INDEX_NAME, c.ORDINAL_POSITION
+                """;
+
+            command.Parameters.Add(Parameter(command, "p_schema", schema));
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                if (reader.IsDBNull(0) || reader.IsDBNull(1))
+                {
+                    continue;
+                }
+
+                var indexName = reader.GetString(0);
+                var tableName = reader.GetString(1);
+                var indexType = reader.IsDBNull(2) ? null : reader.GetString(2);
+
+                var table = Find(databaseModel, schema, tableName);
+                if (table is null)
+                {
+                    continue;
+                }
+
+                var index = table.Indexes.FirstOrDefault(i => i.Name == indexName);
+                if (index is null)
+                {
+                    index = new DatabaseIndex
+                    {
+                        Name = indexName,
+                        Table = table,
+                        IsUnique = indexType is not null && indexType.StartsWith("UNIQUE", StringComparison.Ordinal)
+                    };
+
+                    table.Indexes.Add(index);
+                }
+
+                if (!reader.IsDBNull(3) && Find(table, reader.GetString(3)) is { } column)
+                {
+                    index.Columns.Add(column);
                 }
             }
         }
