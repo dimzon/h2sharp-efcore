@@ -224,7 +224,7 @@ GROUP BY "p"."TopicId"
 | 3 | **`FOREIGN KEY` в `CREATE TABLE`** | ошибка `ожидалось "PRIMARY"` | констрейнты (фаза 7 ROADMAP h2sharp) |
 | 4 | **Типы `INTERVAL`** | `interval day to second` → `ожидалось "INTERVAL"` | интервальные типы в парсере; без квалификатора `INTERVAL` типом не является |
 | 5 | **`DB_CLOSE_DELAY` для in-memory базы** | база исчезает вместе с последним соединением, настройка не действует | `DB_CLOSE_DELAY`, иначе in-memory база не переживает `EnsureCreated` |
-   | 6 | **`CREATE SCHEMA`** | `CREATE [*]SCHEMA IF NOT EXISTS db2` | схемы; скаффолдинг делает схему себе перед тем, как спросить о её таблицах |
+   | 6 | **`CREATE SCHEMA`** | **читается** (движок перенёс схемы): `CREATE SCHEMA IF NOT EXISTS db2` принимается | — |
    | 7 | **`ALTER TABLE`** | `ALTER TABLE … ALTER COLUMN …` → `Not ported yet: Parser.readAlterTable: only ADD and DROP CONSTRAINT are ported` | `ALTER TABLE` целиком: пока читаются только `ADD` и `DROP CONSTRAINT` |
    | 8 | **Каталог отличается от эталонного** | имя каталога — путь базы в URL, а не имя базы; collation колонки пуст | каталог как в H2 2.5 |
    | 9 | **`EXISTS` и `NOT EXISTS`** | `Not ported yet: Parser.readTerm: the keyword function EXISTS is not ported` | `EXISTS` в условии: без него `Any` и `All` не читаются |
@@ -242,7 +242,8 @@ GROUP BY "p"."TopicId"
    последовательности (`CREATE SEQUENCE`, `NEXT VALUE FOR`), типизированный литерал в
    `DEFAULT`, `AS` у псевдонима таблицы и столбца, кавыченная ссылка на столбец, знак перед
    членом (`-x`), производная таблица, склейка строк через `CONCAT`, `VALUES`-таблица
-   (`VALUES (1), (2)`) и общее табличное выражение (`WITH c AS (…)`) — их порт перенёс, и
+   (`VALUES (1), (2)`), общее табличное выражение (`WITH c AS (…)`) и схемы
+   (`CREATE SCHEMA IF NOT EXISTS`) — их порт перенёс, и
    провайдер пишет ровно то, что H2 2.5 требует. Предел в восемь параметров
    на команду тоже снят: порт держит растущее множество параметров и тот же предел, что
    эталон, `MAX_PARAMETER_INDEX = 100_000` (dimzon/h2sharp#15).
@@ -354,16 +355,16 @@ EF-овым (полнотекстовый поиск `tsvector`, `CREATE COLLATI
 |---|---:|---|
 | таблица осталась от прошлого теста: `EnsureDeleted` не удаляет, а `DROP ALL OBJECTS` движок не читает | 127 | следствие: движок |
 | `COMMENT ON` не разбирается | 6 | движок |
-| `CREATE TYPE … AS ENUM` не разбирается | 8 | движок |
+   | `CREATE TYPE … AS ENUM` не разбирается | 9 | движок |
 | `LEFT JOIN` не разбирается | 7 | движок |
-| `COLLATE`, `CREATE COLLATION` | 3 | **провайдер**: в H2 2.5 нет ни того, ни другого |
-| `CREATE SCHEMA` не разбирается | 7 | движок |
-| `ALTER TABLE` — `RENAME TO`, `ALTER COLUMN`, `DROP COLUMN`, `ADD CONSTRAINT … FOREIGN KEY` | 4 | движок |
-| `CREATE TABLE` с массивом, с генерируемым столбцом или с внешним ключом | 8 | движок |
-| прочее: схема в имени таблицы | 1 | движок |
+   | `COLLATE`, `CREATE COLLATION` | 3 | **провайдер**: в H2 2.5 нет ни того, ни другого |
+   | `ALTER TABLE` — `RENAME TO`, `ALTER COLUMN`, `DROP COLUMN`, `ADD CONSTRAINT … FOREIGN KEY` | 4 | движок |
+   | `CREATE TABLE` с массивом, с генерируемым столбцом или с внешним ключом | 8 | движок: «Not ported yet: Parser.readCreateTable: table constraints other than the primary key are not ported» |
+   | прочее: схема в имени таблицы | 1 | движок |
 
-`UNLOGGED TABLE` из списка ушла: слова `UNLOGGED` в H2 2.5 нет, и провайдер его больше не пишет —
-ни в DDL, ни в своём API (`IsUnlogged` убран). `CREATE TYPE … AS ENUM` остаётся: перечисления у
+`CREATE SCHEMA` из списка ушла: схемы порт с тех пор читает. `UNLOGGED TABLE` из списка ушла
+тоже: слова `UNLOGGED` в H2 2.5 нет, и провайдер его больше не пишет — ни в DDL, ни в своём API
+(`IsUnlogged` убран). `CREATE TYPE … AS ENUM` остаётся: перечисления у
 H2 2.5 **есть** (тип `ENUM('a','b')` и домен `CREATE TYPE x AS ENUM(...)`), форма провайдера
 эталону подходит, и не читает её пока порт.
 
