@@ -20,10 +20,10 @@
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 957 | 442 | 1399 |
-   | `H2Sharp.EntityFrameworkCore.Tests` | 113 | 2 | 115 |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 957 | 439 | 1396 |
+   | `H2Sharp.EntityFrameworkCore.Tests` | 109 | 0 | 109 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 161 | 18 | 179 |
-   | **Итого** | **1231** | **462** | **1693** |
+   | **Итого** | **1227** | **457** | **1684** |
 
    Два красных — тесты `LegacyH2TypeMappingTest`, помеченные `#if DEBUG`; их результат зависит
    от порядка, в котором отработали тесты функционального набора, и от порта он не зависит
@@ -100,6 +100,8 @@
 | агрегат массива | `array_agg(x)` | `ARRAY_AGG(x)` — имя H2 2.5 |
 | агрегат json | `json_agg(x)`, `json_object_agg(k, v)` | `JSON_ARRAYAGG(x)`, `JSON_OBJECTAGG(k, v)` — имена H2 2.5 |
 | псевдоним столбца | `AS` — потому что порт не читал псевдоним без него | `AS` — как в EF Core; писать без `AS` EF Core не умеет: разделитель он пишет без пробела |
+| `UNLOGGED TABLE` | `CREATE UNLOGGED TABLE` — слова `UNLOGGED` у H2 2.5 нет, и таблица не создаётся | слова нет — и в API провайдера (`IsUnlogged` убран), и в DDL: провайдер пишет обычную `CREATE TABLE` |
+| `INTERLEAVE IN PARENT` | `CREATE TABLE … INTERLEAVE IN PARENT …` — это фича CockroachDB, а не H2 | её нет и в API провайдера (`UseCockroachDbInterleaveInParent` убран), и в DDL |
 | скаффолдинг: список таблиц | пустой список запрошенных таблиц не значил «все», и модель получалась пустой | пустой список значит «все», как в EF Core |
 | скаффолдинг: номера столбцов каталога | номера столбцов читались со сдвигом, и `IS_NULLABLE` читался вместо `IS_IDENTITY` | номера соответствуют запросу |
 | скаффолдинг: пустые столбцы каталога | `GENERATION_EXPRESSION` и `IDENTITY_GENERATION` читались как строки, а они пустые | читаются как то, что может быть пустым |
@@ -140,6 +142,9 @@ GROUP BY "p"."TopicId"
 | часть даты | `date_part('year', x)` | `year(x)` | `Function "DATE_PART" not found`: часть даты в H2 берётся своей функцией |
 | день недели | `floor(date_part('dow', x))::int` | `mod(iso_day_of_week(x), 7)` | ISO нумерует неделю с понедельника, .NET — с воскресенья |
 | «содержит» | `strpos(x, y) > 0` | `locate(y, x) > 0` | `strpos` у H2 нет, а у `LOCATE` аргументы в обратном порядке |
+| текст | `text` | `clob` | `TEXT` у H2 2.5 есть, и это синоним `CHARACTER VARYING` (`DataType.java`: `TINYTEXT`, `TEXT`, `MEDIUMTEXT`, `LONGTEXT`, `NTEXT` — в списке псевдонимов `VARCHAR`), а `CLOB` — отдельный тип `CHARACTER LARGE OBJECT`. Провайдер пишет `clob` намеренно: это тип H2 для текста без границы |
+| перечисление | `CREATE TYPE "Mood" AS ENUM ('Happy', 'Sad')` | то же | перечисления у H2 2.5 есть, и форма именно такая: `ENUM` со списком значений (`Parser.parseEnumType`), и `CREATE TYPE` — это домен типа (`CREATE DOMAIN`), который потом берут как тип столбца. Эталон берёт и `CREATE TYPE "Mood" AS ENUM ('Happy','Sad')`, и `CREATE TABLE t (a "Mood")` |
+| метка перечисления | `ALTER TYPE "Mood" ADD VALUE 'Angry'` | **нет такой формы** | `ALTER DOMAIN` у H2 2.5 берёт только `CONSTRAINT` или `CHECK`, и эталон отвергает `ALTER DOMAIN m ADD VALUE 'c'`. Провайдер отказывается менять метки перечисления |
 | склейка строк | `a \|\| b` | `CONCAT(a, b)` | труб у H2 2.5 нет вовсе, а `CONCAT` части `NULL` игнорирует: `CONCAT('a', NULL)` — это `a`, а `'a' \|\| NULL` — это `NULL` |
 | склейка массивов | `a \|\| b` | `ARRAY_CAT(a, b)` | труб у H2 2.5 нет |
 | исключающее или | `a # b` | `BITXOR(a, b)` | решётки у H2 2.5 нет |
@@ -273,6 +278,12 @@ GROUP BY "p"."TopicId"
   записанного на зону.
 * **Массивы.** `H2ArrayTypeMapping` разбирает тип элемента, но поддержка массивов в ADO-слое
   H2Sharp не проверена. Тест на массив нужен раньше, чем тип можно считать рабочим.
+* **Коллации и полнотекстовый поиск — работа форка, а не H2.** В H2 2.5 нет ни `CREATE
+  COLLATION`, ни `COLLATE` у столбца, ни `tsvector` с индексами GIN/GIST. Провайдер всё это
+  ещё предлагает в API (`HasCollation`, `UseCollation`, `HasMethod`, `IsTsVectorExpressionIndex`)
+  и пишет в DDL — а это SQL, который эталон отвергает. `UNLOGGED` и «interleave in parent»
+  CockroachDB из этого списка уже убраны: первого нет в H2, а второе — фича CockroachDB, а не
+  H2. Остались две вещи — работа на следующий заход: снять API и DDL, а тесты переписать под H2.
 
 ## Следствия для тестов
 
@@ -345,11 +356,16 @@ EF-овым (полнотекстовый поиск `tsvector`, `CREATE COLLATI
 | `COMMENT ON` не разбирается | 6 | движок |
 | `CREATE TYPE … AS ENUM` не разбирается | 8 | движок |
 | `LEFT JOIN` не разбирается | 7 | движок |
-| `UNLOGGED TABLE`, `COLLATE`, `CREATE COLLATION` | 5 | движок |
+| `COLLATE`, `CREATE COLLATION` | 3 | **провайдер**: в H2 2.5 нет ни того, ни другого |
 | `CREATE SCHEMA` не разбирается | 7 | движок |
 | `ALTER TABLE` — `RENAME TO`, `ALTER COLUMN`, `DROP COLUMN`, `ADD CONSTRAINT … FOREIGN KEY` | 4 | движок |
 | `CREATE TABLE` с массивом, с генерируемым столбцом или с внешним ключом | 8 | движок |
 | прочее: схема в имени таблицы | 1 | движок |
+
+`UNLOGGED TABLE` из списка ушла: слова `UNLOGGED` в H2 2.5 нет, и провайдер его больше не пишет —
+ни в DDL, ни в своём API (`IsUnlogged` убран). `CREATE TYPE … AS ENUM` остаётся: перечисления у
+H2 2.5 **есть** (тип `ENUM('a','b')` и домен `CREATE TYPE x AS ENUM(...)`), форма провайдера
+эталону подходит, и не читает её пока порт.
 
 `GENERATED BY DEFAULT AS IDENTITY` и `CREATE SEQUENCE` в этом списке больше нет: движок перенёс
 identity-колонки и последовательности, и DDL, который провайдер пишет, теперь принимается.

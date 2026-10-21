@@ -60,8 +60,6 @@ public class H2RuntimeModelConvention : RelationalRuntimeModelConvention
 
         if (!runtime)
         {
-            annotations.Remove(H2AnnotationNames.UnloggedTable);
-
             foreach (var annotationName in annotations.Keys.Where(
                          k => k.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
             {

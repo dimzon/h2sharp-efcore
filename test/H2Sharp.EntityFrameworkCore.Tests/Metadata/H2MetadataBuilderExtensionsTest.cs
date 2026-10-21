@@ -35,25 +35,6 @@ public class H2InternalMetadataBuilderExtensionsTest
     }
 
     [ConditionalFact]
-    public void Can_access_entity_type()
-    {
-        var typeBuilder = CreateBuilder().Entity(typeof(Splot));
-
-        Assert.NotNull(typeBuilder.IsUnlogged());
-        Assert.True(typeBuilder.Metadata.GetIsUnlogged());
-
-        Assert.NotNull(typeBuilder.IsUnlogged(false, fromDataAnnotation: true));
-        Assert.False(typeBuilder.Metadata.GetIsUnlogged());
-
-        Assert.Null(typeBuilder.IsUnlogged());
-        Assert.False(typeBuilder.Metadata.GetIsUnlogged());
-
-        Assert.Equal(
-            1, typeBuilder.Metadata.GetAnnotations().Count(
-                a => a.Name.StartsWith(H2AnnotationNames.Prefix, StringComparison.Ordinal)));
-    }
-
-    [ConditionalFact]
     public void Can_access_property()
     {
         var propertyBuilder = CreateBuilder()

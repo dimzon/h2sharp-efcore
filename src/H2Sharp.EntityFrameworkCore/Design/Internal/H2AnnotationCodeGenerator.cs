@@ -55,10 +55,6 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
         = typeof(H2ModelBuilderExtensions).GetRuntimeMethod(
             nameof(H2ModelBuilderExtensions.UseKeySequences), [typeof(ModelBuilder), typeof(string), typeof(string)])!;
 
-    private static readonly MethodInfo EntityTypeIsUnloggedMethodInfo
-        = typeof(H2EntityTypeBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(H2EntityTypeBuilderExtensions.IsUnlogged), typeof(EntityTypeBuilder), typeof(bool));
-
     private static readonly MethodInfo PropertyUseSerialColumnMethodInfo
         = typeof(H2PropertyBuilderExtensions).GetRequiredRuntimeMethod(
             nameof(H2PropertyBuilderExtensions.UseSerialColumn), typeof(PropertyBuilder));
@@ -253,11 +249,6 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
     {
         Check.NotNull(entityType, nameof(entityType));
         Check.NotNull(annotation, nameof(annotation));
-
-        if (annotation.Name == H2AnnotationNames.UnloggedTable)
-        {
-            return new MethodCallCodeFragment(EntityTypeIsUnloggedMethodInfo, annotation.Value);
-        }
 
         return null;
     }

@@ -275,9 +275,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
         {
             var annotations = parameters.Annotations;
 
-            annotations.Remove(H2AnnotationNames.UnloggedTable);
-            annotations.Remove(CockroachDbAnnotationNames.InterleaveInParent);
-
             foreach (var annotationName in annotations.Keys.Where(
                          k => k.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
             {
@@ -294,9 +291,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
         if (!parameters.IsRuntime)
         {
             var annotations = parameters.Annotations;
-
-            annotations.Remove(H2AnnotationNames.UnloggedTable);
-            annotations.Remove(CockroachDbAnnotationNames.InterleaveInParent);
 
             foreach (var annotationName in annotations.Keys.Where(
                          k => k.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))

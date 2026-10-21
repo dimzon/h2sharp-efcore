@@ -170,11 +170,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
         builder.Append("CREATE ");
 
-        if (operation[H2AnnotationNames.UnloggedTable] is true)
-        {
-            builder.Append("UNLOGGED ");
-        }
-
         builder
             .Append("TABLE ")
             .Append(DelimitIdentifier(operation.Name, operation.Schema))
@@ -188,23 +183,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         }
 
         builder.Append(")");
-
-        // CockroachDB "interleave in parent" (https://www.cockroachlabs.com/docs/stable/interleave-in-parent.html)
-        if (operation[CockroachDbAnnotationNames.InterleaveInParent] is string)
-        {
-            var interleaveInParent = new CockroachDbInterleaveInParent(operation);
-            var parentTableSchema = interleaveInParent.ParentTableSchema;
-            var parentTableName = interleaveInParent.ParentTableName;
-            var interleavePrefix = interleaveInParent.InterleavePrefix;
-
-            builder
-                .AppendLine()
-                .Append("INTERLEAVE IN PARENT ")
-                .Append(DelimitIdentifier(parentTableName, parentTableSchema))
-                .Append(" (")
-                .Append(string.Join(", ", interleavePrefix.Select(c => DelimitIdentifier(c))))
-                .Append(")");
-        }
 
         AppendStoreParameters(operation, builder, withLeadingNewline: true);
 
@@ -261,21 +239,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
                 .Append(_stringTypeMapping.GenerateSqlLiteral(operation.Comment));
 
             builder.AppendLine(";");
-            madeChanges = true;
-        }
-
-        // Unlogged table (null is equivalent to false)
-        var oldUnlogged = operation.OldTable[H2AnnotationNames.UnloggedTable] is true;
-        var newUnlogged = operation[H2AnnotationNames.UnloggedTable] is true;
-
-        if (oldUnlogged != newUnlogged)
-        {
-            builder
-                .Append(alterTableBaseSql)
-                .Append(" SET ")
-                .Append(newUnlogged ? "UNLOGGED" : "LOGGED")
-                .AppendLine(";");
-
             madeChanges = true;
         }
 
@@ -1235,46 +1198,22 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         {
             var (oldLabels, newLabels) = (oldEnum.Labels, newEnum.Labels);
 
-            // We only support adding enum values - dropping is unsupported by PostgreSQL, and we don't want to
-            // go into rename detection heuristics (users can do that in raw SQL).
-            // See https://www.postgresql.org/docs/current/sql-altertype.html
-
+            // H2 2.5 has no way of adding a label to an enum: ALTER DOMAIN takes only a
+            // constraint or a check, and the reference refuses "ALTER DOMAIN m ADD VALUE 'c'".
+            // The type of H2 is written whole, and a type whose labels changed cannot be
+            // written that way.
             if (oldLabels.Except(newLabels).FirstOrDefault() is { } removedLabel)
             {
                 throw new NotSupportedException(
                     $"Can't remove enum label '{removedLabel}' from enum type '{newEnum}'. "
-                    + "Renaming a label is possible via a raw SQL migration (see "
-                    + "https://www.postgresql.org/docs/current/sql-altertype.html)");
+                    + "H2 2.5 has no way of changing the labels of an enum.");
             }
 
-            for (var newPos = 0; newPos < newLabels.Count; newPos++)
+            if (newLabels.Except(oldLabels).FirstOrDefault() is { } addedLabel)
             {
-                var newLabel = newLabels[newPos];
-                if (oldLabels.Contains(newLabel))
-                {
-                    continue;
-                }
-
-                // We add the new label just after the last one we have in the new labels definition (when the last one is new, it will have
-                // just been added).
-                // If the new label happens to be the first one, add it before the first old label. Otherwise, if there are no old labels,
-                // just append the label (no before/after).
-                if (newPos == newLabels.Count - 1)
-                {
-                    GenerateAddEnumLabel(newEnum, newLabel, beforeLabel: null, afterLabel: null, model, builder);
-                }
-                else if (newPos > 0)
-                {
-                    GenerateAddEnumLabel(newEnum, newLabel, beforeLabel: null, afterLabel: newLabels[newPos - 1], model, builder);
-                }
-                else if (oldLabels.Count > 0)
-                {
-                    GenerateAddEnumLabel(newEnum, newLabel, beforeLabel: oldLabels[0], afterLabel: null, model, builder);
-                }
-                else
-                {
-                    GenerateAddEnumLabel(newEnum, newLabel, beforeLabel: null, afterLabel: null, model, builder);
-                }
+                throw new NotSupportedException(
+                    $"Can't add enum label '{addedLabel}' to enum type '{newEnum}'. "
+                    + "H2 2.5 has no way of changing the labels of an enum.");
             }
         }
     }
@@ -1318,44 +1257,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
             .Append("DROP TYPE ")
             .Append(DelimitIdentifier(enumType.Name, schema))
             .AppendLine(";");
-    }
-
-    /// <inheritdoc />
-    protected virtual void GenerateAddEnumLabel(
-        PostgresEnum enumType,
-        string addedLabel,
-        string? beforeLabel,
-        string? afterLabel,
-        IModel? model,
-        MigrationCommandListBuilder builder)
-    {
-        if (beforeLabel is not null && afterLabel is not null)
-        {
-            throw new UnreachableException("Both beforeLabel and afterLabel can't be specified");
-        }
-
-        var schema = enumType.Schema ?? model?.GetDefaultSchema();
-
-        builder
-            .Append("ALTER TYPE ")
-            .Append(DelimitIdentifier(enumType.Name, schema))
-            .Append(" ADD VALUE ")
-            .Append(_stringTypeMapping.GenerateSqlLiteral(addedLabel));
-
-        if (beforeLabel is not null)
-        {
-            builder
-                .Append(" BEFORE ")
-                .Append(_stringTypeMapping.GenerateSqlLiteral(beforeLabel));
-        }
-        else if (afterLabel is not null)
-        {
-            builder
-                .Append(" AFTER ")
-                .Append(_stringTypeMapping.GenerateSqlLiteral(afterLabel));
-        }
-
-        builder.AppendLine(";");
     }
 
     #endregion Enum management

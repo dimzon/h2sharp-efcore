@@ -528,14 +528,6 @@ CREATE SCHEMA IF NOT EXISTS "some_schema";
 
 """);    }
 
-    #region CockroachDB interleave-in-parent
-
-    // Note that we don't run tests against actual CockroachDB instances, so these are unit tests asserting on SQL
-    // only
-
-
-    #endregion CockroachDB interleave-in-parent
-
 #pragma warning disable 618
     [Fact]
     public virtual void AddColumnOperation_serial_old_annotation_throws()

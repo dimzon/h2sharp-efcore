@@ -37,17 +37,6 @@ public class H2AnnotationProvider : RelationalAnnotationProvider
         // Model validation ensures that these facets are the same on all mapped entity types
         var entityType = (IEntityType)table.EntityTypeMappings.First().TypeBase;
 
-        if (entityType.GetIsUnlogged())
-        {
-            yield return new Annotation(H2AnnotationNames.UnloggedTable, entityType.GetIsUnlogged());
-        }
-
-        if (entityType[CockroachDbAnnotationNames.InterleaveInParent] is not null)
-        {
-            yield return new Annotation(
-                CockroachDbAnnotationNames.InterleaveInParent, entityType[CockroachDbAnnotationNames.InterleaveInParent]);
-        }
-
         foreach (var storageParamAnnotation in entityType.GetAnnotations()
                      .Where(a => a.Name.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
         {

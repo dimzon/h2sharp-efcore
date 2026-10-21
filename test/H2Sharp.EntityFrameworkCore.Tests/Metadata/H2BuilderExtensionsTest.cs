@@ -5,26 +5,6 @@ namespace H2Sharp.EntityFrameworkCore.Metadata;
 public class H2BuilderExtensionsTest
 {
     [Fact]
-    public void CockroachDbInterleaveInParent()
-    {
-        var modelBuilder = CreateConventionModelBuilder();
-
-        modelBuilder.Entity<Customer>()
-            .ToTable("customers", "my_schema")
-            .UseCockroachDbInterleaveInParent(typeof(Customer), ["col_a", "col_b"]);
-
-        var entityType = modelBuilder.Model.FindEntityType(typeof(Customer));
-        var interleaveInParent = entityType.GetCockroachDbInterleaveInParent();
-
-        Assert.Equal("my_schema", interleaveInParent.ParentTableSchema);
-        Assert.Equal("customers", interleaveInParent.ParentTableName);
-        var interleavePrefix = interleaveInParent.InterleavePrefix;
-        Assert.Equal(2, interleavePrefix.Count);
-        Assert.Equal("col_a", interleavePrefix[0]);
-        Assert.Equal("col_b", interleavePrefix[1]);
-    }
-
-    [Fact]
     public void Can_set_identity_sequence_options_on_property()
     {
         var modelBuilder = CreateConventionModelBuilder();
