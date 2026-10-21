@@ -263,9 +263,9 @@ WHERE b."Id"::smallint = 8
 
     public virtual async Task Collate()
     {
-        await Test("""_ = context.Blogs.Where(b => EF.Functions.Collate(b.Name, "German_PhoneBook_CI_AS") == "foo").ToList();""");
-
-        AssertSql();
+        // H2 2.5 has no collation of an expression, so the provider refuses to write it.
+        await Assert.ThrowsAsync<NotSupportedException>(
+            () => Test("""_ = context.Blogs.Where(b => EF.Functions.Collate(b.Name, "German_PhoneBook_CI_AS") == "foo").ToList();"""));
     }
 
     #endregion Expression types

@@ -80,17 +80,9 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
         = typeof(H2PropertyBuilderExtensions).GetRuntimeMethod(
             nameof(H2PropertyBuilderExtensions.UseSequence), [typeof(PropertyBuilder), typeof(string), typeof(string)])!;
 
-    private static readonly MethodInfo IndexUseCollationMethodInfo
-        = typeof(H2IndexBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(H2IndexBuilderExtensions.UseCollation), typeof(IndexBuilder), typeof(string[]));
-
     private static readonly MethodInfo IndexHasMethodMethodInfo
         = typeof(H2IndexBuilderExtensions).GetRequiredRuntimeMethod(
             nameof(H2IndexBuilderExtensions.HasMethod), typeof(IndexBuilder), typeof(string));
-
-    private static readonly MethodInfo IndexHasOperatorsMethodInfo
-        = typeof(H2IndexBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(H2IndexBuilderExtensions.HasOperators), typeof(IndexBuilder), typeof(string[]));
 
     private static readonly MethodInfo IndexHasNullSortOrderMethodInfo
         = typeof(H2IndexBuilderExtensions).GetRequiredRuntimeMethod(
@@ -370,13 +362,9 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
     protected override MethodCallCodeFragment? GenerateFluentApi(IIndex index, IAnnotation annotation)
         => annotation.Name switch
         {
-            RelationalAnnotationNames.Collation
-                => new MethodCallCodeFragment(IndexUseCollationMethodInfo, annotation.Value),
-
+    
             H2AnnotationNames.IndexMethod
                 => new MethodCallCodeFragment(IndexHasMethodMethodInfo, annotation.Value),
-            H2AnnotationNames.IndexOperators
-                => new MethodCallCodeFragment(IndexHasOperatorsMethodInfo, annotation.Value),
             H2AnnotationNames.IndexNullSortOrder
                 => new MethodCallCodeFragment(IndexHasNullSortOrderMethodInfo, annotation.Value),
             H2AnnotationNames.IndexInclude

@@ -54,8 +54,7 @@ public static class H2EfEventId
         EnumColumnSkippedWarning,
         ExpressionIndexSkippedWarning,
         UnsupportedColumnIndexSkippedWarning,
-        UnsupportedConstraintIndexSkippedWarning,
-        CollationFound
+        UnsupportedConstraintIndexSkippedWarning
     }
 
     private static readonly string ScaffoldingPrefix = DbLoggerCategory.Scaffolding.Name + ".";
@@ -82,16 +81,6 @@ public static class H2EfEventId
     ///     </para>
     /// </summary>
     public static readonly EventId MissingSchemaWarning = MakeScaffoldingId(Id.MissingSchemaWarning);
-
-    /// <summary>
-    ///     <para>
-    ///         A collation was found.
-    ///     </para>
-    ///     <para>
-    ///         This event is in the <see cref="DbLoggerCategory.Scaffolding" /> category.
-    ///     </para>
-    /// </summary>
-    public static readonly EventId CollationFound = MakeScaffoldingId(Id.CollationFound);
 
     /// <summary>
     ///     <para>

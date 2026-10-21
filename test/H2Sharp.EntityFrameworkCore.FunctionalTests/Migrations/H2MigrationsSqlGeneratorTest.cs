@@ -32,15 +32,11 @@ CREATE DATABASE "Northwind";
     [ConditionalFact]
     public virtual void CreateDatabaseOperation_with_collation()
     {
-        Generate(
-            new H2CreateDatabaseOperation { Name = "Northwind", Collation = "POSIX" });
-
-        AssertSql(
-            """
-CREATE DATABASE "Northwind"
-LC_COLLATE "POSIX";
-
-""");
+        // H2 2.5 has no LC_COLLATE of a database: the collation of the database is set with
+        // SET COLLATION, and only with the names H2 2.5 has, so the provider refuses it.
+        Assert.Throws<NotSupportedException>(
+            () => Generate(
+                new H2CreateDatabaseOperation { Name = "Northwind", Collation = "POSIX" }));
     }
 
     [Fact]

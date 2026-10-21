@@ -44,12 +44,6 @@ public class H2ValueGenerationConvention : RelationalValueGenerationConvention
             return;
         }
 
-        if (name == H2AnnotationNames.TsVectorConfig && propertyBuilder.Metadata.GetTsVectorConfig() is not null)
-        {
-            propertyBuilder.ValueGenerated(ValueGenerated.OnAddOrUpdate);
-            return;
-        }
-
         base.ProcessPropertyAnnotationChanged(propertyBuilder, name, annotation, oldAnnotation, context);
     }
 

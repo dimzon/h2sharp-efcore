@@ -11,10 +11,6 @@ namespace Microsoft.EntityFrameworkCore;
 /// </remarks>
 public static class H2EntityTypeBuilderExtensions
 {
-    #region Generated tsvector column
-
-    // Note: actual configuration for generated TsVector properties is on the property
-    #endregion Generated tsvector column
 
     #region Storage parameters
 

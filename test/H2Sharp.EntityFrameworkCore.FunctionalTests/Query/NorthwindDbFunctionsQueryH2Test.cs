@@ -129,26 +129,14 @@ WHERE c."ContactName" NOT ILIKE '%M%' OR c."ContactName" IS NULL
     [PlatformSkipCondition(TestPlatform.Windows, SkipReason = "ICU non-deterministic doesn't seem to work on Windows?")]
     public override async Task Collate_case_insensitive(bool async)
     {
-        await base.Collate_case_insensitive(async);
-
-        AssertSql(
-            """
-SELECT count(*)::int
-FROM "Customers" AS c
-WHERE c."ContactName" COLLATE "some-case-insensitive-collation" = 'maria anders'
-""");
+        // H2 2.5 has no collation of an expression, so the provider refuses to write it.
+        await Assert.ThrowsAsync<NotSupportedException>(() => base.Collate_case_insensitive(async));
     }
 
     public override async Task Collate_case_sensitive(bool async)
     {
-        await base.Collate_case_sensitive(async);
-
-        AssertSql(
-            """
-SELECT count(*)::int
-FROM "Customers" AS c
-WHERE c."ContactName" COLLATE "POSIX" = 'maria anders'
-""");
+        // H2 2.5 has no collation of an expression, so the provider refuses to write it.
+        await Assert.ThrowsAsync<NotSupportedException>(() => base.Collate_case_sensitive(async));
     }
 
     protected override string CaseInsensitiveCollation

@@ -14,13 +14,16 @@ public static class H2IndexBuilderExtensions
     #region Method
 
     /// <summary>
-    ///     The PostgreSQL index method to be used. Null selects the default (currently btree).
+    ///     The kind of the index to be used. Null or <c>btree</c> selects the default index of H2 2.5,
+    ///     <c>spatial</c> selects its spatial index.
     /// </summary>
     /// <remarks>
-    ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
+    ///     H2 2.5 knows the default index and the spatial index. Its hash index is read only in the
+    ///     compatibility mode, and the index methods of PostgreSQL (<c>gin</c>, <c>gist</c>, <c>brin</c>)
+    ///     are not in H2 2.5 at all.
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="method">The name of the index.</param>
+    /// <param name="method">The kind of the index.</param>
     /// <returns>A builder to further configure the index.</returns>
     public static IndexBuilder HasMethod(
         this IndexBuilder indexBuilder,
@@ -29,19 +32,22 @@ public static class H2IndexBuilderExtensions
         Check.NotNull(indexBuilder, nameof(indexBuilder));
         Check.NullButNotEmpty(method, nameof(method));
 
-        indexBuilder.Metadata.SetMethod(method);
+        indexBuilder.Metadata.SetMethod(CheckIndexMethod(method));
 
         return indexBuilder;
     }
 
     /// <summary>
-    ///     The PostgreSQL index method to be used. Null selects the default (currently btree).
+    ///     The kind of the index to be used. Null or <c>btree</c> selects the default index of H2 2.5,
+    ///     <c>spatial</c> selects its spatial index.
     /// </summary>
     /// <remarks>
-    ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
+    ///     H2 2.5 knows the default index and the spatial index. Its hash index is read only in the
+    ///     compatibility mode, and the index methods of PostgreSQL (<c>gin</c>, <c>gist</c>, <c>brin</c>)
+    ///     are not in H2 2.5 at all.
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="method">The name of the index.</param>
+    /// <param name="method">The kind of the index.</param>
     /// <returns>A builder to further configure the index.</returns>
     public static IndexBuilder<TEntity> HasMethod<TEntity>(
         this IndexBuilder<TEntity> indexBuilder,
@@ -49,13 +55,16 @@ public static class H2IndexBuilderExtensions
         => (IndexBuilder<TEntity>)HasMethod((IndexBuilder)indexBuilder, method);
 
     /// <summary>
-    ///     The PostgreSQL index method to be used. Null selects the default (currently btree).
+    ///     The kind of the index to be used. Null or <c>btree</c> selects the default index of H2 2.5,
+    ///     <c>spatial</c> selects its spatial index.
     /// </summary>
     /// <remarks>
-    ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
+    ///     H2 2.5 knows the default index and the spatial index. Its hash index is read only in the
+    ///     compatibility mode, and the index methods of PostgreSQL (<c>gin</c>, <c>gist</c>, <c>brin</c>)
+    ///     are not in H2 2.5 at all.
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="method">The name of the index.</param>
+    /// <param name="method">The kind of the index.</param>
     /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
     /// <returns>A builder to further configure the index.</returns>
     public static IConventionIndexBuilder? HasMethod(
@@ -65,7 +74,7 @@ public static class H2IndexBuilderExtensions
     {
         if (indexBuilder.CanSetMethod(method, fromDataAnnotation))
         {
-            indexBuilder.Metadata.SetMethod(method, fromDataAnnotation);
+            indexBuilder.Metadata.SetMethod(CheckIndexMethod(method), fromDataAnnotation);
 
             return indexBuilder;
         }
@@ -74,13 +83,16 @@ public static class H2IndexBuilderExtensions
     }
 
     /// <summary>
-    ///     The PostgreSQL index method to be used. Null selects the default (currently btree).
+    ///     The kind of the index to be used. Null or <c>btree</c> selects the default index of H2 2.5,
+    ///     <c>spatial</c> selects its spatial index.
     /// </summary>
     /// <remarks>
-    ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
+    ///     H2 2.5 knows the default index and the spatial index. Its hash index is read only in the
+    ///     compatibility mode, and the index methods of PostgreSQL (<c>gin</c>, <c>gist</c>, <c>brin</c>)
+    ///     are not in H2 2.5 at all.
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="method">The name of the index.</param>
+    /// <param name="method">The kind of the index.</param>
     /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
     /// <returns><c>true</c> if the index can be configured with the method</returns>
     public static bool CanSetMethod(
@@ -93,281 +105,30 @@ public static class H2IndexBuilderExtensions
         return indexBuilder.CanSetAnnotation(H2AnnotationNames.IndexMethod, method, fromDataAnnotation);
     }
 
+    /// <summary>
+    ///     Checks that the kind of the index is one H2 2.5 has.
+    /// </summary>
+    /// <param name="method">The kind of the index.</param>
+    /// <returns>The kind of the index.</returns>
+    /// <exception cref="NotSupportedException">
+    ///     H2 2.5 has no index of that kind.
+    /// </exception>
+    private static string? CheckIndexMethod(string? method)
+    {
+        if (method is null || method is "btree" or "spatial")
+        {
+            return method;
+        }
+
+        throw new NotSupportedException(
+            $"H2 2.5 has no index of the kind '{method}': the kinds of the index of H2 2.5 are the default "
+            + "index (btree) and the spatial index.");
+    }
+
     #endregion Method
 
-    #region Operators
 
-    /// <summary>
-    ///     The PostgreSQL index operators to be used.
-    /// </summary>
-    /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-opclass.html
-    /// </remarks>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="operators">The operators to use for each column.</param>
-    /// <returns>A builder to further configure the index.</returns>
-    public static IndexBuilder HasOperators(
-        this IndexBuilder indexBuilder,
-        params string[]? operators)
-    {
-        Check.NotNull(indexBuilder, nameof(indexBuilder));
-        Check.NullButNotEmpty(operators, nameof(operators));
 
-        indexBuilder.Metadata.SetOperators(operators);
-
-        return indexBuilder;
-    }
-
-    /// <summary>
-    ///     The PostgreSQL index operators to be used.
-    /// </summary>
-    /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-opclass.html
-    /// </remarks>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="operators">The operators to use for each column.</param>
-    /// <returns>A builder to further configure the index.</returns>
-    public static IndexBuilder<TEntity> HasOperators<TEntity>(
-        this IndexBuilder<TEntity> indexBuilder,
-        params string[]? operators)
-        => (IndexBuilder<TEntity>)HasOperators((IndexBuilder)indexBuilder, operators);
-
-    /// <summary>
-    ///     The PostgreSQL index operators to be used.
-    /// </summary>
-    /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-opclass.html
-    /// </remarks>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="operators">The operators to use for each column.</param>
-    /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
-    /// <returns>A builder to further configure the index.</returns>
-    public static IConventionIndexBuilder? HasOperators(
-        this IConventionIndexBuilder indexBuilder,
-        IReadOnlyList<string>? operators,
-        bool fromDataAnnotation)
-    {
-        if (indexBuilder.CanSetOperators(operators, fromDataAnnotation))
-        {
-            indexBuilder.Metadata.SetOperators(operators, fromDataAnnotation);
-
-            return indexBuilder;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    ///     Returns a value indicating whether the PostgreSQL index operators can be set.
-    /// </summary>
-    /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-opclass.html
-    /// </remarks>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="operators">The operators to use for each column.</param>
-    /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
-    /// <returns><c>true</c> if the index can be configured with the method.</returns>
-    public static bool CanSetOperators(
-        this IConventionIndexBuilder indexBuilder,
-        IReadOnlyList<string>? operators,
-        bool fromDataAnnotation)
-    {
-        Check.NotNull(indexBuilder, nameof(indexBuilder));
-
-        return indexBuilder.CanSetAnnotation(H2AnnotationNames.IndexOperators, operators, fromDataAnnotation);
-    }
-
-    #endregion Operators
-
-    #region IsTsVectorExpressionIndex
-
-    /// <summary>
-    ///     Configures this index to be a full-text tsvector expression index.
-    /// </summary>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="config">
-    ///     <para>
-    ///         The text search configuration for this generated tsvector property, or <c>null</c> if this is not a
-    ///         generated tsvector property.
-    ///     </para>
-    ///     <para>
-    ///         See https://www.postgresql.org/docs/current/textsearch-controls.html for more information.
-    ///     </para>
-    /// </param>
-    /// <returns>A builder to further configure the index.</returns>
-    public static IndexBuilder IsTsVectorExpressionIndex(
-        this IndexBuilder indexBuilder,
-        string config)
-    {
-        Check.NotNull(indexBuilder, nameof(indexBuilder));
-        Check.NotNull(config, nameof(config));
-
-        indexBuilder.Metadata.SetTsVectorConfig(config);
-        return indexBuilder;
-    }
-
-    /// <summary>
-    ///     Configures this index to be a full-text tsvector expression index.
-    /// </summary>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="config">
-    ///     <para>
-    ///         The text search configuration for this generated tsvector property, or <c>null</c> if this is not a
-    ///         generated tsvector property.
-    ///     </para>
-    ///     <para>
-    ///         See https://www.postgresql.org/docs/current/textsearch-controls.html for more information.
-    ///     </para>
-    /// </param>
-    /// <returns>A builder to further configure the index.</returns>
-    public static IndexBuilder<TEntity> IsTsVectorExpressionIndex<TEntity>(
-        this IndexBuilder<TEntity> indexBuilder,
-        string config)
-        => (IndexBuilder<TEntity>)IsTsVectorExpressionIndex((IndexBuilder)indexBuilder, config);
-
-    /// <summary>
-    ///     Configures this index to be a full-text tsvector expression index.
-    /// </summary>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="config">
-    ///     <para>
-    ///         The text search configuration for this generated tsvector property, or <c>null</c> if this is not a
-    ///         generated tsvector property.
-    ///     </para>
-    ///     <para>
-    ///         See https://www.postgresql.org/docs/current/textsearch-controls.html for more information.
-    ///     </para>
-    /// </param>
-    /// <returns>
-    ///     The same builder instance if the configuration was applied,
-    ///     <c>null</c> otherwise.
-    /// </returns>
-    public static IConventionIndexBuilder? IsTsVectorExpressionIndex(
-        this IConventionIndexBuilder indexBuilder,
-        string? config)
-    {
-        Check.NotNull(indexBuilder, nameof(indexBuilder));
-
-        if (indexBuilder.CanSetIsTsVectorExpressionIndex(config))
-        {
-            indexBuilder.Metadata.SetTsVectorConfig(config);
-
-            return indexBuilder;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    ///     Returns a value indicating whether the index can be configured as a full-text tsvector expression index.
-    /// </summary>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="config">
-    ///     <para>
-    ///         The text search configuration for this generated tsvector property, or <c>null</c> if this is not a
-    ///         generated tsvector property.
-    ///     </para>
-    ///     <para>
-    ///         See https://www.postgresql.org/docs/current/textsearch-controls.html for more information.
-    ///     </para>
-    /// </param>
-    /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
-    /// <returns><c>true</c> if the index can be configured as a full-text tsvector expression index.</returns>
-    public static bool CanSetIsTsVectorExpressionIndex(
-        this IConventionIndexBuilder indexBuilder,
-        string? config,
-        bool fromDataAnnotation = false)
-    {
-        Check.NotNull(indexBuilder, nameof(indexBuilder));
-
-        return indexBuilder.CanSetAnnotation(H2AnnotationNames.TsVectorConfig, config, fromDataAnnotation);
-    }
-
-    #endregion IsTsVectorExpressionIndex
-
-    #region Collation
-
-    /// <summary>
-    ///     The PostgreSQL index collation to be used.
-    /// </summary>
-    /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-collations.html
-    /// </remarks>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="values">The sort options to use for each column.</param>
-    /// <returns>A builder to further configure the index.</returns>
-    public static IndexBuilder UseCollation(
-        this IndexBuilder indexBuilder,
-        params string[]? values)
-    {
-        Check.NotNull(indexBuilder, nameof(indexBuilder));
-        Check.NullButNotEmpty(values, nameof(values));
-
-        indexBuilder.Metadata.SetCollation(values);
-
-        return indexBuilder;
-    }
-
-    /// <summary>
-    ///     The PostgreSQL index collation to be used.
-    /// </summary>
-    /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-collations.html
-    /// </remarks>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="values">The sort options to use for each column.</param>
-    /// <returns>A builder to further configure the index.</returns>
-    public static IndexBuilder<TEntity> UseCollation<TEntity>(
-        this IndexBuilder<TEntity> indexBuilder,
-        params string[]? values)
-        => (IndexBuilder<TEntity>)UseCollation((IndexBuilder)indexBuilder, values);
-
-    /// <summary>
-    ///     The PostgreSQL index collation to be used.
-    /// </summary>
-    /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-collations.html
-    /// </remarks>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="values">The sort options to use for each column.</param>
-    /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
-    /// <returns>A builder to further configure the index.</returns>
-    public static IConventionIndexBuilder? UseCollation(
-        this IConventionIndexBuilder indexBuilder,
-        IReadOnlyList<string>? values,
-        bool fromDataAnnotation)
-    {
-        if (indexBuilder.CanSetCollation(values, fromDataAnnotation))
-        {
-            indexBuilder.Metadata.SetCollation(values, fromDataAnnotation);
-
-            return indexBuilder;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    ///     Returns a value indicating whether the PostgreSQL index collation can be set.
-    /// </summary>
-    /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-collations.html
-    /// </remarks>
-    /// <param name="indexBuilder">The builder for the index being configured.</param>
-    /// <param name="values">The sort options to use for each column.</param>
-    /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
-    /// <returns>A builder to further configure the index.</returns>
-    public static bool CanSetCollation(
-        this IConventionIndexBuilder indexBuilder,
-        IReadOnlyList<string>? values,
-        bool fromDataAnnotation)
-    {
-        Check.NotNull(indexBuilder, nameof(indexBuilder));
-
-        return indexBuilder.CanSetAnnotation(RelationalAnnotationNames.Collation, values, fromDataAnnotation);
-    }
-
-    #endregion Collation
 
     #region Null sort order
 

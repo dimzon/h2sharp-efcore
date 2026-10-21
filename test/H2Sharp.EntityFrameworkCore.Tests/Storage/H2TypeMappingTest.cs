@@ -822,30 +822,6 @@ public class H2TypeMappingTest
 
     #endregion Multiranges
 
-    #region Full text search
-
-#pragma warning disable CS0618 // Full-text search client-parsing is obsolete
-    [Fact]
-    public void GenerateSqlLiteral_returns_tsquery_literal()
-        => Assert.Equal(
-            @"TSQUERY '''a'' & ''b'''",
-            GetMapping("tsquery").GenerateSqlLiteral(H2TsQuery.Parse("a & b")));
-
-    [Fact]
-    public void GenerateSqlLiteral_returns_tsvector_literal()
-        => Assert.Equal(
-            @"TSVECTOR '''a'' ''b'''",
-            GetMapping("tsvector").GenerateSqlLiteral(H2TsVector.Parse("a b")));
-#pragma warning restore CS0618
-
-    [Fact]
-    public void GenerateSqlLiteral_returns_ranking_normalization_literal()
-        => Assert.Equal(
-            $"{(int)H2TsRankingNormalization.DivideByLength}",
-            GetMapping(typeof(H2TsRankingNormalization))
-                .GenerateSqlLiteral(H2TsRankingNormalization.DivideByLength));
-
-    #endregion Full text search
 
     #region Json
 

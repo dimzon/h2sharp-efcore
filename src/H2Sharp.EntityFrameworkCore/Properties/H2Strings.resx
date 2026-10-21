@@ -126,9 +126,6 @@
   <data name="DuplicateColumnNameValueGenerationStrategyMismatch" xml:space="preserve">
     <value>'{entityType1}.{property1}' and '{entityType2}.{property2}' are both mapped to column '{columnName}' in '{table}' but are configured with different value generation strategies.</value>
   </data>
-  <data name="DuplicateIndexCollationMismatch" xml:space="preserve">
-    <value>The indexes {index1} on '{entityType1}' and {index2} on '{entityType2}' are both mapped to '{table}.{indexName}', but have different collation configurations.</value>
-  </data>
   <data name="DuplicateIndexConcurrentCreationMismatch" xml:space="preserve">
     <value>The indexes {index1} on '{entityType1}' and {index2} on '{entityType2}' are both mapped to '{table}.{indexName}', but have different concurrent creation configurations.</value>
   </data>
@@ -163,10 +160,6 @@
   <data name="LogExpressionIndexSkipped" xml:space="preserve">
     <value>Expression index '{name}' on table {tableName} cannot be scaffolded, expression indices aren't supported and must be added via raw SQL in migrations.</value>
     <comment>Warning H2EventId.ExpressionIndexSkippedWarning string string</comment>
-  </data>
-  <data name="LogFoundCollation" xml:space="preserve">
-    <value>Found collation with name: {collationName}, schema: {schema}, LC_COLLATE: {lcCollate}, LC_CTYPE: {lcCtype}, provider: {provider}, deterministic: {isDeterministic}</value>
-    <comment>Debug H2EventId.CollationFound string string string string string? bool</comment>
   </data>
   <data name="LogFoundColumn" xml:space="preserve">
     <value>Found column with table: {tableName}, column name: {columnName}, data type: {dataType}, nullable: {isNullable}, identity: {isIdentity}, default value: {defaultValue}, computed value: {computedValue}</value>

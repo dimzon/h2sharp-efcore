@@ -707,43 +707,6 @@ public static class H2PropertyBuilderExtensions
 
     #endregion Array value conversion
 
-    #region Generated tsvector column
-
-    // Note: tsvector properties can be configured with a generic API through the entity type builder
-    /// <summary>
-    ///     Returns a value indicating whether the property can be configured as a full-text search tsvector column.
-    /// </summary>
-    /// <param name="propertyBuilder">The builder for the property being configured.</param>
-    /// <param name="config">
-    ///     <para>
-    ///         The text search configuration for this generated tsvector property, or <c>null</c> if this is not a
-    ///         generated tsvector property.
-    ///     </para>
-    ///     <para>
-    ///         See https://www.postgresql.org/docs/current/textsearch-controls.html for more information.
-    ///     </para>
-    /// </param>
-    /// <param name="includedPropertyNames">An array of property names to be included in the tsvector.</param>
-    /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
-    /// <returns><c>true</c> if the property can be configured as a full-text search tsvector column.</returns>
-    public static bool CanSetIsGeneratedTsVectorColumn(
-        this IConventionPropertyBuilder propertyBuilder,
-        string? config,
-        IReadOnlyList<string>? includedPropertyNames,
-        bool fromDataAnnotation = false)
-    {
-        Check.NotNull(propertyBuilder, nameof(propertyBuilder));
-
-        return (fromDataAnnotation ? ConfigurationSource.DataAnnotation : ConfigurationSource.Convention)
-            .Overrides(propertyBuilder.Metadata.GetTsVectorConfigConfigurationSource())
-            && (fromDataAnnotation ? ConfigurationSource.DataAnnotation : ConfigurationSource.Convention)
-            .Overrides(propertyBuilder.Metadata.GetTsVectorPropertiesConfigurationSource())
-            || config == propertyBuilder.Metadata.GetTsVectorConfig()
-            && StructuralComparisons.StructuralEqualityComparer.Equals(
-                includedPropertyNames, propertyBuilder.Metadata.GetTsVectorProperties());
-    }
-
-    #endregion Generated tsvector column
 
     #region Compression method
 

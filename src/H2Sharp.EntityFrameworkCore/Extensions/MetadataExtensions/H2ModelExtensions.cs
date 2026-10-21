@@ -407,39 +407,5 @@ public static class H2ModelExtensions
 
     #endregion
 
-    #region Collation management
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public static PostgresCollation GetOrAddCollation(
-        this IMutableModel model,
-        string? schema,
-        string name,
-        string lcCollate,
-        string lcCtype,
-        string? provider = null,
-        bool? deterministic = null)
-        => PostgresCollation.GetOrAddCollation(
-            model,
-            schema,
-            name,
-            lcCollate,
-            lcCtype,
-            provider,
-            deterministic);
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public static IReadOnlyList<PostgresCollation> GetCollations(this IReadOnlyModel model)
-        => PostgresCollation.GetCollations(model).ToArray();
-
-    #endregion Collation management
 }

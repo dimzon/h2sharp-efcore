@@ -78,14 +78,6 @@ public static class H2AnnotationNames
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public const string IndexOperators = Prefix + "IndexOperators";
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
     public const string IndexNullSortOrder = Prefix + "IndexNullSortOrder";
 
     /// <summary>
@@ -111,22 +103,6 @@ public static class H2AnnotationNames
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public const string Tablespace = Prefix + "Tablespace";
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public const string TsVectorConfig = Prefix + "TsVectorConfig";
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public const string TsVectorProperties = Prefix + "TsVectorProperties";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -160,13 +136,6 @@ public static class H2AnnotationNames
     /// </summary>
     public const string SequenceSchema = Prefix + "SequenceSchema";
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public const string CollationDefinitionPrefix = Prefix + "CollationDefinition:";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -219,14 +188,6 @@ public static class H2AnnotationNames
     /// </summary>
     public const string IndexExpression = Prefix + "IndexExpression";
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    [Obsolete("Use EF Core's standard model bulk configuration API")]
-    public const string DefaultColumnCollation = Prefix + "DefaultColumnCollation";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -245,15 +206,6 @@ public static class H2AnnotationNames
     /// </summary>
     [Obsolete("Replaced by built-in EF Core support, use HasComment on entities or properties.")]
     public const string Comment = Prefix + "Comment";
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    [Obsolete("Replaced by RelationalAnnotationNames.Collation")]
-    public const string IndexCollation = Prefix + "IndexCollation";
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

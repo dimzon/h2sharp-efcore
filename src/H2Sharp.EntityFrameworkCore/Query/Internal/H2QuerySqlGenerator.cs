@@ -655,12 +655,10 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
 
         Visit(collateExpression.Operand);
 
-        // In PG, collation names are regular identifiers which need to be quoted for case-sensitivity.
-        Sql
-            .Append(" COLLATE ")
-            .Append(_sqlGenerationHelper.DelimitIdentifier(collateExpression.Collation));
-
-        return collateExpression;
+        // H2 2.5 has no collation of an expression: the reference reads "COLLATE" only in the
+        // compatibility mode.
+        throw new NotSupportedException(
+            "H2 2.5 has no collation of an expression, so it cannot be written as SQL.");
     }
 
     /// <summary>

@@ -136,10 +136,8 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
             var annotations = parameters.Annotations;
             annotations.Remove(H2AnnotationNames.DatabaseTemplate);
             annotations.Remove(H2AnnotationNames.Tablespace);
-            annotations.Remove(H2AnnotationNames.CollationDefinitionPrefix);
 
 #pragma warning disable CS0618
-            annotations.Remove(H2AnnotationNames.DefaultColumnCollation);
 #pragma warning restore CS0618
 
             foreach (var annotationName in annotations.Keys.Where(
@@ -163,10 +161,8 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
             var annotations = parameters.Annotations;
             annotations.Remove(H2AnnotationNames.DatabaseTemplate);
             annotations.Remove(H2AnnotationNames.Tablespace);
-            annotations.Remove(H2AnnotationNames.CollationDefinitionPrefix);
 
 #pragma warning disable CS0618
-            annotations.Remove(H2AnnotationNames.DefaultColumnCollation);
 #pragma warning restore CS0618
 
             foreach (var annotationName in annotations.Keys.Where(
@@ -189,8 +185,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
         {
             var annotations = parameters.Annotations;
             annotations.Remove(H2AnnotationNames.IdentityOptions);
-            annotations.Remove(H2AnnotationNames.TsVectorConfig);
-            annotations.Remove(H2AnnotationNames.TsVectorProperties);
             annotations.Remove(H2AnnotationNames.CompressionMethod);
 
             if (!annotations.ContainsKey(H2AnnotationNames.ValueGenerationStrategy))
@@ -210,8 +204,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
             var annotations = parameters.Annotations;
 
             annotations.Remove(H2AnnotationNames.IdentityOptions);
-            annotations.Remove(H2AnnotationNames.TsVectorConfig);
-            annotations.Remove(H2AnnotationNames.TsVectorProperties);
             annotations.Remove(H2AnnotationNames.CompressionMethod);
         }
 
@@ -226,7 +218,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
             var annotations = parameters.Annotations;
 
             annotations.Remove(H2AnnotationNames.IndexMethod);
-            annotations.Remove(H2AnnotationNames.IndexOperators);
             annotations.Remove(H2AnnotationNames.IndexSortOrder);
             annotations.Remove(H2AnnotationNames.IndexNullSortOrder);
             annotations.Remove(H2AnnotationNames.IndexInclude);
@@ -251,7 +242,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
             var annotations = parameters.Annotations;
 
             annotations.Remove(H2AnnotationNames.IndexMethod);
-            annotations.Remove(H2AnnotationNames.IndexOperators);
             annotations.Remove(H2AnnotationNames.IndexSortOrder);
             annotations.Remove(H2AnnotationNames.IndexNullSortOrder);
             annotations.Remove(H2AnnotationNames.IndexInclude);

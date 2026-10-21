@@ -86,25 +86,6 @@ public class H2AnnotationProvider : RelationalAnnotationProvider
             }
         }
 
-        if (column.PropertyMappings.Select(m => m.Property.GetTsVectorConfig())
-                .FirstOrDefault(c => c is not null) is { } tsVectorConfig)
-        {
-            yield return new Annotation(H2AnnotationNames.TsVectorConfig, tsVectorConfig);
-        }
-
-        valueGeneratedProperty = column.PropertyMappings.Select(m => m.Property)
-            .FirstOrDefault(p => p.GetTsVectorProperties() is not null);
-        if (valueGeneratedProperty is not null)
-        {
-            var tableIdentifier = StoreObjectIdentifier.Table(column.Table.Name, column.Table.Schema);
-
-            yield return new Annotation(
-                H2AnnotationNames.TsVectorProperties,
-                valueGeneratedProperty.GetTsVectorProperties()!
-                    .Select(p2 => valueGeneratedProperty.DeclaringType.FindProperty(p2)!.GetColumnName(tableIdentifier))
-                    .ToArray());
-        }
-
         // JSON columns have no property mappings so all annotations that rely on property mappings should be skipped for them
         if (column is not JsonColumn
             && column.PropertyMappings.FirstOrDefault()?.Property.GetCompressionMethod() is { } compressionMethod)
@@ -130,29 +111,14 @@ public class H2AnnotationProvider : RelationalAnnotationProvider
         // Model validation ensures that these facets are the same on all mapped indexes
         var modelIndex = index.MappedIndexes.First();
 
-        if (modelIndex.GetCollation() is { } collation)
-        {
-            yield return new Annotation(RelationalAnnotationNames.Collation, collation);
-        }
-
         if (modelIndex.GetMethod() is { } method)
         {
             yield return new Annotation(H2AnnotationNames.IndexMethod, method);
         }
 
-        if (modelIndex.GetOperators() is { } operators)
-        {
-            yield return new Annotation(H2AnnotationNames.IndexOperators, operators);
-        }
-
         if (modelIndex.GetNullSortOrder() is { } nullSortOrder)
         {
             yield return new Annotation(H2AnnotationNames.IndexNullSortOrder, nullSortOrder);
-        }
-
-        if (modelIndex.GetTsVectorConfig() is { } configName)
-        {
-            yield return new Annotation(H2AnnotationNames.TsVectorConfig, configName);
         }
 
         if (modelIndex.GetIncludeProperties() is { } includeProperties)
@@ -206,7 +172,6 @@ public class H2AnnotationProvider : RelationalAnnotationProvider
             a =>
                 a.Name.StartsWith(H2AnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal)
                 || a.Name.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal)
-                || a.Name.StartsWith(H2AnnotationNames.RangePrefix, StringComparison.Ordinal)
-                || a.Name.StartsWith(H2AnnotationNames.CollationDefinitionPrefix, StringComparison.Ordinal));
+                || a.Name.StartsWith(H2AnnotationNames.RangePrefix, StringComparison.Ordinal));
     }
 }

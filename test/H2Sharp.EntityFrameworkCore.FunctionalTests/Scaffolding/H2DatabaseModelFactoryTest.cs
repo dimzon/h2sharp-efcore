@@ -1774,27 +1774,6 @@ CREATE TABLE identity (
             },
             "DROP TABLE identity");
 
-    [Fact]
-    public void Column_collation_is_set()
-        => Test(
-            """
-CREATE TABLE columns_with_collation (
-    id int,
-    default_collation TEXT,
-    non_default_collation TEXT COLLATE "POSIX"
-);
-""",
-            [],
-            [],
-            dbModel =>
-            {
-                var columns = dbModel.Tables.Single().Columns;
-
-                Assert.Null(columns.Single(c => c.Name == "default_collation").Collation);
-                Assert.Equal("POSIX", columns.Single(c => c.Name == "non_default_collation").Collation);
-            },
-            @"DROP TABLE columns_with_collation");
-
     [ConditionalFact]
     public void Default_database_collation_is_not_scaffolded()
         => Test(
@@ -1809,7 +1788,7 @@ CREATE TABLE columns_with_collation (
         => Test(
             """
 CREATE TABLE "IndexMethod" (a int, b int);
-CREATE INDEX ix_a ON "IndexMethod" USING hash (a);
+CREATE INDEX ix_a ON "IndexMethod" (a);
 CREATE INDEX ix_b ON "IndexMethod" (b);
 """,
             [],
@@ -1819,85 +1798,24 @@ CREATE INDEX ix_b ON "IndexMethod" (b);
                 var table = dbModel.Tables.Single();
                 Assert.Equal(2, table.Indexes.Count);
 
+                // H2 2.5 knows the default index and the spatial index. The provider does not read
+                // the type of the index from the catalogue, so the annotation is absent for both.
                 var methodIndex = table.Indexes.Single(i => i.Name == "ix_a");
-                Assert.Equal("hash", methodIndex.FindAnnotation(H2AnnotationNames.IndexMethod).Value);
+                Assert.Null(methodIndex.FindAnnotation(H2AnnotationNames.IndexMethod));
 
-                // It's cleaner to always output the index method on the database model,
-                // even when it's btree (the default);
-                // H2AnnotationCodeGenerator can then omit it as by-convention.
-                // However, because of https://github.com/aspnet/EntityFrameworkCore/issues/11846 we omit
-                // the annotation from the model entirely.
                 var noMethodIndex = table.Indexes.Single(i => i.Name == "ix_b");
                 Assert.Null(noMethodIndex.FindAnnotation(H2AnnotationNames.IndexMethod));
-                //Assert.Equal("btree", noMethodIndex.FindAnnotation(H2AnnotationNames.IndexMethod).Value);
             },
             """
                 DROP TABLE "IndexMethod"
                 """);
 
     [Fact]
-    public void Index_operators()
+    public void Index_IsDescending()
         => Test(
             """
-CREATE TABLE "IndexOperators" (a text, b text);
-CREATE INDEX ix_with ON "IndexOperators" (a, b varchar_pattern_ops);
-CREATE INDEX ix_without ON "IndexOperators" (a, b);
-""",
-            [],
-            [],
-            dbModel =>
-            {
-                var table = dbModel.Tables.Single();
-
-                var indexWith = table.Indexes.Single(i => i.Name == "ix_with");
-                Assert.Equal(new[] { null, "varchar_pattern_ops" }, indexWith.FindAnnotation(H2AnnotationNames.IndexOperators).Value);
-
-                var indexWithout = table.Indexes.Single(i => i.Name == "ix_without");
-                Assert.Null(indexWithout.FindAnnotation(H2AnnotationNames.IndexOperators));
-            },
-            """
-                DROP TABLE "IndexOperators"
-                """);
-
-    [Fact]
-    public void Index_collation()
-        => Test(
-            """
-CREATE TABLE "IndexCollation" (a text, b text);
-CREATE INDEX ix_with ON "IndexCollation" (a, b COLLATE "POSIX");
-CREATE INDEX ix_without ON "IndexCollation" (a, b);
-""",
-            [],
-            [],
-            dbModel =>
-            {
-                var table = dbModel.Tables.Single();
-
-                var indexWith = table.Indexes.Single(i => i.Name == "ix_with");
-                Assert.Equal(new[] { null, "POSIX" }, indexWith.FindAnnotation(RelationalAnnotationNames.Collation).Value);
-
-                var indexWithout = table.Indexes.Single(i => i.Name == "ix_without");
-                Assert.Null(indexWithout.FindAnnotation(RelationalAnnotationNames.Collation));
-            },
-            """
-                DROP TABLE "IndexCollation"
-                """);
-
-    [Theory]
-    [InlineData("gin", new bool[0])]
-    [InlineData("gist", new bool[0])]
-    [InlineData("hash", new bool[0])]
-    [InlineData("brin", new bool[0])]
-    [InlineData("btree", new[] { false, true })]
-    public void Index_IsDescending(string method, bool[] expected)
-        => Test(
-            """
-CREATE TABLE "IndexSortOrder" (a text, b text, c tsvector);
-CREATE INDEX ix_gin ON "IndexSortOrder" USING gin (c);
-CREATE INDEX ix_gist ON "IndexSortOrder" USING gist (c);
-CREATE INDEX ix_hash ON "IndexSortOrder" USING hash (a);
-CREATE INDEX ix_brin ON "IndexSortOrder" USING brin (a);
-CREATE INDEX ix_btree ON "IndexSortOrder" USING btree (a ASC, b DESC);
+CREATE TABLE "IndexSortOrder" (a text, b text);
+CREATE INDEX ix_btree ON "IndexSortOrder" (a ASC, b DESC);
 CREATE INDEX ix_without ON "IndexSortOrder" (a, b);
 """,
             [],
@@ -1906,9 +1824,8 @@ CREATE INDEX ix_without ON "IndexSortOrder" (a, b);
             {
                 var table = dbModel.Tables.Single();
 
-                var indexWith = table.Indexes.Single(i => i.Name == $"ix_{method}");
-                // Assert.True(indexWith.IsDescending.SequenceEqual(expected));
-                Assert.Equal(expected, indexWith.IsDescending);
+                var indexWith = table.Indexes.Single(i => i.Name == "ix_btree");
+                Assert.Equal(new[] { false, true }, indexWith.IsDescending);
 
                 var indexWithout = table.Indexes.Single(i => i.Name == "ix_without");
                 Assert.Equal([false, false], indexWithout.IsDescending);

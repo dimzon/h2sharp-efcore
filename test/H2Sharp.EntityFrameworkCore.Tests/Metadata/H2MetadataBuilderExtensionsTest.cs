@@ -63,14 +63,14 @@ public class H2InternalMetadataBuilderExtensionsTest
         var idProperty = entityTypeBuilder.Property(typeof(int), "Id").Metadata;
         var indexBuilder = entityTypeBuilder.HasIndex([idProperty]);
 
-        Assert.NotNull(indexBuilder.HasMethod("gin"));
-        Assert.Equal("gin", indexBuilder.Metadata.GetMethod());
+        Assert.NotNull(indexBuilder.HasMethod("spatial"));
+        Assert.Equal("spatial", indexBuilder.Metadata.GetMethod());
 
-        Assert.NotNull(indexBuilder.HasMethod("gist", fromDataAnnotation: true));
-        Assert.Equal("gist", indexBuilder.Metadata.GetMethod());
+        Assert.NotNull(indexBuilder.HasMethod("btree", fromDataAnnotation: true));
+        Assert.Equal("btree", indexBuilder.Metadata.GetMethod());
 
-        Assert.Null(indexBuilder.HasMethod("gin"));
-        Assert.Equal("gist", indexBuilder.Metadata.GetMethod());
+        Assert.Null(indexBuilder.HasMethod("spatial"));
+        Assert.Equal("btree", indexBuilder.Metadata.GetMethod());
 
         Assert.Equal(
             1, indexBuilder.Metadata.GetAnnotations().Count(

@@ -41,13 +41,6 @@ namespace H2Sharp.EntityFrameworkCore.Internal
                 GetString("DuplicateColumnNameValueGenerationStrategyMismatch", nameof(entityType1), nameof(property1), nameof(entityType2), nameof(property2), nameof(columnName), nameof(table)),
                 entityType1, property1, entityType2, property2, columnName, table);
 
-        /// <summary>
-        ///     The indexes {index1} on '{entityType1}' and {index2} on '{entityType2}' are both mapped to '{table}.{indexName}', but have different collation configurations.
-        /// </summary>
-        public static string DuplicateIndexCollationMismatch(object? index1, object? entityType1, object? index2, object? entityType2, object? table, object? indexName)
-            => string.Format(
-                GetString("DuplicateIndexCollationMismatch", nameof(index1), nameof(entityType1), nameof(index2), nameof(entityType2), nameof(table), nameof(indexName)),
-                index1, entityType1, index2, entityType2, table, indexName);
 
         /// <summary>
         ///     The indexes {index1} on '{entityType1}' and {index2} on '{entityType2}' are both mapped to '{table}.{indexName}', but have different concurrent creation configurations.
@@ -257,31 +250,6 @@ namespace H2Sharp.EntityFrameworkCore.Internal
             }
 
             return (EventDefinition<string, string>)definition;
-        }
-
-        /// <summary>
-        ///     Found collation with name: {collationName}, schema: {schema}, LC_COLLATE: {lcCollate}, LC_CTYPE: {lcCtype}, provider: {provider}, deterministic: {isDeterministic}
-        /// </summary>
-        public static EventDefinition<string, string, string, string, string?, bool> LogFoundCollation(IDiagnosticsLogger logger)
-        {
-            var definition = ((H2LoggingDefinitions)logger.Definitions).LogFoundCollation;
-            if (definition is null)
-            {
-                definition = NonCapturingLazyInitializer.EnsureInitialized(
-                    ref ((H2LoggingDefinitions)logger.Definitions).LogFoundCollation,
-                    logger,
-                    static logger => new EventDefinition<string, string, string, string, string?, bool>(
-                        logger.Options,
-                        H2EfEventId.CollationFound,
-                        LogLevel.Debug,
-                        "H2EfEventId.CollationFound",
-                        level => LoggerMessage.Define<string, string, string, string, string?, bool>(
-                            level,
-                            H2EfEventId.CollationFound,
-                            _resourceManager.GetString("LogFoundCollation")!)));
-            }
-
-            return (EventDefinition<string, string, string, string, string?, bool>)definition;
         }
 
         /// <summary>

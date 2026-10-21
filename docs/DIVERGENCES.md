@@ -20,33 +20,33 @@
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 957 | 439 | 1396 |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 960 | 428 | 1394 |
    | `H2Sharp.EntityFrameworkCore.Tests` | 109 | 0 | 109 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 161 | 18 | 179 |
-   | **Итого** | **1227** | **457** | **1684** |
+   | **Итого** | **1230** | **446** | **1682** |
 
-   Два красных — тесты `LegacyH2TypeMappingTest`, помеченные `#if DEBUG`; их результат зависит
+   Два красные — тесты `LegacyH2TypeMappingTest`, помеченные `#if DEBUG`; их результат зависит
    от порядка, в котором отработали тесты функционального набора, и от порта он не зависит
-   (в Release их нет вовсе, и набор юнит-тестов зелёный целиком: 111 из 111).
+   (в Release их нет вовсе, и набор юнит-тестов зелёный целиком: 109 из 109).
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
 сбор строк в один текст, сырые запросы и транзакции. Он зелёный целиком, кроме
 восемнадцати тестов, помеченных `BlockedByPort` по пробелам ниже. Покрытие провайдера,
-измеренное этим набором: **3842 из 10164 строк (37,80 %)**.
+измеренное этим набором: **3834 из 9936 строк (38,59 %)**.
 
    Набор `H2Sharp.EntityFrameworkCore.Tests` собирается по-разному в Debug и в Release: четыре
    теста `LegacyH2TypeMappingTest` написаны под `#if DEBUG`. В Debug их 115, и два из них
-   красные — см. ниже; в Release их 111, и все зелёные.
+   красные — см. ниже; в Release их 109, и все зелёные.
 
    Разделение по трейту:
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 1132 | 2 | 1134 |
-   | `Category=BlockedByPort` | 20 | 442 | 462 |
+   | `Category!=BlockedByPort` | 1210 | 0 | 1210 |
+   | `Category=BlockedByPort` | 20 | 446 | 466 |
 
-   Два теста пропущены в обоих прогонах. Числа выше — на `net10.0`, против движка с
+   Шесть тестов пропущены в обоих прогонах. Числа выше — на `net10.0`, против движка с
    `FINAL TABLE`, с последовательностями, с `AS` у псевдонима, со знаком перед членом и без
    предела в восемь параметров на команду.
 
@@ -54,8 +54,8 @@
    выполняло блок `DO … IF NOT EXISTS (SELECT …)`, движок его не читал, и тестовый хост падал
    вместе с ним — оставшиеся тесты не доходили. Блок `DO` заменён на H2'овскую форму, и
    прогон идёт целиком, поэтому числа ниже измерены одним прогоном: миграционный набор
-   (194 теста: 16 прошло, 176 упало, 2 пропущено), набор скаффолдинга (9 тестов, 13 случаев
-   — все красные), наборы `DefaultValuesTest` и `H2ComplianceTest` (2 теста, оба красные).
+   (190 тестов: 18 прошло, 170 упало, 2 пропущено), набор скаффолдинга (57 тестов: 1 прошло,
+   56 упало), наборы `DefaultValuesTest` и `H2ComplianceTest` (2 теста, оба красные).
 
    Два теста в `H2Sharp.EntityFrameworkCore.Tests` красные и не связаны с портом: они
    проверяют `LegacyTimestampBehavior`, и их результат зависит от порядка, в котором
@@ -237,6 +237,8 @@ GROUP BY "p"."TopicId"
    | 16 | **Дата с параметром в `TIMESTAMPADD`** | `Value.getLong needs the concrete value type for NUMERIC, which is not ported yet` | `TIMESTAMPADD` с числом-параметром: с числом, написанным прямо, движок читает |
    | 17 | **Порядок строк в агрегате** | `Not ported yet: Parser.parseQuerySelect: WITHIN GROUP in LISTAGG is not ported` | `WITHIN GROUP (ORDER BY …)`: H2 2.5 берёт порядок строк агрегата отдельной фразой, и без неё порядок не задать |
    | 18 | **Фильтр строк в агрегате** | `FILTER (WHERE …)` у агрегата не читается | `FILTER (WHERE …)`: без него два агрегата в одном запросе не могут смотреть на разные строки |
+   | 19 | **Пространственный индекс** | `Not ported yet: Parser.parseCreate: HASH and SPATIAL indexes are not ported` | `CREATE SPATIAL INDEX`: H2 2.5 его читает, и провайдер его пишет |
+   | 20 | **Пункт `INCLUDE` у индекса** | `Not ported yet: Parser.parseCreate: CREATE INDEX INCLUDE is not ported` | `INCLUDE (…)` у уникального индекса: H2 2.5 его читает, и провайдер его пишет |
 
    Закрытые пробелы: DDL identity-столбца, значение identity обратно (`FINAL TABLE`),
    последовательности (`CREATE SEQUENCE`, `NEXT VALUE FOR`), типизированный литерал в
@@ -279,12 +281,34 @@ GROUP BY "p"."TopicId"
   записанного на зону.
 * **Массивы.** `H2ArrayTypeMapping` разбирает тип элемента, но поддержка массивов в ADO-слое
   H2Sharp не проверена. Тест на массив нужен раньше, чем тип можно считать рабочим.
-* **Коллации и полнотекстовый поиск — работа форка, а не H2.** В H2 2.5 нет ни `CREATE
-  COLLATION`, ни `COLLATE` у столбца, ни `tsvector` с индексами GIN/GIST. Провайдер всё это
-  ещё предлагает в API (`HasCollation`, `UseCollation`, `HasMethod`, `IsTsVectorExpressionIndex`)
-  и пишет в DDL — а это SQL, который эталон отвергает. `UNLOGGED` и «interleave in parent»
-  CockroachDB из этого списка уже убраны: первого нет в H2, а второе — фича CockroachDB, а не
-  H2. Остались две вещи — работа на следующий заход: снять API и DDL, а тесты переписать под H2.
+* **Коллации сняты из провайдера.** В H2 2.5 нет ни `CREATE COLLATION`, ни `COLLATE` у столбца,
+  ни `COLLATE` в выражении: эталон читает `COLLATE` только в режиме совместимости, а каталог
+  H2 2.5 не знает коллации столбца. Поэтому API провайдера (`HasCollation`, `UseCollation`,
+  `GetCollation`, `CollationDefinitionPrefix`, `DefaultColumnCollation`, `IndexCollation`)
+  убран, DDL коллаций больше не пишется, а попытка задать коллацию (у столбца, у индекса, у
+  выражения, у базы данных) даёт `NotSupportedException` с объяснением, что H2 2.5 такого
+  не умеет. `UNLOGGED` и «interleave in parent» CockroachDB сняты по той же причине.
+* **Полнотекстовый поиск снят из провайдера.** В H2 2.5 нет типа `tsvector`, нет `tsquery`, нет
+  функций `to_tsvector`/`plainto_tsquery`, нет индексов GIN/GIST и нет `CREATE TEXT SEARCH
+  CONFIGURATION`. Поэтому API провайдера (`IsTsVectorExpressionIndex`, генерируемый столбец
+  `tsvector`, `to_tsvector`/`plainto_tsquery`) убран вместе с аннотациями
+  (`TsVectorConfig`, `TsVectorProperties`) и с DDL, который это писал.
+* **Класс оператора столбца индекса снят.** В H2 2.5 у столбца индекса нет класса оператора:
+  грамматика эталонного движка читает `readIdentifier()` и порядок сортировки, и ничего
+  больше. Поэтому `HasOperators` и аннотация `IndexOperators` убраны, и DDL индекса больше не
+  пишет класс оператора.
+* **Метод индекса оставлен, но теперь это вид индекса H2 2.5.** У H2 2.5 есть индекс по
+  умолчанию (btree) и пространственный индекс (`CREATE SPATIAL INDEX`); хеш-индекс H2 2.5
+  читается только в режиме совместимости, а методы индексов PostgreSQL (`gin`, `gist`, `brin`)
+  в H2 2.5 нет. Поэтому `HasMethod` принимает только `btree` (по умолчанию) и `spatial`, а
+  остальное даёт `NotSupportedException` со списком того, что у H2 2.5 есть. Пробел движка:
+  `CREATE SPATIAL INDEX` движок не читает («Parser.parseCreate: HASH and SPATIAL indexes are
+  not ported»).
+* **Пункт `INCLUDE` у индекса остаётся, но только у уникального.** Эталон читает `INCLUDE`
+  в ветке уникального индекса, и `CREATE INDEX ... INCLUDE (...)` без `UNIQUE` у него — ошибка
+  синтаксиса. Провайдер пишет `INCLUDE` только у уникального индекса, а у обычного даёт
+  `NotSupportedException`. Пробел движка: `INCLUDE` движок не читает («Parser.parseCreate:
+  CREATE INDEX INCLUDE is not ported»).
 
 ## Следствия для тестов
 
@@ -357,7 +381,7 @@ EF-овым (полнотекстовый поиск `tsvector`, `CREATE COLLATI
 | `COMMENT ON` не разбирается | 6 | движок |
    | `CREATE TYPE … AS ENUM` не разбирается | 9 | движок |
 | `LEFT JOIN` не разбирается | 7 | движок |
-   | `COLLATE`, `CREATE COLLATION` | 3 | **провайдер**: в H2 2.5 нет ни того, ни другого |
+   | `COLLATE`, `CREATE COLLATION` | 0 | снято: в H2 2.5 нет ни того, ни другого, провайдер коллации больше не пишет и не предлагает |
    | `ALTER TABLE` — `RENAME TO`, `ALTER COLUMN`, `DROP COLUMN`, `ADD CONSTRAINT … FOREIGN KEY` | 4 | движок |
    | `CREATE TABLE` с массивом, с генерируемым столбцом или с внешним ключом | 8 | движок: «Not ported yet: Parser.readCreateTable: table constraints other than the primary key are not ported» |
    | прочее: схема в имени таблицы | 1 | движок |

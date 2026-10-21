@@ -64,23 +64,6 @@ public static class H2IndexExtensions
             return false;
         }
 
-        if (index.GetCollation() != duplicateIndex.GetCollation())
-        {
-            if (shouldThrow)
-            {
-                throw new InvalidOperationException(
-                    H2Strings.DuplicateIndexCollationMismatch(
-                        index.Properties.Format(),
-                        index.DeclaringEntityType.DisplayName(),
-                        duplicateIndex.Properties.Format(),
-                        duplicateIndex.DeclaringEntityType.DisplayName(),
-                        index.DeclaringEntityType.GetSchemaQualifiedTableName(),
-                        index.GetDatabaseName(storeObject)));
-            }
-
-            return false;
-        }
-
         return true;
 
         static bool SameColumnNames(IReadOnlyIndex index, IReadOnlyIndex duplicateIndex, StoreObjectIdentifier storeObject)

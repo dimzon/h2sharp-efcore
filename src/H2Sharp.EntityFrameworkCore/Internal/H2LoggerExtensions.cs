@@ -114,31 +114,6 @@ public static class H2LoggerExtensions
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static void CollationFound(
-        this IDiagnosticsLogger<DbLoggerCategory.Scaffolding> diagnostics,
-        string schema,
-        string collationName,
-        string lcCollate,
-        string lcCtype,
-        string? provider,
-        bool deterministic)
-    {
-        var definition = H2Resources.LogFoundCollation(diagnostics);
-
-        if (diagnostics.ShouldLog(definition))
-        {
-            definition.Log(diagnostics, collationName, schema, lcCollate, lcCtype, provider, deterministic);
-        }
-
-        // No DiagnosticsSource events because these are purely design-time messages
-    }
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
     public static void UniqueConstraintFound(
         this IDiagnosticsLogger<DbLoggerCategory.Scaffolding> diagnostics,
         string? uniqueConstraintName,

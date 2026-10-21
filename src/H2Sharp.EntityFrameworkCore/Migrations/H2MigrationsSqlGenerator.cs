@@ -334,11 +334,9 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         var column = model?.GetRelationalModel().FindTable(operation.Table, operation.Schema)
             ?.Columns.FirstOrDefault(c => c.Name == operation.Name);
 
-        ApplyTsVectorColumnSql(operation, model, operation.Name, operation.Schema, operation.Table);
 
         // Note: OldColumn doesn't have Schema, Table or Name populated (https://github.com/dotnet/efcore/issues/28041), so we take these
         // from the new column (they're identical in any case).
-        ApplyTsVectorColumnSql(operation.OldColumn, model, operation.Name, operation.Schema, operation.Table);
 
         if (operation.ComputedColumnSql != operation.OldColumn.ComputedColumnSql
             || operation.IsStored != operation.OldColumn.IsStored)
@@ -400,35 +398,22 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
             ? operation.OldColumn.ColumnType ?? GetColumnType(operation.Schema, operation.Table, operation.Name, operation.OldColumn, model)
             : null;
 
-        // If a collation was defined on the column specifically, via the standard EF mechanism, it will be
-        // available in operation.Collation (as usual).
-        // If not, there may be a model-wide default column collation, which gets transmitted via the H2-specific annotation.
-        // This mechanism is obsolete, and EF Core's bulk model configuration can be used instead; but we continue to support it for
-        // backwards compat.
-#pragma warning disable CS0618
-        var oldCollation = (string?)(operation.OldColumn.Collation ?? operation.OldColumn[H2AnnotationNames.DefaultColumnCollation]);
-        var newCollation = (string?)(operation.Collation ?? operation[H2AnnotationNames.DefaultColumnCollation]);
-#pragma warning restore CS0618
+        // H2 2.5 has no collation of a column: the reference reads "COLLATE" only in the
+        // compatibility mode, and the catalogue of H2 2.5 has no collation of a column.
+        if (operation.Collation is not null)
+        {
+            throw new NotSupportedException(
+                "H2 2.5 has no collation of a column, so the collation of the column "
+                + $"'{operation.Name}' cannot be written as SQL.");
+        }
 
-        if (type != oldType || newCollation != oldCollation)
+        if (type != oldType)
         {
             builder
                 .Append(alterBase)
                 .Append("TYPE ")
-                .Append(type);
-
-            if (newCollation is not null)
-            {
-                builder.Append(" COLLATE ").Append(DelimitIdentifier(newCollation));
-            }
-            else if (type == oldType)
-            {
-                // If the type is the same, make it more explicit that we're just resetting the collation to the default
-                // (this isn't really required)
-                builder.Append(" COLLATE ").Append(DelimitIdentifier("default"));
-            }
-
-            builder.AppendLine(";");
+                .Append(type)
+                .AppendLine(";");
         }
 
         if (operation is { IsNullable: true, OldColumn.IsNullable: false })
@@ -866,11 +851,26 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         Check.NotNull(operation, nameof(operation));
         Check.NotNull(builder, nameof(builder));
 
+        // H2 2.5 knows the default index and the spatial index. Its hash index is read only in the
+        // compatibility mode, and the index methods of PostgreSQL are not in H2 2.5 at all.
+        var method = operation[H2AnnotationNames.IndexMethod] as string;
+        if (method is not null && method is not "btree" and not "spatial")
+        {
+            throw new NotSupportedException(
+                $"H2 2.5 has no index of the kind '{method}': the kinds of the index of H2 2.5 are the "
+                + "default index (btree) and the spatial index.");
+        }
+
         builder.Append("CREATE ");
 
         if (operation.IsUnique)
         {
             builder.Append("UNIQUE ");
+        }
+
+        if (method is "spatial")
+        {
+            builder.Append("SPATIAL ");
         }
 
         builder.Append("INDEX ");
@@ -886,21 +886,11 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
             .Append(" ON ")
             .Append(DelimitIdentifier(operation.Table, operation.Schema));
 
-        var method = operation[H2AnnotationNames.IndexMethod] as string;
-        if (method?.Length > 0)
-        {
-            builder.Append(" USING ").Append(method);
-        }
-
         var indexColumns = GetIndexColumns(operation);
-
-        var columnsExpression = operation[H2AnnotationNames.TsVectorConfig] is string tsVectorConfig
-            ? ColumnsToTsVector(operation.Name, indexColumns.Select(i => i.Name), tsVectorConfig, model, operation.Schema, operation.Table)
-            : IndexColumnList(indexColumns, method);
 
         builder
             .Append(" (")
-            .Append(columnsExpression)
+            .Append(IndexColumnList(indexColumns, method))
             .Append(")");
 
         IndexOptions(operation, model, builder);
@@ -916,8 +906,17 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
     /// <inheritdoc />
     protected override void IndexOptions(MigrationOperation operation, IModel? model, MigrationCommandListBuilder builder)
     {
-        if (true && operation[H2AnnotationNames.IndexInclude] is string[] { Length: > 0 } includeColumns)
+        if (operation[H2AnnotationNames.IndexInclude] is string[] { Length: > 0 } includeColumns)
         {
+            // H2 2.5 reads the clause INCLUDE only for a unique index: the reference reads it in the
+            // branch of the unique index, and a non-unique index with INCLUDE is a syntax error.
+            if (operation is not CreateIndexOperation { IsUnique: true })
+            {
+                throw new NotSupportedException(
+                    "H2 2.5 reads the clause INCLUDE only for a unique index, so the included columns "
+                    + "of a non-unique index cannot be written as SQL.");
+            }
+
             builder
                 .Append(" INCLUDE (")
                 .Append(ColumnList(includeColumns))
@@ -986,10 +985,9 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
         if (!string.IsNullOrEmpty(operation.Collation))
         {
-            builder
-                .AppendLine()
-                .Append("LC_COLLATE ")
-                .Append(DelimitIdentifier(operation.Collation));
+            throw new NotSupportedException(
+                "H2 2.5 has no LC_COLLATE of a database: the collation of the database is set "
+                + "with SET COLLATION, and only with the names H2 2.5 has.");
         }
 
         builder.AppendLine(";");
@@ -1023,10 +1021,10 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
         if (operation.Collation != operation.OldDatabase.Collation)
         {
-            throw new NotSupportedException("PostgreSQL does not support altering the collation on an existing database.");
+            throw new NotSupportedException(
+                "H2 2.5 does not support altering the collation of an existing database.");
         }
 
-        GenerateCollationStatements(operation, model, builder);
         GenerateEnumStatements(operation, model, builder);
 
         foreach (var extension in operation.GetPostgresExtensions())
@@ -1072,105 +1070,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
         builder.AppendLine(";");
     }
-
-    #region Collation management
-
-    /// <inheritdoc />
-    protected virtual void GenerateCollationStatements(AlterDatabaseOperation operation, IModel? model, MigrationCommandListBuilder builder)
-    {
-        foreach (var collationToCreate in operation.GetPostgresCollations()
-                     .Where(ne => operation.GetOldPostgresCollations().All(oe => oe.Name != ne.Name || oe.Schema != ne.Schema)))
-        {
-            GenerateCreateCollation(collationToCreate, model, builder);
-        }
-
-        foreach (var collationToDrop in operation.GetOldPostgresCollations()
-                     .Where(oe => operation.GetPostgresCollations().All(ne => ne.Name != oe.Name || oe.Schema != ne.Schema)))
-        {
-            GenerateDropCollation(collationToDrop, model, builder);
-        }
-
-        foreach (var (newCollation, oldCollation) in operation.GetPostgresCollations()
-                     .Join(
-                         operation.GetOldPostgresCollations(),
-                         e => new { e.Name, e.Schema },
-                         e => new { e.Name, e.Schema },
-                         (ne, oe) => (New: ne, Old: oe)))
-        {
-            if (newCollation.LcCollate != oldCollation.LcCollate
-                || newCollation.LcCtype != oldCollation.LcCtype
-                || newCollation.Provider != oldCollation.Provider
-                || newCollation.IsDeterministic != oldCollation.IsDeterministic)
-            {
-                throw new NotSupportedException("Altering an existing collation is not supported.");
-            }
-        }
-    }
-
-    /// <inheritdoc />
-    protected virtual void GenerateCreateCollation(PostgresCollation collation, IModel? model, MigrationCommandListBuilder builder)
-    {
-        var schema = collation.Schema ?? model?.GetDefaultSchema();
-
-        // Schemas are normally created (or rather ensured) by the model differ, which scans all tables, sequences
-        // and other database objects. However, it isn't aware of collation, so we always ensure schema on collation creation.
-        if (schema is not null)
-        {
-            Generate(new EnsureSchemaOperation { Name = schema }, model, builder);
-        }
-
-        builder
-            .Append("CREATE COLLATION ")
-            .Append(DelimitIdentifier(collation.Name, schema))
-            .Append(" (")
-            .IncrementIndent();
-
-        var def = new List<string>();
-
-        if (collation.LcCollate == collation.LcCtype)
-        {
-            def.Add($"LOCALE = {_stringTypeMapping.GenerateSqlLiteral(collation.LcCollate)}");
-        }
-        else
-        {
-            def.Add($"LC_COLLATE = {_stringTypeMapping.GenerateSqlLiteral(collation.LcCollate)}");
-            def.Add($"LC_CTYPE = {_stringTypeMapping.GenerateSqlLiteral(collation.LcCtype)}");
-        }
-
-        if (collation.Provider is not null)
-        {
-            def.Add($"PROVIDER = {collation.Provider}");
-        }
-
-        if (collation.IsDeterministic is not null)
-        {
-            def.Add($"DETERMINISTIC = {collation.IsDeterministic}");
-        }
-
-        for (var i = 0; i < def.Count; i++)
-        {
-            builder
-                .Append(def[i] + (i == def.Count - 1 ? null : ","))
-                .AppendLine();
-        }
-
-        builder
-            .DecrementIndent()
-            .AppendLine(");");
-    }
-
-    /// <inheritdoc />
-    protected virtual void GenerateDropCollation(PostgresCollation collation, IModel? model, MigrationCommandListBuilder builder)
-    {
-        var schema = collation.Schema ?? model?.GetDefaultSchema();
-
-        builder
-            .Append("DROP COLLATION ")
-            .Append(DelimitIdentifier(collation.Name, schema))
-            .AppendLine(";");
-    }
-
-    #endregion Collation management
 
     #region Enum management
 
@@ -1403,7 +1302,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
             }
         }
 
-        ApplyTsVectorColumnSql(operation, model, operation.Name, schema, table);
 
         if (operation.ComputedColumnSql is not null)
         {
@@ -1425,19 +1323,13 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
                 .Append(DelimitIdentifier(compressionMethod));
         }
 
-        // If a collation was defined on the column specifically, via the standard EF mechanism, it will be
-        // available in operation.Collation (as usual).
-        // If not, there may be a model-wide default column collation, which gets transmitted via the H2-specific annotation.
-        // This mechanism is obsolete, and EF Core's bulk model configuration can be used instead; but we continue to support it for
-        // backwards compat.
-#pragma warning disable CS0618
-        var collation = (string?)(operation.Collation ?? operation[H2AnnotationNames.DefaultColumnCollation]);
-#pragma warning restore CS0618
-        if (collation is not null)
+        // H2 2.5 has no collation of a column: the reference reads "COLLATE" only in the
+        // compatibility mode, and the catalogue of H2 2.5 has no collation of a column.
+        if (operation.Collation is not null)
         {
-            builder
-                .Append(" COLLATE ")
-                .Append(DelimitIdentifier(collation));
+            throw new NotSupportedException(
+                "H2 2.5 has no collation of a column, so the collation of the column "
+                + $"'{operation.Name}' cannot be written as SQL.");
         }
 
         if (valueGenerationStrategy.IsIdentity())
@@ -1473,29 +1365,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         }
 
         base.DefaultValue(defaultValue, defaultValueSql, columnType, builder);
-    }
-
-    /// <summary>
-    ///     Checks for a <see cref="H2AnnotationNames.TsVectorConfig" /> annotation on the given column, and if found, assigns
-    ///     the appropriate SQL to <see cref="ColumnOperation.ComputedColumnSql" />.
-    /// </summary>
-    protected virtual void ApplyTsVectorColumnSql(ColumnOperation column, IModel? model, string name, string? schema, string table)
-    {
-        if (column[H2AnnotationNames.TsVectorConfig] is string tsVectorConfig)
-        {
-            var tsVectorIncludedColumns = column[H2AnnotationNames.TsVectorProperties] as string[];
-            if (tsVectorIncludedColumns is null)
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(H2AnnotationNames.TsVectorConfig)} is present in a migration but "
-                    + $"{nameof(H2AnnotationNames.TsVectorProperties)} is absent or empty");
-            }
-
-            column.ComputedColumnSql = ColumnsToTsVector(name, tsVectorIncludedColumns, tsVectorConfig, model, schema, table);
-            column.IsStored = true;
-
-            column.RemoveAnnotation(H2AnnotationNames.TsVectorConfig);
-        }
     }
 
     // Note: this definition is only used for creating new identity columns, not for alterations.
@@ -1659,11 +1528,13 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
             .Append(" ")
             .Append(operation.ColumnType ?? GetColumnType(schema, table, name, operation, model)!);
 
+        // H2 2.5 has no collation of a column: the reference reads "COLLATE" only in the
+        // compatibility mode, and the catalogue of H2 2.5 has no collation of a column.
         if (operation.Collation is not null)
         {
-            builder
-                .Append(" COLLATE ")
-                .Append(DelimitIdentifier(operation.Collation));
+            throw new NotSupportedException(
+                "H2 2.5 has no collation of a column, so the collation of the column "
+                + $"'{name}' cannot be written as SQL.");
         }
 
         builder
@@ -1918,20 +1789,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
             builder.Append(DelimitIdentifier(column.Name));
 
-            if (!string.IsNullOrEmpty(column.Collation))
-            {
-                builder.Append(" COLLATE ").Append(DelimitIdentifier(column.Collation));
-            }
-
-            if (!string.IsNullOrEmpty(column.Operator))
-            {
-                var delimitedOperator = TryParseSchema(column.Operator, out var name, out var schema)
-                    ? DelimitIdentifier(name, schema)
-                    : DelimitIdentifier(column.Operator);
-
-                builder.Append(" ").Append(delimitedOperator);
-            }
-
             // Of the built-in access methods, only btree (the default) supports
             // sorting, thus we only want to emit sort options for btree indexes.
             if (method is null or "btree")
@@ -1963,68 +1820,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         return builder.ToString();
     }
 
-    private string ColumnsToTsVector(
-        string columnOrIndexName,
-        IEnumerable<string> columnNames,
-        string tsVectorConfig,
-        IModel? model,
-        string? schema,
-        string table)
-    {
-        var columns = columnNames
-            .Select(columnName => model?.GetRelationalModel().FindTable(table, schema)?.Columns.FirstOrDefault(c => c.Name == columnName))
-            .ToArray();
-
-        IEnumerable<IGrouping<string, IColumn>> columnGroups = columns
-            .GroupBy(
-                c => c?.StoreType switch
-                {
-                    "json" => "json",
-                    "jsonb" => "jsonb",
-                    null => "null",
-                    _ => "text"
-
-                    // Note: we currently don't support array_to_tsvector since it doesn't accept a search configuration
-                })!;
-
-        var tsVectorConfigLiteral = _stringTypeMapping.GenerateSqlLiteral(tsVectorConfig);
-
-        var builder = new StringBuilder();
-
-        foreach (var columnGroup in columnGroups)
-        {
-            if (builder.Length > 0)
-            {
-                builder.Append(" || ");
-            }
-
-            builder.Append(
-                columnGroup.Key switch
-                {
-                    "text" => $"to_tsvector({tsVectorConfigLiteral}, {string.Join(" || ' ' || ", columnGroup.Select(TextColumn))})",
-                    "json" => string.Join(
-                        " || ", columnGroup.Select(
-                            c =>
-                                $"""json_to_tsvector({tsVectorConfigLiteral}, {JsonColumn(c)}, '"all"')""")),
-                    "jsonb" => string.Join(
-                        " || ", columnGroup.Select(
-                            c =>
-                                $"""jsonb_to_tsvector({tsVectorConfigLiteral}, {JsonColumn(c)}, '"all"')""")),
-                    "null" => throw new InvalidOperationException(
-                        $"Column or index {columnOrIndexName} refers to unknown column in tsvector definition"),
-                    _ => throw new ArgumentOutOfRangeException()
-                });
-        }
-
-        return builder.ToString();
-
-        string TextColumn(IColumn column)
-            => column.IsNullable ? $"coalesce({DelimitIdentifier(column.Name)}, '')" : DelimitIdentifier(column.Name);
-
-        string JsonColumn(IColumn column)
-            => column.IsNullable ? $"coalesce({DelimitIdentifier(column.Name)}, '{{}}')" : DelimitIdentifier(column.Name);
-    }
-
     private static bool TryParseSchema(string identifier, out string name, out string? schema)
     {
         var index = identifier.IndexOf('.');
@@ -2043,10 +1838,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
     private static IndexColumn[] GetIndexColumns(CreateIndexOperation operation)
     {
-        var collations = operation[RelationalAnnotationNames.Collation] as string[];
-
-        var operators = operation[H2AnnotationNames.IndexOperators] as string[];
-
         // We used to have our own annotation-based descending index mechanism, this got replaced with IsDescending in EF Core 7.0.
         var isDescendingValues = operation.IsDescending;
         var legacySortOrders = operation[H2AnnotationNames.IndexSortOrder] as SortOrder[];
@@ -2058,27 +1849,24 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         for (var i = 0; i < columns.Length; i++)
         {
             var name = operation.Columns[i];
-            var @operator = i < operators?.Length ? operators[i] : null;
-            var collation = i < collations?.Length ? collations[i] : null;
             var isColumnDescending = isDescendingValues is not null
                 ? isDescendingValues.Length == 0 || isDescendingValues[i]
                 : i < legacySortOrders?.Length && legacySortOrders[i] == SortOrder.Descending;
             var nullSortOrder = i < nullSortOrders?.Length ? nullSortOrders[i] : NullSortOrder.Unspecified;
 
-            columns[i] = new IndexColumn(name, @operator, collation, isColumnDescending, nullSortOrder);
+            columns[i] = new IndexColumn(name, isColumnDescending, nullSortOrder);
         }
 
         return columns;
     }
 
-    private readonly struct IndexColumn(string name, string? @operator, string? collation, bool isDescending, NullSortOrder nullSortOrder)
+    private readonly struct IndexColumn(string name, bool isDescending, NullSortOrder nullSortOrder)
     {
         public string Name { get; } = name;
-        public string? Operator { get; } = @operator;
-        public string? Collation { get; } = collation;
         public bool IsDescending { get; } = isDescending;
         public NullSortOrder NullSortOrder { get; } = nullSortOrder;
     }
+
 
     #endregion
 }
