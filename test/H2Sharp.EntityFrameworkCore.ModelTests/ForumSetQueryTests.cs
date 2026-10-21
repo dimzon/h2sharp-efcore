@@ -88,15 +88,11 @@ public class ForumSetQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_rows_without_their_repeats_are_asked_for_in_order()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_without_their_repeats_are_asked_for_in_order));
         using var context = database.Context();
 
-        // The order after the operation puts the query into a table of its own,
-        // "FROM ( SELECT DISTINCT ... ) AS "p0"", and the engine does not read a table of its own
-        // yet: "Table "(" not found".
         var authors = context.Posts.Select(p => p.AuthorId).Distinct().OrderBy(a => a).ToList();
 
         Assert.Equal([1, 2, 3, 4], authors);

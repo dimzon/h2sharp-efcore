@@ -89,15 +89,15 @@ public class ForumStringQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_two_strings_are_joined()
     {
         using var database = ForumDatabase.Filled(nameof(The_two_strings_are_joined));
         using var context = database.Context();
 
-        // The provider writes the operator of the concatenation, and the engine does not read
-        // it: "Syntax error in SQL statement "SELECT ""t"".""Title"" || ' (a topic)'"; expected
-        // "statement"".
+        // The provider joins the texts with CONCAT, the function H2 2.5 has. The operator of
+        // PostgreSQL ("a || b") means something else: it makes the whole result NULL when one
+        // of the parts is NULL, while CONCAT ignores the NULL parts. The reference H2 2.5 was
+        // asked about both: CONCAT('a', NULL) is 'a', and 'a' || NULL is NULL.
         var joined = context.Topics.OrderBy(t => t.Id).Select(t => t.Title + " (a topic)").First();
 
         Assert.Equal("What a compiler does with the source (a topic)", joined);

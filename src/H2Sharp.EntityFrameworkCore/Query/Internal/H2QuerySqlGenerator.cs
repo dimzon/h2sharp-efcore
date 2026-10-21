@@ -34,22 +34,13 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         _reverseNullOrderingEnabled = reverseNullOrderingEnabled;
     }
 
-    /// <summary>
-    ///     The separator between a column and its alias.
-    /// </summary>
-    /// <remarks>
-    ///     SQL allows a column alias without the <c>AS</c> keyword, but the engine's parser does not
-    ///     read that form, so a column alias keeps its <c>AS</c>.
-    /// </remarks>
-    protected override string AliasSeparator
-        => " AS ";
-
     /// <inheritdoc />
     protected override Expression VisitTable(TableExpression tableExpression)
     {
         // The table's alias is written without the AS: SQL allows an alias without it, H2 reads
         // both forms, and the reference H2 2.5 was asked and takes "FROM "Rows" "r"" as readily as
-        // "FROM "Rows" AS "r"". The engine's parser reads the form without it.
+        // "FROM "Rows" AS "r"". Of the two forms the bare one is the shorter, and the engine's
+        // parser reads it as well.
         Sql.Append(_sqlGenerationHelper.DelimitIdentifier(tableExpression.Name, tableExpression.Schema));
 
         if (tableExpression.Alias is { } alias)
@@ -134,23 +125,11 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     protected override string GetOperator(SqlBinaryExpression e)
         => e.OperatorType switch
         {
-            // PostgreSQL has a special string concatenation operator: ||
-            // We switch to it if the expression itself has type string, or if one of the sides has a string type mapping.
-            // Same for full-text search's TsVector, arrays.
-            ExpressionType.Add when
-                e.Type == typeof(string)
-                || e.Left.TypeMapping?.ClrType == typeof(string)
-                || e.Right.TypeMapping?.ClrType == typeof(string)
-                || e.Left.TypeMapping is H2ArrayTypeMapping && e.Right.TypeMapping is H2ArrayTypeMapping
-                => " || ",
-
+            // The strings and the arrays are joined with the functions of H2 2.5, CONCAT and
+            // ARRAY_CAT, and the exclusive or is BITXOR: the pipes ("||") and the hash ("#")
+            // are not in the grammar of H2 2.5. The three are written in VisitSqlBinary.
             ExpressionType.And when e.Type == typeof(bool) => " AND ",
             ExpressionType.Or when e.Type == typeof(bool) => " OR ",
-
-            // In most databases/languages, the caret (^) is the bitwise XOR operator. But in PostgreSQL the caret is the exponentiation
-            // operator, and hash (#) is used instead.
-            ExpressionType.ExclusiveOr when e.Type == typeof(bool) => " <> ",
-            ExpressionType.ExclusiveOr => " # ",
 
             _ => base.GetOperator(e)
         };
@@ -171,7 +150,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// <inheritdoc />
     protected override void GenerateTop(SelectExpression selectExpression)
     {
-        // No TOP() in PostgreSQL, see GenerateLimitOffset
+        // H2 2.5 has no TOP(), see GenerateLimitOffset
     }
 
     /// <summary>
@@ -209,8 +188,38 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     {
         switch (binary.OperatorType)
         {
-            case ExpressionType.Add:
-                return base.VisitSqlBinary(binary);
+            case ExpressionType.Add when binary.Type == typeof(string):
+                // The strings are joined with CONCAT, the function H2 2.5 has. The pipes
+                // ("a || b") mean something else: they make the whole result NULL when
+                // one of the parts is NULL, while CONCAT ignores the NULL parts. The reference H2
+                // 2.5 was asked about both: CONCAT('a', NULL) is 'a', and 'a' || NULL is NULL.
+                Sql.Append("CONCAT(");
+                Visit(binary.Left);
+                Sql.Append(", ");
+                Visit(binary.Right);
+                Sql.Append(")");
+                return binary;
+
+            case ExpressionType.Add
+                when binary.Left.TypeMapping is H2ArrayTypeMapping && binary.Right.TypeMapping is H2ArrayTypeMapping:
+                // The arrays are joined with ARRAY_CAT, the function H2 2.5 has. The pipes
+                // ("a || b") are not in the grammar of H2 2.5.
+                Sql.Append("ARRAY_CAT(");
+                Visit(binary.Left);
+                Sql.Append(", ");
+                Visit(binary.Right);
+                Sql.Append(")");
+                return binary;
+
+            case ExpressionType.ExclusiveOr when binary.Type != typeof(bool):
+                // The exclusive or is BITXOR, the function H2 2.5 has. The hash ("a # b") is
+                // not in the grammar of H2 2.5.
+                Sql.Append("BITXOR(");
+                Visit(binary.Left);
+                Sql.Append(", ");
+                Visit(binary.Right);
+                Sql.Append(")");
+                return binary;
 
             case ExpressionType.ArrayIndex:
                 return VisitArrayIndex(binary);
@@ -344,7 +353,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
 
                     visitor ??= new OuterReferenceFindingExpressionVisitor(updateExpression.Table);
 
-                    // PostgreSQL doesn't support referencing the main update table from anywhere except for the UPDATE WHERE clause.
+                    // The main update table cannot be referenced from anywhere except for the UPDATE WHERE clause.
                     // This specifically makes it impossible to have joins which reference the main table in their predicate (ON ...).
                     // Because of this, we detect all such inner joins and lift their predicates to the main WHERE clause (where a reference to the
                     // main table is allowed), producing UPDATE ... FROM x, y WHERE y.foreign_key = x.id instead of INNER JOIN ... ON.
@@ -433,8 +442,8 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             Visit(initializer);
         }
 
-        // No cast after the brackets. PostgreSQL needs one to say what the array holds
-        // ("ARRAY[1,2]::integer[]"), and H2 2.5 has no such cast: the type of the array
+        // No cast after the brackets: H2 2.5 says what the array holds without one
+        // ("ARRAY[1,2]" is enough), and it has no such cast: the type of the array
         // follows from the elements and from the place the array stands in.
         return pgNewArrayExpression;
     }
@@ -567,26 +576,13 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         {
             case ExpressionType.Convert:
             {
-                // H2 2.5 has no x::y: that is PostgreSQL's shorter cast, and the reference
+                // H2 2.5 has no x::y: that shorter cast is not in its grammar, and the reference
                 // refuses it. The standard CAST(x AS y) is what H2 takes, and the type in it
-                // is the type of H2 -- "integer", not PostgreSQL's "int".
+                // is the type of H2 -- "integer".
                 Sql.Append("CAST(");
                 Visit(sqlUnaryExpression.Operand);
                 Sql.Append(" AS ");
                 Sql.Append(sqlUnaryExpression.TypeMapping.StoreType);
-                Sql.Append(")");
-                return sqlUnaryExpression;
-            }
-
-            case ExpressionType.Negate:
-            {
-                // The engine does not read the negation of an expression: "SELECT -N FROM T" is
-                // refused with "expected number", and so is "SELECT ABS(-N) FROM T". The
-                // difference from zero is the same thing written the way the engine reads it,
-                // and H2 2.5 takes both. The whole difference is in brackets, so that the
-                // negation keeps its place in the expression around it.
-                Sql.Append("(0 - ");
-                Visit(sqlUnaryExpression.Operand);
                 Sql.Append(")");
                 return sqlUnaryExpression;
             }
@@ -630,7 +626,8 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// </summary>
     protected override void GenerateSetOperationOperand(SetOperationBase setOperation, SelectExpression operand)
     {
-        // PostgreSQL allows ORDER BY and LIMIT in set operation operands, but requires parentheses
+        // The operands of a set operation are written in parentheses when they carry their own
+        // ORDER BY or LIMIT
         if (operand.Orderings.Count > 0 || operand.Limit is not null)
         {
             Sql.AppendLine("(");
@@ -673,7 +670,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override bool TryGenerateWithoutWrappingSelect(SelectExpression selectExpression)
-        // PostgreSQL supports VALUES as a top-level statement - and directly under set operations.
+        // H2 2.5 supports VALUES as a top-level statement - and directly under set operations.
         // However, when on the left side of a set operation, we need the column coming out of VALUES to be named, so we need the wrapping
         // SELECT for that.
         => selectExpression.Tables is not [ValuesExpression]
@@ -738,7 +735,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     {
         base.VisitValues(valuesExpression);
 
-        // PostgreSQL VALUES supports setting the projects column names: FROM (VALUES (1), (2)) AS v(foo)
+        // H2 2.5 supports setting the projects column names: FROM (VALUES (1), (2)) AS v(foo)
         Sql.Append("(");
 
         for (var i = 0; i < valuesExpression.ColumnNames.Count; i++)
@@ -774,7 +771,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             throw new InvalidOperationException(RelationalStrings.EmptyCollectionNotSupportedAsInlineQueryRoot);
         }
 
-        // PostgreSQL supports providing the names of columns projected out of VALUES: (VALUES (1, 3), (2, 4)) AS x(a, b).
+        // H2 2.5 supports providing the names of columns projected out of VALUES: (VALUES (1, 3), (2, 4)) AS x(a, b).
         // But since other databases sometimes don't, the default relational implementation is complex, involving a SELECT for the first row
         // and a UNION All on the rest. Override to do the nice simple thing.
         var rowValues = valuesExpression.RowValues;
@@ -922,10 +919,11 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     }
 
     /// <summary>
-    ///     Produces SQL for PostgreSQL regex matching.
+    ///     Produces SQL for the regex matching of H2 2.5.
     /// </summary>
     /// <remarks>
-    ///     See: http://www.postgresql.org/docs/current/static/functions-matching.html
+    ///     The functions of H2 2.5 are in the frozen documentation of the engine:
+    ///     <c>../h2sharp/docs/functions.html</c>.
     /// </remarks>
     protected virtual Expression VisitRegexMatch(PgRegexMatchExpression expression, bool negated = false)
     {
@@ -965,7 +963,8 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         }
         else if (!options.HasFlag(RegexOptions.Singleline))
         {
-            // In .NET's default mode, . doesn't match newlines but in PostgreSQL it does.
+            // In .NET's default mode, . doesn't match newlines, and the pattern of H2 2.5 is
+            // read as it is written: the flag says that the newlines are not a part of it.
             Sql.Append("p");
         }
 
@@ -1195,8 +1194,8 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         // The element there is an expression over the row of the table, and not a column of a
         // table that is joined -- and the model EF has of a collection is exactly a table whose
         // column is the element. So the form H2 has cannot be written in the model EF has, and
-        // the table of the elements is refused rather than written in PostgreSQL's words:
-        // PostgreSQL's "unnest(arr) WITH ORDINALITY" the reference refuses ("expected
+        // the table of the elements is refused rather than written in the words of another
+        // dialect: "unnest(arr) WITH ORDINALITY" the reference refuses ("expected
         // "statement"").
         if (tableValuedFunctionExpression is PgUnnestExpression)
         {
@@ -1207,8 +1206,9 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         // PostgresTableValuedFunctionExpression extends the standard TableValuedFunctionExpression, adding the possibility to specify
         // column names and types at the end, as well as an optional WITH ORDINALITY to project an index out.
 
-        // Note that PostgreSQL doesn't support specifying both a column definition (with type) *and* WITH ORDINALITY; but it does allow
-        // wrapping the function invocation and column definition inside ROWS FROM, and placing the table alias and WITH ORDINALITY outside.
+        // Note that a column definition (with type) *and* WITH ORDINALITY cannot be named
+        // together; but the function invocation and the column definition can be wrapped
+        // inside ROWS FROM, with the table alias and WITH ORDINALITY outside.
         // We take care of that here.
         if (tableValuedFunctionExpression is
             {
@@ -1393,7 +1393,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             }
         }
 
-        if (e.AggregateOrderings.Count > 0)
+        if (e.AggregateOrderings.Count > 0 && TakesOrderInsideParentheses(e.Name))
         {
             Sql.Append(" ORDER BY ");
 
@@ -1410,8 +1410,36 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
 
         Sql.Append(")");
 
+        if (e.AggregateOrderings.Count > 0 && !TakesOrderInsideParentheses(e.Name))
+        {
+            if (!TakesOrderInWithinGroup(e.Name))
+            {
+                throw new InvalidOperationException(
+                    $"H2 2.5 has no place for the order of the rows of the aggregate '{e.Name}': " +
+                    "the order of the string aggregate goes into a WITHIN GROUP clause, and the " +
+                    "aggregate of arrays takes it inside the parentheses. See docs/DIVERGENCES.md.");
+            }
+
+            // WITHIN GROUP (ORDER BY ...): the order of the rows of the string aggregate.
+            Sql.Append(" WITHIN GROUP (ORDER BY ");
+
+            for (var i = 0; i < e.AggregateOrderings.Count; i++)
+            {
+                if (i > 0)
+                {
+                    Sql.Append(", ");
+                }
+
+                Visit(e.AggregateOrderings[i]);
+            }
+
+            Sql.Append(")");
+        }
+
         if (e.AggregatePredicate is not null)
         {
+            // FILTER (WHERE ...): the filter of the rows of the aggregate, and it comes after
+            // everything else: "LISTAGG(x, ', ') WITHIN GROUP (ORDER BY y) FILTER (WHERE z)".
             Sql.Append(" FILTER (WHERE ");
 
             Visit(e.AggregatePredicate);
@@ -1421,6 +1449,22 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
 
         return e;
     }
+
+    /// <summary>
+    ///     Whether the aggregate takes the order of the rows inside its parentheses.
+    /// </summary>
+    /// <param name="name">The name of the aggregate function.</param>
+    /// <returns>True for the aggregates that take it that way in H2 2.5.</returns>
+    private static bool TakesOrderInsideParentheses(string name)
+        => name.Equals("ARRAY_AGG", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    ///     Whether the aggregate takes the order of the rows in a WITHIN GROUP clause.
+    /// </summary>
+    /// <param name="name">The name of the aggregate function.</param>
+    /// <returns>True for the aggregates that take it that way in H2 2.5.</returns>
+    private static bool TakesOrderInWithinGroup(string name)
+        => name.Equals("LISTAGG", StringComparison.OrdinalIgnoreCase);
 
     #endregion PostgreSQL-specific expression types
 
@@ -1487,7 +1531,8 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// </summary>
     protected override bool TryGetOperatorInfo(SqlExpression expression, out int precedence, out bool isAssociative)
     {
-        // See https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-PRECEDENCE
+        // The precedence of the operations is the one of H2 2.5: the frozen grammar of the engine
+        // says it in ../h2sharp/docs/grammar.html
         (precedence, isAssociative) = expression switch
         {
             // TODO: Exponent => 1300

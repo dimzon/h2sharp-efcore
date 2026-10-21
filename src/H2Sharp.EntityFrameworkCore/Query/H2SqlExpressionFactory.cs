@@ -655,8 +655,8 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                 // Note that we provide both the array CLR type *and* an array store type constructed from the element's store type.
                 // If we use only the array CLR type, byte[] will yield bytea which we don't want.
                 // The store type of the array is written the way H2 2.5 writes it: the type of the
-                // element and the word ARRAY after it ("integer ARRAY"). The brackets of
-                // PostgreSQL ("integer[]") H2 does not know.
+                // element and the word ARRAY after it ("integer ARRAY"). The brackets
+                // ("integer[]") H2 does not know.
                 arrayMapping = arrayExpression.Type.TryGetSequenceType() == typeof(object)
                     ? _typeMappingSource.FindMapping(itemMapping.StoreType + " ARRAY")
                     : _typeMappingSource.FindMapping(arrayExpression.Type, itemMapping.StoreType + " ARRAY");
@@ -1007,7 +1007,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             // An element type mapping was successfully inferred from one of the expressions (there was a column).
             // Infer the array's type mapping from it. The store type of the array is written the
             // way H2 2.5 writes it: the type of the element and the word ARRAY after it
-            // ("varchar ARRAY"). The brackets of PostgreSQL ("varchar[]") H2 does not know.
+            // ("varchar ARRAY"). The brackets ("varchar[]") H2 does not know.
             arrayTypeMapping = (H2ArrayTypeMapping?)_typeMappingSource.FindMapping(
                 pgNewArrayExpression.Type,
                 elementTypeMapping.StoreType + " ARRAY");

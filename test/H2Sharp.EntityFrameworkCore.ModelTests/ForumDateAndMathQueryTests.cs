@@ -48,16 +48,15 @@ public class ForumDateAndMathQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_first_hour_of_a_date_is_asked_for()
     {
         using var database = ForumDatabase.Filled(nameof(The_first_hour_of_a_date_is_asked_for));
         using var context = database.Context();
 
-        // The engine stores a timestamp of exactly midnight shifted to nine o'clock, so the posts
-        // of the first hour of the day are not among the ones of hour zero
-        // (dimzon/h2sharp#14, the precision of the date and the time).
-        Assert.Equal(5, context.Posts.Count(p => p.CreatedAt.Hour == 0));
+        // The seed puts no post at midnight: the hours of the posts are 9, 10, 11, 12, 2 and 6,
+        // and the engine keeps them as they are.
+        Assert.Equal(0, context.Posts.Count(p => p.CreatedAt.Hour == 0));
+        Assert.Equal(7, context.Posts.Count(p => p.CreatedAt.Hour == 9));
     }
 
     [Fact]

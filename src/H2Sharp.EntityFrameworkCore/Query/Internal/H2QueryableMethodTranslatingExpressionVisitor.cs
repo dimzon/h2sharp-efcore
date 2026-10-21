@@ -108,7 +108,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             ? elementClrType.IsNullableType()
             : property.GetElementType()!.IsNullable;
 
-        // We support two kinds of primitive collections: the standard one with PostgreSQL arrays (where we use the unnest function), and
+        // We support two kinds of primitive collections: the standard one with arrays (where we use the unnest function), and
         // a special case for geometry collections, where we use
         SelectExpression selectExpression;
 
@@ -135,7 +135,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
 
             // TODO: When we have metadata to determine if the element is nullable, pass that here to SelectExpression
 
-            // Note also that with PostgreSQL unnest, the output ordering is guaranteed to be the same as the input array. However, we still
+            // Note also that with the unnest of the fork, the output ordering is guaranteed to be the same as the input array. However, we still
             // need to add an explicit ordering on the ordinality column, since once the unnest is joined into a select, its "natural"
             // orderings is lost and an explicit ordering is needed again (see #3207).
             var (ordinalityColumn, ordinalityComparer) = GenerateOrdinalityIdentifier(tableAlias);
@@ -495,7 +495,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             (translatedItem, array) = _sqlExpressionFactory.ApplyTypeMappingsOnItemAndArray(translatedItem, array);
 
             // When the array is a column, we ask H2 whether the array holds the element.
-            // H2 2.5 has no containment operator for arrays: PostgreSQL's "arr @> ARRAY[item]"
+            // H2 2.5 has no containment operator for arrays: "arr @> ARRAY[item]"
             // and the JSON "arr >> ARRAY[item]" are both unknown to it. What H2 has is
             // ARRAY_CONTAINS(arr, item), and it answers the nulls the way .NET's Contains
             // does: the reference answers TRUE for ARRAY_CONTAINS(ARRAY[1,NULL], NULL) and
@@ -517,7 +517,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                 case SqlConstantExpression or PgNewArrayExpression:
                     break;
 
-                // Similar to ParameterExpression below, but when a bare subquery is present inside ANY(), PostgreSQL just compares
+                // Similar to ParameterExpression below, but when a bare subquery is present inside ANY(), the comparison is
                 // against each of its resulting rows (just like IN). To "extract" the array result of the scalar subquery, we need
                 // to add an explicit cast (see #1803).
                 case ScalarSubqueryExpression subqueryExpression:
@@ -638,7 +638,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             && source.TryExtractArray(out var array, out var projectedColumn)
             && TranslateExpression(index) is { } translatedIndex)
         {
-            // Note that PostgreSQL arrays are 1-based, so adjust the index.
+            // The arrays of H2 2.5 are 1-based, so the index is adjusted.
 #pragma warning disable EF1001 // SelectExpression constructors are currently internal
             return source.UpdateQueryExpression(
                 new SelectExpression(
@@ -676,7 +676,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
     /// </summary>
     protected override ShapedQueryExpression? TranslateSkip(ShapedQueryExpression source, Expression count)
     {
-        // Translate Skip over array to the PostgreSQL slice operator (array.Skip(2) -> array[3,])
+        // Translate Skip over array to the slice operator (array.Skip(2) -> array[3,])
         // Note that we have unnest over multiranges, not just arrays - but multiranges don't support subscripting/slicing.
         if (source.TryExtractArray(out var array, out var projectedColumn)
             && TranslateExpression(count) is { } translatedCount)
@@ -727,7 +727,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
     /// </summary>
     protected override ShapedQueryExpression? TranslateTake(ShapedQueryExpression source, Expression count)
     {
-        // Translate Take over array to the PostgreSQL slice operator (array.Take(2) -> array[,2])
+        // Translate Take over array to the slice operator (array.Take(2) -> array[,2])
         // Note that we have unnest over multiranges, not just arrays - but multiranges don't support subscripting/slicing.
         if (source.TryExtractArray(out var array, out var projectedColumn)
             && TranslateExpression(count) is { } translatedCount)
@@ -882,7 +882,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             return false;
         }
 
-        // PostgreSQL doesn't support referencing the main update table from anywhere except for the UPDATE WHERE clause.
+        // The main update table cannot be referenced from anywhere except for the UPDATE WHERE clause.
         // This specifically makes it impossible to have joins which reference the main table in their predicate (ON ...).
         // Because of this, we detect all such inner joins and lift their predicates to the main WHERE clause (where a reference to the
         // main table is allowed) - see H2QuerySqlGenerator.VisitUpdate.
@@ -932,7 +932,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         [NotNullWhen(true)] out TableExpression? tableExpression)
     {
         // The default relational behavior is to allow only single-table expressions, and the only permitted feature is a predicate.
-        // Here we extend this to also inner joins to tables, which we generate via the PostgreSQL-specific USING construct.
+        // Here we extend this to also inner joins to tables, which we generate via the USING construct.
         if (selectExpression is
             {
                 Orderings: [],
@@ -967,8 +967,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         return false;
     }
 
-    // PostgreSQL unnest is guaranteed to return output rows in the same order as its input array,
-    // https://www.postgresql.org/docs/current/functions-array.html.
+    // The unnest of the fork is guaranteed to return output rows in the same order as its input array.
     /// <inheritdoc />
     protected override bool IsOrdered(SelectExpression selectExpression)
         => base.IsOrdered(selectExpression)
@@ -983,7 +982,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
     }
 
     /// <summary>
-    ///     PostgreSQL array indexing is 1-based. If the index happens to be a constant, just increment it. Otherwise, append a +1 in the
+    ///     The array indexing of H2 2.5 is 1-based. If the index happens to be a constant, just increment it. Otherwise, append a +1 in the
     ///     SQL.
     /// </summary>
     private SqlExpression GenerateOneBasedIndexExpression(SqlExpression expression)
