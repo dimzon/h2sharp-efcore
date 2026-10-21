@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
@@ -33,6 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github", "Github", "{26203F
 		.github\dependabot.yml = .github\dependabot.yml
 		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "H2Sharp.EntityFrameworkCore.ModelTests", "test\H2Sharp.EntityFrameworkCore.ModelTests\H2Sharp.EntityFrameworkCore.ModelTests.csproj", "{348292C4-7F08-42E7-B185-03FB845E3A09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -92,6 +95,18 @@ Global
 		{D7106D61-C7CA-4005-B31F-43281BB397AD}.Release|x64.Build.0 = Release|Any CPU
 		{D7106D61-C7CA-4005-B31F-43281BB397AD}.Release|x86.ActiveCfg = Release|Any CPU
 		{D7106D61-C7CA-4005-B31F-43281BB397AD}.Release|x86.Build.0 = Release|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Debug|x64.Build.0 = Debug|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Debug|x86.Build.0 = Debug|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Release|x64.ActiveCfg = Release|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Release|x64.Build.0 = Release|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Release|x86.ActiveCfg = Release|Any CPU
+		{348292C4-7F08-42E7-B185-03FB845E3A09}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -103,6 +118,7 @@ Global
 		{77F0608F-6D0C-481C-9108-D5176E2EAD69} = {8537E50E-CF7F-49CB-B4EF-3E2A1B11F050}
 		{D7106D61-C7CA-4005-B31F-43281BB397AD} = {8537E50E-CF7F-49CB-B4EF-3E2A1B11F050}
 		{26203F54-A3C1-43AD-A101-8F589D2D67AD} = {4A5A60DD-41B6-40BF-B677-227A921ECCC8}
+		{348292C4-7F08-42E7-B185-03FB845E3A09} = {ED612DB1-AB32-4603-95E7-891BACA71C39}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F4EAAE6D-758C-4184-9D8C-7113384B61A8}

@@ -45,6 +45,14 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 
+    <!--
+      The coverage of the provider is measured by the collector of coverlet: it writes the report
+      of the run, and tools/CheckCoverage.ps1 reads the report and holds the threshold. The
+      collector is the only coverlet there is in the package cache, and the threshold cannot be a
+      property of the build without the msbuild package.
+    -->
+    <PackageReference Include="coverlet.collector" PrivateAssets="all" />
+
     <!-- Needed to override xunit dependencies from EFCore projects on versions which aren't available on nuget.org -->
     <PackageReference Include="xunit.assert" />
     <PackageReference Include="xunit.core" />

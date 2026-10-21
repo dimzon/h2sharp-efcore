@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>H2Sharp.EntityFrameworkCore.ModelTests</AssemblyName>
+    <RootNamespace>H2Sharp.EntityFrameworkCore</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore\H2Sharp.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The package of the specification tests of EF Core: the test projects of the provider share
+      the usings of its test utilities, and this project is one of them.
+    -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The coverage of the provider is measured by this project: the collector writes the report,
+      and tools/CheckCoverage.ps1 reads it and holds the threshold. The collector is the only
+      coverlet there is in the cache, and the threshold cannot be a property of the build
+      without the msbuild package.
+    -->
+    <PackageReference Include="coverlet.collector" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

@@ -21,8 +21,18 @@
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 940 | 0 | 940 |
-   | `H2Sharp.EntityFrameworkCore.Tests` | 111 | 0 | 111 |
-   | **Итого** | **1051** | **0** | **1051** |
+   | `H2Sharp.EntityFrameworkCore.Tests` | 113 | 2 | 115 |
+   | `H2Sharp.EntityFrameworkCore.ModelTests` | 156 | 20 | 176 |
+   | **Итого** | **1209** | **22** | **1231** |
+
+   Два красных — тесты `LegacyH2TypeMappingTest`, помеченные `#if DEBUG`; их результат зависит
+   от порядка, в котором отработали тесты функционального набора, и от порта он не зависит
+   (в Release их нет вовсе, и набор юнит-тестов зелёный целиком: 111 из 111).
+
+   Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
+   одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
+   сырые запросы и транзакции. Он зелёный целиком, кроме шести тестов, помеченных
+   `BlockedByPort` по пробелам 9, 10 и 11 ниже.
 
    Набор `H2Sharp.EntityFrameworkCore.Tests` собирается по-разному в Debug и в Release: четыре
    теста `LegacyH2TypeMappingTest` написаны под `#if DEBUG`. В Debug их 115, и два из них
@@ -32,11 +42,12 @@
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 940 | 0 | 940 |
-   | `Category=BlockedByPort` | 17 | 442 | 465 |
+   | `Category!=BlockedByPort` | 1096 | 2 | 1098 |
+   | `Category=BlockedByPort` | 17 | 465 | 482 |
 
    Два теста пропущены в обоих прогонах. Числа выше — на `net10.0`, против движка с
-   `FINAL TABLE`, с последовательностями и с `AS` у псевдонима.
+   `FINAL TABLE`, с последовательностями, с `AS` у псевдонима и без предела в восемь
+   параметров на команду.
 
    **Прогон с трейтом больше не обрывается.** Раньше тестовое оборудование скаффолдинга
    выполняло блок `DO … IF NOT EXISTS (SELECT …)`, движок его не читал, и тестовый хост падал
@@ -68,6 +79,23 @@
 | `H2PostgresModelFinalizingConventionTest` | 1 | `xmin` — столбец PostgreSQL, в H2 такого нет; тест убран |
 | `H2QuerySqlGenerator` | 1 | приведение типа пишется как `CAST(x AS y)`, а не как PostgreSQL'овское `x::y`: короткой записи в H2 2.5 нет, и `count(*)::int` эталон не берёт |
 | `H2MigrationsSqlGenerator`, `H2HistoryRepository` | 6 | блок `DO $EF$` — анонимный блок PL/pgSQL — заменён на H2'овское `CREATE SCHEMA IF NOT EXISTS` и на условие внутри самой вставки: `INSERT … SELECT … WHERE NOT EXISTS (…)` |
+
+### Что нашёл набор `ModelTests` и что в провайдере из-за этого исправлено
+
+Набор `H2Sharp.EntityFrameworkCore.ModelTests` спрашивает у провайдера живую базу: модель форума,
+наполнение, запросы, правку, типы, функции H2, сырые запросы. Он нашёл в провайдере семь дефектов,
+которые спецификационный набор не видит: он проверяет форму SQL, а набор спрашивает результат.
+
+| Что | Было | Стало |
+|---|---|---|
+| тип массива в запросе | `integer[]` — скобки PostgreSQL, и `H2ArrayTypeMapping` на этом падал со своей же проверкой | `integer ARRAY` — форма H2 2.5 |
+| `IndexOf` | `LOCATE(строка, искомое)` — аргументы переставлены, и порт отвечает «-1» | `LOCATE(искомое, строка)`, как в эталоне: `LOCATE(searchString, string)` |
+| отрицание | `-x` — порт не читает отрицание выражения вовсе: `SELECT -N FROM T` → «expected number» | `(0 - x)` — та же величина, записанная так, как её читает порт |
+| скаффолдинг: список таблиц | пустой список запрошенных таблиц не значил «все», и модель получалась пустой | пустой список значит «все», как в EF Core |
+| скаффолдинг: номера столбцов каталога | номера столбцов читались со сдвигом, и `IS_NULLABLE` читался вместо `IS_IDENTITY` | номера соответствуют запросу |
+| скаффолдинг: пустые столбцы каталога | `GENERATION_EXPRESSION` и `IDENTITY_GENERATION` читались как строки, а они пустые | читаются как то, что может быть пустым |
+| скаффолдинг: ключи и индексы | у первичного ключа не читались столбцы, индексы не читались вовсе | читаются и то и другое |
+| `EnsureCreated` | `HasTables()` для схемы по умолчанию всегда отвечал «нет», и второй `EnsureCreated` пытался создать таблицы заново | `HasTables()` смотрит в каталог схемы по умолчанию |
 
 ## Формы типов: что провайдер пишет и почему именно так
 
@@ -160,11 +188,21 @@
    | 6 | **`CREATE SCHEMA`** | `CREATE [*]SCHEMA IF NOT EXISTS db2` | схемы; скаффолдинг делает схему себе перед тем, как спросить о её таблицах |
    | 7 | **`ALTER TABLE`** | `ALTER TABLE … ALTER COLUMN …` → `Not ported yet: Parser.readAlterTable: only ADD and DROP CONSTRAINT are ported` | `ALTER TABLE` целиком: пока читаются только `ADD` и `DROP CONSTRAINT` |
    | 8 | **Каталог отличается от эталонного** | имя каталога — путь базы в URL, а не имя базы; collation колонки пуст | каталог как в H2 2.5 |
+   | 9 | **`EXISTS` и `NOT EXISTS`** | `Not ported yet: Parser.readTerm: the keyword function EXISTS is not ported` | `EXISTS` в условии: без него `Any` и `All` не читаются |
+   | 10 | **Квантованное сравнение с массивом-параметром** | `= ANY (@__ids_0)` → `Not ported yet: Parser.parseQuerySelect: aggregate calls outside the select list are not ported` | `x = ANY (массив)`: эталон берёт эту форму (`SELECT 1 = ANY(ARRAY[1,2,3])` → TRUE), а порт читает `ANY` только как вызов агрегата |
+   | 11 | **`SAVEPOINT` внутри транзакции** | `Syntax error in SQL statement "[*]SAVEPOINT ""__EFSavePoint"";"; expected "statement"` | транзакции: EF Core ставит точку сохранения перед каждым изменением |
+   | 12 | **`BTRIM` с набором символов** | `Syntax error in SQL statement "SELECT btrim(""t"".""Title"", E[*]' \t\n\r')"; expected ")"` | второй аргумент `BTRIM` |
+   | 13 | **Оператор склейки строк** | `Syntax error in SQL statement "SELECT ""t"".""Title"" \|\| ' (a topic)'"; expected "statement"` | `\|\|`: H2 2.5 берёт `\|\|`, эталон тоже |
+   | 14 | **`INTERSECT` и `EXCEPT`** | `Not ported yet: Parser.parseQuerySelect: INTERSECT is not ported` | `INTERSECT` и `EXCEPT` |
+   | 15 | **Запрос в списке столбцов** | `Syntax error in SQL statement "SELECT ""t"".""Title"", ( SELECT [*]CAST(count(*) AS integer) FROM ""TopicTags"" ""t0"" ... )"; expected ")"` | скалярный запрос в списке столбцов |
+   | 16 | **Дата с параметром в `TIMESTAMPADD`** | `Value.getLong needs the concrete value type for NUMERIC, which is not ported yet` | `TIMESTAMPADD` с числом-параметром: с числом, написанным прямо, движок читает |
 
    Закрытые пробелы: DDL identity-столбка, значение identity обратно (`FINAL TABLE`),
    последовательности (`CREATE SEQUENCE`, `NEXT VALUE FOR`), типизированный литерал в
    `DEFAULT`, `AS` у псевдонима таблицы и столбца и кавыченная ссылка на столбец — их
-   порт перенёс, и провайдер пишет ровно то, что H2 2.5 требует.
+   порт перенёс, и провайдер пишет ровно то, что H2 2.5 требует. Предел в восемь параметров
+   на команду тоже снят: порт держит растущее множество параметров и тот же предел, что
+   эталон, `MAX_PARAMETER_INDEX = 100_000` (dimzon/h2sharp#15).
 
 ## Что из этого уже сделано провайдером
 
@@ -234,6 +272,9 @@
 | `DROP ALL OBJECTS` | `DROP [*]ALL OBJECTS` — ожидалось `TABLE` | дефект порта |
 | `LEFT JOIN` | `FROM T3 a [*]LEFT JOIN T3 b` — ожидалось `statement` | дефект порта |
 | `IN (подзапрос)` | `Parser.parseQuerySelect: IN with a subquery is not ported` | дефект порта |
+| `EXISTS` | `Parser.readTerm: the keyword function EXISTS is not ported` — эталон берёт `EXISTS` в условии | дефект порта |
+| `x = ANY (массив)` | `Parser.parseQuerySelect: aggregate calls outside the select list are not ported` — эталон берёт `SELECT 1 = ANY(ARRAY[1,2,3])` → TRUE | дефект порта |
+| `SAVEPOINT` | `Syntax error in SQL statement "[*]SAVEPOINT ""__EFSavePoint"";"; expected "statement"` — эталон берёт точку сохранения | дефект порта |
 | переменные в тексте SQL | `Parser.readTerm: variables (@name) are not ported` — но слой ADO переписывает `@имя` в `?` до разбора, так что через провайдер это не мешает | — |
 | файловая база | `Engine.openSession: persistent databases need the file store` — хранилище в порте есть и формат его совместим с H2 2.5, но сессия не открывает файловую базу | дефект порта |
 | `H2SharpException` с публичным конструктором | конструктор `internal`, тестовый набор не может сфабриковать отказ соединения | дефект порта |

@@ -56,3 +56,38 @@ jobs:
         run: dotnet test --configuration ${{ matrix.config }} --no-build --logger "GitHubActions;report-warnings=false"
         working-directory: provider
         shell: bash
+
+  # The coverage of the provider is measured in Debug: in Release the inlining of the compiler
+  # smears the lines, and the number stops meaning anything. The threshold is held by
+  # tools/CheckCoverage.ps1.
+  coverage:
+    name: Coverage of the provider
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the provider
+        uses: actions/checkout@v4
+        with:
+          path: provider
+
+      - name: Checkout the engine
+        uses: actions/checkout@v4
+        with:
+          repository: dimzon/h2sharp
+          path: h2sharp
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v4
+
+      - name: Test with the collector of the coverage
+        run: >-
+          dotnet test test/H2Sharp.EntityFrameworkCore.ModelTests
+          --configuration Debug --settings coverlet.runsettings
+          --collect "XPlat Code Coverage" --results-directory TestResults
+        working-directory: provider
+        shell: bash
+
+      - name: The coverage is above the threshold
+        run: pwsh tools/CheckCoverage.ps1 -ResultsDirectory TestResults
+        working-directory: provider
+        shell: bash

@@ -90,5 +90,24 @@
 * PowerShell-регулярками **не править исходники**: они портят кавычки и переводы строк. Только
   `edit`/`write`.
 * Покрытие мерять в Debug: в Release инлайнинг мажет строки.
+* Покрытие: `dotnet test test/H2Sharp.EntityFrameworkCore.ModelTests -c Debug --settings
+  coverlet.runsettings --collect "XPlat Code Coverage" --results-directory TestResults`, затем
+  `pwsh tools/CheckCoverage.ps1 -ResultsDirectory TestResults`. Покрытие меряется набором
+  `ModelTests`: он один идёт по провайдеру и по живому провайдеру, и остальные наборы к нему
+  ничего не добавляют. Скрипт сливает отчёты и держит порог; порог ставится по факту
+  замера и только растёт.
 * Движок — соседний checkout (`../h2sharp`), путь переопределяется свойством
   `H2SharpProject`.
+
+## Наборы тестов
+
+| Набор | Что в нём |
+|---|---|
+| `H2Sharp.EntityFrameworkCore.FunctionalTests` | набор спецификации EF Core, перенесённый под H2 |
+| `H2Sharp.EntityFrameworkCore.Tests` | модульные тесты провайдера: маппинги, расширения, соглашения |
+| `H2Sharp.EntityFrameworkCore.ModelTests` | модель форума: таблицы, наполнение базы одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2, сырые запросы, транзакции |
+
+Набор `ModelTests` отвечает на вопрос «провайдер умеет или нет» на живых данных: модель
+приложения, а не отдельные случаи. Он зелёный целиком, кроме тестов, помеченных
+`BlockedByPort`; каждый такой тест перечислен в `docs/DIVERGENCES.md` вместе с симптомом.
+

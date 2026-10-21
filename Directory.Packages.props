@@ -27,5 +27,11 @@
     <PackageVersion Include="xunit.core" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.1" />
+    <!--
+      The collector of the coverage. The threshold is checked by tools/CheckCoverage.ps1: the
+      msbuild package of coverlet, which could hold the threshold in the build itself, is not
+      in the package cache.
+    -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
   </ItemGroup>
 </Project>
