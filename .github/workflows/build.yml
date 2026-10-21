@@ -34,12 +34,12 @@ jobs:
       # than a package: it is not on nuget.org yet. The two are checked out side by side,
       # which is the layout the provider's project reference expects.
       - name: Checkout the provider
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: provider
 
       - name: Checkout the engine
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: dimzon/h2sharp
           path: h2sharp
@@ -66,12 +66,12 @@ jobs:
 
     steps:
       - name: Checkout the provider
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: provider
 
       - name: Checkout the engine
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: dimzon/h2sharp
           path: h2sharp
