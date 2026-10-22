@@ -169,6 +169,9 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             { "varchar", [_varchar] },
             { "character large object", [_text] },
             { "clob", [_text] },
+            // TEXT is one of the aliases of CHARACTER VARYING in H2 2.5 (DataType.java), and a
+            // database created with that spelling has to be scaffolded back to the same mapping.
+            { "text", [_text] },
             // See FindBaseMapping below for special treatment of 'character'
 
             { "boolean", [_bool] },
@@ -274,7 +277,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
                 }
 
                 // Map arbitrary user POCOs to JSON
-                if (storeTypeName is "jsonb" or "json")
+                if (storeTypeName is "json")
                 {
                     return new H2JsonTypeMapping(storeTypeName, clrType);
                 }

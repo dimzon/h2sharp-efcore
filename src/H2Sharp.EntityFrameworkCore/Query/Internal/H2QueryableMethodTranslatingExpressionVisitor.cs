@@ -177,94 +177,11 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
     /// </summary>
     protected override ShapedQueryExpression TransformJsonQueryToTable(JsonQueryExpression jsonQueryExpression)
     {
-        // Calculate the table alias for the jsonb_to_recordset function based on the last named path segment
-        // (or the JSON column name if there are none)
-        var lastNamedPathSegment = jsonQueryExpression.Path.LastOrDefault(ps => ps.PropertyName is not null);
-        var tableAlias =
-            _queryCompilationContext.SqlAliasManager.GenerateTableAlias(
-                lastNamedPathSegment.PropertyName ?? jsonQueryExpression.JsonColumn.Name);
-
-        // TODO: This relies on nested JSON columns flowing across the type mapping of the top-most containing JSON column, check this.
-        var functionName = jsonQueryExpression.JsonColumn switch
-        {
-            { TypeMapping.StoreType: "jsonb" } => "jsonb_to_recordset",
-            { TypeMapping.StoreType: "json" } => "json_to_recordset",
-            { TypeMapping: null } => throw new UnreachableException("Missing type mapping on JSON column"),
-
-            _ => throw new UnreachableException()
-        };
-
-        var jsonTypeMapping = jsonQueryExpression.JsonColumn.TypeMapping!;
-        Check.DebugAssert(jsonTypeMapping is H2OwnedJsonTypeMapping, "JSON column has a non-JSON mapping");
-
-        // We now add all of projected entity's the properties and navigations into the jsonb_to_recordset's AS clause, which defines the
-        // names and types of columns to come out of the JSON fragments.
-        var columnInfos = new List<H2TableValuedFunctionExpression.ColumnInfo>();
-
-        // We're only interested in properties which actually exist in the JSON, filter out uninteresting shadow keys
-        foreach (var property in GetAllPropertiesInHierarchy(jsonQueryExpression.EntityType))
-        {
-            if (property.GetJsonPropertyName() is string jsonPropertyName)
-            {
-                columnInfos.Add(
-                    new H2TableValuedFunctionExpression.ColumnInfo
-                    {
-                        Name = jsonPropertyName, TypeMapping = property.GetRelationalTypeMapping()
-                    });
-            }
-        }
-
-        // Navigations represent nested JSON owned entities, which we also add to the AS clause, but with the JSON type.
-        foreach (var navigation in GetAllNavigationsInHierarchy(jsonQueryExpression.EntityType)
-                     .Where(
-                         n => n.ForeignKey.IsOwnership
-                             && n.TargetEntityType.IsMappedToJson()
-                             && n.ForeignKey.PrincipalToDependent == n))
-        {
-            var jsonNavigationName = navigation.TargetEntityType.GetJsonPropertyName();
-            Check.DebugAssert(jsonNavigationName is not null, $"No JSON property name for navigation {navigation.Name}");
-
-            columnInfos.Add(
-                new H2TableValuedFunctionExpression.ColumnInfo { Name = jsonNavigationName, TypeMapping = jsonTypeMapping });
-        }
-
-        // json_to_recordset requires the nested JSON document - it does not accept a path within a containing JSON document (like SQL
-        // Server OPENJSON or SQLite json_each). So we wrap json_to_recordset around a JsonScalarExpression which will extract the nested
-        // document.
-        var jsonScalarExpression = new JsonScalarExpression(
-            jsonQueryExpression.JsonColumn, jsonQueryExpression.Path, typeof(string), jsonTypeMapping, jsonQueryExpression.IsNullable);
-
-        // Construct the json_to_recordset around the JsonScalarExpression, and wrap it in a SelectExpression
-        var jsonToRecordSetExpression = new H2TableValuedFunctionExpression(
-            tableAlias, functionName, [jsonScalarExpression], columnInfos, withOrdinality: true);
-
-#pragma warning disable EF1001 // SelectExpression constructors are currently internal
-        var selectExpression = CreateSelect(
-            jsonQueryExpression,
-            jsonToRecordSetExpression,
-            "ordinality",
-            typeof(int),
-            _typeMappingSource.FindMapping(typeof(int))!);
-#pragma warning restore EF1001 // Internal EF Core API usage.
-
-        return new ShapedQueryExpression(
-            selectExpression,
-            new RelationalStructuralTypeShaperExpression(
-                jsonQueryExpression.EntityType,
-                new ProjectionBindingExpression(
-                    selectExpression,
-                    new ProjectionMember(),
-                    typeof(ValueBuffer)),
-                false));
-
-        // TODO: Move these to IEntityType?
-        static IEnumerable<IProperty> GetAllPropertiesInHierarchy(IEntityType entityType)
-            => entityType.GetAllBaseTypes().Concat(entityType.GetDerivedTypesInclusive())
-                .SelectMany(t => t.GetDeclaredProperties());
-
-        static IEnumerable<INavigation> GetAllNavigationsInHierarchy(IEntityType entityType)
-            => entityType.GetAllBaseTypes().Concat(entityType.GetDerivedTypesInclusive())
-                .SelectMany(t => t.GetDeclaredNavigations());
+        // H2 2.5 has no function that turns a JSON document into a table: jsonb_to_recordset and
+        // json_to_recordset are PostgreSQL's.
+        throw new NotSupportedException(
+            "H2 2.5 cannot read a JSON document as a table: the functions jsonb_to_recordset and "
+            + "json_to_recordset are PostgreSQL's.");
     }
 
     /// <summary>

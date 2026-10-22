@@ -68,17 +68,11 @@ public class H2GeometryTypeMapping<TGeometry> : RelationalGeometryTypeMapping<TG
         var geometry = (Geometry)value;
         var builder = new StringBuilder();
 
+        // H2 2.5 has one geometry type and no geography, and its literal is the WKT text
+        // without the SRID prefix PostGIS writes.
         builder
-            .Append(_isGeography ? "GEOGRAPHY" : "GEOMETRY")
+            .Append("GEOMETRY")
             .Append(" '");
-
-        if (geometry.SRID > 0)
-        {
-            builder
-                .Append("SRID=")
-                .Append(geometry.SRID)
-                .Append(';');
-        }
 
         builder
             .Append(geometry.AsText())

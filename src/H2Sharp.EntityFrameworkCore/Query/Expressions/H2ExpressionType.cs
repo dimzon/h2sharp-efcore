@@ -131,32 +131,4 @@ public enum H2ExpressionType
 
     #endregion JSON
 
-    #region LTree
-
-    /// <summary>
-    ///     Represents a PostgreSQL operator for matching in an ltree type.
-    /// </summary>
-    LTreeMatches, // ~ or @
-
-    /// <summary>
-    ///     Represents a PostgreSQL operator for matching in an ltree type.
-    /// </summary>
-    LTreeMatchesAny, // ?
-
-    /// <summary>
-    ///     Represents a PostgreSQL operator for finding the first ancestor in an ltree type.
-    /// </summary>
-    LTreeFirstAncestor, // ?@>
-
-    /// <summary>
-    ///     Represents a PostgreSQL operator for finding the first descendent in an ltree type.
-    /// </summary>
-    LTreeFirstDescendent, // ?<@
-
-    /// <summary>
-    ///     Represents a PostgreSQL operator for finding the first match in an ltree type.
-    /// </summary>
-    LTreeFirstMatches, // ?~ or ?@
-
-    #endregion LTree
-}
+    }

@@ -1289,7 +1289,7 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         // replace the empty string with an empty JSON document {}.
         // Note that even after the EF-side issue is fixed, removing this hack is a breaking change as migrations have already been
         // scaffolded with an empty string.
-        if (columnType is "jsonb" or "json" && defaultValue is "")
+        if (columnType is "json" && defaultValue is "")
         {
             defaultValue = "{}";
         }

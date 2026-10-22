@@ -137,12 +137,9 @@ public class H2NetTopologySuiteTypeMappingSourcePlugin : IRelationalTypeMappingS
         {
             isGeography = false;
         }
-        else if (baseType.Equals("GEOGRAPHY", StringComparison.OrdinalIgnoreCase))
-        {
-            isGeography = true;
-        }
         else
         {
+            // H2 2.5 has one geometry type and no geography.
             return false;
         }
 

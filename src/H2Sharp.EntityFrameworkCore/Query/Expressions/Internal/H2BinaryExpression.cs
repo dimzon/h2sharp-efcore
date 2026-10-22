@@ -136,19 +136,6 @@ public class H2BinaryExpression : SqlExpression
                     H2ExpressionType.JsonExistsAny => "?|",
                     H2ExpressionType.JsonExistsAll => "?&",
 
-                    H2ExpressionType.LTreeMatches
-                        when Right.TypeMapping is { StoreType: "lquery" } or H2ArrayTypeMapping
-                        {
-                            ElementTypeMapping.StoreType: "lquery"
-                        }
-                        => "~",
-                    H2ExpressionType.LTreeMatches when Right.TypeMapping?.StoreType == "ltxtquery" => "@",
-                    H2ExpressionType.LTreeMatchesAny => "?",
-                    H2ExpressionType.LTreeFirstAncestor => "?@>",
-                    H2ExpressionType.LTreeFirstDescendent => "?<@",
-                    H2ExpressionType.LTreeFirstMatches when Right.TypeMapping?.StoreType == "lquery" => "?~",
-                    H2ExpressionType.LTreeFirstMatches when Right.TypeMapping?.StoreType == "ltxtquery" => "?@",
-
                     H2ExpressionType.Distance => "<->",
 
                     _ => throw new ArgumentOutOfRangeException($"Unhandled operator type: {OperatorType}")

@@ -23,7 +23,7 @@ public class H2JsonElementHackConvention : IPropertyAddedConvention
 
         if (property.ClrType.UnwrapNullableType() == typeof(JsonElement) && property.GetColumnType() is null)
         {
-            property.SetTypeMapping(_jsonTypeMapping ??= new H2JsonTypeMapping("jsonb", typeof(JsonElement)));
+            property.SetTypeMapping(_jsonTypeMapping ??= new H2JsonTypeMapping("json", typeof(JsonElement)));
         }
     }
 }

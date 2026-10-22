@@ -44,14 +44,6 @@ public class H2NetTopologySuiteOptionsExtension : IDbContextOptionsExtension
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual bool IsGeographyDefault { get; private set; }
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
     public H2NetTopologySuiteOptionsExtension() { }
 
     /// <summary>
@@ -62,7 +54,6 @@ public class H2NetTopologySuiteOptionsExtension : IDbContextOptionsExtension
     /// </summary>
     protected H2NetTopologySuiteOptionsExtension(H2NetTopologySuiteOptionsExtension copyFrom)
     {
-        IsGeographyDefault = copyFrom.IsGeographyDefault;
     }
 
     /// <summary>
@@ -144,21 +135,6 @@ public class H2NetTopologySuiteOptionsExtension : IDbContextOptionsExtension
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual H2NetTopologySuiteOptionsExtension WithGeographyDefault(bool isGeographyDefault = true)
-    {
-        var clone = Clone();
-
-        clone.IsGeographyDefault = isGeographyDefault;
-
-        return clone;
-    }
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
     public virtual void Validate(IDbContextOptions options)
     {
         Check.NotNull(options, nameof(options));
@@ -190,14 +166,13 @@ public class H2NetTopologySuiteOptionsExtension : IDbContextOptionsExtension
             => false;
 
         public override int GetServiceProviderHashCode()
-            => Extension.IsGeographyDefault.GetHashCode();
+            => 0;
 
         public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other)
             => other is ExtensionInfo otherInfo
                 && ReferenceEquals(Extension.CoordinateSequenceFactory, otherInfo.Extension.CoordinateSequenceFactory)
                 && ReferenceEquals(Extension.PrecisionModel, otherInfo.Extension.PrecisionModel)
-                && Extension.HandleOrdinates == otherInfo.Extension.HandleOrdinates
-                && Extension.IsGeographyDefault == otherInfo.Extension.IsGeographyDefault;
+                && Extension.HandleOrdinates == otherInfo.Extension.HandleOrdinates;
 
         public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
         {
@@ -205,7 +180,6 @@ public class H2NetTopologySuiteOptionsExtension : IDbContextOptionsExtension
 
             var prefix = "H2:" + nameof(H2NetTopologySuiteDbContextOptionsBuilderExtensions.UseNetTopologySuite);
             debugInfo[prefix] = "1";
-            debugInfo[$"{prefix}:{nameof(IsGeographyDefault)}"] = Extension.IsGeographyDefault.ToString();
         }
 
         public override string LogFragment
@@ -215,10 +189,6 @@ public class H2NetTopologySuiteOptionsExtension : IDbContextOptionsExtension
                 if (_logFragment is null)
                 {
                     var builder = new StringBuilder("using NetTopologySuite");
-                    if (Extension.IsGeographyDefault)
-                    {
-                        builder.Append(" (geography by default)");
-                    }
 
                     builder.Append(' ');
 

@@ -509,20 +509,6 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                     H2ExpressionType.JsonExistsAny => "?|",
                     H2ExpressionType.JsonExistsAll => "?&",
 
-                    H2ExpressionType.LTreeMatches
-                        when binaryExpression.Right.TypeMapping.StoreType == "lquery"
-                        || binaryExpression.Right.TypeMapping is H2ArrayTypeMapping { ElementTypeMapping.StoreType: "lquery" } => "~",
-                    H2ExpressionType.LTreeMatches
-                        when binaryExpression.Right.TypeMapping.StoreType == "ltxtquery"
-                        => "@",
-                    H2ExpressionType.LTreeMatchesAny => "?",
-                    H2ExpressionType.LTreeFirstAncestor => "?@>",
-                    H2ExpressionType.LTreeFirstDescendent => "?<@",
-                    H2ExpressionType.LTreeFirstMatches
-                        when binaryExpression.Right.TypeMapping.StoreType == "lquery" => "?~",
-                    H2ExpressionType.LTreeFirstMatches
-                        when binaryExpression.Right.TypeMapping.StoreType == "ltxtquery" => "?@",
-
                     H2ExpressionType.Distance => "<->",
 
                     _ => throw new ArgumentOutOfRangeException($"Unhandled operator type: {binaryExpression.OperatorType}")
@@ -1128,8 +1114,11 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// </returns>
     protected virtual Expression VisitJsonPathTraversal(H2JsonTraversalExpression expression)
     {
-        GenerateJsonPath(expression.Expression, expression.ReturnsText, expression.Path);
-        return expression;
+        // H2 2.5 has no way to step into a JSON document: the operators ->, ->>, #> and #>> are
+        // PostgreSQL's, and the JSON type of H2 2.5 holds the document as text.
+        throw new NotSupportedException(
+            "H2 2.5 cannot step into a JSON document: the operators ->, ->>, #> and #>> are "
+            + "PostgreSQL's, and the JSON type of H2 2.5 holds the document as text.");
     }
 
     private void GenerateJsonPath(SqlExpression expression, bool returnsText, IReadOnlyList<SqlExpression> path)

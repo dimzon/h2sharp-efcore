@@ -384,15 +384,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
         var left = Visit(binaryExpression.Left, allowOptimizedExpansion, out var leftNullable);
         var right = Visit(binaryExpression.Right, allowOptimizedExpansion, out var rightNullable);
 
-        nullable = binaryExpression.OperatorType switch
-        {
-            // The following LTree search methods return null for "not found"
-            H2ExpressionType.LTreeFirstAncestor => true,
-            H2ExpressionType.LTreeFirstDescendent => true,
-            H2ExpressionType.LTreeFirstMatches => true,
-
-            _ => leftNullable || rightNullable
-        };
+        nullable = leftNullable || rightNullable;
 
         return binaryExpression.Update(left, right);
     }

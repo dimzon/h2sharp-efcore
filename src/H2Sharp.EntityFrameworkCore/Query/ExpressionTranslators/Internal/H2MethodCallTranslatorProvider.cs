@@ -45,7 +45,6 @@ public class H2MethodCallTranslatorProvider : RelationalMethodCallTranslatorProv
             new H2ConvertTranslator(sqlExpressionFactory),
             new H2DateTimeMethodTranslator(typeMappingSource, sqlExpressionFactory),
             new H2JsonDomTranslator(typeMappingSource, sqlExpressionFactory, model),
-            new H2JsonDbFunctionsTranslator(typeMappingSource, sqlExpressionFactory, model),
             new H2JsonPocoTranslator(typeMappingSource, sqlExpressionFactory, model),
             new H2LikeTranslator(sqlExpressionFactory),
             new H2MathTranslator(typeMappingSource, sqlExpressionFactory, model),

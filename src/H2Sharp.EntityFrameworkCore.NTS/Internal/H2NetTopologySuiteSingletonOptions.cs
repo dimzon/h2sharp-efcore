@@ -27,7 +27,6 @@ public class H2NetTopologySuiteSingletonOptions : IH2NetTopologySuiteSingletonOp
         CoordinateSequenceFactory = npgsqlNtsOptions.CoordinateSequenceFactory;
         PrecisionModel = npgsqlNtsOptions.PrecisionModel;
         HandleOrdinates = npgsqlNtsOptions.HandleOrdinates;
-        IsGeographyDefault = npgsqlNtsOptions.IsGeographyDefault;
     }
 
     /// <inheritdoc />

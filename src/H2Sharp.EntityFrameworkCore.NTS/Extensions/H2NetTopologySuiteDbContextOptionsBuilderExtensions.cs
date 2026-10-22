@@ -19,8 +19,7 @@ public static class H2NetTopologySuiteDbContextOptionsBuilderExtensions
         this H2DbContextOptionsBuilder optionsBuilder,
         CoordinateSequenceFactory? coordinateSequenceFactory = null,
         PrecisionModel? precisionModel = null,
-        Ordinates handleOrdinates = Ordinates.None,
-        bool geographyAsDefault = false)
+        Ordinates handleOrdinates = Ordinates.None)
     {
         var coreOptionsBuilder = ((IRelationalDbContextOptionsBuilderInfrastructure)optionsBuilder).OptionsBuilder;
 
@@ -40,11 +39,6 @@ public static class H2NetTopologySuiteDbContextOptionsBuilderExtensions
         if (handleOrdinates is not Ordinates.None)
         {
             extension = extension.WithHandleOrdinates(handleOrdinates);
-        }
-
-        if (geographyAsDefault)
-        {
-            extension = extension.WithGeographyDefault();
         }
 
         ((IDbContextOptionsBuilderInfrastructure)coreOptionsBuilder).AddOrUpdateExtension(extension);

@@ -179,77 +179,15 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
                 columnModification.TypeMapping is H2OwnedJsonTypeMapping,
                 "ColumnModification with JsonPath but non-H2OwnedJsonTypeMapping");
 
-            if (columnModification.TypeMapping.StoreType is "json")
-            {
-                throw new NotSupportedException(
-                    "Cannot perform partial update because the PostgreSQL 'json' type has no json_set method. Use 'jsonb' instead.");
-            }
-
-            Check.DebugAssert(columnModification.TypeMapping.StoreType is "jsonb", "Non-jsonb type mapping in JSON partial update");
-
-            // TODO: Lax or not?
-            stringBuilder
-                .Append("jsonb_set(")
-                .Append(updateSqlGeneratorHelper.DelimitIdentifier(columnModification.ColumnName))
-                .Append(", '{");
-
-            // TODO: Unfortunately JsonPath is provided as a JSONPATH string, but PG's jsonb_set requires the path as an array.
-            // Parse the components back out (https://github.com/dotnet/efcore/issues/32185)
-            var components = columnModification.JsonPath.Split(".");
-            var needsComma = false;
-            for (var i = 0; i < components.Length; i++)
-            {
-                if (needsComma)
-                {
-                    stringBuilder.Append(',');
-                }
-
-                var component = components[i];
-                var bracketOpen = component.IndexOf('[');
-                if (bracketOpen == -1)
-                {
-                    if (i > 0) // The first component is $, representing the root
-                    {
-                        stringBuilder.Append(component);
-                        needsComma = true;
-                    }
-
-                    continue;
-                }
-
-                var propertyName = component[..bracketOpen];
-                if (i > 0) // The first component is $, representing the root
-                {
-                    stringBuilder
-                        .Append(propertyName)
-                        .Append(',');
-                }
-
-                stringBuilder.Append(component[(bracketOpen + 1)..^1]);
-                needsComma = true;
-            }
-
-            stringBuilder.Append("}', ");
-
-            // TODO: Hack around
-            if (columnModification.Value is null)
-            {
-                _columnModificationValueField ??= typeof(ColumnModification).GetField(
-                    "_value", BindingFlags.Instance | BindingFlags.NonPublic)!;
-                _columnModificationValueField.SetValue(columnModification, "null");
-            }
-
-            base.AppendUpdateColumnValue(updateSqlGeneratorHelper, columnModification, stringBuilder, name, schema);
-
-            stringBuilder.Append(")");
+            throw new NotSupportedException(
+                "H2 2.5 cannot update a JSON column in part: the method jsonb_set is PostgreSQL's, and "
+                + "H2 2.5 has no way to change a part of a JSON document.");
         }
         else
         {
             base.AppendUpdateColumnValue(updateSqlGeneratorHelper, columnModification, stringBuilder, name, schema);
         }
     }
-
-    private FieldInfo? _columnModificationValueField;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
