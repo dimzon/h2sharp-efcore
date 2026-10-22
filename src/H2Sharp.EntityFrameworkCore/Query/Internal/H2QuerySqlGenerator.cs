@@ -83,9 +83,9 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     {
         switch (queryExpression)
         {
-            case H2DeleteExpression postgresDeleteExpression:
-                GenerateTagsHeaderComment(postgresDeleteExpression.Tags);
-                VisitH2Delete(postgresDeleteExpression);
+            case H2DeleteExpression h2DeleteExpression:
+                GenerateTagsHeaderComment(h2DeleteExpression.Tags);
+                VisitH2Delete(h2DeleteExpression);
                 break;
 
             default:
@@ -1201,7 +1201,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 "H2 2.5 has no UNNEST and no LATERAL, so the elements of an array cannot be rows here. See docs/DIVERGENCES.md.");
         }
 
-        // PostgresTableValuedFunctionExpression extends the standard TableValuedFunctionExpression, adding the possibility to specify
+        // H2TableValuedFunctionExpression extends the standard TableValuedFunctionExpression, adding the possibility to specify
         // column names and types at the end, as well as an optional WITH ORDINALITY to project an index out.
 
         // Note that a column definition (with type) *and* WITH ORDINALITY cannot be named

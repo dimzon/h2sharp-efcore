@@ -63,7 +63,7 @@ public static class H2ShapedQueryExpressionExtensions
                 || select.Orderings is []
                 || (select.Orderings is [{ Expression: ColumnExpression { Name: "ordinality", TableAlias: var orderingTableAlias } }]
                     && orderingTableAlias == unnest.Alias))
-            && IsPostgresArray(a)
+            && IsH2Array(a)
             && TryGetProjectedColumn(source, out var column))
         {
             array = a;
@@ -123,7 +123,7 @@ public static class H2ShapedQueryExpressionExtensions
     /// <summary>
     ///     Checks whether the given expression maps to a PostgreSQL array, as opposed to a multirange type.
     /// </summary>
-    private static bool IsPostgresArray(SqlExpression expression)
+    private static bool IsH2Array(SqlExpression expression)
         => expression switch
         {
             { TypeMapping: H2ArrayTypeMapping } => true,

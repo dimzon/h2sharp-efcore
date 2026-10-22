@@ -17,6 +17,6 @@ public static class H2DatabaseModelExtensions
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static IReadOnlyList<PostgresEnum> GetPostgresEnums(this DatabaseModel model)
-        => PostgresEnum.GetPostgresEnums(model).ToArray();
+    public static IReadOnlyList<H2Enum> GetH2Enums(this DatabaseModel model)
+        => H2Enum.GetH2Enums(model).ToArray();
 }

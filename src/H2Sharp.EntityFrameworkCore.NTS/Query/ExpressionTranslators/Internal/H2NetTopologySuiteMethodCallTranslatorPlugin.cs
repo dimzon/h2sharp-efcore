@@ -104,7 +104,7 @@ public class H2GeometryMethodTranslator : IMethodCallTranslator
                 method.ReturnType,
                 arguments[1].TypeMapping),
 
-            nameof(H2NetTopologySuiteDbFunctionsExtensions.DistanceKnn) => _sqlExpressionFactory.MakePostgresBinary(
+            nameof(H2NetTopologySuiteDbFunctionsExtensions.DistanceKnn) => _sqlExpressionFactory.MakeH2Binary(
                 H2ExpressionType.Distance,
                 arguments[1],
                 arguments[2]),

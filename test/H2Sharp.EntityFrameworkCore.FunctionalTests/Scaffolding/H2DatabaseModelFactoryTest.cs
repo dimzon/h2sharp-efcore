@@ -1987,7 +1987,7 @@ CREATE TABLE foo (mood mood UNIQUE);
             [],
             dbModel =>
             {
-                var enums = dbModel.GetPostgresEnums();
+                var enums = dbModel.GetH2Enums();
                 Assert.Equal(2, enums.Count);
 
                 var mood = enums.Single(e => e.Schema is null);

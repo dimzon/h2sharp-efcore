@@ -71,7 +71,7 @@ public class H2ConventionSetBuilder : RelationalConventionSetBuilder
             conventionSet.PropertyAnnotationChangedConventions, (RelationalValueGenerationConvention)valueGenerationConvention);
 
         conventionSet.ModelFinalizingConventions.Add(valueGenerationStrategyConvention);
-        conventionSet.ModelFinalizingConventions.Add(new H2PostgresModelFinalizingConvention(_enumDefinitions));
+        conventionSet.ModelFinalizingConventions.Add(new H2ModelFinalizingConvention(_enumDefinitions));
         ReplaceConvention(conventionSet.ModelFinalizingConventions, storeGenerationConvention);
         ReplaceConvention(
             conventionSet.ModelFinalizingConventions,

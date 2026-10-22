@@ -280,7 +280,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     /// <param name="right">The right operand of binary operation.</param>
     /// <param name="typeMapping">A type mapping to be assigned to the created expression.</param>
     /// <returns>A <see cref="H2BinaryExpression" /> with the given arguments.</returns>
-    public virtual SqlExpression MakePostgresBinary(
+    public virtual SqlExpression MakeH2Binary(
         H2ExpressionType operatorType,
         SqlExpression left,
         SqlExpression right,
@@ -327,7 +327,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         Check.NotNull(left, nameof(left));
         Check.NotNull(right, nameof(right));
 
-        return MakePostgresBinary(H2ExpressionType.Contains, left, right);
+        return MakeH2Binary(H2ExpressionType.Contains, left, right);
     }
 
     /// <summary>
@@ -338,7 +338,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         Check.NotNull(left, nameof(left));
         Check.NotNull(right, nameof(right));
 
-        return MakePostgresBinary(H2ExpressionType.ContainedBy, left, right);
+        return MakeH2Binary(H2ExpressionType.ContainedBy, left, right);
     }
 
     /// <summary>
@@ -349,7 +349,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         Check.NotNull(left, nameof(left));
         Check.NotNull(right, nameof(right));
 
-        return MakePostgresBinary(H2ExpressionType.Overlaps, left, right);
+        return MakeH2Binary(H2ExpressionType.Overlaps, left, right);
     }
 
     /// <summary>
@@ -400,7 +400,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                 H2AllExpression e => ApplyTypeMappingOnAll(e),
                 H2ArrayIndexExpression e => ApplyTypeMappingOnArrayIndex(e, typeMapping),
                 H2ArraySliceExpression e => ApplyTypeMappingOnArraySlice(e, typeMapping),
-                H2BinaryExpression e => ApplyTypeMappingOnPostgresBinary(e, typeMapping),
+                H2BinaryExpression e => ApplyTypeMappingOnH2Binary(e, typeMapping),
                 H2FunctionExpression e => e.ApplyTypeMapping(typeMapping),
                 H2ILikeExpression e => ApplyTypeMappingOnILike(e),
                 H2NewArrayExpression e => ApplyTypeMappingOnNewArray(e, typeMapping),
@@ -523,7 +523,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                 updatedRightValues[i] = updatedRight;
             }
 
-            // Note that we always return non-constant PostgresRowValueExpression operands, even if the original input was a
+            // Note that we always return non-constant H2RowValueExpression operands, even if the original input was a
             // SqlConstantExpression. This is because each value in the row value needs to have its type mapping.
             binary = new SqlBinaryExpression(
                 binary.OperatorType,
@@ -730,7 +730,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             _boolTypeMapping);
     }
 
-    private SqlExpression ApplyTypeMappingOnPostgresBinary(
+    private SqlExpression ApplyTypeMappingOnH2Binary(
         H2BinaryExpression h2BinaryExpression,
         RelationalTypeMapping? typeMapping)
     {

@@ -144,7 +144,7 @@ public static class H2AnnotationNames
     /// <summary>
     ///     Identifies the type of the PostgreSQL type of this column (e.g. array, range, base).
     /// </summary>
-    public const string PostgresTypeType = Prefix + "PostgresTypeType";
+    public const string H2TypeType = Prefix + "H2TypeType";
 
     /// <summary>
     ///     If this column's data type is an array, contains the data type of its elements.

@@ -14,13 +14,13 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
 {
     #region MethodInfos
 
-    private static readonly MethodInfo ModelHasPostgresEnumMethodInfo1
+    private static readonly MethodInfo ModelHasH2EnumMethodInfo1
         = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(H2ModelBuilderExtensions.HasPostgresEnum), typeof(ModelBuilder), typeof(string), typeof(string[]));
+            nameof(H2ModelBuilderExtensions.HasH2Enum), typeof(ModelBuilder), typeof(string), typeof(string[]));
 
-    private static readonly MethodInfo ModelHasPostgresEnumMethodInfo2
+    private static readonly MethodInfo ModelHasH2EnumMethodInfo2
         = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(H2ModelBuilderExtensions.HasPostgresEnum), typeof(ModelBuilder), typeof(string), typeof(string), typeof(string[]));
+            nameof(H2ModelBuilderExtensions.HasH2Enum), typeof(ModelBuilder), typeof(string), typeof(string), typeof(string[]));
 
     private static readonly MethodInfo ModelUseSerialColumnsMethodInfo
         = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
@@ -203,11 +203,11 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
 
         if (annotation.Name.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal))
         {
-            var enumTypeDef = new PostgresEnum(model, annotation.Name);
+            var enumTypeDef = new H2Enum(model, annotation.Name);
 
             return enumTypeDef.Schema is null
-                ? new MethodCallCodeFragment(ModelHasPostgresEnumMethodInfo1, enumTypeDef.Name, enumTypeDef.Labels)
-                : new MethodCallCodeFragment(ModelHasPostgresEnumMethodInfo2, enumTypeDef.Schema, enumTypeDef.Name, enumTypeDef.Labels);
+                ? new MethodCallCodeFragment(ModelHasH2EnumMethodInfo1, enumTypeDef.Name, enumTypeDef.Labels)
+                : new MethodCallCodeFragment(ModelHasH2EnumMethodInfo2, enumTypeDef.Schema, enumTypeDef.Name, enumTypeDef.Labels);
         }
 
         return null;

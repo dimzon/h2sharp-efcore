@@ -276,12 +276,12 @@ public static class H2ModelExtensions
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static PostgresEnum GetOrAddPostgresEnum(
+    public static H2Enum GetOrAddH2Enum(
         this IMutableModel model,
         string? schema,
         string name,
         string[] labels)
-        => PostgresEnum.GetOrAddPostgresEnum(model, schema, name, labels);
+        => H2Enum.GetOrAddH2Enum(model, schema, name, labels);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -289,12 +289,12 @@ public static class H2ModelExtensions
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static PostgresEnum GetOrAddPostgresEnum(
+    public static H2Enum GetOrAddH2Enum(
         this IConventionModel model,
         string? schema,
         string name,
         string[] labels)
-        => PostgresEnum.GetOrAddPostgresEnum(model, schema, name, labels);
+        => H2Enum.GetOrAddH2Enum(model, schema, name, labels);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -302,8 +302,8 @@ public static class H2ModelExtensions
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static IReadOnlyList<PostgresEnum> GetPostgresEnums(this IReadOnlyModel model)
-        => PostgresEnum.GetPostgresEnums(model).ToArray();
+    public static IReadOnlyList<H2Enum> GetH2Enums(this IReadOnlyModel model)
+        => H2Enum.GetH2Enums(model).ToArray();
 
     #endregion Enum types
 

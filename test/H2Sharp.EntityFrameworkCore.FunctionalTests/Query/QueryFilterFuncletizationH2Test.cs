@@ -19,7 +19,7 @@ public class QueryFilterFuncletizationH2Test
         using var context = CreateContext();
 
         // The standard EF Core implementation expands the query filter-referenced list client side, and so generates an NRE
-        // when the list is null. We translate to server-side with PostgresAnyExpression, so no exception is thrown.
+        // when the list is null. We translate to server-side with H2AnyExpression, so no exception is thrown.
         // Assert.Throws<NullReferenceException>(() => context.Set<ListFilter>().ToList());
 
         context.TenantIds = [];

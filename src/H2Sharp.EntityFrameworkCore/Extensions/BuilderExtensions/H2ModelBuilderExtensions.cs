@@ -306,7 +306,7 @@ public static class H2ModelBuilderExtensions
     ///     See: https://www.postgresql.org/docs/current/static/datatype-enum.html
     /// </remarks>
     /// <exception cref="ArgumentNullException">builder</exception>
-    public static ModelBuilder HasPostgresEnum(
+    public static ModelBuilder HasH2Enum(
         this ModelBuilder modelBuilder,
         string? schema,
         string name,
@@ -316,7 +316,7 @@ public static class H2ModelBuilderExtensions
         Check.NotEmpty(name, nameof(name));
         Check.NotNull(labels, nameof(labels));
 
-        modelBuilder.Model.GetOrAddPostgresEnum(schema, name, labels);
+        modelBuilder.Model.GetOrAddH2Enum(schema, name, labels);
         return modelBuilder;
     }
 
@@ -334,7 +334,7 @@ public static class H2ModelBuilderExtensions
     ///     See: https://www.postgresql.org/docs/current/static/datatype-enum.html
     /// </remarks>
     /// <exception cref="ArgumentNullException">builder</exception>
-    public static IConventionModelBuilder HasPostgresEnum(
+    public static IConventionModelBuilder HasH2Enum(
         this IConventionModelBuilder modelBuilder,
         string? schema,
         string name,
@@ -344,9 +344,9 @@ public static class H2ModelBuilderExtensions
         Check.NotEmpty(name, nameof(name));
         Check.NotNull(labels, nameof(labels));
 
-        if (modelBuilder.CanSetPostgresEnum(schema, name))
+        if (modelBuilder.CanSetH2Enum(schema, name))
         {
-            modelBuilder.Metadata.GetOrAddPostgresEnum(schema, name, labels);
+            modelBuilder.Metadata.GetOrAddH2Enum(schema, name, labels);
         }
         return modelBuilder;
     }
@@ -364,13 +364,13 @@ public static class H2ModelBuilderExtensions
     /// <param name="name">The name of the extension to create.</param>
     /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
     /// <returns><see langword="true" /> if the given value can be set as the default increment for SQL Server IDENTITY.</returns>
-    public static bool CanSetPostgresEnum(
+    public static bool CanSetH2Enum(
         this IConventionModelBuilder modelBuilder,
         string? schema,
         string name,
         bool fromDataAnnotation = false)
     {
-        var annotationName = PostgresEnum.BuildAnnotationName(schema, name);
+        var annotationName = H2Enum.BuildAnnotationName(schema, name);
 
         return modelBuilder.CanSetAnnotation(annotationName, $"{schema},{name}", fromDataAnnotation);
     }
@@ -388,11 +388,11 @@ public static class H2ModelBuilderExtensions
     ///     See: https://www.postgresql.org/docs/current/static/datatype-enum.html
     /// </remarks>
     /// <exception cref="ArgumentNullException">builder</exception>
-    public static ModelBuilder HasPostgresEnum(
+    public static ModelBuilder HasH2Enum(
         this ModelBuilder modelBuilder,
         string name,
         string[] labels)
-        => modelBuilder.HasPostgresEnum(null, name, labels);
+        => modelBuilder.HasH2Enum(null, name, labels);
 
     /// <summary>
     ///     Registers a user-defined enum type in the model.
@@ -412,7 +412,7 @@ public static class H2ModelBuilderExtensions
     ///     See: https://www.postgresql.org/docs/current/static/datatype-enum.html
     /// </remarks>
     /// <exception cref="ArgumentNullException">builder</exception>
-    public static ModelBuilder HasPostgresEnum<TEnum>(
+    public static ModelBuilder HasH2Enum<TEnum>(
         this ModelBuilder modelBuilder,
         string? schema = null,
         string? name = null,
@@ -423,7 +423,7 @@ public static class H2ModelBuilderExtensions
         nameTranslator ??= H2UpperCaseNameTranslator.Instance;
 #pragma warning restore CS0618
 
-        return modelBuilder.HasPostgresEnum(
+        return modelBuilder.HasH2Enum(
             schema,
             name ?? GetTypeStoreName<TEnum>(nameTranslator),
             GetMemberStoreNames<TEnum>(nameTranslator));

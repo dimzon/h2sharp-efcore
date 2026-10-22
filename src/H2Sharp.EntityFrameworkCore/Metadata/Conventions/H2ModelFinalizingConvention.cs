@@ -8,15 +8,15 @@ namespace H2Sharp.EntityFrameworkCore.Metadata.Conventions;
 /// <remarks>
 ///     See <see href="https://aka.ms/efcore-docs-conventions">Model building conventions</see>.
 /// </remarks>
-public class H2PostgresModelFinalizingConvention : IModelFinalizingConvention
+public class H2ModelFinalizingConvention : IModelFinalizingConvention
 {
     private readonly IReadOnlyList<EnumDefinition> _enumDefinitions;
 
     /// <summary>
-    ///     Creates a new instance of <see cref="H2PostgresModelFinalizingConvention" />.
+    ///     Creates a new instance of <see cref="H2ModelFinalizingConvention" />.
     /// </summary>
     /// <param name="enumDefinitions">The enums to declare in the model.</param>
-    public H2PostgresModelFinalizingConvention(
+    public H2ModelFinalizingConvention(
         IReadOnlyList<EnumDefinition> enumDefinitions)
     {
         _enumDefinitions = enumDefinitions;
@@ -35,7 +35,7 @@ public class H2PostgresModelFinalizingConvention : IModelFinalizingConvention
     {
         foreach (var enumDefinition in _enumDefinitions)
         {
-            modelBuilder.HasPostgresEnum(
+            modelBuilder.HasH2Enum(
                 enumDefinition.StoreTypeSchema,
                 enumDefinition.StoreTypeName,
                 enumDefinition.Labels.Values.Order(StringComparer.Ordinal).ToArray());

@@ -214,58 +214,6 @@ public class H2AnnotationCodeGeneratorTest
 
     #endregion Identity / sequence / HiLo
 
-    #region PostgreSQL extensions
-
-    [ConditionalFact]
-    public void Extension()
-    {
-        var generator = CreateGenerator();
-        var modelBuilder = new ModelBuilder(H2ConventionSetBuilder.Build());
-        modelBuilder.HasPostgresExtension("postgis");
-
-        var model = (IModel)modelBuilder.Model;
-        var annotations = model.GetAnnotations().ToDictionary(a => a.Name, a => a);
-        var result = generator.GenerateFluentApiCalls(model, annotations)
-            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasPostgresExtension));
-
-        Assert.Collection(result.Arguments, name => Assert.Equal("postgis", name));
-    }
-
-    [ConditionalFact]
-    public void Extension_with_schema()
-    {
-        var generator = CreateGenerator();
-        var modelBuilder = new ModelBuilder(H2ConventionSetBuilder.Build());
-        modelBuilder.HasPostgresExtension("some_schema", "postgis");
-
-        var model = (IModel)modelBuilder.Model;
-        var annotations = model.GetAnnotations().ToDictionary(a => a.Name, a => a);
-        var result = generator.GenerateFluentApiCalls(model, annotations)
-            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasPostgresExtension));
-
-        Assert.Collection(
-            result.Arguments,
-            schema => Assert.Equal("some_schema", schema),
-            name => Assert.Equal("postgis", name));
-    }
-
-    [ConditionalFact]
-    public void Extension_with_null_schema()
-    {
-        var generator = CreateGenerator();
-        var modelBuilder = new ModelBuilder(H2ConventionSetBuilder.Build());
-        modelBuilder.HasPostgresExtension(null, "postgis");
-
-        var model = (IModel)modelBuilder.Model;
-        var annotations = model.GetAnnotations().ToDictionary(a => a.Name, a => a);
-        var result = generator.GenerateFluentApiCalls(model, annotations)
-            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasPostgresExtension));
-
-        Assert.Collection(result.Arguments, name => Assert.Equal("postgis", name));
-    }
-
-    #endregion PostgreSQL extensions
-
     #region Enum
 
     [ConditionalFact]
@@ -275,12 +223,12 @@ public class H2AnnotationCodeGeneratorTest
         var modelBuilder = new ModelBuilder(H2ConventionSetBuilder.Build());
 
         var enumLabels = new[] { "someValue1", "someValue2" };
-        modelBuilder.HasPostgresEnum("some_enum", enumLabels);
+        modelBuilder.HasH2Enum("some_enum", enumLabels);
 
         var model = (IModel)modelBuilder.Model;
         var annotations = model.GetAnnotations().ToDictionary(a => a.Name, a => a);
         var result = generator.GenerateFluentApiCalls(model, annotations)
-            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasPostgresEnum));
+            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasH2Enum));
 
         Assert.Collection(
             result.Arguments,
@@ -295,12 +243,12 @@ public class H2AnnotationCodeGeneratorTest
         var modelBuilder = new ModelBuilder(H2ConventionSetBuilder.Build());
 
         var enumLabels = new[] { "someValue1", "someValue2" };
-        modelBuilder.HasPostgresEnum("some_schema", "some_enum", enumLabels);
+        modelBuilder.HasH2Enum("some_schema", "some_enum", enumLabels);
 
         var model = (IModel)modelBuilder.Model;
         var annotations = model.GetAnnotations().ToDictionary(a => a.Name, a => a);
         var result = generator.GenerateFluentApiCalls(model, annotations)
-            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasPostgresEnum));
+            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasH2Enum));
 
         Assert.Collection(
             result.Arguments,
@@ -316,12 +264,12 @@ public class H2AnnotationCodeGeneratorTest
         var modelBuilder = new ModelBuilder(H2ConventionSetBuilder.Build());
 
         var enumLabels = new[] { "someValue1", "someValue2" };
-        modelBuilder.HasPostgresEnum(schema: null, "some_enum", enumLabels);
+        modelBuilder.HasH2Enum(schema: null, "some_enum", enumLabels);
 
         var model = (IModel)modelBuilder.Model;
         var annotations = model.GetAnnotations().ToDictionary(a => a.Name, a => a);
         var result = generator.GenerateFluentApiCalls(model, annotations)
-            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasPostgresEnum));
+            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasH2Enum));
 
         Assert.Collection(
             result.Arguments,
@@ -330,72 +278,6 @@ public class H2AnnotationCodeGeneratorTest
     }
 
     #endregion Enum
-
-    #region Range
-
-    [ConditionalFact]
-    public void Range()
-    {
-        var generator = CreateGenerator();
-        var modelBuilder = new ModelBuilder(H2ConventionSetBuilder.Build());
-
-        modelBuilder.HasPostgresRange("some_range", "some_subtype");
-
-        var model = (IModel)modelBuilder.Model;
-        var annotations = model.GetAnnotations().ToDictionary(a => a.Name, a => a);
-        var result = generator.GenerateFluentApiCalls(model, annotations)
-            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasPostgresRange));
-
-        Assert.Collection(
-            result.Arguments,
-            name => Assert.Equal("some_range", name),
-            subtype => Assert.Equal("some_subtype", subtype));
-    }
-
-    [ConditionalFact]
-    public void Range_with_schema()
-    {
-        var generator = CreateGenerator();
-        var modelBuilder = new ModelBuilder(H2ConventionSetBuilder.Build());
-
-        modelBuilder.HasPostgresRange("some_schema", "some_range", "some_subtype");
-
-        var model = (IModel)modelBuilder.Model;
-        var annotations = model.GetAnnotations().ToDictionary(a => a.Name, a => a);
-        var result = generator.GenerateFluentApiCalls(model, annotations)
-            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasPostgresRange));
-
-        Assert.Collection(
-            result.Arguments,
-            schema => Assert.Equal("some_schema", schema),
-            name => Assert.Equal("some_range", name),
-            subtype => Assert.Equal("some_subtype", subtype),
-            canonicalFunction => Assert.Null(canonicalFunction),
-            subtypeOpClass => Assert.Null(subtypeOpClass),
-            collation => Assert.Null(collation),
-            subtypeDiff => Assert.Null(subtypeDiff));
-    }
-
-    [ConditionalFact]
-    public void Range_with_null_schema()
-    {
-        var generator = CreateGenerator();
-        var modelBuilder = new ModelBuilder(H2ConventionSetBuilder.Build());
-
-        modelBuilder.HasPostgresRange(schema: null, "some_range", "some_subtype");
-
-        var model = (IModel)modelBuilder.Model;
-        var annotations = model.GetAnnotations().ToDictionary(a => a.Name, a => a);
-        var result = generator.GenerateFluentApiCalls(model, annotations)
-            .Single(c => c.Method == nameof(H2ModelBuilderExtensions.HasPostgresRange));
-
-        Assert.Collection(
-            result.Arguments,
-            name => Assert.Equal("some_range", name),
-            subtype => Assert.Equal("some_subtype", subtype));
-    }
-
-    #endregion Range
 
     private H2AnnotationCodeGenerator CreateGenerator()
         => new(

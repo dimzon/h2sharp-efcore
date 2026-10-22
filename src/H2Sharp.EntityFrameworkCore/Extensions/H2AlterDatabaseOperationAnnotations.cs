@@ -14,8 +14,8 @@ public static class H2AlterDatabaseOperationExtensions
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static IReadOnlyList<PostgresEnum> GetPostgresEnums(this AlterDatabaseOperation operation)
-        => PostgresEnum.GetPostgresEnums(operation).ToArray();
+    public static IReadOnlyList<H2Enum> GetH2Enums(this AlterDatabaseOperation operation)
+        => H2Enum.GetH2Enums(operation).ToArray();
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -23,6 +23,6 @@ public static class H2AlterDatabaseOperationExtensions
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static IReadOnlyList<PostgresEnum> GetOldPostgresEnums(this AlterDatabaseOperation operation)
-        => PostgresEnum.GetPostgresEnums(operation.OldDatabase).ToArray();
+    public static IReadOnlyList<H2Enum> GetOldH2Enums(this AlterDatabaseOperation operation)
+        => H2Enum.GetH2Enums(operation.OldDatabase).ToArray();
 }

@@ -23,10 +23,9 @@ namespace H2Sharp.EntityFrameworkCore.TestUtilities;
 ///         would be empty and the cleaner would quietly drop nothing.
 ///     </para>
 ///     <para>
-///         So the tables are dropped by name, from the model EF itself has: the tables the context
-///         maps are exactly the tables that were created, and EF knows their names without asking
-///         the database. H2's own "DROP ALL OBJECTS" would be the shorter way to say this, and the
-///         cleaner will use it once the engine's parser reads it.
+///         So the database is emptied with H2's own "DROP ALL OBJECTS": it leaves the main schema
+///         and the catalogue schema, and takes the tables, the sequences and the other schemas with
+///         it. The engine's parser reads that statement, so the cleaner can say it straight out.
 ///     </para>
 /// </remarks>
 public class H2DatabaseCleaner : RelationalDatabaseCleaner
@@ -35,11 +34,11 @@ public class H2DatabaseCleaner : RelationalDatabaseCleaner
     protected override IDatabaseModelFactory CreateDatabaseModelFactory(ILoggerFactory loggerFactory)
         // The base cleaner builds a database model to find the tables to drop. H2's catalogue is
         // INFORMATION_SCHEMA, which the port does not have yet, so the model would come out empty.
-        // The cleaner does not use it -- the tables come from EF's own model -- but the abstract
-        // member still has to be answered.
+        // The cleaner does not use it -- the database is emptied with "DROP ALL OBJECTS" -- but the
+        // abstract member still has to be answered.
         => throw new NotSupportedException(
-            "The database model factory is not used: H2DatabaseCleaner drops the tables EF's model " +
-            "knows, which does not need a catalogue.");
+            "The database model factory is not used: H2DatabaseCleaner empties the database with "
+            + "\"DROP ALL OBJECTS\", which does not need a catalogue.");
 
     /// <inheritdoc />
     public override void Clean(DatabaseFacade facade)
@@ -52,9 +51,6 @@ public class H2DatabaseCleaner : RelationalDatabaseCleaner
             return;
         }
 
-        var context = facade.GetService<ICurrentDbContext>().Context;
-        var sqlGenerationHelper = facade.GetService<ISqlGenerationHelper>();
-
         var wasOpen = h2Connection.State == ConnectionState.Open;
         if (!wasOpen)
         {
@@ -63,12 +59,9 @@ public class H2DatabaseCleaner : RelationalDatabaseCleaner
 
         try
         {
-            foreach (var table in context.Model.GetRelationalModel().Tables)
-            {
-                using var command = h2Connection.CreateCommand();
-                command.CommandText = $"DROP TABLE IF EXISTS {sqlGenerationHelper.DelimitIdentifier(table.Name, table.Schema)}";
-                command.ExecuteNonQuery();
-            }
+            using var command = h2Connection.CreateCommand();
+            command.CommandText = "DROP ALL OBJECTS";
+            command.ExecuteNonQuery();
         }
         finally
         {

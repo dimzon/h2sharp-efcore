@@ -90,7 +90,7 @@ public class H2StatisticsAggregateMethodTranslator : IAggregateMethodCallTransla
         if (functionName is not null)
         {
             // These methods accept two enumerable (column) arguments; this is represented in LINQ as a projection from the grouping
-            // to a tuple of the two columns. Since we generally translate tuples to PostgresRowValueExpression, we take it apart here.
+            // to a tuple of the two columns. Since we generally translate tuples to H2RowValueExpression, we take it apart here.
             if (source.Selector is not H2RowValueExpression rowValueExpression)
             {
                 return null;

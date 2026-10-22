@@ -136,7 +136,7 @@ public class H2MiscAggregateMethodTranslator : IAggregateMethodCallTranslator
 
                 case nameof(H2AggregateDbFunctionsExtensions.JsonObjectAgg):
                     // This method accepts two enumerable (column) arguments; this is represented in LINQ as a projection from the grouping
-                    // to a tuple of the two columns. Since we generally translate tuples to PostgresRowValueExpression, we take it apart
+                    // to a tuple of the two columns. Since we generally translate tuples to H2RowValueExpression, we take it apart
                     // here.
                     if (source.Selector is not H2RowValueExpression rowValueExpression)
                     {

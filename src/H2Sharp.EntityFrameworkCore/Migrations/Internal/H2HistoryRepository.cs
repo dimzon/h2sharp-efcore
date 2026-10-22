@@ -121,7 +121,7 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
             conventionSet.Remove(typeof(DbSetFindingConvention));
             conventionSet.Remove(typeof(RelationalDbFunctionAttributeConvention));
             // TODO: this whole method exists only so we can remove this convention (https://github.com/dotnet/efcore/issues/34991)
-            conventionSet.Remove(typeof(H2PostgresModelFinalizingConvention));
+            conventionSet.Remove(typeof(H2ModelFinalizingConvention));
 
             var modelBuilder = new ModelBuilder(conventionSet);
             modelBuilder.Entity<HistoryRow>(

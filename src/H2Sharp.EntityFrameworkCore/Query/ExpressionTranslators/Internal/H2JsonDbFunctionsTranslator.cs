@@ -91,11 +91,11 @@ public class H2JsonDbFunctionsTranslator : IMethodCallTranslator
             nameof(H2JsonDbFunctionsExtensions.JsonContained)
                 => _sqlExpressionFactory.ContainedBy(Jsonb(args[0]), Jsonb(args[1])),
             nameof(H2JsonDbFunctionsExtensions.JsonExists)
-                => _sqlExpressionFactory.MakePostgresBinary(H2ExpressionType.JsonExists, Jsonb(args[0]), args[1]),
+                => _sqlExpressionFactory.MakeH2Binary(H2ExpressionType.JsonExists, Jsonb(args[0]), args[1]),
             nameof(H2JsonDbFunctionsExtensions.JsonExistAny)
-                => _sqlExpressionFactory.MakePostgresBinary(H2ExpressionType.JsonExistsAny, Jsonb(args[0]), args[1]),
+                => _sqlExpressionFactory.MakeH2Binary(H2ExpressionType.JsonExistsAny, Jsonb(args[0]), args[1]),
             nameof(H2JsonDbFunctionsExtensions.JsonExistAll)
-                => _sqlExpressionFactory.MakePostgresBinary(H2ExpressionType.JsonExistsAll, Jsonb(args[0]), args[1]),
+                => _sqlExpressionFactory.MakeH2Binary(H2ExpressionType.JsonExistsAll, Jsonb(args[0]), args[1]),
 
             _ => null
         };

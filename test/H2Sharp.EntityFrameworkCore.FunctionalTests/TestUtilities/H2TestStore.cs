@@ -344,53 +344,31 @@ SELECT pg_terminate_backend (pg_stat_activity.pid)
 
     public override Task CleanAsync(DbContext context)
     {
-        // The store keeps the database between tests, and each test may map a different model, so
-        // the tables to drop are the ones this store has seen, not the ones this context maps.
-        // H2's catalogue cannot be read (there is no INFORMATION_SCHEMA in the port) and the
-        // engine's parser cannot read DROP ALL OBJECTS yet, so the tables are dropped by name.
-        //
-        // The list is per database rather than per store: the database is named after the store's
-        // name, so two stores with the same name share one in-memory database, and a table one of
-        // them created is still there for the other.
-        var sqlGenerationHelper = context.Database.GetService<ISqlGenerationHelper>();
-        var knownTables = KnownTables(Connection.ConnectionString);
-
-        foreach (var table in context.Model.GetRelationalModel().Tables)
+        // The store keeps the database between tests, and each test may map a different model.
+        // H2's own "DROP ALL OBJECTS" empties the database: the main schema and the catalogue
+        // schema stay, and the tables, the sequences and the other schemas go with it. The
+        // engine's parser reads that statement, so there is no need to know the names of the
+        // tables and no need for a catalogue either.
+        var wasOpen = Connection.State == ConnectionState.Open;
+        if (!wasOpen)
         {
-            knownTables.Add((table.Schema, table.Name));
+            Connection.Open();
         }
 
-        if (knownTables.Count > 0)
+        try
         {
-            var wasOpen = Connection.State == ConnectionState.Open;
+            using var command = Connection.CreateCommand();
+            command.CommandText = "DROP ALL OBJECTS";
+            command.ExecuteNonQuery();
+        }
+        finally
+        {
             if (!wasOpen)
             {
-                Connection.Open();
-            }
-
-            try
-            {
-                foreach (var (schema, name) in knownTables)
-                {
-                    using var command = Connection.CreateCommand();
-                    command.CommandText = $"DROP TABLE IF EXISTS {sqlGenerationHelper.DelimitIdentifier(name, schema)}";
-                    command.ExecuteNonQuery();
-                }
-            }
-            finally
-            {
-                if (!wasOpen)
-                {
-                    Connection.Close();
-                }
+                Connection.Close();
             }
         }
 
         return Task.CompletedTask;
     }
-
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, HashSet<(string? Schema, string Name)>> KnownTableSets = new();
-
-    private static HashSet<(string? Schema, string Name)> KnownTables(string connectionString)
-        => KnownTableSets.GetOrAdd(connectionString, _ => []);
 }

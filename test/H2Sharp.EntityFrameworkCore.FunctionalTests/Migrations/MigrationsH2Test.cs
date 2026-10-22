@@ -1671,106 +1671,59 @@ DROP SEQUENCE "People_Id_old_seq";
 
     public override async Task Create_index_with_filter()
     {
-        await base.Create_index_with_filter();
-
-        AssertSql("""CREATE INDEX "IX_People_Name" ON "People" ("Name") WHERE "Name" IS NOT NULL;""");
+        // H2 2.5 has no partial index, so the provider refuses to write the filter.
+        await Assert.ThrowsAsync<NotSupportedException>(() => base.Create_index_with_filter());
     }
 
     public override async Task Create_unique_index_with_filter()
     {
-        await base.Create_unique_index_with_filter();
-
-        AssertSql("""CREATE UNIQUE INDEX "IX_People_Name" ON "People" ("Name") WHERE "Name" IS NOT NULL AND "Name" <> '';""");
+        // H2 2.5 has no partial index, so the provider refuses to write the filter.
+        await Assert.ThrowsAsync<NotSupportedException>(() => base.Create_unique_index_with_filter());
     }
 
     [Fact]
     public virtual async Task Create_index_with_include()
     {
-        await Test(
-            builder => builder.Entity(
-                "People", e =>
-                {
-                    e.Property<int>("Id");
-                    e.Property<string>("FirstName");
-                    e.Property<string>("LastName").HasColumnName("last_name");
-                    e.Property<string>("Name");
-                }),
-            _ => { },
-            builder => builder.Entity("People").HasIndex("Name")
-                .IncludeProperties("FirstName", "LastName"),
-            model =>
-            {
-                var table = Assert.Single(model.Tables);
-                var index = Assert.Single(table.Indexes);
-                Assert.Single(index.Columns);
-                Assert.Contains(table.Columns.Single(c => c.Name == "Name"), index.Columns);
-
-                // Scaffolding included/covered properties is currently blocked, see #2194
-                var includedColumns = (string[])index[H2AnnotationNames.IndexInclude]!;
-                Assert.Null(includedColumns);
-
-                // if (TestEnvironment.PostgresVersion.AtLeast(11))
-                // {
-                //     Assert.Contains("FirstName", includedColumns);
-                //     Assert.Contains("last_name", includedColumns);
-                // }
-                // else
-                // {
-                //     Assert.Null(includedColumns);
-                // }
-            });
-
-        AssertSql(
-            TestEnvironment.PostgresVersion.AtLeast(11)
-                ? """CREATE INDEX "IX_People_Name" ON "People" ("Name") INCLUDE ("FirstName", last_name);"""
-                : """CREATE INDEX "IX_People_Name" ON "People" ("Name");""");
+        // H2 2.5 reads the clause INCLUDE only for a unique index, so the provider
+        // refuses to write the included columns of a non-unique index.
+        await Assert.ThrowsAsync<NotSupportedException>(
+            () => Test(
+                builder => builder.Entity(
+                    "People", e =>
+                    {
+                        e.Property<int>("Id");
+                        e.Property<string>("FirstName");
+                        e.Property<string>("LastName").HasColumnName("last_name");
+                        e.Property<string>("Name");
+                    }),
+                _ => { },
+                builder => builder.Entity("People").HasIndex("Name")
+                    .IncludeProperties("FirstName", "LastName"),
+                model => { }));
     }
 
     [Fact]
     public virtual async Task Create_index_with_include_and_filter()
     {
-        await Test(
-            builder => builder.Entity(
-                "People", e =>
-                {
-                    e.Property<int>("Id");
-                    e.Property<string>("FirstName");
-                    e.Property<string>("LastName");
-                    e.Property<string>("Name");
-                }),
-            _ => { },
-            builder => builder.Entity("People").HasIndex("Name")
-                .IncludeProperties("FirstName", "LastName")
-                .HasFilter("""
-                    "Name" IS NOT NULL
-                    """),
-            model =>
-            {
-                var table = Assert.Single(model.Tables);
-                var index = Assert.Single(table.Indexes);
-                Assert.Equal("""("Name" IS NOT NULL)""", index.Filter);
-                Assert.Single(index.Columns);
-                Assert.Contains(table.Columns.Single(c => c.Name == "Name"), index.Columns);
-
-                // Scaffolding included/covered properties is currently blocked, see #2194
-                var includedColumns = (string[])index[H2AnnotationNames.IndexInclude]!;
-                Assert.Null(includedColumns);
-
-                // if (TestEnvironment.PostgresVersion.AtLeast(11))
-                // {
-                //     Assert.Contains("FirstName", includedColumns);
-                //     Assert.Contains("LastName", includedColumns);
-                // }
-                // else
-                // {
-                //     Assert.Null(includedColumns);
-                // }
-            });
-
-        AssertSql(
-            TestEnvironment.PostgresVersion.AtLeast(11)
-                ? """CREATE INDEX "IX_People_Name" ON "People" ("Name") INCLUDE ("FirstName", "LastName") WHERE "Name" IS NOT NULL;"""
-                : """CREATE INDEX "IX_People_Name" ON "People" ("Name") WHERE "Name" IS NOT NULL;""");
+        // H2 2.5 has no partial index, and reads the clause INCLUDE only for a unique
+        // index, so the provider refuses both.
+        await Assert.ThrowsAsync<NotSupportedException>(
+            () => Test(
+                builder => builder.Entity(
+                    "People", e =>
+                    {
+                        e.Property<int>("Id");
+                        e.Property<string>("FirstName");
+                        e.Property<string>("LastName");
+                        e.Property<string>("Name");
+                    }),
+                _ => { },
+                builder => builder.Entity("People").HasIndex("Name")
+                    .IncludeProperties("FirstName", "LastName")
+                    .HasFilter("""
+                        "Name" IS NOT NULL
+                        """),
+                model => { }));
     }
 
     [Fact]
@@ -2412,10 +2365,10 @@ SELECT setval(
     {
         await Test(
             _ => { },
-            builder => builder.HasPostgresEnum("Mood", ["Happy", "Sad"]),
+            builder => builder.HasH2Enum("Mood", ["Happy", "Sad"]),
             model =>
             {
-                var moodEnum = Assert.Single(model.GetPostgresEnums());
+                var moodEnum = Assert.Single(model.GetH2Enums());
                 Assert.Equal("Mood", moodEnum.Name);
                 Assert.Null(moodEnum.Schema);
                 Assert.Collection(
@@ -2432,10 +2385,10 @@ SELECT setval(
     {
         await Test(
             _ => { },
-            builder => builder.HasPostgresEnum("some_schema", "Mood", ["Happy", "Sad"]),
+            builder => builder.HasH2Enum("some_schema", "Mood", ["Happy", "Sad"]),
             model =>
             {
-                var moodEnum = Assert.Single(model.GetPostgresEnums());
+                var moodEnum = Assert.Single(model.GetH2Enums());
                 Assert.Equal("Mood", moodEnum.Name);
                 Assert.Equal("some_schema", moodEnum.Schema);
                 Assert.Collection(
@@ -2463,9 +2416,9 @@ CREATE TYPE some_schema."Mood" AS ENUM ('Happy', 'Sad');
     public virtual async Task Drop_enum()
     {
         await Test(
-            builder => builder.HasPostgresEnum("Mood", ["Happy", "Sad"]),
+            builder => builder.HasH2Enum("Mood", ["Happy", "Sad"]),
             _ => { },
-            model => Assert.Empty(model.GetPostgresEnums()));
+            model => Assert.Empty(model.GetH2Enums()));
 
         AssertSql("""DROP TYPE "Mood";""");
     }
@@ -2474,10 +2427,10 @@ CREATE TYPE some_schema."Mood" AS ENUM ('Happy', 'Sad');
     public virtual async Task Do_not_alter_existing_enum_when_creating_new_one()
     {
         await Test(
-            builder => builder.HasPostgresEnum("Enum1", ["A", "B"]),
+            builder => builder.HasH2Enum("Enum1", ["A", "B"]),
             _ => { },
-            builder => builder.HasPostgresEnum("Enum2", ["X", "Y"]),
-            model => Assert.Equal(2, model.GetPostgresEnums().Count()));
+            builder => builder.HasH2Enum("Enum2", ["X", "Y"]),
+            model => Assert.Equal(2, model.GetH2Enums().Count()));
 
         AssertSql("""CREATE TYPE "Enum2" AS ENUM ('X', 'Y');""");
     }
@@ -2488,8 +2441,8 @@ CREATE TYPE some_schema."Mood" AS ENUM ('Happy', 'Sad');
         // H2 2.5 has no way of adding a label to an enum: ALTER DOMAIN takes only a constraint
         // or a check, and the reference refuses "ALTER DOMAIN m ADD VALUE 'c'".
         var exception = await Assert.ThrowsAsync<NotSupportedException>(() => Test(
-            builder => builder.HasPostgresEnum("Mood", ["Happy", "Sad"]),
-            builder => builder.HasPostgresEnum("Mood", ["Happy", "Sad", "Angry"]),
+            builder => builder.HasH2Enum("Mood", ["Happy", "Sad"]),
+            builder => builder.HasH2Enum("Mood", ["Happy", "Sad", "Angry"]),
             model => { }));
 
         Assert.Contains("H2 2.5 has no way of changing the labels of an enum", exception.Message);
@@ -2499,8 +2452,8 @@ CREATE TYPE some_schema."Mood" AS ENUM ('Happy', 'Sad');
     public virtual async Task Alter_enum_add_label_in_middle()
     {
         var exception = await Assert.ThrowsAsync<NotSupportedException>(() => Test(
-            builder => builder.HasPostgresEnum("Mood", ["Happy", "Sad"]),
-            builder => builder.HasPostgresEnum("Mood", ["Happy", "Angry", "Sad"]),
+            builder => builder.HasH2Enum("Mood", ["Happy", "Sad"]),
+            builder => builder.HasH2Enum("Mood", ["Happy", "Angry", "Sad"]),
             model => { }));
 
         Assert.Contains("H2 2.5 has no way of changing the labels of an enum", exception.Message);
@@ -2510,11 +2463,11 @@ CREATE TYPE some_schema."Mood" AS ENUM ('Happy', 'Sad');
     public virtual async Task Alter_enum_change_label_ordering_does_nothing()
     {
         await Test(
-            builder => builder.HasPostgresEnum("Mood", ["Happy", "Sad"]),
-            builder => builder.HasPostgresEnum("Mood", ["Sad", "Happy"]),
+            builder => builder.HasH2Enum("Mood", ["Happy", "Sad"]),
+            builder => builder.HasH2Enum("Mood", ["Sad", "Happy"]),
             model =>
             {
-                var moodEnum = Assert.Single(model.GetPostgresEnums());
+                var moodEnum = Assert.Single(model.GetH2Enums());
                 Assert.Collection(
                     moodEnum.Labels,
                     l => Assert.Equal("Happy", l),
@@ -2527,14 +2480,14 @@ CREATE TYPE some_schema."Mood" AS ENUM ('Happy', 'Sad');
     [Fact]
     public virtual Task Alter_enum_drop_label_not_supported()
         => TestThrows<NotSupportedException>(
-            builder => builder.HasPostgresEnum("Mood", ["Happy", "Sad"]),
-            builder => builder.HasPostgresEnum("Mood", ["Happy"]));
+            builder => builder.HasH2Enum("Mood", ["Happy", "Sad"]),
+            builder => builder.HasH2Enum("Mood", ["Happy"]));
 
     [Fact]
     public virtual Task Alter_enum_change_label_not_supported()
         => TestThrows<NotSupportedException>(
-            builder => builder.HasPostgresEnum("Mood", ["Happy", "Sad"]),
-            builder => builder.HasPostgresEnum("Mood", ["Happy", "Angry"]));
+            builder => builder.HasH2Enum("Mood", ["Happy", "Sad"]),
+            builder => builder.HasH2Enum("Mood", ["Happy", "Angry"]));
 
     #endregion
 

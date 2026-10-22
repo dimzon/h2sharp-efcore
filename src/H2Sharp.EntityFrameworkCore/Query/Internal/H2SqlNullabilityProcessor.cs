@@ -208,7 +208,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
             H2AllExpression e => VisitAll(e, allowOptimizedExpansion, out nullable),
             H2ArrayIndexExpression e => VisitArrayIndex(e, allowOptimizedExpansion, out nullable),
             H2ArraySliceExpression e => VisitArraySlice(e, allowOptimizedExpansion, out nullable),
-            H2BinaryExpression e => VisitPostgresBinary(e, allowOptimizedExpansion, out nullable),
+            H2BinaryExpression e => VisitH2Binary(e, allowOptimizedExpansion, out nullable),
             H2ILikeExpression e => VisitILike(e, allowOptimizedExpansion, out nullable),
             H2JsonTraversalExpression e => VisitJsonTraversal(e, allowOptimizedExpansion, out nullable),
             H2NewArrayExpression e => VisitNewArray(e, allowOptimizedExpansion, out nullable),
@@ -216,7 +216,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
             H2RowValueExpression e => VisitRowValueExpression(e, allowOptimizedExpansion, out nullable),
             H2UnknownBinaryExpression e => VisitUnknownBinary(e, allowOptimizedExpansion, out nullable),
 
-            // PostgresFunctionExpression is visited via the SqlFunctionExpression override below
+            // H2FunctionExpression is visited via the SqlFunctionExpression override below
 
             _ => base.VisitCustomSqlExpression(sqlExpression, allowOptimizedExpansion, out nullable)
         };
@@ -252,7 +252,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
             return updated;
         }
 
-        // For PostgresAnyOperatorType.Equal, we perform null compensation.
+        // For H2AnyOperatorType.Equal, we perform null compensation.
         // When the array is a parameter, we don't look at the values (in contrast to relational's
         // VisitIn which expands parameter arrays into constants).
 
@@ -370,7 +370,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual SqlExpression VisitPostgresBinary(
+    protected virtual SqlExpression VisitH2Binary(
         H2BinaryExpression binaryExpression,
         bool allowOptimizedExpansion,
         out bool nullable)
@@ -408,13 +408,13 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
         bool allowOptimizedExpansion,
         out bool nullable)
     {
-        // PostgresFunctionExpression extends SqlFunctionExpression, and adds aggregate predicate and ordering expressions to that.
+        // H2FunctionExpression extends SqlFunctionExpression, and adds aggregate predicate and ordering expressions to that.
         // First call the base VisitSqlFunction to visit the arguments
         var visitedBase = base.VisitSqlFunction(sqlFunctionExpression, allowOptimizedExpansion, out nullable);
 
         // base.VisitSqlFunction has some special logic for SUM which wraps it in a COALESCE
         // (see https://github.com/dotnet/efcore/issues/28158), so we need some special handling to properly visit the
-        // PostgresFunctionExpression it wraps.
+        // H2FunctionExpression it wraps.
         if (sqlFunctionExpression.IsBuiltIn
             && string.Equals(sqlFunctionExpression.Name, "SUM", StringComparison.OrdinalIgnoreCase)
             && visitedBase is SqlFunctionExpression { Name: "COALESCE", Arguments: { } } coalesceExpression
@@ -430,16 +430,16 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
             }
 
             var visitedArguments = coalesceExpression.Arguments!.ToArray();
-            visitedArguments[0] = VisitPostgresFunctionComponents(wrappedFunctionExpression);
+            visitedArguments[0] = VisitH2FunctionComponents(wrappedFunctionExpression);
 
             return coalesceExpression.Update(coalesceExpression.Instance, visitedArguments);
         }
 
         return visitedBase is H2FunctionExpression h2FunctionExpression
-            ? VisitPostgresFunctionComponents(h2FunctionExpression)
+            ? VisitH2FunctionComponents(h2FunctionExpression)
             : visitedBase;
 
-        H2FunctionExpression VisitPostgresFunctionComponents(H2FunctionExpression h2FunctionExpression)
+        H2FunctionExpression VisitH2FunctionComponents(H2FunctionExpression h2FunctionExpression)
         {
             var aggregateChanged = false;
 

@@ -5,13 +5,13 @@ namespace H2Sharp.EntityFrameworkCore.Metadata;
 /// <summary>
 ///     Represents the metadata for a PostgreSQL enum.
 /// </summary>
-public class PostgresEnum
+public class H2Enum
 {
     private readonly IReadOnlyAnnotatable _annotatable;
     private readonly string _annotationName;
 
     /// <summary>
-    ///     Creates a <see cref="PostgresEnum" />.
+    ///     Creates a <see cref="H2Enum" />.
     /// </summary>
     /// <param name="annotatable">The annotatable to search for the annotation.</param>
     /// <param name="annotationName">The annotation name to search for in the annotatable.</param>
@@ -21,21 +21,21 @@ public class PostgresEnum
     /// <exception cref="ArgumentNullException">
     ///     <paramref name="annotationName" />
     /// </exception>
-    internal PostgresEnum(IReadOnlyAnnotatable annotatable, string annotationName)
+    internal H2Enum(IReadOnlyAnnotatable annotatable, string annotationName)
     {
         _annotatable = Check.NotNull(annotatable, nameof(annotatable));
         _annotationName = Check.NotNull(annotationName, nameof(annotationName));
     }
 
     /// <summary>
-    ///     Gets or adds a <see cref="PostgresEnum" /> from or to the <see cref="IMutableAnnotatable" />.
+    ///     Gets or adds a <see cref="H2Enum" /> from or to the <see cref="IMutableAnnotatable" />.
     /// </summary>
     /// <param name="annotatable">The annotatable from which to get or add the enum.</param>
     /// <param name="schema">The enum schema or null to use the model's default schema.</param>
     /// <param name="name">The enum name.</param>
     /// <param name="labels">The enum labels.</param>
     /// <returns>
-    ///     The <see cref="PostgresEnum" /> from the <see cref="IMutableAnnotatable" />.
+    ///     The <see cref="H2Enum" /> from the <see cref="IMutableAnnotatable" />.
     /// </returns>
     /// <exception cref="ArgumentException">
     ///     <paramref name="schema" />
@@ -49,7 +49,7 @@ public class PostgresEnum
     /// <exception cref="ArgumentNullException">
     ///     <paramref name="labels" />
     /// </exception>
-    public static PostgresEnum GetOrAddPostgresEnum(
+    public static H2Enum GetOrAddH2Enum(
         IMutableAnnotatable annotatable,
         string? schema,
         string name,
@@ -60,25 +60,25 @@ public class PostgresEnum
         Check.NotEmpty(name, nameof(name));
         Check.NotNull(labels, nameof(labels));
 
-        if (FindPostgresEnum(annotatable, schema, name) is { } enumType)
+        if (FindH2Enum(annotatable, schema, name) is { } enumType)
         {
             return enumType;
         }
 
         var annotationName = BuildAnnotationName(schema, name);
 
-        return new PostgresEnum(annotatable, annotationName) { Labels = labels };
+        return new H2Enum(annotatable, annotationName) { Labels = labels };
     }
 
     /// <summary>
-    ///     Gets or adds a <see cref="PostgresEnum" /> from or to the <see cref="IMutableAnnotatable" />.
+    ///     Gets or adds a <see cref="H2Enum" /> from or to the <see cref="IMutableAnnotatable" />.
     /// </summary>
     /// <param name="annotatable">The annotatable from which to get or add the enum.</param>
     /// <param name="schema">The enum schema or null to use the model's default schema.</param>
     /// <param name="name">The enum name.</param>
     /// <param name="labels">The enum labels.</param>
     /// <returns>
-    ///     The <see cref="PostgresEnum" /> from the <see cref="IMutableAnnotatable" />.
+    ///     The <see cref="H2Enum" /> from the <see cref="IMutableAnnotatable" />.
     /// </returns>
     /// <exception cref="ArgumentException">
     ///     <paramref name="schema" />
@@ -92,7 +92,7 @@ public class PostgresEnum
     /// <exception cref="ArgumentNullException">
     ///     <paramref name="labels" />
     /// </exception>
-    public static PostgresEnum GetOrAddPostgresEnum(
+    public static H2Enum GetOrAddH2Enum(
         IConventionAnnotatable annotatable,
         string? schema,
         string name,
@@ -103,24 +103,24 @@ public class PostgresEnum
         Check.NotEmpty(name, nameof(name));
         Check.NotNull(labels, nameof(labels));
 
-        if (FindPostgresEnum(annotatable, schema, name) is { } enumType)
+        if (FindH2Enum(annotatable, schema, name) is { } enumType)
         {
             return enumType;
         }
 
         var annotationName = BuildAnnotationName(schema, name);
 
-        return new PostgresEnum(annotatable, annotationName) { Labels = labels };
+        return new H2Enum(annotatable, annotationName) { Labels = labels };
     }
 
     /// <summary>
-    ///     Gets or adds a <see cref="PostgresEnum" /> from or to the <see cref="IMutableAnnotatable" />.
+    ///     Gets or adds a <see cref="H2Enum" /> from or to the <see cref="IMutableAnnotatable" />.
     /// </summary>
     /// <param name="annotatable">The annotatable from which to get or add the enum.</param>
     /// <param name="name">The enum name.</param>
     /// <param name="labels">The enum labels.</param>
     /// <returns>
-    ///     The <see cref="PostgresEnum" /> from the <see cref="IMutableAnnotatable" />.
+    ///     The <see cref="H2Enum" /> from the <see cref="IMutableAnnotatable" />.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     ///     <paramref name="annotatable" />
@@ -131,20 +131,20 @@ public class PostgresEnum
     /// <exception cref="ArgumentNullException">
     ///     <paramref name="labels" />
     /// </exception>
-    public static PostgresEnum GetOrAddPostgresEnum(
+    public static H2Enum GetOrAddH2Enum(
         IMutableAnnotatable annotatable,
         string name,
         string[] labels)
-        => GetOrAddPostgresEnum(annotatable, null, name, labels);
+        => GetOrAddH2Enum(annotatable, null, name, labels);
 
     /// <summary>
-    ///     Finds a <see cref="PostgresEnum" /> in the <see cref="IAnnotatable" />, or returns null if not found.
+    ///     Finds a <see cref="H2Enum" /> in the <see cref="IAnnotatable" />, or returns null if not found.
     /// </summary>
     /// <param name="annotatable">The annotatable to search for the enum.</param>
     /// <param name="schema">The enum schema or null to use the model's default schema.</param>
     /// <param name="name">The enum name.</param>
     /// <returns>
-    ///     The <see cref="PostgresEnum" /> from the <see cref="IAnnotatable" />.
+    ///     The <see cref="H2Enum" /> from the <see cref="IAnnotatable" />.
     /// </returns>
     /// <exception cref="ArgumentException">
     ///     <paramref name="schema" />
@@ -155,7 +155,7 @@ public class PostgresEnum
     /// <exception cref="ArgumentNullException">
     ///     <paramref name="name" />
     /// </exception>
-    public static PostgresEnum? FindPostgresEnum(
+    public static H2Enum? FindH2Enum(
         IReadOnlyAnnotatable annotatable,
         string? schema,
         string name)
@@ -166,7 +166,7 @@ public class PostgresEnum
 
         var annotationName = BuildAnnotationName(schema, name);
 
-        return annotatable[annotationName] is null ? null : new PostgresEnum(annotatable, annotationName);
+        return annotatable[annotationName] is null ? null : new H2Enum(annotatable, annotationName);
     }
 
     internal static string BuildAnnotationName(string? schema, string name)
@@ -175,20 +175,20 @@ public class PostgresEnum
             : $"{H2AnnotationNames.EnumPrefix}{name}";
 
     /// <summary>
-    ///     Gets the collection of <see cref="PostgresEnum" /> stored in the <see cref="IAnnotatable" />.
+    ///     Gets the collection of <see cref="H2Enum" /> stored in the <see cref="IAnnotatable" />.
     /// </summary>
-    /// <param name="annotatable">The annotatable to search for <see cref="PostgresEnum" /> annotations.</param>
+    /// <param name="annotatable">The annotatable to search for <see cref="H2Enum" /> annotations.</param>
     /// <returns>
-    ///     The collection of <see cref="PostgresEnum" /> stored in the <see cref="IAnnotatable" />.
+    ///     The collection of <see cref="H2Enum" /> stored in the <see cref="IAnnotatable" />.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     ///     <paramref name="annotatable" />
     /// </exception>
-    public static IEnumerable<PostgresEnum> GetPostgresEnums(IReadOnlyAnnotatable annotatable)
+    public static IEnumerable<H2Enum> GetH2Enums(IReadOnlyAnnotatable annotatable)
         => Check.NotNull(annotatable, nameof(annotatable))
             .GetAnnotations()
             .Where(a => a.Name.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal))
-            .Select(a => new PostgresEnum(annotatable, a.Name));
+            .Select(a => new H2Enum(annotatable, a.Name));
 
     /// <summary>
     ///     The <see cref="Annotatable" /> that stores the enum.

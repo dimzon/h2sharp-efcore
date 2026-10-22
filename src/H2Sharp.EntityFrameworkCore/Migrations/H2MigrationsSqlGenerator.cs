@@ -885,6 +885,14 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
     /// <inheritdoc />
     protected override void IndexOptions(MigrationOperation operation, IModel? model, MigrationCommandListBuilder builder)
     {
+        // H2 2.5 has no partial index: the reference reads the columns of the index and nothing
+        // else, and a WHERE clause after them is a syntax error.
+        if (operation is CreateIndexOperation { Filter: not null })
+        {
+            throw new NotSupportedException(
+                "H2 2.5 has no partial index, so the filter of an index cannot be written as SQL.");
+        }
+
         if (operation[H2AnnotationNames.IndexInclude] is string[] { Length: > 0 } includeColumns)
         {
             // H2 2.5 reads the clause INCLUDE only for a unique index: the reference reads it in the
@@ -1005,21 +1013,21 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
     /// <inheritdoc />
     protected virtual void GenerateEnumStatements(AlterDatabaseOperation operation, IModel? model, MigrationCommandListBuilder builder)
     {
-        foreach (var enumTypeToCreate in operation.GetPostgresEnums()
-                     .Where(ne => operation.GetOldPostgresEnums().All(oe => oe.Name != ne.Name || oe.Schema != ne.Schema)))
+        foreach (var enumTypeToCreate in operation.GetH2Enums()
+                     .Where(ne => operation.GetOldH2Enums().All(oe => oe.Name != ne.Name || oe.Schema != ne.Schema)))
         {
             GenerateCreateEnum(enumTypeToCreate, model, builder);
         }
 
-        foreach (var enumTypeToDrop in operation.GetOldPostgresEnums()
-                     .Where(oe => operation.GetPostgresEnums().All(ne => ne.Name != oe.Name || oe.Schema != ne.Schema)))
+        foreach (var enumTypeToDrop in operation.GetOldH2Enums()
+                     .Where(oe => operation.GetH2Enums().All(ne => ne.Name != oe.Name || oe.Schema != ne.Schema)))
         {
             GenerateDropEnum(enumTypeToDrop, model, builder);
         }
 
-        foreach (var (newEnum, oldEnum) in operation.GetPostgresEnums().OrderBy(e => e.Schema).ThenBy(e => e.Name)
+        foreach (var (newEnum, oldEnum) in operation.GetH2Enums().OrderBy(e => e.Schema).ThenBy(e => e.Name)
                      .Join(
-                         operation.GetOldPostgresEnums().OrderBy(e => e.Schema).ThenBy(e => e.Name),
+                         operation.GetOldH2Enums().OrderBy(e => e.Schema).ThenBy(e => e.Name),
                          e => new { e.Name, e.Schema },
                          e => new { e.Name, e.Schema },
                          (ne, oe) => (New: ne, Old: oe)))
@@ -1047,7 +1055,7 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
     }
 
     /// <inheritdoc />
-    protected virtual void GenerateCreateEnum(PostgresEnum enumType, IModel? model, MigrationCommandListBuilder builder)
+    protected virtual void GenerateCreateEnum(H2Enum enumType, IModel? model, MigrationCommandListBuilder builder)
     {
         var schema = enumType.Schema ?? model?.GetDefaultSchema();
 
@@ -1077,7 +1085,7 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
     }
 
     /// <inheritdoc />
-    protected virtual void GenerateDropEnum(PostgresEnum enumType, IModel? model, MigrationCommandListBuilder builder)
+    protected virtual void GenerateDropEnum(H2Enum enumType, IModel? model, MigrationCommandListBuilder builder)
     {
         var schema = enumType.Schema ?? model?.GetDefaultSchema();
 
