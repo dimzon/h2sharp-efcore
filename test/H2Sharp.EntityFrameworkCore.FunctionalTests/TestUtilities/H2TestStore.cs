@@ -260,35 +260,26 @@ SELECT pg_terminate_backend (pg_stat_activity.pid)
         bool useTransaction,
         object[]? parameters)
     {
-        if (connection.State != ConnectionState.Closed)
+        // The connection is not closed when the command is done: an in-memory database of the port
+        // dies with the last connection (the gap with DB_CLOSE_DELAY), so the store keeps it open
+        // for the whole life of the store.
+        if (connection.State == ConnectionState.Closed)
         {
-            connection.Close();
+            connection.Open();
         }
 
-        connection.Open();
-        try
+        using var transaction = useTransaction ? connection.BeginTransaction() : null;
+
+        T result;
+        using (var command = CreateCommand(connection, sql, parameters))
         {
-            using var transaction = useTransaction ? connection.BeginTransaction() : null;
-
-            T result;
-            using (var command = CreateCommand(connection, sql, parameters))
-            {
-                command.Transaction = transaction;
-                result = execute(command);
-            }
-
-            transaction?.Commit();
-
-            return result;
+            command.Transaction = transaction;
+            result = execute(command);
         }
-        finally
-        {
-            if (connection.State == ConnectionState.Closed
-                && connection.State != ConnectionState.Closed)
-            {
-                connection.Close();
-            }
-        }
+
+        transaction?.Commit();
+
+        return result;
     }
 
     private static Task<T> ExecuteAsync<T>(
@@ -306,37 +297,28 @@ SELECT pg_terminate_backend (pg_stat_activity.pid)
         bool useTransaction,
         IReadOnlyList<object>? parameters)
     {
-        if (connection.State != ConnectionState.Closed)
+        // The connection is not closed when the command is done: an in-memory database of the port
+        // dies with the last connection (the gap with DB_CLOSE_DELAY), so the store keeps it open
+        // for the whole life of the store.
+        if (connection.State == ConnectionState.Closed)
         {
-            await connection.CloseAsync();
+            await connection.OpenAsync();
         }
 
-        await connection.OpenAsync();
-        try
+        await using var transaction = useTransaction ? await connection.BeginTransactionAsync() : null;
+
+        T result;
+        await using (var command = CreateCommand(connection, sql, parameters))
         {
-            await using var transaction = useTransaction ? await connection.BeginTransactionAsync() : null;
-
-            T result;
-            await using (var command = CreateCommand(connection, sql, parameters))
-            {
-                result = await executeAsync(command);
-            }
-
-            if (transaction is not null)
-            {
-                await transaction.CommitAsync();
-            }
-
-            return result;
+            result = await executeAsync(command);
         }
-        finally
+
+        if (transaction is not null)
         {
-            if (connection.State == ConnectionState.Closed
-                && connection.State != ConnectionState.Closed)
-            {
-                await connection.CloseAsync();
-            }
+            await transaction.CommitAsync();
         }
+
+        return result;
     }
 
 
