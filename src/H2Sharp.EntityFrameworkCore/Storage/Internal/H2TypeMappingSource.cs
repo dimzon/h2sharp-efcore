@@ -111,7 +111,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     private readonly H2TimeTypeMapping _timeTimeOnly = H2TimeTypeMapping.Default;
 
     // Binary types
-    private readonly H2ByteArrayTypeMapping _bytea = H2ByteArrayTypeMapping.Default;
+    private readonly H2ByteArrayTypeMapping _varBinary = H2ByteArrayTypeMapping.Default;
     private readonly H2BlobTypeMapping _blob = H2BlobTypeMapping.Default;
 
     // BOOLEAN is a distinct H2 type, not an alias for an integer: it does not accept 0/1, and
@@ -183,8 +183,8 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             { "date", [_dateDateOnly, _dateDateTime] },
             { "interval", [_interval] },
 
-            { "binary varying", [_bytea] },
-            { "varbinary", [_bytea] },
+            { "binary varying", [_varBinary] },
+            { "varbinary", [_varBinary] },
             { "binary large object", [_blob] },
             { "blob", [_blob] },
 
@@ -221,7 +221,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             { typeof(TimeOnly), _timeTimeOnly },
             { typeof(TimeSpan), _interval },
             { typeof(DateTimeOffset), _timestamptzDto },
-            { typeof(byte[]), _bytea }
+            { typeof(byte[]), _varBinary }
         };
 
         StoreTypeMappings = new ConcurrentDictionary<string, RelationalTypeMapping[]>(storeTypeMappings, StringComparer.OrdinalIgnoreCase);
@@ -360,7 +360,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
                 {
                     // PostgreSQL has no tinyint (single-byte) type, but we allow mapping CLR byte to PG smallint (2-bytes).
                     // The same applies to arrays - as always - so byte[] should be mappable to smallint[].
-                    // However, byte[] also has a base mapping to bytea, which is the default. So when the user explicitly specified
+                    // However, byte[] also has a base mapping to VARBINARY, which is the default. So when the user explicitly specified
                     // mapping to smallint[], we don't return that to allow the array mapping to work.
                     // TODO: This is a workaround; RelationalTypeMappingSource first attempts to find a value converter before trying
                     // to find a collection. We should reverse the order and call FindCollectionMapping before attempting to find a
@@ -370,7 +370,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
                     // return null;
                 }
 
-                return _bytea;
+                return _varBinary;
             }
             // H2 has no xid/xid8 system column types, so a row-version property gets no special
             // mapping: byte[] falls through to the VARBINARY mapping above.

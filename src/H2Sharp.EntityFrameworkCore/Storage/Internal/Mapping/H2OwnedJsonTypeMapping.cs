@@ -6,7 +6,8 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
 /// <summary>
 ///     Supports the standard EF JSON support, which relies on owned entity modeling.
-///     See <see cref="H2JsonTypeMapping" /> for the older H2-specific support, which allows mapping json/jsonb to text, to e.g.
+///     See <see cref="H2JsonTypeMapping" /> for the older H2-specific support, which allows mapping json
+///     to text, to e.g.
 ///     <see cref="JsonElement" /> (weakly-typed mapping) or to arbitrary POCOs (but without them being modeled).
 /// </summary>
 public class H2OwnedJsonTypeMapping : JsonTypeMapping

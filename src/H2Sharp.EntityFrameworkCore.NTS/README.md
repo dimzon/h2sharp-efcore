@@ -1,43 +1,30 @@
-# H2 Entity Framework Core provider for PostgreSQL
+# H2Sharp Entity Framework Core — NetTopologySuite
 
-H2Sharp.EntityFrameworkCore is the open source EF Core provider for PostgreSQL. It allows you to interact with PostgreSQL via the most widely-used .NET O/RM from Microsoft, and use familiar LINQ syntax to express queries.
+This plugin maps NetTopologySuite geometry types to H2 2.5 `GEOMETRY` columns.
+H2 supports shape and dimension constraints, optional SRID constraints, and WKT/EWKT
+literals, including `GEOMETRY 'SRID=4326;POINT (1 2)'`.
 
-This package is a plugin which allows you to interact with spatial data provided by the PostgreSQL [PostGIS extension](https://postgis.net); PostGIS is a mature, standard extension considered to provide top-of-the-line database spatial features. On the .NET side, the plugin adds support for the types from the [NetTopologySuite library](https://github.com/NetTopologySuite/NetTopologySuite), allowing you to read and write them directly to PostgreSQL.
-
-To use the plugin, simply add `UseNetTopologySuite` as below and use NetTopologySuite types in your entity properties:
+Enable the mappings when configuring your context:
 
 ```csharp
-await using var ctx = new BlogContext();
-await ctx.Database.EnsureDeletedAsync();
-await ctx.Database.EnsureCreatedAsync();
-
-// Insert a Blog
-ctx.Cities.Add(new()
-{
-    Name = "FooCity",
-    Center = new Point(10, 10)
-});
-await ctx.SaveChangesAsync();
-
-// Query all cities with the given center point
-var newBlogs = await ctx.Cities.Where(b => b.Center == new Point(10, 10)).ToListAsync();
-
-public class BlogContext : DbContext
-{
-    public DbSet<City> Cities { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseH2(
-            @"Host=myserver;Username=mylogin;Password=mypass;Database=mydatabase",
-            o => o.UseNetTopologySuite());
-}
-
-public class City
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public Point Center { get; set; }
-}
+optionsBuilder.UseH2("jdbc:h2:mem:cities", h2 => h2.UseNetTopologySuite());
 ```
 
-The plugin also supports translating many NetTopologySuite methods and properties into corresponding PostGIS operations. For more information, see the [NetTopologySuite plugin documentation page](https://www.npgsql.org/efcore/mapping/nts.html).
+For a constrained point column:
+
+```csharp
+modelBuilder.Entity<City>()
+    .Property(city => city.Center)
+    .HasColumnType("geometry(point, 4326)");
+```
+
+`EnvelopeCombiner.CombineAsGeometry` over a group translates to H2's `ENVELOPE`
+aggregate, which returns the minimum bounding box in the 2D coordinate plane.
+
+H2 has no PostGIS `ST_*` built-ins, `GEOGRAPHY` type or KNN `<->` operator.
+NetTopologySuite computations without an H2 SQL equivalent can be performed after
+materializing the geometries. Geometry equality, bounding-box overlap and topological
+intersection have different semantics and are not substituted for one another.
+
+The provider targets H2 2.5. Port-specific implementation gaps are tracked in
+[`docs/DIVERGENCES.md`](../../docs/DIVERGENCES.md).

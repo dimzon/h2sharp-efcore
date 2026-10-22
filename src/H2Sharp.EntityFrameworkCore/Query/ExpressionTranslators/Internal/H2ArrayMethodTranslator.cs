@@ -6,11 +6,8 @@ using ExpressionExtensions = Microsoft.EntityFrameworkCore.Query.ExpressionExten
 namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 
 /// <summary>
-///     Translates method and property calls on arrays/lists into their corresponding PostgreSQL operations.
+///     Translates method and property calls on arrays/lists into the array forms H2 2.5 takes.
 /// </summary>
-/// <remarks>
-///     https://www.postgresql.org/docs/current/static/functions-array.html
-/// </remarks>
 public class H2ArrayMethodTranslator : IMethodCallTranslator
 {
     #region Methods
@@ -79,15 +76,11 @@ public class H2ArrayMethodTranslator : IMethodCallTranslator
         // During preprocessing, ArrayIndex and List[] get normalized to ElementAt; so we handle indexing into array/list here
         if (method.IsClosedFormOf(Enumerable_ElementAt))
         {
-            // The byte at a position of a binary is not a thing H2 2.5 can say. PostgreSQL has
-            // get_byte for it; H2 has neither get_byte nor a cast of a binary to a number
-            // ("Data conversion error converting "BINARY VARYING to INTEGER""), and CONV -- the
-            // function that would read the hexadecimal -- H2 does not have either. What H2 has
-            // is SUBSTRING(b, i, 1), and that is a binary of one byte, not the number of the
-            // byte. The translation is therefore refused, and the byte is taken on the client.
+            // Binary indexing uses SUBSTRING rather than PostgreSQL's get_byte. ByteAt widens
+            // the signed TINYINT result and masks it to preserve CLR bytes above 127.
             if (arguments[0].TypeMapping is H2ByteArrayTypeMapping)
             {
-                return null;
+                return _sqlExpressionFactory.ByteAt(arguments[0], arguments[1]);
             }
 
             // Try translating indexing inside JSON column

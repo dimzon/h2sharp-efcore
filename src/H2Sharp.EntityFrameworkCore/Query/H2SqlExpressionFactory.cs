@@ -34,6 +34,36 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     #region Expression factory methods
 
     /// <summary>
+    ///     Reads a byte from a binary value at a zero-based index using H2's SUBSTRING.
+    /// </summary>
+    /// <remarks>
+    ///     A one-byte binary casts to signed TINYINT in H2. Widening it before masking with 255
+    ///     preserves the full CLR byte range, including 128 through 255.
+    /// </remarks>
+    public virtual SqlExpression ByteAt(SqlExpression binary, SqlExpression index)
+    {
+        var oneBasedIndex = index is SqlConstantExpression constant
+            ? Constant(System.Convert.ToInt32(constant.Value) + 1)
+            : Add(index, Constant(1));
+        var part = Function(
+            "substring",
+            [binary, oneBasedIndex, Constant(1)],
+            nullable: true,
+            argumentsPropagateNullability: [true, true, false],
+            typeof(byte[]),
+            binary.TypeMapping);
+        var signedByte = Convert(part, typeof(sbyte), _typeMappingSource.FindMapping(typeof(sbyte)));
+
+        return Function(
+            "bitand",
+            [Convert(signedByte, typeof(int)), Constant(255)],
+            nullable: true,
+            argumentsPropagateNullability: [true, false],
+            typeof(byte),
+            _typeMappingSource.FindMapping(typeof(byte)));
+    }
+
+    /// <summary>
     ///     Creates a new <see cref="H2RegexMatchExpression" />, corresponding to the PostgreSQL-specific <c>~</c> operator.
     /// </summary>
     public virtual H2RegexMatchExpression RegexMatch(
@@ -317,39 +347,6 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
 
         return (H2BinaryExpression)ApplyTypeMapping(
             new H2BinaryExpression(operatorType, left, right, returnType, null), typeMapping);
-    }
-
-    /// <summary>
-    ///     Creates a new <see cref="H2BinaryExpression" />, for checking whether one value contains another.
-    /// </summary>
-    public virtual SqlExpression Contains(SqlExpression left, SqlExpression right)
-    {
-        Check.NotNull(left, nameof(left));
-        Check.NotNull(right, nameof(right));
-
-        return MakeH2Binary(H2ExpressionType.Contains, left, right);
-    }
-
-    /// <summary>
-    ///     Creates a new <see cref="H2BinaryExpression" />, for checking whether one value is contained by another.
-    /// </summary>
-    public virtual SqlExpression ContainedBy(SqlExpression left, SqlExpression right)
-    {
-        Check.NotNull(left, nameof(left));
-        Check.NotNull(right, nameof(right));
-
-        return MakeH2Binary(H2ExpressionType.ContainedBy, left, right);
-    }
-
-    /// <summary>
-    ///     Creates a new <see cref="H2BinaryExpression" />, for checking whether one value overlaps with another.
-    /// </summary>
-    public virtual SqlExpression Overlaps(SqlExpression left, SqlExpression right)
-    {
-        Check.NotNull(left, nameof(left));
-        Check.NotNull(right, nameof(right));
-
-        return MakeH2Binary(H2ExpressionType.Overlaps, left, right);
     }
 
     /// <summary>

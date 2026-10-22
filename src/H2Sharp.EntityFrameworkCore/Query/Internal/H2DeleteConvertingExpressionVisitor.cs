@@ -3,8 +3,8 @@ using H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 namespace H2Sharp.EntityFrameworkCore.Query.Internal;
 
 /// <summary>
-///     Converts the relational <see cref="NonQueryExpression" /> into a PG-specific <see cref="H2DeleteExpression" />, which
-///     precisely models a DELETE statement in PostgreSQL. This is done to handle the PG-specific USING syntax for table joining.
+///     Converts the relational <see cref="NonQueryExpression" /> into an <see cref="H2DeleteExpression" />.
+///     Joined sources are translated with a key subquery before reaching SQL generation.
 /// </summary>
 public class H2DeleteConvertingExpressionVisitor : ExpressionVisitor
 {
@@ -45,11 +45,11 @@ public class H2DeleteConvertingExpressionVisitor : ExpressionVisitor
         }
 
         var fromItems = new List<TableExpressionBase>();
-        SqlExpression? joinPredicates = null;
 
         // The SelectExpression also contains the target table being modified (same as deleteExpression.Table).
-        // If it has additional inner joins, use the PostgreSQL-specific USING syntax to express the join.
-        // Note that the non-join TableExpression isn't necessary the target table - through projection the last table being
+        // Only single-table DELETE expressions reach this conversion. Joined sources must use
+        // the relational key-subquery fallback, because H2 does not accept DELETE USING.
+        // Note that the non-join TableExpression isn't necessarily the target table - through projection the last table being
         // joined may be the one being modified.
         foreach (var tableBase in selectExpression.Tables)
         {
@@ -58,23 +58,17 @@ public class H2DeleteConvertingExpressionVisitor : ExpressionVisitor
                 case TableExpression tableExpression:
                     if (tableExpression.Alias != deleteExpression.Table.Alias)
                     {
-                        fromItems.Add(tableExpression);
+                        throw new NotSupportedException(
+                            "H2 2.5 cannot delete with other tables in the statement: the USING clause is PostgreSQL's, "
+                            + "and the reference rejects it. Restate the delete with a predicate over a subquery instead.");
                     }
 
                     break;
 
-                case InnerJoinExpression { Table: { } tableExpression } innerJoinExpression:
-                    if (tableExpression.Alias != deleteExpression.Table.Alias)
-                    {
-                        fromItems.Add(tableExpression);
-                    }
-
-                    joinPredicates = joinPredicates is null
-                        ? innerJoinExpression.JoinPredicate
-                        : new SqlBinaryExpression(
-                            ExpressionType.AndAlso, joinPredicates, innerJoinExpression.JoinPredicate, typeof(bool),
-                            innerJoinExpression.JoinPredicate.TypeMapping);
-                    break;
+                case InnerJoinExpression:
+                    throw new NotSupportedException(
+                        "H2 2.5 cannot delete over a join: the USING clause is PostgreSQL's, and the reference rejects it. "
+                        + "Restate the delete with a predicate over a subquery instead.");
 
                 default:
                     throw new InvalidOperationException(
@@ -83,15 +77,8 @@ public class H2DeleteConvertingExpressionVisitor : ExpressionVisitor
             }
         }
 
-        // Combine the join predicates (if any) before the user-provided predicate
-        var predicate = (joinPredicates, selectExpression.Predicate) switch
-        {
-            (null, not null) => selectExpression.Predicate,
-            (not null, null) => joinPredicates,
-            (null, null) => null,
-            (not null, not null) => new SqlBinaryExpression(
-                ExpressionType.AndAlso, joinPredicates, selectExpression.Predicate, typeof(bool), joinPredicates.TypeMapping)
-        };
+        // With no joins the predicate stands on its own.
+        var predicate = selectExpression.Predicate;
 
         return new H2DeleteExpression(deleteExpression.Table, fromItems, predicate, deleteExpression.Tags);
     }

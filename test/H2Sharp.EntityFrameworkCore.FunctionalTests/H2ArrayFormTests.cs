@@ -97,7 +97,7 @@ public class H2ArrayFormTests
     }
 
     [Fact]
-    public void The_byte_of_a_binary_is_not_taken_on_the_server()
+    public void The_byte_of_a_binary_is_taken_with_substring()
     {
         using var connection = new H2Connection("jdbc:h2:mem:array_byte");
         connection.Open();
@@ -105,12 +105,13 @@ public class H2ArrayFormTests
         SqlRecorder recorder = new();
         using var context = new ItemContext(_serviceProvider, connection, recorder);
 
-        // H2 2.5 cannot say the byte at a place: there is no get_byte, and a binary does not
-        // convert to a number ("Data conversion error converting "BINARY VARYING to
-        // INTEGER""). The byte is taken on the client.
-        var exception = Record.Exception(() => context.Items.Where(i => i.Blob[0] == 1).ToList());
+        // This model also has an ARRAY column, which is not available in the port yet. Inspect
+        // the generated query without creating that table; live binary rows are tested separately.
+        var sql = context.Items.Where(i => i.Blob[0] == 1).ToQueryString();
 
-        Assert.NotNull(exception);
+        Assert.Contains("substring(", sql, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("bitand(", sql, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("get_byte", sql, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(recorder.Commands, c => c.Contains("get_byte", StringComparison.Ordinal));
     }
 

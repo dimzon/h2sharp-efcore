@@ -4,11 +4,8 @@ using Microsoft.EntityFrameworkCore.Storage.Json;
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
 /// <summary>
-///     Type mapping for the PostgreSQL 'character' data type. Handles both CLR strings and chars.
+///     Type mapping for the H2 2.5 fixed-length CHARACTER data type. Handles both CLR strings and chars.
 /// </summary>
-/// <remarks>
-///     See: https://www.postgresql.org/docs/current/static/datatype-character.html
-/// </remarks>
 /// <inheritdoc />
 public class H2CharacterStringTypeMapping : H2StringTypeMapping
 {

@@ -326,10 +326,10 @@ keyless type is the one that works.
 | Identifiers | always quoted, the way H2 documents it: an unquoted identifier folds to upper case and a quoted one does not |
 | Types | H2's own: `varchar`, `char`, `numeric`, `varbinary`, `uuid`, `json`, `clob`, `blob`, `timestamp`, `time`, `boolean`, `smallint`, `integer`, `bigint`, `real`, `double` |
 | Paging | `LIMIT n` / `OFFSET n` |
-| Concatenation | `\|\|`, which H2 has |
+| Concatenation | `CONCAT` for .NET string `+` (ignores null parts), `ARRAY_CAT` for arrays; H2 also accepts `\|\|` |
 | Parameters | named `@name`, which the engine rewrites into `?` before the statement is parsed |
 | Table alias | without the `AS`: `FROM "Blogs" "b"` — the grammar allows both spellings ("[ [ AS ] newTableAlias ]"), and this is the one the engine reads |
-| Type cast | `CAST(x AS y)` — the shorter `x::y` is PostgreSQL's, and H2 2.5 does not have it |
+| Type cast | `CAST(x AS y)` — H2 also accepts the shorter `x::y` |
 
 The capabilities the provider declares are H2 2.5's, not the engine's current ones: a provider
 that declared the engine's abilities would be describing a database that does not exist.
@@ -341,11 +341,7 @@ it stands. The things that wait for the engine:
 
    | What | What happens |
    |---|---|
-   | `CREATE SCHEMA` | `CREATE [*]SCHEMA IF NOT EXISTS db2` — and the scaffolding makes a schema of its own before it asks about the tables in it |
-| `JOIN` | `FROM T3 a LEFT JOIN T3 b` — expected `statement`; and no join of any form is read, not a comma join and not `CROSS JOIN` either |
-| a derived table | `FROM (SELECT …) "t"` — `Table "(" not found` |
 | `IN (subquery)` | `IN with a subquery is not ported` |
-| `MERGE` | `MERGE INTO T AS t USING U AS u` — expected `statement` |
 | `OVER` | window functions |
 | `COMMENT ON` | `COMMENT ON TABLE …` |
 | large objects | `ValueLob.copyToResult: lob storage is not ported` — the storage of a large object is in the port (`ValueLob`, `LobData`, MVStore); the copy from the storage into the result is not, so a column asked for as `clob` cannot be read back |

@@ -9,7 +9,8 @@ namespace H2Sharp.EntityFrameworkCore.ModelTests;
 /// <remarks>
 ///     <para>
 ///         The database is in memory and belongs to the test alone: the name of it is the name
-///         of the test, so two tests never see each other's rows.
+///         of the test plus a unique suffix, so even equally named methods in different test
+///         classes never see each other's rows.
 ///     </para>
 ///     <para>
 ///         The schema is made by the provider, and the rows are put in by it too, so the model
@@ -50,7 +51,7 @@ public sealed class ForumDatabase : IDisposable
     /// <returns>The database.</returns>
     public static ForumDatabase Empty(string name)
     {
-        var connection = new H2Connection("jdbc:h2:mem:" + name);
+        var connection = new H2Connection("jdbc:h2:mem:" + name + "_" + Guid.NewGuid().ToString("N"));
         connection.Open();
 
         var options = new DbContextOptionsBuilder<ForumContext>()

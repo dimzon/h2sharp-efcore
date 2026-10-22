@@ -1,8 +1,13 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions;
 
 /// <summary>
-///     PostgreSQL-specific expression node types.
+///     Operator node types of binary expressions.
 /// </summary>
+/// <remarks>
+///     H2 2.5 has no SQL form for these operators: they are the PostgreSQL operators the fork came
+///     with, and the SQL generator refuses to write them instead of answering with SQL the
+///     reference rejects. ARRAY_CONTAINS covers the single-element case.
+/// </remarks>
 public enum H2ExpressionType
 {
     #region General operators

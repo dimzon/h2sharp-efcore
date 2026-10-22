@@ -64,7 +64,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             H2AnyExpression e => VisitArrayAny(e),
             H2ArrayIndexExpression e => VisitArrayIndex(e),
             H2ArraySliceExpression e => VisitArraySlice(e),
-            H2BinaryExpression e => VisitPgBinary(e),
+            H2BinaryExpression e => VisitH2Binary(e),
             H2DeleteExpression e => VisitH2Delete(e),
             H2FunctionExpression e => VisitPgFunction(e),
             H2ILikeExpression e => VisitILike(e),
@@ -202,8 +202,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
 
             case ExpressionType.Add
                 when binary.Left.TypeMapping is H2ArrayTypeMapping && binary.Right.TypeMapping is H2ArrayTypeMapping:
-                // The arrays are joined with ARRAY_CAT, the function H2 2.5 has. The pipes
-                // ("a || b") are not in the grammar of H2 2.5.
+                // Use H2's ARRAY_CAT for array concatenation.
                 Sql.Append("ARRAY_CAT(");
                 Visit(binary.Left);
                 Sql.Append(", ");
@@ -281,8 +280,9 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
 
         if (h2DeleteExpression.FromItems.Count > 0)
         {
-            Sql.AppendLine().Append("USING ");
-            GenerateList(h2DeleteExpression.FromItems, t => Visit(t), sql => sql.Append(", "));
+            throw new NotSupportedException(
+                "H2 2.5 cannot delete with other tables in the statement: the USING clause is PostgreSQL's, "
+                + "and the reference rejects it. Restate the delete with a predicate over a subquery instead.");
         }
 
         if (h2DeleteExpression.Predicate != null)
@@ -454,82 +454,13 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual Expression VisitPgBinary(H2BinaryExpression binaryExpression)
+    protected virtual Expression VisitH2Binary(H2BinaryExpression binaryExpression)
     {
         Check.NotNull(binaryExpression, nameof(binaryExpression));
-
-        var requiresParentheses = RequiresParentheses(binaryExpression, binaryExpression.Left);
-
-        if (requiresParentheses)
-        {
-            Sql.Append("(");
-        }
-
-        Visit(binaryExpression.Left);
-
-        if (requiresParentheses)
-        {
-            Sql.Append(")");
-        }
-
-        Debug.Assert(binaryExpression.Left.TypeMapping is not null);
-        Debug.Assert(binaryExpression.Right.TypeMapping is not null);
-
-        Sql
-            .Append(" ")
-            .Append(
-                binaryExpression.OperatorType switch
-                {
-                    H2ExpressionType.Contains
-                        => ">>",
-
-                    H2ExpressionType.ContainedBy
-                        => "<<",
-
-                    H2ExpressionType.Overlaps => "&&",
-
-                    H2ExpressionType.NetworkContainedByOrEqual => "<<=",
-                    H2ExpressionType.NetworkContainsOrEqual => ">>=",
-                    H2ExpressionType.NetworkContainsOrContainedBy => "&&",
-
-                    H2ExpressionType.RangeIsStrictlyLeftOf => "<<",
-                    H2ExpressionType.RangeIsStrictlyRightOf => ">>",
-                    H2ExpressionType.RangeDoesNotExtendRightOf => "&<",
-                    H2ExpressionType.RangeDoesNotExtendLeftOf => "&>",
-                    H2ExpressionType.RangeIsAdjacentTo => "-|-",
-                    H2ExpressionType.RangeUnion => "+",
-                    H2ExpressionType.RangeIntersect => "*",
-                    H2ExpressionType.RangeExcept => "-",
-
-                    H2ExpressionType.TextSearchMatch => "@@",
-                    H2ExpressionType.TextSearchAnd => "&&",
-                    H2ExpressionType.TextSearchOr => "||",
-
-                    H2ExpressionType.JsonExists => "?",
-                    H2ExpressionType.JsonExistsAny => "?|",
-                    H2ExpressionType.JsonExistsAll => "?&",
-
-                    H2ExpressionType.Distance => "<->",
-
-                    _ => throw new ArgumentOutOfRangeException($"Unhandled operator type: {binaryExpression.OperatorType}")
-                })
-            .Append(" ");
-
-        requiresParentheses = RequiresParentheses(binaryExpression, binaryExpression.Right);
-
-        if (requiresParentheses)
-        {
-            Sql.Append("(");
-        }
-
-        Visit(binaryExpression.Right);
-
-        if (requiresParentheses)
-        {
-            Sql.Append(")");
-        }
-
-        return binaryExpression;
+        // These inherited nodes describe PostgreSQL's array, network, range, text-search,
+        // JSON-key and KNN operators. H2 equivalents must use their own translations.
+        throw new NotSupportedException(
+            $"H2 2.5 has no SQL form for the inherited '{binaryExpression.OperatorType}' operator.");
     }
 
     /// <summary>
@@ -562,9 +493,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         {
             case ExpressionType.Convert:
             {
-                // H2 2.5 has no x::y: that shorter cast is not in its grammar, and the reference
-                // refuses it. The standard CAST(x AS y) is what H2 takes, and the type in it
-                // is the type of H2 -- "integer".
+                // Use standard CAST with H2 type names. The reference also accepts x::y.
                 Sql.Append("CAST(");
                 Visit(sqlUnaryExpression.Operand);
                 Sql.Append(" AS ");
@@ -572,15 +501,6 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 Sql.Append(")");
                 return sqlUnaryExpression;
             }
-
-            // Bitwise complement on networking types
-            case ExpressionType.Not when
-                sqlUnaryExpression.Operand.TypeMapping.ClrType == typeof(IPAddress)
-                || sqlUnaryExpression.Operand.TypeMapping.ClrType == typeof((IPAddress, int))
-                || sqlUnaryExpression.Operand.TypeMapping.ClrType == typeof(PhysicalAddress):
-                Sql.Append("~");
-                Visit(sqlUnaryExpression.Operand);
-                return sqlUnaryExpression;
 
             // NOT over expression types which have fancy embedded negation
             case ExpressionType.Not

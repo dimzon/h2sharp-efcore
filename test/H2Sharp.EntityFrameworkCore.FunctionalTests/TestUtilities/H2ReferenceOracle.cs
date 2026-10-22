@@ -114,24 +114,21 @@ public static class H2ReferenceOracle
         import java.sql.Connection;
         import java.sql.DriverManager;
         import java.sql.Statement;
+        import org.h2.util.ScriptReader;
 
         public class RunScript {
             public static void main(String[] args) throws Exception {
                 Class.forName("org.h2.Driver");
                 try (Connection c = DriverManager.getConnection("jdbc:h2:mem:oracle")) {
-                    StringBuilder script = new StringBuilder();
-                    try (BufferedReader r = new BufferedReader(new FileReader(args[0]))) {
-                        String line;
-                        while ((line = r.readLine()) != null) {
-                            script.append(line).append('\n');
-                        }
-                    }
-                    for (String statement : script.toString().split(";")) {
-                        if (statement.isBlank()) {
-                            continue;
-                        }
-                        try (Statement s = c.createStatement()) {
-                            s.execute(statement);
+                    try (ScriptReader reader = new ScriptReader(new BufferedReader(new FileReader(args[0])))) {
+                        String statement;
+                        while ((statement = reader.readStatement()) != null) {
+                            if (statement.isBlank()) {
+                                continue;
+                            }
+                            try (Statement s = c.createStatement()) {
+                                s.execute(statement);
+                            }
                         }
                     }
                     System.out.println("OK");

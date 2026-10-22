@@ -16,9 +16,6 @@ public class H2NetTopologySuiteSingletonOptions : IH2NetTopologySuiteSingletonOp
     public virtual Ordinates HandleOrdinates { get; set; }
 
     /// <inheritdoc />
-    public virtual bool IsGeographyDefault { get; set; }
-
-    /// <inheritdoc />
     public virtual void Initialize(IDbContextOptions options)
     {
         var npgsqlNtsOptions = options.FindExtension<H2NetTopologySuiteOptionsExtension>()

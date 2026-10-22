@@ -108,26 +108,16 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             ? elementClrType.IsNullableType()
             : property.GetElementType()!.IsNullable;
 
-        // We support two kinds of primitive collections: the standard one with arrays (where we use the unnest function), and
-        // a special case for geometry collections, where we use
+        // Primitive collections are arrays, read with the unnest function. Geometry collections
+        // have no table-valued decomposition in H2 2.5 and are declined below.
         SelectExpression selectExpression;
 
 #pragma warning disable EF1001 // SelectExpression constructors are currently internal
-        // TODO: Parameters have no type mapping. We can check whether the expression type is one of the NTS geometry collection types,
-        // though in a perfect world we'd actually infer this. In other words, when the type mapping of the element is inferred further on,
-        // we'd replace the unnest expression with ST_Dump. We could even have a special expression type which means "indeterminate, must be
-        // inferred".
-        if (sqlExpression.TypeMapping is { StoreTypeNameBase: "geometry" or "geography" })
+        if (sqlExpression.TypeMapping is { StoreTypeNameBase: "geometry" })
         {
-            // TODO: For geometry collection support (not yet supported), see #2850.
-            selectExpression = new SelectExpression(
-                [new TableValuedFunctionExpression(tableAlias, "ST_Dump", [sqlExpression])],
-                new ColumnExpression("geom", tableAlias, elementClrType.UnwrapNullableType(), elementTypeMapping, isElementNullable),
-                identifier: [], // TODO
-                _queryCompilationContext.SqlAliasManager);
+            AddTranslationErrorDetails("H2 2.5 has no table-valued function for decomposing geometry collections.");
+            return null;
         }
-        else
-        {
             // Note that for unnest we have a special expression type extending TableValuedFunctionExpression, adding the ability to provide
             // an explicit column name for its output (SELECT * FROM unnest(array) AS f(foo)).
             // This is necessary since when the column name isn't explicitly specified, it is automatically identical to the table alias
@@ -151,7 +141,6 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                 _queryCompilationContext.SqlAliasManager);
 
             selectExpression.AppendOrdering(new OrderingExpression(ordinalityColumn, ascending: true));
-        }
 #pragma warning restore EF1001
 
         Expression shaperExpression = new ProjectionBindingExpression(
@@ -229,8 +218,9 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                         _sqlExpressionFactory.All(match, array, H2AllOperatorType.ILike));
                 }
 
-                // Pattern match for: e.SomeArray.All(p => ints.Contains(p)) over non-column,
-                // using array containment (<@)
+                // Pattern match for: e.SomeArray.All(p => ints.Contains(p)) over non-column.
+                // Do not replace a quantified query with PostgreSQL's array-containment operator.
+                // The relational translation preserves the predicate as a subquery instead.
                 case H2AnyExpression
                     {
                         Item: ColumnExpression sourceColumn,
@@ -238,11 +228,11 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                     }
                     when sourceColumn.TableAlias == tableAlias:
                 {
-                    return BuildSimplifiedShapedQuery(source, _sqlExpressionFactory.ContainedBy(array, otherArray));
+                    return base.TranslateAll(source, predicate);
                 }
 
-                // Pattern match for: new[] { 4, 5 }.All(p => e.SomeArray.Contains(p)) over column,
-                // using array containment (<@)
+                // Pattern match for: new[] { 4, 5 }.All(p => e.SomeArray.Contains(p)) over column.
+                // Keep the quantified query rather than introducing a non-H2 operator.
                 case H2BinaryExpression
                     {
                         OperatorType: H2ExpressionType.Contains,
@@ -251,7 +241,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                     }
                     when sourceColumn.TableAlias == tableAlias:
                 {
-                    return BuildSimplifiedShapedQuery(source, _sqlExpressionFactory.ContainedBy(array, otherArray));
+                    return base.TranslateAll(source, predicate);
                 }
             }
         }
@@ -323,8 +313,8 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                 }
 
                 // Array overlap over non-column
-                // Pattern match: e.SomeArray.Any(p => ints.Contains(p))
-                // Translation: @ints && s.SomeArray
+                // Pattern match: e.SomeArray.Any(p => ints.Contains(p)).
+                // Keep the EXISTS query: H2's && operator compares geometry bounding boxes.
                 case H2AnyExpression
                     {
                         Item: ColumnExpression sourceColumn,
@@ -332,12 +322,12 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                     }
                     when sourceColumn.TableAlias == tableAlias:
                 {
-                    return BuildSimplifiedShapedQuery(source, _sqlExpressionFactory.Overlaps(array, otherArray));
+                    return base.TranslateAny(source, predicate);
                 }
 
                 // Array overlap over column
-                // Pattern match: new[] { 4, 5 }.Any(p => e.SomeArray.Contains(p))
-                // Translation: s.SomeArray && ARRAY[4, 5]
+                // Pattern match: new[] { 4, 5 }.Any(p => e.SomeArray.Contains(p)).
+                // Keep the EXISTS query rather than introducing PostgreSQL's array overlap.
                 case H2BinaryExpression
                     {
                         OperatorType: H2ExpressionType.Contains,
@@ -346,7 +336,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                     }
                     when sourceColumn.TableAlias == tableAlias:
                 {
-                    return BuildSimplifiedShapedQuery(source, _sqlExpressionFactory.Overlaps(array, otherArray));
+                    return base.TranslateAny(source, predicate);
                 }
 
             }
@@ -390,7 +380,9 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                 Offset: null
             })
         {
-            return BuildSimplifiedShapedQuery(source, _sqlExpressionFactory.Overlaps(array1, array2));
+            // Pattern match: x.Array1.Intersect(x.Array2).Any().
+            // Retain the set operation and EXISTS instead of using a non-H2 array operator.
+            return base.TranslateAny(source, predicate);
         }
 
         return base.TranslateAny(source, predicate);
@@ -848,8 +840,14 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         StructuralTypeShaperExpression shaper,
         [NotNullWhen(true)] out TableExpression? tableExpression)
     {
-        // The default relational behavior is to allow only single-table expressions, and the only permitted feature is a predicate.
-        // Here we extend this to also inner joins to tables, which we generate via the USING construct.
+        // A joined source must use EF's key-subquery fallback rather than PostgreSQL's DELETE USING.
+        if (selectExpression.Tables.Count != 1)
+        {
+            tableExpression = null;
+            return false;
+        }
+
+        // A direct DELETE requires a single table and a predicate.
         if (selectExpression is
             {
                 Orderings: [],
@@ -859,21 +857,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                 Having: null
             })
         {
-            TableExpressionBase? table = null;
-            if (selectExpression.Tables.Count == 1)
-            {
-                table = selectExpression.Tables[0];
-            }
-            else if (selectExpression.Tables.All(t => t is TableExpression or InnerJoinExpression))
-            {
-                var projectionBindingExpression = (ProjectionBindingExpression)shaper.ValueBufferExpression;
-                var entityProjectionExpression =
-                    (StructuralTypeProjectionExpression)selectExpression.GetProjection(projectionBindingExpression);
-                var column = entityProjectionExpression.BindProperty(shaper.StructuralType.GetProperties().First());
-                table = selectExpression.Tables.Select(t => t.UnwrapJoin()).Single(t => t.Alias == column.TableAlias);
-            }
-
-            if (table is TableExpression te)
+            if (selectExpression.Tables[0] is TableExpression te)
             {
                 tableExpression = te;
                 return true;

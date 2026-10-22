@@ -139,12 +139,12 @@ public class H2JsonDomTranslator : IMemberTranslator, IMethodCallTranslator
 
         if (method == GetArrayLength)
         {
-            return _sqlExpressionFactory.Function(
-                mapping.IsJsonb ? "jsonb_array_length" : "json_array_length",
-                [instance],
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[1],
-                typeof(int));
+            // H2 2.5 has no function that counts the elements of a JSON array: jsonb_array_length and
+            // json_array_length are PostgreSQL's, and the reference knows neither. The length is
+            // therefore refused during translation.
+            throw new NotSupportedException(
+                "H2 2.5 cannot count the elements of a JSON array: the functions jsonb_array_length and "
+                + "json_array_length are PostgreSQL's, and the reference knows neither.");
         }
 
         if (method.Name.StartsWith("TryGet", StringComparison.Ordinal) && arguments.Count == 0)

@@ -16,18 +16,15 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 [UsedImplicitly]
 public class H2GeometryTypeMapping<TGeometry> : RelationalGeometryTypeMapping<TGeometry, TGeometry>
 {
-    private readonly bool _isGeography;
-
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public H2GeometryTypeMapping(string storeType, bool isGeography)
+    public H2GeometryTypeMapping(string storeType)
         : base(converter: null, storeType, H2JsonGeometryWktReaderWriter.Instance)
     {
-        _isGeography = isGeography;
     }
 
     /// <summary>
@@ -68,11 +65,18 @@ public class H2GeometryTypeMapping<TGeometry> : RelationalGeometryTypeMapping<TG
         var geometry = (Geometry)value;
         var builder = new StringBuilder();
 
-        // H2 2.5 has one geometry type and no geography, and its literal is the WKT text
-        // without the SRID prefix PostGIS writes.
+        // H2 accepts EWKT, including an optional SRID prefix. Preserve the reference system
+        // instead of silently turning a geometry with an SRID into one with SRID zero.
         builder
             .Append("GEOMETRY")
             .Append(" '");
+
+        if (geometry.SRID != 0)
+        {
+            builder.Append("SRID=")
+                .Append(geometry.SRID.ToString(System.Globalization.CultureInfo.InvariantCulture))
+                .Append(';');
+        }
 
         builder
             .Append(geometry.AsText())

@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
@@ -13,10 +12,6 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 /// </summary>
 public class H2NetTopologySuiteTypeMappingSourcePlugin : IRelationalTypeMappingSourcePlugin
 {
-    // Note: we reference the options rather than copying IsGeographyDefault out, because that field is initialized
-    // rather late by SingletonOptionsInitializer
-    private readonly IH2NetTopologySuiteSingletonOptions _options;
-
     private static bool TryGetClrType(string subtypeName, [NotNullWhen(true)] out Type? clrType)
     {
         clrType = subtypeName switch
@@ -41,9 +36,8 @@ public class H2NetTopologySuiteTypeMappingSourcePlugin : IRelationalTypeMappingS
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public H2NetTopologySuiteTypeMappingSourcePlugin(IH2NetTopologySuiteSingletonOptions options)
+    public H2NetTopologySuiteTypeMappingSourcePlugin()
     {
-        _options = Check.NotNull(options, nameof(options));
     }
 
     /// <summary>
@@ -57,7 +51,6 @@ public class H2NetTopologySuiteTypeMappingSourcePlugin : IRelationalTypeMappingS
         // TODO: Array
         var clrType = mappingInfo.ClrType;
         var storeTypeName = mappingInfo.StoreTypeName;
-        var isGeography = _options.IsGeographyDefault;
 
         if (clrType is not null)
         {
@@ -72,7 +65,7 @@ public class H2NetTopologySuiteTypeMappingSourcePlugin : IRelationalTypeMappingS
 
         if (storeTypeName is not null)
         {
-            if (!TryParseStoreTypeName(storeTypeName, out _, out isGeography, out var parsedSubtype, out _, out _))
+            if (!TryParseStoreTypeName(storeTypeName, out _, out var parsedSubtype, out _, out _))
             {
                 return null;
             }
@@ -80,12 +73,12 @@ public class H2NetTopologySuiteTypeMappingSourcePlugin : IRelationalTypeMappingS
             clrType ??= parsedSubtype;
         }
 
-        storeTypeName ??= isGeography ? "geography" : "geometry";
+        storeTypeName ??= "geometry";
 
         Check.DebugAssert(clrType is not null, "clrType is not null");
 
         var typeMapping = (RelationalTypeMapping)Activator.CreateInstance(
-            typeof(H2GeometryTypeMapping<>).MakeGenericType(clrType), storeTypeName, isGeography)!;
+            typeof(H2GeometryTypeMapping<>).MakeGenericType(clrType), storeTypeName)!;
 
         // TODO: for geometry collection support (and why the following is commented out), see #2850.
 
@@ -111,20 +104,17 @@ public class H2NetTopologySuiteTypeMappingSourcePlugin : IRelationalTypeMappingS
     }
 
     /// <summary>
-    ///     Given a PostGIS store type name (e.g. GEOMETRY, GEOGRAPHY(Point, 4326), GEOMETRY(LineStringM, 4326)),
-    ///     attempts to parse it and return its components.
+    ///     Parses an H2 GEOMETRY type, including its shape, dimension system and optional SRID.
     /// </summary>
     public static bool TryParseStoreTypeName(
         string storeTypeName,
         out string subtypeName,
-        out bool isGeography,
         out Type? clrType,
         out int srid,
         out Ordinates ordinates)
     {
         storeTypeName = storeTypeName.Trim();
         subtypeName = storeTypeName;
-        isGeography = false;
         clrType = typeof(Geometry);
         srid = -1;
         ordinates = Ordinates.AllOrdinates;
@@ -133,11 +123,7 @@ public class H2NetTopologySuiteTypeMappingSourcePlugin : IRelationalTypeMappingS
 
         var baseType = openParen > 0 ? storeTypeName.Substring(0, openParen).Trim() : storeTypeName;
 
-        if (baseType.Equals("GEOMETRY", StringComparison.OrdinalIgnoreCase))
-        {
-            isGeography = false;
-        }
-        else
+        if (!baseType.Equals("GEOMETRY", StringComparison.OrdinalIgnoreCase))
         {
             // H2 2.5 has one geometry type and no geography.
             return false;
@@ -162,14 +148,14 @@ public class H2NetTopologySuiteTypeMappingSourcePlugin : IRelationalTypeMappingS
         else
         {
             subtypeName = storeTypeName.Substring(openParen + 1, comma - openParen - 1).Trim();
-
-            if (!int.TryParse(storeTypeName.Substring(comma + 1, closeParen - comma - 1).Trim(), out srid))
+            if (!int.TryParse(storeTypeName.Substring(comma + 1, closeParen - comma - 1).Trim(),
+                    NumberStyles.Integer, CultureInfo.InvariantCulture, out srid))
             {
                 return false;
             }
         }
 
-        subtypeName = subtypeName.ToUpper(CultureInfo.InvariantCulture);
+        subtypeName = subtypeName.ToUpperInvariant().Replace(" ", "", StringComparison.Ordinal);
 
         // We have geometry(subtype, srid), parse the subtype (POINT, POINTZ, POINTM, POINTZM...)
 

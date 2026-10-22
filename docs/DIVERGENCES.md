@@ -20,10 +20,10 @@
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 1000 | 384 | 1390 |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 1015 | 385 | 1406 |
    | `H2Sharp.EntityFrameworkCore.Tests` | 120 | 0 | 120 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 161 | 18 | 179 |
-   | **Итого** | **1281** | **402** | **1689** |
+   | **Итого** | **1296** | **403** | **1705** |
 
    Два красные — тесты `LegacyH2TypeMappingTest`, помеченные `#if DEBUG`; их результат зависит
    от порядка, в котором отработали тесты функционального набора, и от порта он не зависит
@@ -33,7 +33,8 @@
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
 сбор строк в один текст, сырые запросы и транзакции. Он зелёный целиком, кроме
 восемнадцати тестов, помеченных `BlockedByPort` по пробелам ниже. Покрытие провайдера,
-измеренное этим набором: **3787 из 9580 строк (39,53 %)**.
+измеренное этим набором в Debug на `net9.0` и `net10.0`:
+**3775 из 9453 строк (39,93 %)**. Порог сохранён: 39 %.
 
    Набор `H2Sharp.EntityFrameworkCore.Tests` собирается по-разному в Debug и в Release: четыре
    теста `LegacyH2TypeMappingTest` написаны под `#if DEBUG`. В Debug их 115, и два из них
@@ -43,12 +44,16 @@
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 1221 | 0 | 1221 |
-   | `Category=BlockedByPort` | 60 | 402 | 468 |
+   | `Category!=BlockedByPort` | 1240 | 0 | 1240 |
+   | `Category=BlockedByPort` | 56 | 403 | 465 |
 
-   Шесть тестов пропущены в обоих прогонах. Числа выше — на `net10.0`, против движка с
+   Шесть тестов пропущены в прогоне с трейтом. Числа выше — на `net10.0`, порт `2d33838`, против движка с
    `FINAL TABLE`, с последовательностями, с `AS` у псевдонима, со знаком перед членом и без
    предела в восемь параметров на команду.
+
+   Прогон без трейта на `net9.0` даёт те же числа: 959 функциональных, 120 модульных и
+   161 модельный тест. Коллизия одинаково названных методов в `ModelTests` устранена
+   уникальным суффиксом имени базы, а не изменением SQL или проверки.
 
    **Прогон с трейтом больше не обрывается.** Раньше тестовое оборудование скаффолдинга
    выполняло блок `DO … IF NOT EXISTS (SELECT …)`, движок его не читал, и тестовый хост падал
@@ -78,7 +83,7 @@
 | `H2MetadataExtensionsTest`, `H2ValueGenerationStrategyConventionTest` | 3 | дефолтная стратегия — `IdentityByDefaultColumn`, а не `SerialColumn`: в H2 нет псевдотипа `serial` |
 | `H2ModificationCommandBatchFactoryTest` | 1 | батч считает строки обычным способом, а не из wire-протокола |
 | `H2PostgresModelFinalizingConventionTest` | 1 | `xmin` — столбец PostgreSQL, в H2 такого нет; тест убран |
-| `H2QuerySqlGenerator` | 1 | приведение типа пишется как `CAST(x AS y)`, а не как PostgreSQL'овское `x::y`: короткой записи в H2 2.5 нет, и `count(*)::int` эталон не берёт |
+| `H2QuerySqlGenerator` | 1 | приведение типа пишется как `CAST(x AS y)`. Эталон также принимает `x::y`, включая `count(*)::int`; прежнее утверждение об отсутствии этой формы было неверным |
 | `H2MigrationsSqlGenerator`, `H2HistoryRepository` | 6 | блок `DO $EF$` — анонимный блок PL/pgSQL — заменён на H2'овское `CREATE SCHEMA IF NOT EXISTS` и на условие внутри самой вставки: `INSERT … SELECT … WHERE NOT EXISTS (…)` |
 
 ### Что нашёл набор `ModelTests` и что в провайдере из-за этого исправлено
@@ -93,7 +98,7 @@
 | тип массива в запросе | `integer[]` — скобки PostgreSQL, и `H2ArrayTypeMapping` на этом падал со своей же проверкой | `integer ARRAY` — форма H2 2.5 |
 | `IndexOf` | `LOCATE(строка, искомое)` — аргументы переставлены, и порт отвечает «-1» | `LOCATE(искомое, строка)`, как в эталоне: `LOCATE(searchString, string)` |
 | отрицание | `(0 - x)` — порт не читал отрицание выражения вовсе: `SELECT -N FROM T` → «expected number» | `-x` — знак перед членом, и порт его читает |
-| склейка строк | `a \|\| b` — трубы PostgreSQL, которых в H2 2.5 нет вовсе | `CONCAT(a, b)` — функция H2 2.5; и смысл другой: трубы дают `NULL`, если часть `NULL`, а `CONCAT` части `NULL` игнорирует |
+| склейка строк | `a \|\| b` | `CONCAT(a, b)` — обе формы есть в H2 2.5, но смысл другой: трубы дают `NULL`, если часть `NULL`, а `CONCAT` части `NULL` игнорирует, как строковый `+` в .NET |
 | склейка массивов | `a \|\| b` | `ARRAY_CAT(a, b)` — функция H2 2.5 |
 | исключающее или | `a # b` | `BITXOR(a, b)` — функция H2 2.5 |
 | строковый агрегат | `string_agg(x, ', ' ORDER BY y)` — порядок внутри скобок, и H2 2.5 такой формы не берёт | `LISTAGG(x, ', ') WITHIN GROUP (ORDER BY y)` — порядок отдельной фразой |
@@ -134,19 +139,19 @@ GROUP BY "p"."TopicId"
 | Что | Было (PostgreSQL) | Стало (H2 2.5) | Что говорит эталон |
 |---|---|---|---|
 | тип массива | `integer[]` | `integer ARRAY` | `CREATE TABLE t (x integer[]);` → `Syntax error … expected ")"` |
-| литерал массива | `ARRAY[1,2]::integer[]` | `ARRAY[1,2]` | короткой записи `::` в H2 2.5 нет вовсе |
+| литерал массива | `ARRAY[1,2]::integer[]` | `ARRAY[1,2]` | `::` есть, но тип массива H2 — `integer ARRAY`; здесь тип следует из элементов |
 | литерал времени с зоной | `TIMESTAMPTZ '…'` | `TIMESTAMP WITH TIME ZONE '…'` | `SELECT TIMESTAMPTZ '…'` → `Syntax error` |
 | литерал времени с зоной (время) | `TIMETZ '…'` | `TIME WITH TIME ZONE '…'` | то же |
 | литерал интервала | `INTERVAL '1 2:3:4'` | `CAST('1 2:3:4' AS INTERVAL DAY TO SECOND)` | `Cannot parse "INTERVAL" constant "1 2:3:4"`: у H2 литерал интервала несёт квалификатор, а приведение текста к тому же типу даёт то же значение |
-| литерал перечисления | `'a'::my_enum` | `CAST('a' AS my_enum)` | короткой записи `::` нет |
+| литерал перечисления | `'a'::my_enum` | `CAST('a' AS my_enum)` | обе формы принимает эталон; провайдер пишет стандартный `CAST` |
 | часть даты | `date_part('year', x)` | `year(x)` | `Function "DATE_PART" not found`: часть даты в H2 берётся своей функцией |
 | день недели | `floor(date_part('dow', x))::int` | `mod(iso_day_of_week(x), 7)` | ISO нумерует неделю с понедельника, .NET — с воскресенья |
 | «содержит» | `strpos(x, y) > 0` | `locate(y, x) > 0` | `strpos` у H2 нет, а у `LOCATE` аргументы в обратном порядке |
 | текст | `text` | `clob` | `TEXT` у H2 2.5 есть, и это синоним `CHARACTER VARYING` (`DataType.java`: `TINYTEXT`, `TEXT`, `MEDIUMTEXT`, `LONGTEXT`, `NTEXT` — в списке псевдонимов `VARCHAR`), а `CLOB` — отдельный тип `CHARACTER LARGE OBJECT`. Провайдер пишет `clob` намеренно: это тип H2 для текста без границы |
 | перечисление | `CREATE TYPE "Mood" AS ENUM ('Happy', 'Sad')` | то же | перечисления у H2 2.5 есть, и форма именно такая: `ENUM` со списком значений (`Parser.parseEnumType`), и `CREATE TYPE` — это домен типа (`CREATE DOMAIN`), который потом берут как тип столбца. Эталон берёт и `CREATE TYPE "Mood" AS ENUM ('Happy','Sad')`, и `CREATE TABLE t (a "Mood")` |
 | метка перечисления | `ALTER TYPE "Mood" ADD VALUE 'Angry'` | **нет такой формы** | `ALTER DOMAIN` у H2 2.5 берёт только `CONSTRAINT` или `CHECK`, и эталон отвергает `ALTER DOMAIN m ADD VALUE 'c'`. Провайдер отказывается менять метки перечисления |
-| склейка строк | `a \|\| b` | `CONCAT(a, b)` | труб у H2 2.5 нет вовсе, а `CONCAT` части `NULL` игнорирует: `CONCAT('a', NULL)` — это `a`, а `'a' \|\| NULL` — это `NULL` |
-| склейка массивов | `a \|\| b` | `ARRAY_CAT(a, b)` | труб у H2 2.5 нет |
+| склейка строк | `a \|\| b` | `CONCAT(a, b)` | обе формы есть, но `CONCAT` части `NULL` игнорирует: `CONCAT('a', NULL)` — это `a`, а `'a' \|\| NULL` — это `NULL` |
+| склейка массивов | `a \|\| b` | `ARRAY_CAT(a, b)` | эталон принимает и оператор, и функцию; провайдер использует функцию |
 | исключающее или | `a # b` | `BITXOR(a, b)` | решётки у H2 2.5 нет |
 | строковый агрегат | `string_agg(x, ', ')` | `LISTAGG(x, ', ')` | `LISTAGG` — имя H2 2.5; `string_agg` — имя режима совместимости, и эталон переписывает его в `LISTAGG` |
 | тип JSON | `jsonb` | `json` | у H2 2.5 один тип JSON, и `jsonb` у него нет вовсе. Провайдер раньше писал `jsonb` — и падал на своей же колонке |
@@ -154,7 +159,7 @@ GROUP BY "p"."TopicId"
 | внутри в JSON | `@>`, `<@`, `?`, `jsonb_typeof` | **нет таких функций** | у H2 2.5 есть только тип JSON и четыре конструктора (`JSON_ARRAY`, `JSON_ARRAYAGG`, `JSON_OBJECT`, `JSON_OBJECTAGG`) |
 | шаг в JSON | `col -> 'a' ->> 'b'` | **нет такой формы** | операторы `->`, `->>`, `#>` и `#>>` — PostgreSQL'овские, а тип JSON у H2 2.5 хранит документ как текст |
 | шаг в JSON как таблица | `jsonb_to_recordset(json)` | **нет такой функции** | `jsonb_to_recordset` — функция PostgreSQL; у H2 2.5 её нет |
-| геометрия | `geography`, `GEOMETRY(Point, 4326)` | `geometry`, `GEOMETRY(POINT)` | у H2 2.5 один тип геометрии и нет ни географии, ни SRID; литерал геометрии — текст без префикса `SRID=` |
+| геометрия | `geography` | `geometry`, `GEOMETRY(POINT, 4326)` | у H2 2.5 нет `GEOGRAPHY`, но есть SRID: `Parser.parseGeometryType` читает его после запятой, а литерал EWKT `GEOMETRY 'SRID=4326;POINT (1 2)'` сохраняет систему координат |
 | агрегат массива | `array_agg(x)` | `ARRAY_AGG(x)` | имя H2 2.5 |
 | агрегат json | `json_agg(x)`, `json_object_agg(k, v)` | `JSON_ARRAYAGG(x)`, `JSON_OBJECTAGG(k, v)` | имена H2 2.5 |
 | порядок строк в агрегате | `ORDER BY` внутри скобок | `WITHIN GROUP (ORDER BY …)` после скобок | `LISTAGG(x, ', ' ORDER BY y)` у H2 2.5 — синтаксическая ошибка; порядок идёт отдельной фразой |
@@ -188,6 +193,7 @@ GROUP BY "p"."TopicId"
 | «содержит null» | `array_position(arr, NULL) IS NOT NULL` | `array_contains(arr, NULL)` | то же |
 | «не содержит null» | `array_position(arr, NULL) IS NULL` | `not array_contains(arr, NULL)` | то же |
 | элемент по номеру | `arr[1]` | `arr[1]` | у H2 такая же нумерация с единицы |
+| байт двоичного по номеру | `get_byte(b, i)` | `BITAND(CAST(CAST(SUBSTRING(b, i + 1, 1) AS TINYINT) AS INTEGER), 255)` | `TINYINT` читает один байт со знаком; расширение до `INTEGER` и маска 255 сохраняют диапазон CLR `byte` 0–255. Проверено на всех 256 значениях в порту и сгенерированным SQL на JVM |
 | срез массива | `arr[1:2]` | `array_slice(arr, 1, 2)` | синтаксиса среза у H2 нет: `expected "[, ., ::, AT, FORMAT, …"` |
 | массив из подзапроса | `= ANY ((SELECT …)::integer[])` | `= ANY (CAST((SELECT …) AS integer ARRAY))` | без приведения H2 считает правую часть запросом, а не массивом: «Values of types "INTEGER" and "INTEGER ARRAY[3]" are not comparable» |
 | квантованное сравнение | `x = ANY (arr)` | `x = ANY (arr)` | форма общая: `SELECT 1 = ANY(ARRAY[1,2,3])` → TRUE |
@@ -197,13 +203,48 @@ GROUP BY "p"."TopicId"
 | Поведение | Форма PostgreSQL | Почему её нет у H2 |
 |---|---|---|
 | место элемента в массиве | `array_position(arr, item)` | `Function "ARRAY_POSITION" not found`; `ARRAY_CONTAINS` отвечает, есть ли элемент, а не где он |
-| байт двоичного по номеру | `get_byte(b, i)` | функции `get_byte` у H2 нет, и двоичное не приводится к числу («Data conversion error converting "BINARY VARYING to INTEGER"») |
-| пересечение двух массивов | `arr1 && arr2` | оператора `&&` у H2 нет |
-| один массив в другом | `arr1 <@ arr2` | оператора `<@` у H2 нет |
+| оператор пересечения двух массивов | `arr1 && arr2` | `&&` у H2 сравнивает bounding box геометрии, а не массивы; LINQ-запрос сохраняется как `EXISTS`/подзапрос вместо этого оператора |
+| оператор включения массива | `arr1 <@ arr2` | оператора `<@` для массивов нет; сохраняется обычный квантованный запрос, а не запрещается операция LINQ |
 | элементы массива строками | `LEFT JOIN LATERAL unnest(arr) WITH ORDINALITY` | и `UNNEST`, и `LATERAL` у H2 нет; форма H2 — таблица-диапазон и элемент по номеру: `SELECT t.id, r.x, array_get(t.arr, r.x) FROM t, system_range(1, 65536) r WHERE r.x <= array_length(t.arr)`, но элемент там — выражение над строкой, а в модели EF коллекция это столбец присоединённой таблицы ⇒ форму H2 в модель EF не записать |
 
-Первые три поведения переводятся на клиентскую сторону (EF читает значение и считает на клиенте),
-последние два — у H2 ответа нет, и тесты на них из набора убраны.
+Отсутствие PostgreSQL-оператора не означает отсутствие операции: упрощения массивных
+предикатов в `<@` и `&&` убраны, запросы передаются базовому переводу EF через подзапросы.
+Полный перевод коллекций строками остаётся отдельной незавершённой задачей. Для извлечения
+байта используются `SUBSTRING`, приведение и маска. Сам `get_byte` не пишется.
+`H2ByteSubstringTests` проверяет `First()`, постоянный индекс, индекс-параметр и индекс из
+столбца, включая 128 и 255. Всё время теста соединение остаётся открытым.
+
+### Оставшаяся поверхность форка
+
+NTS больше не публикует PostGIS `Transform`, `Force2D`, расстояние со сфероидом и KNN
+и не переводит методы/свойства геометрии в отсутствующие `ST_*`. Маппинг `GEOMETRY`,
+ограничения типа и SRID сохранены. `EnvelopeCombiner.CombineAsGeometry` переводится в H2
+`ENVELOPE`, документированный в `functions-aggregate.html`, вместо PostGIS `ST_Extent`.
+Геометрическое пересечение не подменяется оператором bounding-box `&&`.
+
+`H2JoinedDeleteTests.Joined_delete_uses_a_key_subquery_on_the_reference` исполняет
+сгенерированный `DELETE ... WHERE Id IN (SELECT ... JOIN ...)` на JVM и проверяет оставшиеся
+строки. Парный `Joined_delete_removes_only_matching_rows_on_the_port` помечен `BlockedByPort`
+и намеренно падает: порт `2d33838` отвечает `IN with a subquery is not ported`.
+
+`H2IdentitySeedTests` проверяет сгенерированный перезапуск identity на эталоне: обычный
+и идемпотентный SQL, положительный и отрицательный шаг, наполнение перед текущим значением.
+Identity не откатывается назад. Legacy-аннотация `SerialColumn` записывается как H2
+`GENERATED BY DEFAULT AS IDENTITY`; смена её на `IdentityByDefaultColumn` не меняет DDL,
+а смена режима на `ALWAYS` пишет `SET GENERATED ALWAYS`. PostgreSQL `setval`,
+`pg_get_serial_sequence`, `PERFORM` и `ALTER SEQUENCE ... OWNED BY` удалены из генератора.
+
+Публичные `Levenshtein`/`Metaphone` из PostgreSQL-расширения `fuzzystrmatch` сняты;
+`SOUNDEX` и `DIFFERENCE` остаются в H2 API как `Soundex` и `SoundexDifference`.
+Наследованные узлы бинарных выражений, для которых нет формы H2, отклоняются до отправки
+команды вместо генерации PostgreSQL-операторов. `DELETE` над присоединёнными таблицами
+передаётся стандартному переводу EF через ключевой подзапрос; `DELETE ... USING` не пишется.
+Для JSON длина массива не переводится в отсутствующие `json_array_length`/`jsonb_array_length`.
+
+Ранее реестр ошибочно утверждал, что у H2 нет SRID. Это исправлено по исходнику
+`Parser.parseGeometryType` и живому эталону: SRID в типе и в EWKT есть. Оракул теперь
+разделяет SQL командами H2 `ScriptReader`, а не строковым `split(";")`, которое разрывало
+литерал `SRID=4326;POINT (...)` внутри кавычек.
 
 **Что осталось в наборе.** 204 теста, и все они красные по одной причине: движок не читает тип
 `ARRAY`, таблица фикстуры не создаётся, и тест падает, не начавшись. Набор помечен трейтом
@@ -269,9 +310,8 @@ GROUP BY "p"."TopicId"
   `LAST_INSERT_ID()`. Строка, которую сделала вставка, читается через `FINAL TABLE`, как
   это делает грамматика H2 (`{ OLD | NEW | FINAL } TABLE`). Порт это читает, и значение
   доходит до вызывающего.
-* **Приведение типа — `CAST(x AS y)`, а не `x::y`.** Короткая запись — PostgreSQL'овская, и
-  H2 2.5 её не берёт: `SELECT count(*)::int` эталон отвергает. Провайдер пишет стандартную
-  форму и типы H2 (`integer`, а не PostgreSQL'овское `int`).
+* **Приведение типа — `CAST(x AS y)`.** Эталон принимает и короткую форму `x::y`, в том
+  числе `SELECT count(*)::int`. Провайдер использует стандартную запись `CAST` и типы H2.
 * **`INTERVAL DAY TO SECOND`, а не `INTERVAL`.** Голый `INTERVAL` типом не является: H2 требует
   квалификатор, и движок сам кладёт `TimeSpan` именно в `DAY TO SECOND`. Пробел 4 — на стороне
   порта.
@@ -438,7 +478,7 @@ EF-овым (полнотекстовый поиск `tsvector`, `CREATE COLLATI
 | `ALTER TABLE` — `RENAME TO`, `ALTER COLUMN`, `DROP COLUMN`, `ADD CONSTRAINT … FOREIGN KEY`, `DROP DEFAULT` | 54 | движок: «Not ported yet: Parser.readAlterTable: only ADD and DROP CONSTRAINT are ported» |
 | модель каталога не совпала с моделью EF | 22 | движок: каталог не говорит, что сказано для индекса |
 | identity: стратегия в каталоге, параметры identity | 9 | движок |
-| `SETVAL` — служебная функция последовательного значения | 6 | движок: функции `SETVAL` в порте нет |
+| перезапуск identity после наполнения | 6 | прежний `SETVAL` был дефектом провайдера: эта функция PostgreSQL отсутствует и в эталоне. Теперь пишется `ALTER TABLE ... ALTER COLUMN ... RESTART WITH` с `IDENTITY_BASE`/`IDENTITY_INCREMENT` из каталога H2; порт пока не читает эту форму `ALTER TABLE`, тесты сохранены |
 | `CREATE TYPE … AS ENUM` не разбирается | 5 | движок |
 | `CHECK` ограничение в `CREATE TABLE` | 2 | движок: «Not ported yet: Parser.readCreateTable: table constraints other than the primary key are not ported» |
 | `INCLUDE` у уникального индекса | 1 | движок: «Not ported yet: Parser.parseCreate: CREATE INDEX INCLUDE is not ported» |
@@ -536,7 +576,7 @@ identity-колонки и последовательности, и DDL, кот�
 |---|---|---|
 | `Guid.NewGuid()` | `gen_random_uuid()` — функции PostgreSQL, у H2 нет | `RANDOM_UUID()` |
 | `string.IndexOf` | `strpos(...)` — функции PostgreSQL, у H2 нет | `LOCATE(...)` с обратным порядком аргументов |
-| склейка строк | `a \|\| b` — трубы PostgreSQL, у H2 2.5 их нет | `CONCAT(a, b)` |
+| склейка строк | `a \|\| b` — есть в H2, но распространяет `NULL` | `CONCAT(a, b)` — игнорирует `NULL`, как строковый `+` .NET |
 | склейка массивов | `a \|\| b` | `ARRAY_CAT(a, b)` |
 | исключающее или | `a # b` | `BITXOR(a, b)` |
 | строковый агрегат | `string_agg(x, ', ')` — имя PostgreSQL | `LISTAGG(x, ', ')` |

@@ -13,7 +13,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 /// </summary>
 public class H2ByteArrayMethodTranslator : IMethodCallTranslator
 {
-    private readonly ISqlExpressionFactory _sqlExpressionFactory;
+    private readonly H2SqlExpressionFactory _sqlExpressionFactory;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -23,7 +23,7 @@ public class H2ByteArrayMethodTranslator : IMethodCallTranslator
     /// </summary>
     public H2ByteArrayMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
     {
-        _sqlExpressionFactory = sqlExpressionFactory;
+        _sqlExpressionFactory = (H2SqlExpressionFactory)sqlExpressionFactory;
     }
 
     /// <summary>
@@ -43,28 +43,21 @@ public class H2ByteArrayMethodTranslator : IMethodCallTranslator
 
         if (method.IsGenericMethod && arguments[0].TypeMapping is H2ByteArrayTypeMapping typeMapping)
         {
-            // Note: we only translate if the array argument is a column mapped to bytea. There are various other
+            // Note: we only translate if the array argument is a column mapped to a binary. There are various other
             // cases (e.g. Where(b => new byte[] { 1, 2, 3 }.Contains(b.SomeByte))) where we prefer to translate via
-            // regular PostgreSQL array logic.
+            // the regular array logic.
             if (method.GetGenericMethodDefinition().Equals(EnumerableMethods.Contains))
             {
                 var source = arguments[0];
 
-                // We have a byte value, but we need a bytea for PostgreSQL POSITION.
-                var value = arguments[1] is SqlConstantExpression constantValue
-                    ? _sqlExpressionFactory.Constant(new[] { (byte)constantValue.Value! }, typeMapping)
-                    // Create bytea from non-constant byte: SELECT set_byte('\x00', 0, 8::smallint);
-                    : _sqlExpressionFactory.Function(
-                        "set_byte",
-                        [
-                            _sqlExpressionFactory.Constant(new[] { (byte)0 }, typeMapping),
-                            _sqlExpressionFactory.Constant(0),
-                            arguments[1]
-                        ],
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[3],
-                        typeof(byte[]),
-                        typeMapping);
+                // Constant-byte containment uses a binary literal. Parameterized binary searching
+                // needs a separate translation; never emit PostgreSQL's set_byte for it.
+                if (arguments[1] is not SqlConstantExpression constantValue)
+                {
+                    return null;
+                }
+
+                var value = _sqlExpressionFactory.Constant(new[] { (byte)constantValue.Value! }, typeMapping);
 
                 return _sqlExpressionFactory.GreaterThan(
                     H2FunctionExpression.CreateWithArgumentSeparators(
@@ -81,14 +74,7 @@ public class H2ByteArrayMethodTranslator : IMethodCallTranslator
 
             if (method.GetGenericMethodDefinition().Equals(EnumerableMethods.FirstWithoutPredicate))
             {
-                return _sqlExpressionFactory.Convert(
-                    _sqlExpressionFactory.Function(
-                        "get_byte",
-                        [arguments[0], _sqlExpressionFactory.Constant(0)],
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[2],
-                        typeof(byte)),
-                    method.ReturnType);
+                return _sqlExpressionFactory.ByteAt(arguments[0], _sqlExpressionFactory.Constant(0));
             }
         }
 

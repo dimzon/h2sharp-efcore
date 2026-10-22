@@ -124,8 +124,7 @@ public class H2TypeFormTests
 
         Assert.NotNull(mapping);
 
-        // No cast after the brackets: H2 2.5 has no "::" at all, and the type of the array
-        // follows from the elements and from the place the array stands in.
+        // No redundant cast after the brackets: the type of the array follows from its elements.
         Assert.Equal("ARRAY[1,2]", mapping!.GenerateSqlLiteral(new[] { 1, 2 }));
     }
 

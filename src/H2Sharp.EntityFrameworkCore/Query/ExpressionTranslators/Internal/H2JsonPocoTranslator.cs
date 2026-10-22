@@ -149,31 +149,14 @@ public class H2JsonPocoTranslator : IMemberTranslator, IMethodCallTranslator
     {
         switch (expression)
         {
-            case ColumnExpression { TypeMapping: H2JsonTypeMapping mapping }:
-                return _sqlExpressionFactory.Function(
-                    mapping.IsJsonb ? "jsonb_array_length" : "json_array_length",
-                    [expression],
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
-                    typeof(int));
-
-            case H2JsonTraversalExpression traversal:
-                // The traversal expression has ReturnsText=true (e.g. ->> not ->), so we recreate it to return
-                // the JSON object instead.
-                var lastPathComponent = traversal.Path.Last();
-                var newTraversal = new H2JsonTraversalExpression(
-                    traversal.Expression, traversal.Path,
-                    returnsText: false,
-                    lastPathComponent.Type,
-                    _typeMappingSource.FindMapping(lastPathComponent.Type, _model));
-
-                var jsonMapping = (H2JsonTypeMapping)traversal.Expression.TypeMapping!;
-                return _sqlExpressionFactory.Function(
-                    jsonMapping.IsJsonb ? "jsonb_array_length" : "json_array_length",
-                    [newTraversal],
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
-                    typeof(int));
+            // H2 2.5 has no function that counts the elements of a JSON array: jsonb_array_length and
+            // json_array_length are PostgreSQL's, and the reference knows neither. The length is
+            // therefore refused during translation.
+            case ColumnExpression { TypeMapping: H2JsonTypeMapping }:
+            case H2JsonTraversalExpression:
+                throw new NotSupportedException(
+                    "H2 2.5 cannot count the elements of a JSON array: the functions jsonb_array_length and "
+                    + "json_array_length are PostgreSQL's, and the reference knows neither.");
 
             default:
                 return null;

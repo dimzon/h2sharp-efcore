@@ -25,9 +25,7 @@ public static class H2NetTopologySuiteServiceCollectionExtensions
         new EntityFrameworkH2ServicesBuilder(serviceCollection)
             .TryAdd<ISingletonOptions, IH2NetTopologySuiteSingletonOptions>(p => p.GetRequiredService<IH2NetTopologySuiteSingletonOptions>())
             .TryAdd<IRelationalTypeMappingSourcePlugin, H2NetTopologySuiteTypeMappingSourcePlugin>()
-            .TryAdd<IMethodCallTranslatorPlugin, H2NetTopologySuiteMethodCallTranslatorPlugin>()
             .TryAdd<IAggregateMethodCallTranslatorPlugin, H2NetTopologySuiteAggregateMethodCallTranslatorPlugin>()
-            .TryAdd<IMemberTranslatorPlugin, H2NetTopologySuiteMemberTranslatorPlugin>()
             .TryAdd<IConventionSetPlugin, H2NetTopologySuiteConventionSetPlugin>()
             .TryAddProviderSpecificServices(
                 x => x.TryAddSingleton<IH2NetTopologySuiteSingletonOptions, H2NetTopologySuiteSingletonOptions>());

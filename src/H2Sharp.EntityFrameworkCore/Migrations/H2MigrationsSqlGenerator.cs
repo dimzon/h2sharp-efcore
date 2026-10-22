@@ -95,32 +95,29 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
             foreach (var c in seededGeneratedColumns)
             {
-                // Weirdly, pg_get_serial_sequence accepts a standard quoted "schema"."table" inside its first
-                // parameter string literal, but the second one is a column name that shouldn't be double-quoted...
-
                 var table = Dependencies.SqlGenerationHelper.DelimitIdentifier(c.Table.Name, c.Table.Schema);
                 var column = Dependencies.SqlGenerationHelper.DelimitIdentifier(c.Name);
-                var unquotedColumn = c.Name.Replace("'", "''");
+                var property = c.PropertyMappings.First(p => p.Property.GetValueGenerationStrategy() is
+                    H2ValueGenerationStrategy.IdentityByDefaultColumn
+                    or H2ValueGenerationStrategy.IdentityAlwaysColumn
+                    or H2ValueGenerationStrategy.SerialColumn).Property;
+                var descending = property.GetIdentityIncrementBy() is < 0;
+                var bound = descending ? "MIN" : "MAX";
+                var compare = descending ? "LEAST" : "GREATEST";
+                var schemaLiteral = _stringTypeMapping.GenerateSqlLiteral(c.Table.Schema ?? "PUBLIC");
+                var tableLiteral = _stringTypeMapping.GenerateSqlLiteral(c.Table.Name);
+                var columnLiteral = _stringTypeMapping.GenerateSqlLiteral(c.Name);
 
-                // When generating idempotent scripts, migration DDL is enclosed in anonymous DO blocks,
-                // where PERFORM must be used instead of SELECT
-                var selectOrPerform = options.HasFlag(MigrationsSqlGenerationOptions.Idempotent)
-                    ? "PERFORM"
-                    : "SELECT";
-
-                // Set the sequence's value to the greater of:
-                // 1. Maximum value currently present in the column (i.e. just seeded)
-                // 2. Current value of the sequence (the max value above could be out of range of the sequence,
-                //    e.g. negative values seeded)
+                // H2 RESTART WITH accepts an expression. Its catalogue exposes the next identity
+                // value and increment without consuming a value. Keep an already advanced identity
+                // and handle descending sequences; never call PostgreSQL's setval/nextval helpers.
                 builder
                     .AppendLine(
                         $"""
-{selectOrPerform} setval(
-    pg_get_serial_sequence('{table}', '{unquotedColumn}'),
-    GREATEST(
-        (SELECT MAX({column}) FROM {table}) + 1,
-        nextval(pg_get_serial_sequence('{table}', '{unquotedColumn}'))),
-    false);
+ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
+    SELECT {compare}(IDENTITY_BASE, COALESCE((SELECT {bound}({column}) FROM {table}) + IDENTITY_INCREMENT, IDENTITY_BASE))
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = {schemaLiteral} AND TABLE_NAME = {tableLiteral} AND COLUMN_NAME = {columnLiteral});
 """);
             }
 
@@ -384,8 +381,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
             return;
         }
 
-        string? newSequenceName = null;
-
         var alterBase = $"ALTER TABLE {DelimitIdentifier(operation.Table, operation.Schema)} "
             + $"ALTER COLUMN {DelimitIdentifier(operation.Name)} ";
 
@@ -467,44 +462,23 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         var oldStrategy = operation.OldColumn[H2AnnotationNames.ValueGenerationStrategy] as H2ValueGenerationStrategy?;
         var newStrategy = operation[H2AnnotationNames.ValueGenerationStrategy] as H2ValueGenerationStrategy?;
 
+        // SerialColumn is a legacy annotation, not an H2 sequence-owning column. Its H2
+        // representation is BY DEFAULT identity, both when created and when altered.
+        if (oldStrategy == H2ValueGenerationStrategy.SerialColumn)
+        {
+            oldStrategy = H2ValueGenerationStrategy.IdentityByDefaultColumn;
+        }
+        if (newStrategy == H2ValueGenerationStrategy.SerialColumn)
+        {
+            newStrategy = H2ValueGenerationStrategy.IdentityByDefaultColumn;
+            operation[H2AnnotationNames.ValueGenerationStrategy] = newStrategy;
+        }
+
         if (oldStrategy != newStrategy)
         {
             // We have a value generation strategy change
 
-            if (oldStrategy == H2ValueGenerationStrategy.SerialColumn)
-            {
-                // TODO: It would be better to actually select for the owned sequence.
-                // This would require plpgsql.
-                var sequence = DelimitIdentifier($"{operation.Table}_{operation.Name}_seq", operation.Schema);
-                switch (newStrategy)
-                {
-                    case null:
-                        // Drop the serial, converting the column to a regular int
-                        builder.AppendLine($"DROP SEQUENCE {sequence} CASCADE;");
-                        break;
-                    case H2ValueGenerationStrategy.IdentityAlwaysColumn:
-                    case H2ValueGenerationStrategy.IdentityByDefaultColumn:
-                        // Convert serial column to identity, maintaining the current sequence value
-                        var identityTypeClause = newStrategy == H2ValueGenerationStrategy.IdentityAlwaysColumn
-                            ? "ALWAYS"
-                            : "BY DEFAULT";
-                        var oldSequence = DelimitIdentifier($"{operation.Table}_{operation.Name}_old_seq", operation.Schema);
-                        var oldSequenceWithoutSchema = DelimitIdentifier($"{operation.Table}_{operation.Name}_old_seq");
-                        builder
-                            .AppendLine($"ALTER SEQUENCE {sequence} RENAME TO {oldSequenceWithoutSchema};")
-                            .AppendLine($"{alterBase}DROP DEFAULT;")
-                            .AppendLine($"{alterBase}ADD GENERATED {identityTypeClause} AS IDENTITY;")
-                            // When generating idempotent scripts, migration DDL is enclosed in anonymous DO blocks,
-                            // where PERFORM must be used instead of SELECT
-                            .Append(Options.HasFlag(MigrationsSqlGenerationOptions.Idempotent) ? "PERFORM" : "SELECT")
-                            .AppendLine($" * FROM setval('{sequence}', nextval('{oldSequence}'), false);")
-                            .AppendLine($"DROP SEQUENCE {oldSequence};");
-                        break;
-                    default:
-                        throw new NotSupportedException($"Don't know how to migrate serial column to {newStrategy}");
-                }
-            }
-            else if (oldStrategy.IsIdentity())
+            if (oldStrategy.IsIdentity())
             {
                 switch (newStrategy)
                 {
@@ -518,8 +492,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
                     case H2ValueGenerationStrategy.IdentityByDefaultColumn:
                         builder.Append(alterBase).AppendLine("SET GENERATED BY DEFAULT;");
                         break;
-                    case H2ValueGenerationStrategy.SerialColumn:
-                        throw new NotSupportedException("Migrating from identity to serial isn't currently supported (and is a bad idea)");
                     default:
                         throw new NotSupportedException($"Don't know how to migrate identity column to {newStrategy}");
                 }
@@ -531,36 +503,9 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
                     case H2ValueGenerationStrategy.IdentityAlwaysColumn:
                     case H2ValueGenerationStrategy.IdentityByDefaultColumn:
                         builder.Append(alterBase).AppendLine("DROP DEFAULT;");
-                        builder.Append(alterBase).Append("ADD");
-                        IdentityDefinition(operation, builder);
-                        builder.AppendLine(";");
-                        break;
-                    case H2ValueGenerationStrategy.SerialColumn:
-                        switch (type)
-                        {
-                            case "integer":
-                            case "int":
-                            case "int4":
-                            case "bigint":
-                            case "int8":
-                            case "smallint":
-                            case "int2":
-                                newSequenceName = $"{operation.Table}_{operation.Name}_seq";
-                                Generate(
-                                    new CreateSequenceOperation
-                                    {
-                                        Schema = operation.Schema,
-                                        Name = newSequenceName,
-                                        ClrType = operation.ClrType
-                                    }, model, builder);
-
-                                builder.Append(alterBase).Append("SET");
-                                DefaultValue(null, $@"nextval('{DelimitIdentifier(newSequenceName, operation.Schema)}')", type, builder);
-                                builder.AppendLine(";");
-                                // Note: we also need to set the sequence ownership, this is done below after the ALTER COLUMN
-                                break;
-                        }
-
+                        builder.Append(alterBase).AppendLine(newStrategy == H2ValueGenerationStrategy.IdentityAlwaysColumn
+                            ? "SET GENERATED ALWAYS;"
+                            : "SET GENERATED BY DEFAULT;");
                         break;
                     default:
                         throw new NotSupportedException($"Don't know how to apply value generation strategy {newStrategy}");
@@ -569,10 +514,12 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         }
 
         // Identity sequence options may have changed
-        if (oldStrategy.IsIdentity() && newStrategy.IsIdentity())
+        if (newStrategy.IsIdentity())
         {
             var newSequenceOptions = IdentitySequenceOptionsData.Get(operation);
-            var oldSequenceOptions = IdentitySequenceOptionsData.Get(operation.OldColumn);
+            var oldSequenceOptions = oldStrategy.IsIdentity()
+                ? IdentitySequenceOptionsData.Get(operation.OldColumn)
+                : IdentitySequenceOptionsData.Empty;
 
             if (newSequenceOptions.StartValue != oldSequenceOptions.StartValue)
             {
@@ -656,20 +603,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
             }
 
             builder.AppendLine(";");
-        }
-
-        // A sequence has been created because this column was altered to be a serial.
-        // Change the sequence's ownership.
-        if (newSequenceName is not null)
-        {
-            builder
-                .Append("ALTER SEQUENCE ")
-                .Append(DelimitIdentifier(newSequenceName, operation.Schema))
-                .Append(" OWNED BY ")
-                .Append(DelimitIdentifier(operation.Table, operation.Schema))
-                .Append(".")
-                .Append(DelimitIdentifier(operation.Name))
-                .AppendLine(";");
         }
 
         // Comment
@@ -1214,6 +1147,8 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         var valueGenerationStrategy = operation[H2AnnotationNames.ValueGenerationStrategy] as H2ValueGenerationStrategy?;
         if (valueGenerationStrategy == H2ValueGenerationStrategy.SerialColumn)
         {
+            valueGenerationStrategy = H2ValueGenerationStrategy.IdentityByDefaultColumn;
+            operation[H2AnnotationNames.ValueGenerationStrategy] = valueGenerationStrategy;
             if (operation.IsNullable)
             {
                 throw new NotSupportedException("Identity columns can't be nullable");
