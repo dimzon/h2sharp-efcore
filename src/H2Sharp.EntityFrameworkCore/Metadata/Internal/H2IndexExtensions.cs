@@ -47,23 +47,6 @@ public static class H2IndexExtensions
             }
         }
 
-        if (index.IsCreatedConcurrently() != duplicateIndex.IsCreatedConcurrently())
-        {
-            if (shouldThrow)
-            {
-                throw new InvalidOperationException(
-                    H2Strings.DuplicateIndexConcurrentCreationMismatch(
-                        index.Properties.Format(),
-                        index.DeclaringEntityType.DisplayName(),
-                        duplicateIndex.Properties.Format(),
-                        duplicateIndex.DeclaringEntityType.DisplayName(),
-                        index.DeclaringEntityType.GetSchemaQualifiedTableName(),
-                        index.GetDatabaseName(storeObject)));
-            }
-
-            return false;
-        }
-
         return true;
 
         static bool SameColumnNames(IReadOnlyIndex index, IReadOnlyIndex duplicateIndex, StoreObjectIdentifier storeObject)

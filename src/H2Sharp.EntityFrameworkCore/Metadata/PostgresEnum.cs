@@ -169,7 +169,7 @@ public class PostgresEnum
         return annotatable[annotationName] is null ? null : new PostgresEnum(annotatable, annotationName);
     }
 
-    private static string BuildAnnotationName(string? schema, string name)
+    internal static string BuildAnnotationName(string? schema, string name)
         => schema is not null
             ? $"{H2AnnotationNames.EnumPrefix}{schema}.{name}"
             : $"{H2AnnotationNames.EnumPrefix}{name}";

@@ -18,7 +18,6 @@ public class H2NetTopologySuiteConventionSetPlugin : IConventionSetPlugin
     /// </summary>
     public virtual ConventionSet ModifyConventions(ConventionSet conventionSet)
     {
-        conventionSet.ModelFinalizingConventions.Add(new H2NetTopologySuiteExtensionAddingConvention());
 
         return conventionSet;
     }

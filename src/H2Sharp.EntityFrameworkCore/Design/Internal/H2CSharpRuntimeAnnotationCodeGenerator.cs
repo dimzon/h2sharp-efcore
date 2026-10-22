@@ -135,16 +135,9 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
         {
             var annotations = parameters.Annotations;
             annotations.Remove(H2AnnotationNames.DatabaseTemplate);
-            annotations.Remove(H2AnnotationNames.Tablespace);
-
-#pragma warning disable CS0618
-#pragma warning restore CS0618
 
             foreach (var annotationName in annotations.Keys.Where(
-                         k =>
-                             k.StartsWith(H2AnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal)
-                             || k.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal)
-                             || k.StartsWith(H2AnnotationNames.RangePrefix, StringComparison.Ordinal)))
+                         k => k.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal)))
             {
                 annotations.Remove(annotationName);
             }
@@ -160,16 +153,9 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
         {
             var annotations = parameters.Annotations;
             annotations.Remove(H2AnnotationNames.DatabaseTemplate);
-            annotations.Remove(H2AnnotationNames.Tablespace);
-
-#pragma warning disable CS0618
-#pragma warning restore CS0618
 
             foreach (var annotationName in annotations.Keys.Where(
-                         k =>
-                             k.StartsWith(H2AnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal)
-                             || k.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal)
-                             || k.StartsWith(H2AnnotationNames.RangePrefix, StringComparison.Ordinal)))
+                         k => k.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal)))
             {
                 annotations.Remove(annotationName);
             }
@@ -221,14 +207,8 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
             annotations.Remove(H2AnnotationNames.IndexSortOrder);
             annotations.Remove(H2AnnotationNames.IndexNullSortOrder);
             annotations.Remove(H2AnnotationNames.IndexInclude);
-            annotations.Remove(H2AnnotationNames.CreatedConcurrently);
             annotations.Remove(H2AnnotationNames.NullsDistinct);
 
-            foreach (var annotationName in annotations.Keys.Where(
-                         k => k.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
-            {
-                annotations.Remove(annotationName);
-            }
         }
 
         base.Generate(index, parameters);
@@ -245,14 +225,8 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
             annotations.Remove(H2AnnotationNames.IndexSortOrder);
             annotations.Remove(H2AnnotationNames.IndexNullSortOrder);
             annotations.Remove(H2AnnotationNames.IndexInclude);
-            annotations.Remove(H2AnnotationNames.CreatedConcurrently);
             annotations.Remove(H2AnnotationNames.NullsDistinct);
 
-            foreach (var annotationName in annotations.Keys.Where(
-                         k => k.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
-            {
-                annotations.Remove(annotationName);
-            }
         }
 
         base.Generate(index, parameters);
@@ -265,11 +239,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
         {
             var annotations = parameters.Annotations;
 
-            foreach (var annotationName in annotations.Keys.Where(
-                         k => k.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
-            {
-                annotations.Remove(annotationName);
-            }
         }
 
         base.Generate(entityType, parameters);
@@ -282,11 +251,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
         {
             var annotations = parameters.Annotations;
 
-            foreach (var annotationName in annotations.Keys.Where(
-                         k => k.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
-            {
-                annotations.Remove(annotationName);
-            }
         }
 
         base.Generate(table, parameters);

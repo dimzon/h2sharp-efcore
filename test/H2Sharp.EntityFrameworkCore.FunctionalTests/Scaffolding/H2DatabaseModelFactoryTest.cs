@@ -1976,34 +1976,6 @@ ALTER TABLE foo ADD COLUMN id2 int PRIMARY KEY;
             "DROP TABLE foo");
 
     [Fact]
-    public void Postgres_extensions()
-        => Test(
-            """
-DROP EXTENSION IF EXISTS postgis;
-CREATE EXTENSION hstore;
-CREATE EXTENSION pgcrypto SCHEMA db2;
-""",
-            [],
-            [],
-            dbModel =>
-            {
-                var extensions = dbModel.GetPostgresExtensions();
-                Assert.Collection(
-                    extensions.OrderBy(e => e.Name),
-                    e =>
-                    {
-                        Assert.Equal("hstore", e.Name);
-                        Assert.Equal("public", e.Schema);
-                    },
-                    e =>
-                    {
-                        Assert.Equal("pgcrypto", e.Name);
-                        Assert.Equal("db2", e.Schema);
-                    });
-            },
-            "DROP EXTENSION hstore; DROP EXTENSION pgcrypto");
-
-    [Fact]
     public void Enums()
         => Test(
             """

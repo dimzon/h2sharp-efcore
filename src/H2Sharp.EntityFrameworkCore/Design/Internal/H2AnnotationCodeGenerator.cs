@@ -14,15 +14,6 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
 {
     #region MethodInfos
 
-    private static readonly MethodInfo ModelHasPostgresExtensionMethodInfo1
-        = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(H2ModelBuilderExtensions.HasPostgresExtension), typeof(ModelBuilder), typeof(string));
-
-    private static readonly MethodInfo ModelHasPostgresExtensionMethodInfo2
-        = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(H2ModelBuilderExtensions.HasPostgresExtension), typeof(ModelBuilder), typeof(string), typeof(string),
-            typeof(string));
-
     private static readonly MethodInfo ModelHasPostgresEnumMethodInfo1
         = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
             nameof(H2ModelBuilderExtensions.HasPostgresEnum), typeof(ModelBuilder), typeof(string), typeof(string[]));
@@ -209,15 +200,6 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
     {
         Check.NotNull(model, nameof(model));
         Check.NotNull(annotation, nameof(annotation));
-
-        if (annotation.Name.StartsWith(H2AnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal))
-        {
-            var extension = new PostgresExtension(model, annotation.Name);
-
-            return extension.Schema is "public" or null
-                ? new MethodCallCodeFragment(ModelHasPostgresExtensionMethodInfo1, extension.Name)
-                : new MethodCallCodeFragment(ModelHasPostgresExtensionMethodInfo2, extension.Schema, extension.Name);
-        }
 
         if (annotation.Name.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal))
         {

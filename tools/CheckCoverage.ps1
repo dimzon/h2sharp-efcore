@@ -17,7 +17,7 @@
 .PARAMETER Threshold
     The least line rate the provider may have. The run fails when the merged report is
     below it. The threshold is set by the first measurement of the merged report and only
-    goes up: it is 0.38, and the measurement it was taken from was 0.3859.
+    goes up: it is 0.38, and the measurement it was taken from was 0.3884.
 
 .PARAMETER Report
     Where the merged report is written. The report is not written when the path is empty.

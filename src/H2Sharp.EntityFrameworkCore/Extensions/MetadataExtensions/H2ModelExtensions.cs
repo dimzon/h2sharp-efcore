@@ -267,44 +267,6 @@ public static class H2ModelExtensions
 
     #endregion
 
-    #region PostgreSQL Extensions
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public static PostgresExtension GetOrAddPostgresExtension(
-        this IMutableModel model,
-        string? schema,
-        string name,
-        string? version)
-        => PostgresExtension.GetOrAddPostgresExtension(model, schema, name, version);
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public static IReadOnlyList<PostgresExtension> GetPostgresExtensions(this IReadOnlyModel model)
-        => PostgresExtension.GetPostgresExtensions(model).ToArray();
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public static PostgresExtension GetOrAddPostgresExtension(
-        this IConventionModel model,
-        string? schema,
-        string name,
-        string? version)
-        => PostgresExtension.GetOrAddPostgresExtension(model, schema, name, version);
-
-    #endregion
 
     #region Enum types
 
@@ -358,54 +320,6 @@ public static class H2ModelExtensions
 
     #endregion
 
-    #region Tablespace
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public static string? GetTablespace(this IReadOnlyModel model)
-        => (string?)model[H2AnnotationNames.Tablespace];
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public static void SetTablespace(this IMutableModel model, string? tablespace)
-        => model.SetOrRemoveAnnotation(H2AnnotationNames.Tablespace, tablespace);
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public static string? SetTablespace(
-        this IConventionModel model,
-        string? tablespace,
-        bool fromDataAnnotation = false)
-    {
-        Check.NullButNotEmpty(tablespace, nameof(tablespace));
-
-        model.SetOrRemoveAnnotation(H2AnnotationNames.Tablespace, tablespace, fromDataAnnotation);
-
-        return tablespace;
-    }
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
-    public static ConfigurationSource? GetTablespaceConfigurationSource(this IConventionModel model)
-        => model.FindAnnotation(H2AnnotationNames.Tablespace)?.GetConfigurationSource();
-
-    #endregion
 
 
 }

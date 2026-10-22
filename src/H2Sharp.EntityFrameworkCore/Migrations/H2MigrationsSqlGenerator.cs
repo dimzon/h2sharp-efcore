@@ -184,7 +184,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
         builder.Append(")");
 
-        AppendStoreParameters(operation, builder, withLeadingNewline: true);
 
         // Comment on the table
         if (operation.Comment is not null)
@@ -227,8 +226,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         var madeChanges = false;
 
         // Storage parameters
-        madeChanges |= AppendStorageParameterAlterations(operation.OldTable, operation, alterTableBaseSql, builder);
-
         // Comment
         if (operation.Comment != operation.OldTable.Comment)
         {
@@ -875,12 +872,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
         builder.Append("INDEX ");
 
-        var concurrently = operation[H2AnnotationNames.CreatedConcurrently] as bool? == true;
-        if (concurrently)
-        {
-            builder.Append("CONCURRENTLY ");
-        }
-
         builder
             .Append(DelimitIdentifier(operation.Name))
             .Append(" ON ")
@@ -899,7 +890,7 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
         {
             builder.AppendLine(";");
             // Concurrent indexes cannot be created within a transaction
-            EndStatement(builder, suppressTransaction: concurrently);
+            EndStatement(builder);
         }
     }
 
@@ -928,7 +919,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
             builder.Append(" NULLS NOT DISTINCT");
         }
 
-        AppendStoreParameters(operation, builder, withLeadingNewline: false);
 
         base.IndexOptions(operation, model, builder);
     }
@@ -975,14 +965,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
                 .Append(DelimitIdentifier(operation.Template));
         }
 
-        if (!string.IsNullOrEmpty(operation.Tablespace))
-        {
-            builder
-                .AppendLine()
-                .Append("TABLESPACE ")
-                .Append(DelimitIdentifier(operation.Tablespace));
-        }
-
         if (!string.IsNullOrEmpty(operation.Collation))
         {
             throw new NotSupportedException(
@@ -1027,48 +1009,7 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
 
         GenerateEnumStatements(operation, model, builder);
 
-        foreach (var extension in operation.GetPostgresExtensions())
-        {
-            GenerateCreateExtension(extension, model, builder);
-        }
-
         builder.EndCommand();
-    }
-
-    /// <inheritdoc />
-    protected virtual void GenerateCreateExtension(
-        PostgresExtension extension,
-        IModel? model,
-        MigrationCommandListBuilder builder)
-    {
-        var schema = extension.Schema ?? model?.GetDefaultSchema();
-
-        // Schemas are normally created (or rather ensured) by the model differ, which scans all tables, sequences
-        // and other database objects. However, it isn't aware of extensions, so we always ensure schema on enum creation.
-        if (schema is not null)
-        {
-            Generate(new EnsureSchemaOperation { Name = schema }, model, builder);
-        }
-
-        builder
-            .Append("CREATE EXTENSION IF NOT EXISTS ")
-            .Append(DelimitIdentifier(extension.Name));
-
-        if (extension.Schema is not null)
-        {
-            builder
-                .Append(" SCHEMA ")
-                .Append(DelimitIdentifier(extension.Schema));
-        }
-
-        if (extension.Version is not null)
-        {
-            builder
-                .Append(" VERSION ")
-                .Append(DelimitIdentifier(extension.Version));
-        }
-
-        builder.AppendLine(";");
     }
 
     #region Enum management
@@ -1679,92 +1620,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
     private static readonly string[] SystemColumnNames = ["tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"];
 
     #endregion System column utilities
-
-    #region Storage parameter utilities
-
-    private void AppendStoreParameters(Annotatable annotatable, MigrationCommandListBuilder builder, bool withLeadingNewline)
-    {
-        var storageParameters = GetStorageParameters(annotatable);
-        if (storageParameters.Count > 0)
-        {
-            if (withLeadingNewline)
-            {
-                builder.AppendLine();
-            }
-            else
-            {
-                builder.Append(" ");
-            }
-
-            builder
-                .Append("WITH (")
-                .Append(string.Join(", ", storageParameters.Select(p => $"{p.Key}={p.Value}")))
-                .Append(")");
-        }
-    }
-
-    private Dictionary<string, string> GetStorageParameters(Annotatable annotatable)
-        => annotatable.GetAnnotations()
-            .Where(a => a.Name.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal))
-            .ToDictionary(
-                a => a.Name.Substring(H2AnnotationNames.StorageParameterPrefix.Length),
-                a => a.Value switch
-                {
-                    bool b => b ? "true" : "false",
-                    string s => $"'{s}'",
-                    _ => a.Value!.ToString()!
-                });
-
-    // TODO: Call this for AlterIndexOperation when that's added (https://github.com/dotnet/efcore/issues/20692)
-    private bool AppendStorageParameterAlterations(
-        Annotatable oldAnnotatable,
-        Annotatable newAnnotatable,
-        string alterBaseSql,
-        MigrationCommandListBuilder builder)
-    {
-        var madeChanges = false;
-
-        var oldStorageParameters = GetStorageParameters(oldAnnotatable);
-        var newStorageParameters = GetStorageParameters(newAnnotatable);
-
-        var newOrChanged = newStorageParameters.Where(
-                p =>
-                    !oldStorageParameters.ContainsKey(p.Key) || oldStorageParameters[p.Key] != p.Value)
-            .ToList();
-
-        if (newOrChanged.Count > 0)
-        {
-            builder
-                .Append(alterBaseSql)
-                .Append(" SET (")
-                .Append(string.Join(", ", newOrChanged.Select(p => $"{p.Key}={p.Value}")))
-                .Append(")");
-
-            builder.AppendLine(";");
-            madeChanges = true;
-        }
-
-        var removed = oldStorageParameters
-            .Select(p => p.Key)
-            .Where(pn => !newStorageParameters.ContainsKey(pn))
-            .ToList();
-
-        if (removed.Count > 0)
-        {
-            builder
-                .Append(alterBaseSql)
-                .Append(" RESET (")
-                .Append(string.Join(", ", removed))
-                .Append(")");
-
-            builder.AppendLine(";");
-            madeChanges = true;
-        }
-
-        return madeChanges;
-    }
-
-    #endregion Storage parameter utilities
 
     #region Helpers
 

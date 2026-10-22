@@ -33,15 +33,6 @@ public class H2AnnotationProvider : RelationalAnnotationProvider
         {
             yield break;
         }
-
-        // Model validation ensures that these facets are the same on all mapped entity types
-        var entityType = (IEntityType)table.EntityTypeMappings.First().TypeBase;
-
-        foreach (var storageParamAnnotation in entityType.GetAnnotations()
-                     .Where(a => a.Name.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
-        {
-            yield return storageParamAnnotation;
-        }
     }
 
     /// <summary>
@@ -132,20 +123,9 @@ public class H2AnnotationProvider : RelationalAnnotationProvider
                     .ToArray());
         }
 
-        if (modelIndex.IsCreatedConcurrently() is { } isCreatedConcurrently)
-        {
-            yield return new Annotation(H2AnnotationNames.CreatedConcurrently, isCreatedConcurrently);
-        }
-
         if (modelIndex.GetAreNullsDistinct() is { } nullsDistinct)
         {
             yield return new Annotation(H2AnnotationNames.NullsDistinct, nullsDistinct);
-        }
-
-        foreach (var storageParamAnnotation in modelIndex.GetAnnotations()
-                     .Where(a => a.Name.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal)))
-        {
-            yield return storageParamAnnotation;
         }
 
         // Support legacy annotation for index ordering
@@ -169,9 +149,6 @@ public class H2AnnotationProvider : RelationalAnnotationProvider
         }
 
         return model.Model.GetAnnotations().Where(
-            a =>
-                a.Name.StartsWith(H2AnnotationNames.PostgresExtensionPrefix, StringComparison.Ordinal)
-                || a.Name.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal)
-                || a.Name.StartsWith(H2AnnotationNames.RangePrefix, StringComparison.Ordinal));
+            a => a.Name.StartsWith(H2AnnotationNames.EnumPrefix, StringComparison.Ordinal));
     }
 }

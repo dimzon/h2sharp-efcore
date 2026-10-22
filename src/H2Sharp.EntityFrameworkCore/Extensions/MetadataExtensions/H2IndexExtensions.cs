@@ -161,49 +161,6 @@ public static class H2IndexExtensions
 
     #endregion Included properties
 
-    #region Created concurrently
-
-    /// <summary>
-    ///     Returns a value indicating whether the index is created concurrently.
-    /// </summary>
-    /// <param name="index">The index.</param>
-    /// <returns><c>true</c> if the index is created concurrently.</returns>
-    public static bool? IsCreatedConcurrently(this IReadOnlyIndex index)
-        => (bool?)index[H2AnnotationNames.CreatedConcurrently];
-
-    /// <summary>
-    ///     Sets a value indicating whether the index is created concurrently.
-    /// </summary>
-    /// <param name="index">The index.</param>
-    /// <param name="createdConcurrently">The value to set.</param>
-    public static void SetIsCreatedConcurrently(this IMutableIndex index, bool? createdConcurrently)
-        => index.SetOrRemoveAnnotation(H2AnnotationNames.CreatedConcurrently, createdConcurrently);
-
-    /// <summary>
-    ///     Sets a value indicating whether the index is created concurrently.
-    /// </summary>
-    /// <param name="index">The index.</param>
-    /// <param name="createdConcurrently">The value to set.</param>
-    /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
-    public static bool? SetIsCreatedConcurrently(
-        this IConventionIndex index,
-        bool? createdConcurrently,
-        bool fromDataAnnotation = false)
-    {
-        index.SetOrRemoveAnnotation(H2AnnotationNames.CreatedConcurrently, createdConcurrently, fromDataAnnotation);
-
-        return createdConcurrently;
-    }
-
-    /// <summary>
-    ///     Returns the <see cref="ConfigurationSource" /> for whether the index is created concurrently.
-    /// </summary>
-    /// <param name="index">The index.</param>
-    /// <returns>The <see cref="ConfigurationSource" /> for whether the index is created concurrently.</returns>
-    public static ConfigurationSource? GetIsCreatedConcurrentlyConfigurationSource(this IConventionIndex index)
-        => index.FindAnnotation(H2AnnotationNames.CreatedConcurrently)?.GetConfigurationSource();
-
-    #endregion Created concurrently
 
     #region NULLS distinct
 
@@ -252,63 +209,4 @@ public static class H2IndexExtensions
     #endregion NULLS distinct
 
 
-    #region Storage parameters
-
-    /// <summary>
-    ///     Gets all storage parameters for the index.
-    /// </summary>
-    public static Dictionary<string, object?> GetStorageParameters(this IReadOnlyIndex index)
-        => index.GetAnnotations()
-            .Where(a => a.Name.StartsWith(H2AnnotationNames.StorageParameterPrefix, StringComparison.Ordinal))
-            .ToDictionary(
-                a => a.Name.Substring(H2AnnotationNames.StorageParameterPrefix.Length),
-                a => a.Value);
-
-    /// <summary>
-    ///     Gets a storage parameter for the index.
-    /// </summary>
-    public static string? GetStorageParameter(this IIndex index, string parameterName)
-    {
-        Check.NotEmpty(parameterName, nameof(parameterName));
-
-        return (string?)index[H2AnnotationNames.StorageParameterPrefix + parameterName];
-    }
-
-    /// <summary>
-    ///     Sets a storage parameter on the index.
-    /// </summary>
-    public static void SetStorageParameter(this IMutableIndex index, string parameterName, object? parameterValue)
-    {
-        Check.NotEmpty(parameterName, nameof(parameterName));
-
-        index.SetOrRemoveAnnotation(H2AnnotationNames.StorageParameterPrefix + parameterName, parameterValue);
-    }
-
-    /// <summary>
-    ///     Sets a storage parameter on the index.
-    /// </summary>
-    public static object SetStorageParameter(
-        this IConventionIndex index,
-        string parameterName,
-        object? parameterValue,
-        bool fromDataAnnotation = false)
-    {
-        Check.NotEmpty(parameterName, nameof(parameterName));
-
-        index.SetOrRemoveAnnotation(H2AnnotationNames.StorageParameterPrefix + parameterName, parameterValue, fromDataAnnotation);
-
-        return parameterName;
-    }
-
-    /// <summary>
-    ///     Gets the configuration source for a storage parameter for the table mapped to the entity type.
-    /// </summary>
-    public static ConfigurationSource? GetStorageParameterConfigurationSource(this IConventionIndex index, string parameterName)
-    {
-        Check.NotEmpty(parameterName, nameof(parameterName));
-
-        return index.FindAnnotation(H2AnnotationNames.StorageParameterPrefix + parameterName)?.GetConfigurationSource();
-    }
-
-    #endregion Storage parameters
 }
