@@ -193,6 +193,12 @@ public class H2StringMethodTranslator : IMethodCallTranslator
         if (method == IndexOfString || method == IndexOfChar)
         {
             var argument = arguments[0];
+            if (method == IndexOfChar)
+            {
+                argument = argument is SqlConstantExpression { Value: char character }
+                    ? _sqlExpressionFactory.Constant(character.ToString(), instance!.TypeMapping)
+                    : _sqlExpressionFactory.Convert(argument, typeof(string), instance!.TypeMapping);
+            }
             var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance!, argument);
 
             // H2 2.5 writes the searched string first: LOCATE(searchString, string). The

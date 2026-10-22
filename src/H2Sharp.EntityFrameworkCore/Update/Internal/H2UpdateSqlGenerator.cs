@@ -311,8 +311,7 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
     /// </summary>
     public override void AppendObtainNextSequenceValueOperation(StringBuilder commandStringBuilder, string name, string? schema)
     {
-        commandStringBuilder.Append("nextval('");
+        commandStringBuilder.Append("NEXT VALUE FOR ");
         SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, Check.NotNull(name, nameof(name)), schema);
-        commandStringBuilder.Append("')");
     }
 }

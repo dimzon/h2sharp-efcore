@@ -221,10 +221,12 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
             {
                 // We use fragment rather than a DateOnly constant, since 0001-01-01 gets rendered as -infinity by default.
                 // TODO: Set the right type/type mapping after https://github.com/dotnet/efcore/pull/34995 is merged
-                return new SqlBinaryExpression(
-                    ExpressionType.Add,
-                    _sqlExpressionFactory.Fragment("DATE '0001-01-01'"),
-                    arguments[0],
+                return _sqlExpressionFactory.Function(
+                    "TIMESTAMPADD",
+                    [_sqlExpressionFactory.Constant("DAY"), _sqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]),
+                        _sqlExpressionFactory.Fragment("DATE '0001-01-01'")],
+                    nullable: true,
+                    argumentsPropagateNullability: [false, true, false],
                     typeof(DateOnly),
                     _typeMappingSource.FindMapping(typeof(DateOnly)));
             }
@@ -361,4 +363,5 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
             [_sqlExpressionFactory.Constant(unit, _textMapping), amount, instance],
             nullable: true,
             argumentsPropagateNullability: TrueArrays[3],
-            instance.Type);}
+            instance.Type);
+}

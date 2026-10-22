@@ -108,6 +108,25 @@ public static class H2ReferenceOracle
         }
     }
 
+    /// <summary>
+    ///     Runs setup statements and reads the final query's values on the reference engine.
+    ///     Fields are returned as base64-encoded UTF-8, with a distinct marker for SQL NULL.
+    /// </summary>
+    public static IReadOnlyList<string?[]> Query(string setup, string query)
+    {
+        var result = Run(setup + "\n" + query + ";");
+        if (!result.Accepted)
+        {
+            throw new InvalidOperationException(result.Output);
+        }
+
+        return result.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Where(line => line.StartsWith("ROW\t", StringComparison.Ordinal))
+            .Select(line => line.TrimEnd('\r')[4..].Split('\t').Select(field =>
+                field == "NULL" ? null : Encoding.UTF8.GetString(Convert.FromBase64String(field))).ToArray())
+            .ToArray();
+    }
+
     private const string RunnerSource = """
         import java.io.BufferedReader;
         import java.io.FileReader;
@@ -115,6 +134,9 @@ public static class H2ReferenceOracle
         import java.sql.DriverManager;
         import java.sql.Statement;
         import org.h2.util.ScriptReader;
+        import java.sql.ResultSet;
+        import java.nio.charset.StandardCharsets;
+        import java.util.Base64;
 
         public class RunScript {
             public static void main(String[] args) throws Exception {
@@ -127,7 +149,19 @@ public static class H2ReferenceOracle
                                 continue;
                             }
                             try (Statement s = c.createStatement()) {
-                                s.execute(statement);
+                                if (s.execute(statement)) {
+                                    try (ResultSet rows = s.getResultSet()) {
+                                        while (rows.next()) {
+                                            StringBuilder row = new StringBuilder("ROW");
+                                            for (int i = 1; i <= rows.getMetaData().getColumnCount(); i++) {
+                                                String value = rows.getString(i);
+                                                row.append('\t').append(value == null ? "NULL" :
+                                                    Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8)));
+                                            }
+                                            System.out.println(row);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

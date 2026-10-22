@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
@@ -50,6 +51,14 @@ public class H2DateOnlyTypeMapping : H2TypeMapping
     /// </summary>
     protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
         => new H2DateOnlyTypeMapping(parameters);
+
+    /// <inheritdoc />
+    public override MethodInfo GetDataReaderMethod()
+        => typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDateTime), [typeof(int)])!;
+
+    /// <inheritdoc />
+    public override Expression CustomizeDataReaderExpression(Expression expression)
+        => Expression.Call(typeof(DateOnly).GetMethod(nameof(DateOnly.FromDateTime), [typeof(DateTime)])!, expression);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

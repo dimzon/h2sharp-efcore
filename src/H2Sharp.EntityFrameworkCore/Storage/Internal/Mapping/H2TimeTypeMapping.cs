@@ -59,6 +59,16 @@ public class H2TimeTypeMapping : H2TypeMapping
     protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
         => new H2TimeTypeMapping(parameters);
 
+    /// <inheritdoc />
+    public override MethodInfo GetDataReaderMethod()
+        => typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetFieldValue))!.MakeGenericMethod(typeof(TimeSpan));
+
+    /// <inheritdoc />
+    public override Expression CustomizeDataReaderExpression(Expression expression)
+        => (Converter?.ProviderClrType ?? ClrType) == typeof(TimeOnly)
+            ? Expression.Call(typeof(TimeOnly).GetMethod(nameof(TimeOnly.FromTimeSpan), [typeof(TimeSpan)])!, expression)
+            : expression;
+
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in

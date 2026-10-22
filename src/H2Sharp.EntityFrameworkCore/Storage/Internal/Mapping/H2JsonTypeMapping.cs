@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Data.Common;
 
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
@@ -54,6 +55,52 @@ public class H2JsonTypeMapping : H2TypeMapping
     protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
         => new H2JsonTypeMapping(parameters);
 
+    /// <inheritdoc />
+    protected override void ConfigureParameter(DbParameter parameter)
+    {
+        base.ConfigureParameter(parameter);
+        if (parameter.Value is null or DBNull)
+        {
+            return;
+        }
+
+        // H2 parses binary input to JSON as UTF-8 JSON text. Character input is a JSON string,
+        // so sending serialized documents as VARCHAR would silently double-encode them.
+        parameter.Value = Encoding.UTF8.GetBytes(parameter.Value switch
+        {
+            JsonDocument document => document.RootElement.GetRawText(),
+            JsonElement element => element.GetRawText(),
+            string json => json,
+            var poco => JsonSerializer.Serialize(poco)
+        });
+    }
+
+    /// <inheritdoc />
+    public override MethodInfo GetDataReaderMethod()
+        => typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetString), [typeof(int)])!;
+
+    /// <inheritdoc />
+    public override Expression CustomizeDataReaderExpression(Expression expression)
+    {
+        if (ClrType == typeof(string))
+        {
+            return expression;
+        }
+        if (ClrType == typeof(JsonDocument) || ClrType == typeof(JsonElement))
+        {
+            var document = Expression.Call(ParseMethod, expression, DefaultJsonDocumentOptions);
+            return ClrType == typeof(JsonDocument)
+                ? document
+                : Expression.Property(document, nameof(JsonDocument.RootElement));
+        }
+
+        return Expression.Call(typeof(JsonSerializer).GetMethods()
+                .Single(m => m.Name == nameof(JsonSerializer.Deserialize) && m.IsGenericMethodDefinition
+                    && m.GetParameters() is var p && p.Length == 2 && p[0].ParameterType == typeof(string)
+                    && p[1].ParameterType == typeof(JsonSerializerOptions)).MakeGenericMethod(ClrType),
+            expression, Expression.Constant(null, typeof(JsonSerializerOptions)));
+    }
+
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -88,12 +135,12 @@ public class H2JsonTypeMapping : H2TypeMapping
                 }
 
                 writer.Flush();
-                return $"'{EscapeSqlLiteral(Encoding.UTF8.GetString(stream.ToArray()))}'";
+                return $"JSON '{EscapeSqlLiteral(Encoding.UTF8.GetString(stream.ToArray()))}'";
             }
             case string s:
-                return $"'{EscapeSqlLiteral(s)}'";
+                return $"JSON '{EscapeSqlLiteral(s)}'";
             default: // User POCO
-                return $"'{EscapeSqlLiteral(JsonSerializer.Serialize(value))}'";
+                return $"JSON '{EscapeSqlLiteral(JsonSerializer.Serialize(value))}'";
         }
     }
 

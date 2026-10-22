@@ -13,7 +13,6 @@ public class H2JoinedDeleteTests
         => VerifyJoinedDelete(checkPort: false);
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void Joined_delete_removes_only_matching_rows_on_the_port()
         => VerifyJoinedDelete(checkPort: true);
 

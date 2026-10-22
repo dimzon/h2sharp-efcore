@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore\H2Sharp.EntityFrameworkCore.csproj" />
+    <Compile Include="..\H2Sharp.EntityFrameworkCore.FunctionalTests\TestUtilities\H2ReferenceOracle.cs" Link="TestUtilities\H2ReferenceOracle.cs" />
   </ItemGroup>
 
   <ItemGroup>

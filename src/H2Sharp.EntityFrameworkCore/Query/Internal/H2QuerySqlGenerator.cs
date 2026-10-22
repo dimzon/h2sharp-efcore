@@ -783,43 +783,52 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// </summary>
     protected virtual Expression VisitArraySlice(H2ArraySliceExpression expression)
     {
-        // A slice of an array is a function in H2 2.5 and not a piece of syntax: the reference
-        // refuses "arr[1:2]" ("expected "[, ., ::, AT, FORMAT, *, /, %, +, -, ||, NOT, IS,
-        // ILIKE, REGEXP, AND, OR, ]"") and takes ARRAY_SLICE(arr, 1, 2), which answers the same
-        // "[10, 20]" for the array [10, 20, 30]. The positions are counted from one in both, and
-        // the ends are included in both.
+        // H2 returns NULL for out-of-range slice bounds, while LINQ Skip/Take truncate
+        // the requested range or return an empty array. Clamp the bounds and handle empties.
+        Sql.Append("CASE WHEN ");
+        Lower();
+        Sql.Append(" > ");
+        Upper();
+        Sql.Append(" THEN ARRAY[] ELSE ");
         Sql.Append("ARRAY_SLICE(");
         Visit(expression.Array);
         Sql.Append(", ");
-
-        // An open end is the first or the last element. H2's function takes both ends, and a
-        // missing one is NULL there ("ARRAY_SLICE" answers NULL for a NULL bound), so the open
-        // ends are written out: the first element is 1, the last is the size of the array.
-        if (expression.LowerBound is null)
-        {
-            Sql.Append("1");
-        }
-        else
-        {
-            Visit(expression.LowerBound);
-        }
-
+        Lower();
         Sql.Append(", ");
+        Upper();
+        Sql.Append(") END");
+        return expression;
 
-        if (expression.UpperBound is null)
+        void Lower()
         {
+            if (expression.LowerBound is null)
+            {
+                Sql.Append("1");
+            }
+            else
+            {
+                Sql.Append("GREATEST(1, ");
+                Visit(expression.LowerBound);
+                Sql.Append(")");
+            }
+        }
+
+        void Upper()
+        {
+            if (expression.UpperBound is not null)
+            {
+                Sql.Append("LEAST(");
+                Visit(expression.UpperBound);
+                Sql.Append(", ");
+            }
             Sql.Append("CARDINALITY(");
             Visit(expression.Array);
             Sql.Append(")");
+            if (expression.UpperBound is not null)
+            {
+                Sql.Append(")");
+            }
         }
-        else
-        {
-            Visit(expression.UpperBound);
-        }
-
-        Sql.Append(")");
-
-        return expression;
     }
 
     /// <summary>
@@ -1294,7 +1303,9 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             if (i < e.Arguments.Count - 1)
             {
                 Sql.Append(
-                    i < e.ArgumentSeparators.Count && e.ArgumentSeparators[i] is not null
+                    e.Name.Equals("JSON_OBJECTAGG", StringComparison.OrdinalIgnoreCase)
+                        ? " VALUE "
+                        : i < e.ArgumentSeparators.Count && e.ArgumentSeparators[i] is not null
                         ? $" {e.ArgumentSeparators[i]} "
                         : ", ");
             }
@@ -1363,7 +1374,8 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// <param name="name">The name of the aggregate function.</param>
     /// <returns>True for the aggregates that take it that way in H2 2.5.</returns>
     private static bool TakesOrderInsideParentheses(string name)
-        => name.Equals("ARRAY_AGG", StringComparison.OrdinalIgnoreCase);
+        => name.Equals("ARRAY_AGG", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("JSON_ARRAYAGG", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     ///     Whether the aggregate takes the order of the rows in a WITHIN GROUP clause.

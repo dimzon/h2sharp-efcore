@@ -17,7 +17,7 @@
 .PARAMETER Threshold
     The least line rate the provider may have. The run fails when the merged report is
     below it. The threshold is set by the first measurement of the merged report and only
-    goes up: it is 0.39, and the measurement it was taken from was 0.3953.
+    goes up: it is 0.50, and the current ModelTests measurement is 0.5027.
 
 .PARAMETER Report
     Where the merged report is written. The report is not written when the path is empty.
@@ -28,7 +28,7 @@
 [CmdletBinding()]
 param(
     [string] $ResultsDirectory = "TestResults",
-    [double] $Threshold = 0.39,
+    [double] $Threshold = 0.50,
     [string] $Report = ""
 )
 

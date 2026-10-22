@@ -260,7 +260,12 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
             // We use fragment rather than a DateOnly constant, since 0001-01-01 gets rendered as -infinity by default.
             // TODO: Set the right type/type mapping after https://github.com/dotnet/efcore/pull/34995 is merged
             nameof(DateOnly.DayNumber) when instance is not null
-                => _sqlExpressionFactory.Subtract(instance, _sqlExpressionFactory.Fragment("DATE '0001-01-01'")),
+                => _sqlExpressionFactory.Function(
+                    "DATEDIFF",
+                    [_sqlExpressionFactory.Constant("DAY"), _sqlExpressionFactory.Fragment("DATE '0001-01-01'"), instance],
+                    nullable: true,
+                    argumentsPropagateNullability: [false, false, true],
+                    typeof(int)),
 
             _ => null
         };
