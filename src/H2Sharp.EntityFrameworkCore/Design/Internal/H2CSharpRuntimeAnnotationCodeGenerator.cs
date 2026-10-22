@@ -171,7 +171,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
         {
             var annotations = parameters.Annotations;
             annotations.Remove(H2AnnotationNames.IdentityOptions);
-            annotations.Remove(H2AnnotationNames.CompressionMethod);
 
             if (!annotations.ContainsKey(H2AnnotationNames.ValueGenerationStrategy))
             {
@@ -190,7 +189,6 @@ public class H2CSharpRuntimeAnnotationCodeGenerator
             var annotations = parameters.Annotations;
 
             annotations.Remove(H2AnnotationNames.IdentityOptions);
-            annotations.Remove(H2AnnotationNames.CompressionMethod);
         }
 
         base.Generate(column, parameters);

@@ -140,7 +140,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             // orderings is lost and an explicit ordering is needed again (see #3207).
             var (ordinalityColumn, ordinalityComparer) = GenerateOrdinalityIdentifier(tableAlias);
             selectExpression = new SelectExpression(
-                [new PgUnnestExpression(tableAlias, sqlExpression, "value")],
+                [new H2UnnestExpression(tableAlias, sqlExpression, "value")],
                 new ColumnExpression(
                     "value",
                     tableAlias,
@@ -199,7 +199,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
 
         // We now add all of projected entity's the properties and navigations into the jsonb_to_recordset's AS clause, which defines the
         // names and types of columns to come out of the JSON fragments.
-        var columnInfos = new List<PgTableValuedFunctionExpression.ColumnInfo>();
+        var columnInfos = new List<H2TableValuedFunctionExpression.ColumnInfo>();
 
         // We're only interested in properties which actually exist in the JSON, filter out uninteresting shadow keys
         foreach (var property in GetAllPropertiesInHierarchy(jsonQueryExpression.EntityType))
@@ -207,7 +207,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             if (property.GetJsonPropertyName() is string jsonPropertyName)
             {
                 columnInfos.Add(
-                    new PgTableValuedFunctionExpression.ColumnInfo
+                    new H2TableValuedFunctionExpression.ColumnInfo
                     {
                         Name = jsonPropertyName, TypeMapping = property.GetRelationalTypeMapping()
                     });
@@ -225,7 +225,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             Check.DebugAssert(jsonNavigationName is not null, $"No JSON property name for navigation {navigation.Name}");
 
             columnInfos.Add(
-                new PgTableValuedFunctionExpression.ColumnInfo { Name = jsonNavigationName, TypeMapping = jsonTypeMapping });
+                new H2TableValuedFunctionExpression.ColumnInfo { Name = jsonNavigationName, TypeMapping = jsonTypeMapping });
         }
 
         // json_to_recordset requires the nested JSON document - it does not accept a path within a containing JSON document (like SQL
@@ -235,7 +235,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             jsonQueryExpression.JsonColumn, jsonQueryExpression.Path, typeof(string), jsonTypeMapping, jsonQueryExpression.IsNullable);
 
         // Construct the json_to_recordset around the JsonScalarExpression, and wrap it in a SelectExpression
-        var jsonToRecordSetExpression = new PgTableValuedFunctionExpression(
+        var jsonToRecordSetExpression = new H2TableValuedFunctionExpression(
             tableAlias, functionName, [jsonScalarExpression], columnInfos, withOrdinality: true);
 
 #pragma warning disable EF1001 // SelectExpression constructors are currently internal
@@ -294,12 +294,12 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                 {
                     return BuildSimplifiedShapedQuery(
                         source,
-                        _sqlExpressionFactory.All(match, array, PgAllOperatorType.Like));
+                        _sqlExpressionFactory.All(match, array, H2AllOperatorType.Like));
                 }
 
                 // Pattern match for: new[] { "a", "b", "c" }.All(p => EF.Functions.Like(e.SomeText, p)),
                 // which we translate to WHERE s.""SomeText"" LIKE ALL (ARRAY['a','b','c'])
-                case PgILikeExpression
+                case H2ILikeExpression
                     {
                         Match: var match,
                         Pattern: ColumnExpression pattern,
@@ -309,12 +309,12 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                 {
                     return BuildSimplifiedShapedQuery(
                         source,
-                        _sqlExpressionFactory.All(match, array, PgAllOperatorType.ILike));
+                        _sqlExpressionFactory.All(match, array, H2AllOperatorType.ILike));
                 }
 
                 // Pattern match for: e.SomeArray.All(p => ints.Contains(p)) over non-column,
                 // using array containment (<@)
-                case PgAnyExpression
+                case H2AnyExpression
                     {
                         Item: ColumnExpression sourceColumn,
                         Array: var otherArray
@@ -326,11 +326,11 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
 
                 // Pattern match for: new[] { 4, 5 }.All(p => e.SomeArray.Contains(p)) over column,
                 // using array containment (<@)
-                case PgBinaryExpression
+                case H2BinaryExpression
                     {
-                        OperatorType: PgExpressionType.Contains,
+                        OperatorType: H2ExpressionType.Contains,
                         Left: var otherArray,
-                        Right: PgNewArrayExpression { Expressions: [ColumnExpression sourceColumn] }
+                        Right: H2NewArrayExpression { Expressions: [ColumnExpression sourceColumn] }
                     }
                     when sourceColumn.TableAlias == tableAlias:
                 {
@@ -388,12 +388,12 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                     when pattern.TableAlias == tableAlias:
                 {
                     return BuildSimplifiedShapedQuery(
-                        source, _sqlExpressionFactory.Any(match, array, PgAnyOperatorType.Like));
+                        source, _sqlExpressionFactory.Any(match, array, H2AnyOperatorType.Like));
                 }
 
                 // Pattern match: new[] { "a", "b", "c" }.Any(p => EF.Functions.Like(e.SomeText, p))
                 // Translation: s.SomeText LIKE ANY (ARRAY['a','b','c'])
-                case PgILikeExpression
+                case H2ILikeExpression
                     {
                         Match: var match,
                         Pattern: ColumnExpression pattern,
@@ -402,13 +402,13 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                     when pattern.TableAlias == tableAlias:
                 {
                     return BuildSimplifiedShapedQuery(
-                        source, _sqlExpressionFactory.Any(match, array, PgAnyOperatorType.ILike));
+                        source, _sqlExpressionFactory.Any(match, array, H2AnyOperatorType.ILike));
                 }
 
                 // Array overlap over non-column
                 // Pattern match: e.SomeArray.Any(p => ints.Contains(p))
                 // Translation: @ints && s.SomeArray
-                case PgAnyExpression
+                case H2AnyExpression
                     {
                         Item: ColumnExpression sourceColumn,
                         Array: var otherArray
@@ -421,11 +421,11 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                 // Array overlap over column
                 // Pattern match: new[] { 4, 5 }.Any(p => e.SomeArray.Contains(p))
                 // Translation: s.SomeArray && ARRAY[4, 5]
-                case PgBinaryExpression
+                case H2BinaryExpression
                     {
-                        OperatorType: PgExpressionType.Contains,
+                        OperatorType: H2ExpressionType.Contains,
                         Left: var otherArray,
-                        Right: PgNewArrayExpression { Expressions: [ColumnExpression sourceColumn] }
+                        Right: H2NewArrayExpression { Expressions: [ColumnExpression sourceColumn] }
                     }
                     when sourceColumn.TableAlias == tableAlias:
                 {
@@ -446,7 +446,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                     {
                         Source1:
                         {
-                            Tables: [PgUnnestExpression { Array: var array1 }],
+                            Tables: [H2UnnestExpression { Array: var array1 }],
                             Predicate: null,
                             GroupBy: [],
                             Having: null,
@@ -456,7 +456,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                         },
                         Source2:
                         {
-                            Tables: [PgUnnestExpression { Array: var array2 }],
+                            Tables: [H2UnnestExpression { Array: var array2 }],
                             Predicate: null,
                             GroupBy: [],
                             Having: null,
@@ -514,7 +514,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
 
                 // For constant arrays (new[] { 1, 2, 3 }) or inline arrays (new[] { 1, param, 3 }), don't do anything PG-specific for since
                 // the general EF Core mechanism is fine for that case: item IN (1, 2, 3).
-                case SqlConstantExpression or PgNewArrayExpression:
+                case SqlConstantExpression or H2NewArrayExpression:
                     break;
 
                 // Similar to ParameterExpression below, but when a bare subquery is present inside ANY(), the comparison is
@@ -527,7 +527,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                             translatedItem,
                             _sqlExpressionFactory.Convert(
                                 subqueryExpression, subqueryExpression.Type, subqueryExpression.TypeMapping),
-                            PgAnyOperatorType.Equal));
+                            H2AnyOperatorType.Equal));
 
                 // For ParameterExpression, and for all other cases - e.g. array returned from some function -
                 // translate to e.SomeText = ANY (@p). This is superior to the general solution which will expand
@@ -535,7 +535,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                 // Note that this will allow indexes on the item to be used.
                 default:
                     return BuildSimplifiedShapedQuery(
-                        source, _sqlExpressionFactory.Any(translatedItem, array, PgAnyOperatorType.Equal));
+                        source, _sqlExpressionFactory.Any(translatedItem, array, H2AnyOperatorType.Equal));
             }
         }
 
@@ -596,7 +596,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
 #pragma warning disable EF1001 // SelectExpression constructors are currently internal
             var tableAlias = ((SelectExpression)source1.QueryExpression).Tables.Single().Alias!;
             var selectExpression = new SelectExpression(
-                [new PgUnnestExpression(tableAlias, _sqlExpressionFactory.Add(array1, array2), "value")],
+                [new H2UnnestExpression(tableAlias, _sqlExpressionFactory.Add(array1, array2), "value")],
                 new ColumnExpression("value", tableAlias, projectedColumn1.Type, inferredTypeMapping, projectedColumn1.IsNullable || projectedColumn2.IsNullable),
                 identifier: [GenerateOrdinalityIdentifier(tableAlias)],
                 _queryCompilationContext.SqlAliasManager);
@@ -685,7 +685,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             var tableAlias = ((SelectExpression)source.QueryExpression).Tables[0].Alias!;
             var selectExpression = new SelectExpression(
                 [
-                    new PgUnnestExpression(
+                    new H2UnnestExpression(
                         tableAlias,
                         _sqlExpressionFactory.ArraySlice(
                             array,
@@ -732,12 +732,12 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         if (source.TryExtractArray(out var array, out var projectedColumn)
             && TranslateExpression(count) is { } translatedCount)
         {
-            PgArraySliceExpression sliceExpression;
+            H2ArraySliceExpression sliceExpression;
 
             // If Skip has been called before, an array slice expression is already there; try to integrate this Take into it.
             // Note that we need to take the Skip (lower bound) into account for the Take (upper bound), since the slice upper bound
             // operates on the original array (Skip hasn't yet taken place).
-            if (array is PgArraySliceExpression existingSliceExpression)
+            if (array is H2ArraySliceExpression existingSliceExpression)
             {
                 if (existingSliceExpression is
                     {
@@ -773,7 +773,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
 #pragma warning disable EF1001 // SelectExpression constructors are currently internal
             var tableAlias = ((SelectExpression)source.QueryExpression).Tables[0].Alias!;
             var selectExpression = new SelectExpression(
-                [new PgUnnestExpression(tableAlias, sliceExpression, "value")],
+                [new H2UnnestExpression(tableAlias, sliceExpression, "value")],
                 new ColumnExpression("value", tableAlias, projectedColumn.Type, projectedColumn.TypeMapping, projectedColumn.IsNullable),
                 [GenerateOrdinalityIdentifier(tableAlias)],
                 _queryCompilationContext.SqlAliasManager);
@@ -828,7 +828,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
 #pragma warning disable EF1001 // SelectExpression constructors are currently internal
             var tableAlias = ((SelectExpression)source.QueryExpression).Tables[0].Alias!;
             var selectExpression = new SelectExpression(
-                [new PgUnnestExpression(tableAlias, simplifiedTranslation, "value")],
+                [new H2UnnestExpression(tableAlias, simplifiedTranslation, "value")],
                 new ColumnExpression("value", tableAlias, projectedColumn.Type, projectedColumn.TypeMapping, projectedColumn.IsNullable),
                 [GenerateOrdinalityIdentifier(tableAlias)],
                 _queryCompilationContext.SqlAliasManager);
@@ -860,7 +860,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override bool IsNaturallyOrdered(SelectExpression selectExpression)
-        => selectExpression is { Tables: [PgUnnestExpression unnest, ..] }
+        => selectExpression is { Tables: [H2UnnestExpression unnest, ..] }
             && (selectExpression.Orderings is []
                 || selectExpression.Orderings is
                     [{ Expression: ColumnExpression { Name: "ordinality", TableAlias: var orderingTableAlias } }]
@@ -972,7 +972,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
     protected override bool IsOrdered(SelectExpression selectExpression)
         => base.IsOrdered(selectExpression)
             || selectExpression.Tables is
-                [PgTableValuedFunctionExpression { Name: "unnest" or "jsonb_to_recordset" or "json_to_recordset" }];
+                [H2TableValuedFunctionExpression { Name: "unnest" or "jsonb_to_recordset" or "json_to_recordset" }];
 
     private (ColumnExpression, ValueComparer) GenerateOrdinalityIdentifier(string tableAlias)
     {

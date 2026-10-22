@@ -67,7 +67,7 @@ public class H2ByteArrayMethodTranslator : IMethodCallTranslator
                         typeMapping);
 
                 return _sqlExpressionFactory.GreaterThan(
-                    PgFunctionExpression.CreateWithArgumentSeparators(
+                    H2FunctionExpression.CreateWithArgumentSeparators(
                         "position",
                         [value, source],
                         ["IN"], // POSITION(x IN y)

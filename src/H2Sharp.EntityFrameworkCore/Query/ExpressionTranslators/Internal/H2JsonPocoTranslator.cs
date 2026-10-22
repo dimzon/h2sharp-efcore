@@ -73,7 +73,7 @@ public class H2JsonPocoTranslator : IMemberTranslator, IMethodCallTranslator
         Type returnType,
         IDiagnosticsLogger<DbLoggerCategory.Query> logger)
     {
-        if (instance?.TypeMapping is not H2JsonTypeMapping && instance is not PgJsonTraversalExpression)
+        if (instance?.TypeMapping is not H2JsonTypeMapping && instance is not H2JsonTraversalExpression)
         {
             return null;
         }
@@ -112,7 +112,7 @@ public class H2JsonPocoTranslator : IMemberTranslator, IMethodCallTranslator
                         _stringTypeMapping),
                     returnType),
 
-            PgJsonTraversalExpression prevPathTraversal
+            H2JsonTraversalExpression prevPathTraversal
                 => ConvertFromText(
                     prevPathTraversal.Append(_sqlExpressionFactory.ApplyDefaultTypeMapping(member)),
                     returnType),
@@ -157,11 +157,11 @@ public class H2JsonPocoTranslator : IMemberTranslator, IMethodCallTranslator
                     argumentsPropagateNullability: TrueArrays[1],
                     typeof(int));
 
-            case PgJsonTraversalExpression traversal:
+            case H2JsonTraversalExpression traversal:
                 // The traversal expression has ReturnsText=true (e.g. ->> not ->), so we recreate it to return
                 // the JSON object instead.
                 var lastPathComponent = traversal.Path.Last();
-                var newTraversal = new PgJsonTraversalExpression(
+                var newTraversal = new H2JsonTraversalExpression(
                     traversal.Expression, traversal.Path,
                     returnsText: false,
                     lastPathComponent.Type,

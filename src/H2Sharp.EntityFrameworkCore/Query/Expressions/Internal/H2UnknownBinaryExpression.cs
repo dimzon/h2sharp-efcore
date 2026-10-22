@@ -7,7 +7,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 ///     All type mappings must be applied to the operands before the expression is constructed, since there's
 ///     no inference logic for it in <see cref="H2SqlExpressionFactory" />.
 /// </summary>
-public class PgUnknownBinaryExpression : SqlExpression, IEquatable<PgUnknownBinaryExpression>
+public class H2UnknownBinaryExpression : SqlExpression, IEquatable<H2UnknownBinaryExpression>
 {
     private static ConstructorInfo? _quotingConstructor;
 
@@ -27,7 +27,7 @@ public class PgUnknownBinaryExpression : SqlExpression, IEquatable<PgUnknownBina
     public virtual string Operator { get; }
 
     /// <summary>
-    ///     Constructs a <see cref="PgUnknownBinaryExpression" />.
+    ///     Constructs a <see cref="H2UnknownBinaryExpression" />.
     /// </summary>
     /// <param name="left">The left-hand expression.</param>
     /// <param name="right">The right-hand expression.</param>
@@ -35,7 +35,7 @@ public class PgUnknownBinaryExpression : SqlExpression, IEquatable<PgUnknownBina
     /// <param name="type">The result type.</param>
     /// <param name="typeMapping">The type mapping for the expression.</param>
     /// <exception cref="ArgumentNullException" />
-    public PgUnknownBinaryExpression(
+    public H2UnknownBinaryExpression(
         SqlExpression left,
         SqlExpression right,
         string binaryOperator,
@@ -56,15 +56,15 @@ public class PgUnknownBinaryExpression : SqlExpression, IEquatable<PgUnknownBina
     ///     Creates a new expression that is like this one, but using the supplied children. If all of the children are the same, it will
     ///     return this expression.
     /// </summary>
-    public virtual PgUnknownBinaryExpression Update(SqlExpression left, SqlExpression right)
+    public virtual H2UnknownBinaryExpression Update(SqlExpression left, SqlExpression right)
         => left == Left && right == Right
             ? this
-            : new PgUnknownBinaryExpression(left, right, Operator, Type, TypeMapping);
+            : new H2UnknownBinaryExpression(left, right, Operator, Type, TypeMapping);
 
     /// <inheritdoc />
     public override Expression Quote()
         => New(
-            _quotingConstructor ??= typeof(PgUnknownBinaryExpression).GetConstructor(
+            _quotingConstructor ??= typeof(H2UnknownBinaryExpression).GetConstructor(
                 [typeof(SqlExpression), typeof(SqlExpression), typeof(string), typeof(Type), typeof(RelationalTypeMapping)])!,
             Left.Quote(),
             Right.Quote(),
@@ -73,13 +73,13 @@ public class PgUnknownBinaryExpression : SqlExpression, IEquatable<PgUnknownBina
             RelationalExpressionQuotingUtilities.QuoteTypeMapping(TypeMapping));
 
     /// <inheritdoc />
-    public virtual bool Equals(PgUnknownBinaryExpression? other)
+    public virtual bool Equals(H2UnknownBinaryExpression? other)
         => ReferenceEquals(this, other)
             || other is not null && Left.Equals(other.Left) && Right.Equals(other.Right) && Operator == other.Operator;
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj is PgUnknownBinaryExpression e && Equals(e);
+        => obj is H2UnknownBinaryExpression e && Equals(e);
 
     /// <inheritdoc />
     public override int GetHashCode()

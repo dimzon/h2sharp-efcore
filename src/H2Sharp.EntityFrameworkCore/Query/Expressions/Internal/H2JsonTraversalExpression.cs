@@ -3,7 +3,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 /// <summary>
 ///     Represents a PostgreSQL JSON operator traversing a JSON document with a path (i.e. x#>y or x#>>y)
 /// </summary>
-public class PgJsonTraversalExpression : SqlExpression, IEquatable<PgJsonTraversalExpression>
+public class H2JsonTraversalExpression : SqlExpression, IEquatable<H2JsonTraversalExpression>
 {
     private static ConstructorInfo? _quotingConstructor;
 
@@ -23,9 +23,9 @@ public class PgJsonTraversalExpression : SqlExpression, IEquatable<PgJsonTravers
     public virtual bool ReturnsText { get; }
 
     /// <summary>
-    ///     Constructs a <see cref="PgJsonTraversalExpression" />.
+    ///     Constructs a <see cref="H2JsonTraversalExpression" />.
     /// </summary>
-    public PgJsonTraversalExpression(
+    public H2JsonTraversalExpression(
         SqlExpression expression,
         IReadOnlyList<SqlExpression> path,
         bool returnsText,
@@ -53,15 +53,15 @@ public class PgJsonTraversalExpression : SqlExpression, IEquatable<PgJsonTravers
     ///     Creates a new expression that is like this one, but using the supplied children. If all of the children are the same, it will
     ///     return this expression.
     /// </summary>
-    public virtual PgJsonTraversalExpression Update(SqlExpression expression, IReadOnlyList<SqlExpression> path)
+    public virtual H2JsonTraversalExpression Update(SqlExpression expression, IReadOnlyList<SqlExpression> path)
         => expression == Expression && path.Count == Path.Count && path.Zip(Path, (x, y) => (x, y)).All(tup => tup.x == tup.y)
             ? this
-            : new PgJsonTraversalExpression(expression, path, ReturnsText, Type, TypeMapping);
+            : new H2JsonTraversalExpression(expression, path, ReturnsText, Type, TypeMapping);
 
     /// <inheritdoc />
     public override Expression Quote()
         => New(
-            _quotingConstructor ??= typeof(PgJsonTraversalExpression).GetConstructor(
+            _quotingConstructor ??= typeof(H2JsonTraversalExpression).GetConstructor(
                 [typeof(SqlExpression), typeof(IReadOnlyList<SqlExpression>), typeof(bool), typeof(Type), typeof(RelationalTypeMapping)])!,
             Expression.Quote(),
             NewArrayInit(typeof(SqlExpression), initializers: Path.Select(a => a.Quote())),
@@ -70,9 +70,9 @@ public class PgJsonTraversalExpression : SqlExpression, IEquatable<PgJsonTravers
             RelationalExpressionQuotingUtilities.QuoteTypeMapping(TypeMapping));
 
     /// <summary>
-    ///     Appends an additional path component to this <see cref="PgJsonTraversalExpression" /> and returns the result.
+    ///     Appends an additional path component to this <see cref="H2JsonTraversalExpression" /> and returns the result.
     /// </summary>
-    public virtual PgJsonTraversalExpression Append(SqlExpression pathComponent)
+    public virtual H2JsonTraversalExpression Append(SqlExpression pathComponent)
     {
         var newPath = new SqlExpression[Path.Count + 1];
         for (var i = 0; i < Path.Count(); i++)
@@ -81,15 +81,15 @@ public class PgJsonTraversalExpression : SqlExpression, IEquatable<PgJsonTravers
         }
 
         newPath[newPath.Length - 1] = pathComponent;
-        return new PgJsonTraversalExpression(Expression, newPath, ReturnsText, Type, TypeMapping);
+        return new H2JsonTraversalExpression(Expression, newPath, ReturnsText, Type, TypeMapping);
     }
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => Equals(obj as PgJsonTraversalExpression);
+        => Equals(obj as H2JsonTraversalExpression);
 
     /// <inheritdoc />
-    public virtual bool Equals(PgJsonTraversalExpression? other)
+    public virtual bool Equals(H2JsonTraversalExpression? other)
         => ReferenceEquals(this, other)
             || other is not null
             && base.Equals(other)

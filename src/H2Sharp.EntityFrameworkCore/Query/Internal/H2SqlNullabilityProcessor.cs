@@ -34,8 +34,8 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
         {
             {
                 OperatorType: ExpressionType.Equal or ExpressionType.NotEqual,
-                Left: PgRowValueExpression leftRowValue,
-                Right: PgRowValueExpression rightRowValue
+                Left: H2RowValueExpression leftRowValue,
+                Right: H2RowValueExpression rightRowValue
             }
             => VisitRowValueComparison(sqlBinaryExpression.OperatorType, leftRowValue, rightRowValue, out nullable),
 
@@ -44,8 +44,8 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
 
         SqlExpression VisitRowValueComparison(
             ExpressionType operatorType,
-            PgRowValueExpression leftRowValue,
-            PgRowValueExpression rightRowValue,
+            H2RowValueExpression leftRowValue,
+            H2RowValueExpression rightRowValue,
             out bool nullable)
         {
             // Equality checks between row values require some special null semantics compensation.
@@ -140,10 +140,10 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
                         operatorType,
                         visitedLeftValues is null
                             ? leftRowValue
-                            : new PgRowValueExpression(visitedLeftValues, leftRowValue.Type, leftRowValue.TypeMapping),
+                            : new H2RowValueExpression(visitedLeftValues, leftRowValue.Type, leftRowValue.TypeMapping),
                         visitedRightValues is null
                             ? rightRowValue
-                            : new PgRowValueExpression(visitedRightValues, leftRowValue.Type, leftRowValue.TypeMapping),
+                            : new H2RowValueExpression(visitedRightValues, leftRowValue.Type, leftRowValue.TypeMapping),
                         typeMapping: null,
                         existingExpression: sqlBinaryExpression)!;
             }
@@ -165,8 +165,8 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
                 ? _sqlExpressionFactory.MakeBinary(operatorType, visitedLeftValues[0], visitedRightValues[0], typeMapping: null)!
                 : _sqlExpressionFactory.MakeBinary(
                     operatorType,
-                    new PgRowValueExpression(visitedLeftValues, leftRowValue.Type, leftRowValue.TypeMapping),
-                    new PgRowValueExpression(visitedRightValues, rightRowValue.Type, rightRowValue.TypeMapping),
+                    new H2RowValueExpression(visitedLeftValues, leftRowValue.Type, leftRowValue.TypeMapping),
+                    new H2RowValueExpression(visitedRightValues, rightRowValue.Type, rightRowValue.TypeMapping),
                     typeMapping: null)!;
 
             // Technically the CLR type and type mappings are incorrect, as we're truncating the row values.
@@ -204,17 +204,17 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
         out bool nullable)
         => sqlExpression switch
         {
-            PgAnyExpression e => VisitAny(e, allowOptimizedExpansion, out nullable),
-            PgAllExpression e => VisitAll(e, allowOptimizedExpansion, out nullable),
-            PgArrayIndexExpression e => VisitArrayIndex(e, allowOptimizedExpansion, out nullable),
-            PgArraySliceExpression e => VisitArraySlice(e, allowOptimizedExpansion, out nullable),
-            PgBinaryExpression e => VisitPostgresBinary(e, allowOptimizedExpansion, out nullable),
-            PgILikeExpression e => VisitILike(e, allowOptimizedExpansion, out nullable),
-            PgJsonTraversalExpression e => VisitJsonTraversal(e, allowOptimizedExpansion, out nullable),
-            PgNewArrayExpression e => VisitNewArray(e, allowOptimizedExpansion, out nullable),
-            PgRegexMatchExpression e => VisitRegexMatch(e, allowOptimizedExpansion, out nullable),
-            PgRowValueExpression e => VisitRowValueExpression(e, allowOptimizedExpansion, out nullable),
-            PgUnknownBinaryExpression e => VisitUnknownBinary(e, allowOptimizedExpansion, out nullable),
+            H2AnyExpression e => VisitAny(e, allowOptimizedExpansion, out nullable),
+            H2AllExpression e => VisitAll(e, allowOptimizedExpansion, out nullable),
+            H2ArrayIndexExpression e => VisitArrayIndex(e, allowOptimizedExpansion, out nullable),
+            H2ArraySliceExpression e => VisitArraySlice(e, allowOptimizedExpansion, out nullable),
+            H2BinaryExpression e => VisitPostgresBinary(e, allowOptimizedExpansion, out nullable),
+            H2ILikeExpression e => VisitILike(e, allowOptimizedExpansion, out nullable),
+            H2JsonTraversalExpression e => VisitJsonTraversal(e, allowOptimizedExpansion, out nullable),
+            H2NewArrayExpression e => VisitNewArray(e, allowOptimizedExpansion, out nullable),
+            H2RegexMatchExpression e => VisitRegexMatch(e, allowOptimizedExpansion, out nullable),
+            H2RowValueExpression e => VisitRowValueExpression(e, allowOptimizedExpansion, out nullable),
+            H2UnknownBinaryExpression e => VisitUnknownBinary(e, allowOptimizedExpansion, out nullable),
 
             // PostgresFunctionExpression is visited via the SqlFunctionExpression override below
 
@@ -227,7 +227,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual SqlExpression VisitAny(PgAnyExpression anyExpression, bool allowOptimizedExpansion, out bool nullable)
+    protected virtual SqlExpression VisitAny(H2AnyExpression anyExpression, bool allowOptimizedExpansion, out bool nullable)
     {
         Check.NotNull(anyExpression, nameof(anyExpression));
 
@@ -244,7 +244,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
 
         // We only do null compensation for item = ANY(array), not for any other operator.
         // Note that LIKE (without ANY) doesn't get null-compensated either, so we're consistent with that.
-        if (anyExpression.OperatorType != PgAnyOperatorType.Equal)
+        if (anyExpression.OperatorType != H2AnyOperatorType.Equal)
         {
             // If the array is a constant and it contains a null, or if the array isn't a constant,
             // we assume the entire expression can be null.
@@ -300,7 +300,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual SqlExpression VisitAll(PgAllExpression allExpression, bool allowOptimizedExpansion, out bool nullable)
+    protected virtual SqlExpression VisitAll(H2AllExpression allExpression, bool allowOptimizedExpansion, out bool nullable)
     {
         Check.NotNull(allExpression, nameof(allExpression));
 
@@ -328,7 +328,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected virtual SqlExpression VisitArrayIndex(
-        PgArrayIndexExpression arrayIndexExpression,
+        H2ArrayIndexExpression arrayIndexExpression,
         bool allowOptimizedExpansion,
         out bool nullable)
     {
@@ -349,7 +349,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected virtual SqlExpression VisitArraySlice(
-        PgArraySliceExpression arraySliceExpression,
+        H2ArraySliceExpression arraySliceExpression,
         bool allowOptimizedExpansion,
         out bool nullable)
     {
@@ -371,7 +371,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected virtual SqlExpression VisitPostgresBinary(
-        PgBinaryExpression binaryExpression,
+        H2BinaryExpression binaryExpression,
         bool allowOptimizedExpansion,
         out bool nullable)
     {
@@ -387,9 +387,9 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
         nullable = binaryExpression.OperatorType switch
         {
             // The following LTree search methods return null for "not found"
-            PgExpressionType.LTreeFirstAncestor => true,
-            PgExpressionType.LTreeFirstDescendent => true,
-            PgExpressionType.LTreeFirstMatches => true,
+            H2ExpressionType.LTreeFirstAncestor => true,
+            H2ExpressionType.LTreeFirstDescendent => true,
+            H2ExpressionType.LTreeFirstMatches => true,
 
             _ => leftNullable || rightNullable
         };
@@ -418,7 +418,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
         if (sqlFunctionExpression.IsBuiltIn
             && string.Equals(sqlFunctionExpression.Name, "SUM", StringComparison.OrdinalIgnoreCase)
             && visitedBase is SqlFunctionExpression { Name: "COALESCE", Arguments: { } } coalesceExpression
-            && coalesceExpression.Arguments[0] is PgFunctionExpression wrappedFunctionExpression)
+            && coalesceExpression.Arguments[0] is H2FunctionExpression wrappedFunctionExpression)
         {
             // The base logic assumes sum is operating over numbers, which breaks sum over PG interval.
             // Detect that case and remove the coalesce entirely (note that we don't need coalescing since sum function is in
@@ -435,28 +435,28 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
             return coalesceExpression.Update(coalesceExpression.Instance, visitedArguments);
         }
 
-        return visitedBase is PgFunctionExpression pgFunctionExpression
-            ? VisitPostgresFunctionComponents(pgFunctionExpression)
+        return visitedBase is H2FunctionExpression h2FunctionExpression
+            ? VisitPostgresFunctionComponents(h2FunctionExpression)
             : visitedBase;
 
-        PgFunctionExpression VisitPostgresFunctionComponents(PgFunctionExpression pgFunctionExpression)
+        H2FunctionExpression VisitPostgresFunctionComponents(H2FunctionExpression h2FunctionExpression)
         {
             var aggregateChanged = false;
 
-            var visitedAggregatePredicate = Visit(pgFunctionExpression.AggregatePredicate, allowOptimizedExpansion: true, out _);
-            aggregateChanged |= visitedAggregatePredicate != pgFunctionExpression.AggregatePredicate;
+            var visitedAggregatePredicate = Visit(h2FunctionExpression.AggregatePredicate, allowOptimizedExpansion: true, out _);
+            aggregateChanged |= visitedAggregatePredicate != h2FunctionExpression.AggregatePredicate;
 
             OrderingExpression[]? visitedOrderings = null;
-            for (var i = 0; i < pgFunctionExpression.AggregateOrderings.Count; i++)
+            for (var i = 0; i < h2FunctionExpression.AggregateOrderings.Count; i++)
             {
-                var ordering = pgFunctionExpression.AggregateOrderings[i];
+                var ordering = h2FunctionExpression.AggregateOrderings[i];
                 var visitedOrdering = ordering.Update(Visit(ordering.Expression, out _));
                 if (visitedOrdering != ordering && visitedOrderings is null)
                 {
-                    visitedOrderings = new OrderingExpression[pgFunctionExpression.AggregateOrderings.Count];
+                    visitedOrderings = new OrderingExpression[h2FunctionExpression.AggregateOrderings.Count];
                     for (var j = 0; j < i; j++)
                     {
-                        visitedOrderings[j] = pgFunctionExpression.AggregateOrderings[j];
+                        visitedOrderings[j] = h2FunctionExpression.AggregateOrderings[j];
                     }
 
                     aggregateChanged = true;
@@ -469,10 +469,10 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
             }
 
             return aggregateChanged
-                ? pgFunctionExpression.UpdateAggregateComponents(
+                ? h2FunctionExpression.UpdateAggregateComponents(
                     visitedAggregatePredicate,
-                    visitedOrderings ?? pgFunctionExpression.AggregateOrderings)
-                : pgFunctionExpression;
+                    visitedOrderings ?? h2FunctionExpression.AggregateOrderings)
+                : h2FunctionExpression;
         }
     }
 
@@ -482,7 +482,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual SqlExpression VisitILike(PgILikeExpression iLikeExpression, bool allowOptimizedExpansion, out bool nullable)
+    protected virtual SqlExpression VisitILike(H2ILikeExpression iLikeExpression, bool allowOptimizedExpansion, out bool nullable)
     {
         // Note: this is largely duplicated from relational SqlNullabilityProcessor.VisitLike.
         // We unfortunately can't reuse that since it may return arbitrary expression tree structures with LikeExpression embedded, but
@@ -557,7 +557,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected virtual SqlExpression VisitNewArray(
-        PgNewArrayExpression newArrayExpression,
+        H2NewArrayExpression newArrayExpression,
         bool allowOptimizedExpansion,
         out bool nullable)
     {
@@ -586,7 +586,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
         nullable = false;
         return newInitializers is null
             ? newArrayExpression
-            : new PgNewArrayExpression(newInitializers, newArrayExpression.Type, newArrayExpression.TypeMapping);
+            : new H2NewArrayExpression(newInitializers, newArrayExpression.Type, newArrayExpression.TypeMapping);
     }
 
     /// <summary>
@@ -596,7 +596,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected virtual SqlExpression VisitRegexMatch(
-        PgRegexMatchExpression regexMatchExpression,
+        H2RegexMatchExpression regexMatchExpression,
         bool allowOptimizedExpansion,
         out bool nullable)
     {
@@ -617,7 +617,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected virtual SqlExpression VisitJsonTraversal(
-        PgJsonTraversalExpression jsonTraversalExpression,
+        H2JsonTraversalExpression jsonTraversalExpression,
         bool allowOptimizedExpansion,
         out bool nullable)
     {
@@ -659,7 +659,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected virtual SqlExpression VisitRowValueExpression(
-        PgRowValueExpression rowValueExpression,
+        H2RowValueExpression rowValueExpression,
         bool allowOptimizedExpansion,
         out bool nullable)
     {
@@ -693,16 +693,16 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
     }
 
     /// <summary>
-    ///     Visits a <see cref="PgUnknownBinaryExpression" /> and computes its nullability.
+    ///     Visits a <see cref="H2UnknownBinaryExpression" /> and computes its nullability.
     /// </summary>
     /// <remarks>
     /// </remarks>
-    /// <param name="unknownBinaryExpression">A <see cref="PgUnknownBinaryExpression" /> expression to visit.</param>
+    /// <param name="unknownBinaryExpression">A <see cref="H2UnknownBinaryExpression" /> expression to visit.</param>
     /// <param name="allowOptimizedExpansion">A bool value indicating if optimized expansion which considers null value as false value is allowed.</param>
     /// <param name="nullable">A bool value indicating whether the sql expression is nullable.</param>
     /// <returns>An optimized sql expression.</returns>
     protected virtual SqlExpression VisitUnknownBinary(
-        PgUnknownBinaryExpression unknownBinaryExpression,
+        H2UnknownBinaryExpression unknownBinaryExpression,
         bool allowOptimizedExpansion,
         out bool nullable)
     {

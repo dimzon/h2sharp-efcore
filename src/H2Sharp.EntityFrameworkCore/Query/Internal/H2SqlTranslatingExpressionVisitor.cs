@@ -185,7 +185,7 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
                 var subtraction = _sqlExpressionFactory.MakeBinary(
                     ExpressionType.Subtract, sqlLeft!, sqlRight!, _typeMappingSource.FindMapping(typeof(int)))!;
 
-                return PgFunctionExpression.CreateWithNamedArguments(
+                return H2FunctionExpression.CreateWithNamedArguments(
                     "make_interval",
                     [subtraction],
                     ["days"],
@@ -302,7 +302,7 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
         if (newExpression.Type.IsAssignableTo(typeof(ITuple)))
         {
             return TryTranslateArguments(out var sqlArguments)
-                ? new PgRowValueExpression(sqlArguments, newExpression.Type)
+                ? new H2RowValueExpression(sqlArguments, newExpression.Type)
                 : QueryCompilationContext.NotTranslatedExpression;
         }
 

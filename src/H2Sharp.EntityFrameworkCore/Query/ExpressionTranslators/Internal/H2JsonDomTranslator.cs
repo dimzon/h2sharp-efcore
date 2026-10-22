@@ -116,14 +116,14 @@ public class H2JsonDomTranslator : IMemberTranslator, IMethodCallTranslator
 
         if (method == GetProperty || method == ArrayIndexer)
         {
-            return instance is PgJsonTraversalExpression prevPathTraversal
+            return instance is H2JsonTraversalExpression prevPathTraversal
                 ? prevPathTraversal.Append(_sqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]))
                 : null;
         }
 
-        if (GetMethods.Contains(method.Name) && arguments.Count == 0 && instance is PgJsonTraversalExpression traversal)
+        if (GetMethods.Contains(method.Name) && arguments.Count == 0 && instance is H2JsonTraversalExpression traversal)
         {
-            var traversalToText = new PgJsonTraversalExpression(
+            var traversalToText = new H2JsonTraversalExpression(
                 traversal.Expression,
                 traversal.Path,
                 returnsText: true,

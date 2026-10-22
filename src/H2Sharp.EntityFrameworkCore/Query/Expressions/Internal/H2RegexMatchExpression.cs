@@ -5,7 +5,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 /// <summary>
 ///     Represents a PostgreSQL regular expression match expression.
 /// </summary>
-public class PgRegexMatchExpression : SqlExpression, IEquatable<PgRegexMatchExpression>
+public class H2RegexMatchExpression : SqlExpression, IEquatable<H2RegexMatchExpression>
 {
     private static ConstructorInfo? _quotingConstructor;
 
@@ -29,13 +29,13 @@ public class PgRegexMatchExpression : SqlExpression, IEquatable<PgRegexMatchExpr
     public virtual RegexOptions Options { get; }
 
     /// <summary>
-    ///     Constructs a <see cref="PgRegexMatchExpression" />.
+    ///     Constructs a <see cref="H2RegexMatchExpression" />.
     /// </summary>
     /// <param name="match">The expression to match.</param>
     /// <param name="pattern">The pattern to match.</param>
     /// <param name="options">The options for regular expression evaluation.</param>
     /// <param name="typeMapping">The type mapping for the expression.</param>
-    public PgRegexMatchExpression(
+    public H2RegexMatchExpression(
         SqlExpression match,
         SqlExpression pattern,
         RegexOptions options,
@@ -55,15 +55,15 @@ public class PgRegexMatchExpression : SqlExpression, IEquatable<PgRegexMatchExpr
     ///     Creates a new expression that is like this one, but using the supplied children. If all of the children are the same, it will
     ///     return this expression.
     /// </summary>
-    public virtual PgRegexMatchExpression Update(SqlExpression match, SqlExpression pattern)
+    public virtual H2RegexMatchExpression Update(SqlExpression match, SqlExpression pattern)
         => match != Match || pattern != Pattern
-            ? new PgRegexMatchExpression(match, pattern, Options, TypeMapping)
+            ? new H2RegexMatchExpression(match, pattern, Options, TypeMapping)
             : this;
 
     /// <inheritdoc />
     public override Expression Quote()
         => New(
-            _quotingConstructor ??= typeof(PgRegexMatchExpression).GetConstructor(
+            _quotingConstructor ??= typeof(H2RegexMatchExpression).GetConstructor(
                 [typeof(SqlExpression), typeof(SqlExpression), typeof(RegexOptions), typeof(RelationalTypeMapping)])!,
             Match.Quote(),
             Pattern.Quote(),
@@ -71,7 +71,7 @@ public class PgRegexMatchExpression : SqlExpression, IEquatable<PgRegexMatchExpr
             RelationalExpressionQuotingUtilities.QuoteTypeMapping(TypeMapping));
 
     /// <inheritdoc />
-    public virtual bool Equals(PgRegexMatchExpression? other)
+    public virtual bool Equals(H2RegexMatchExpression? other)
         => ReferenceEquals(this, other)
             || other is not null
             && base.Equals(other)
@@ -81,7 +81,7 @@ public class PgRegexMatchExpression : SqlExpression, IEquatable<PgRegexMatchExpr
 
     /// <inheritdoc />
     public override bool Equals(object? other)
-        => other is PgRegexMatchExpression otherRegexMatch && Equals(otherRegexMatch);
+        => other is H2RegexMatchExpression otherRegexMatch && Equals(otherRegexMatch);
 
     /// <inheritdoc />
     public override int GetHashCode()

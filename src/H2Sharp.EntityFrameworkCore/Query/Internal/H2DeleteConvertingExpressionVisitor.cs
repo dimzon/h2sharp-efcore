@@ -3,7 +3,7 @@ using H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 namespace H2Sharp.EntityFrameworkCore.Query.Internal;
 
 /// <summary>
-///     Converts the relational <see cref="NonQueryExpression" /> into a PG-specific <see cref="PgDeleteExpression" />, which
+///     Converts the relational <see cref="NonQueryExpression" /> into a PG-specific <see cref="H2DeleteExpression" />, which
 ///     precisely models a DELETE statement in PostgreSQL. This is done to handle the PG-specific USING syntax for table joining.
 /// </summary>
 public class H2DeleteConvertingExpressionVisitor : ExpressionVisitor
@@ -93,6 +93,6 @@ public class H2DeleteConvertingExpressionVisitor : ExpressionVisitor
                 ExpressionType.AndAlso, joinPredicates, selectExpression.Predicate, typeof(bool), joinPredicates.TypeMapping)
         };
 
-        return new PgDeleteExpression(deleteExpression.Table, fromItems, predicate, deleteExpression.Tags);
+        return new H2DeleteExpression(deleteExpression.Table, fromItems, predicate, deleteExpression.Tags);
     }
 }

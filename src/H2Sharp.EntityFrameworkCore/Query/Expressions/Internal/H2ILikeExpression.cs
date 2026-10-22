@@ -4,7 +4,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 ///     Represents a PostgreSQL ILIKE expression.
 /// </summary>
 // ReSharper disable once InconsistentNaming
-public class PgILikeExpression : SqlExpression, IEquatable<PgILikeExpression>
+public class H2ILikeExpression : SqlExpression, IEquatable<H2ILikeExpression>
 {
     private static ConstructorInfo? _quotingConstructor;
 
@@ -24,14 +24,14 @@ public class PgILikeExpression : SqlExpression, IEquatable<PgILikeExpression>
     public virtual SqlExpression? EscapeChar { get; }
 
     /// <summary>
-    ///     Constructs a <see cref="PgILikeExpression" />.
+    ///     Constructs a <see cref="H2ILikeExpression" />.
     /// </summary>
     /// <param name="match">The expression to match.</param>
     /// <param name="pattern">The pattern to match.</param>
     /// <param name="escapeChar">The escape character to use in <paramref name="pattern" />.</param>
     /// <param name="typeMapping">The <see cref="RelationalTypeMapping" /> associated with the expression.</param>
     /// <exception cref="ArgumentNullException" />
-    public PgILikeExpression(
+    public H2ILikeExpression(
         SqlExpression match,
         SqlExpression pattern,
         SqlExpression? escapeChar,
@@ -54,18 +54,18 @@ public class PgILikeExpression : SqlExpression, IEquatable<PgILikeExpression>
     ///     Creates a new expression that is like this one, but using the supplied children. If all of the children are the same, it will
     ///     return this expression.
     /// </summary>
-    public virtual PgILikeExpression Update(
+    public virtual H2ILikeExpression Update(
         SqlExpression match,
         SqlExpression pattern,
         SqlExpression? escapeChar)
         => match == Match && pattern == Pattern && escapeChar == EscapeChar
             ? this
-            : new PgILikeExpression(match, pattern, escapeChar, TypeMapping);
+            : new H2ILikeExpression(match, pattern, escapeChar, TypeMapping);
 
     /// <inheritdoc />
     public override Expression Quote()
         => New(
-            _quotingConstructor ??= typeof(PgILikeExpression).GetConstructor(
+            _quotingConstructor ??= typeof(H2ILikeExpression).GetConstructor(
                 [typeof(SqlExpression), typeof(SqlExpression), typeof(SqlExpression), typeof(RelationalTypeMapping)])!,
             Match.Quote(),
             Pattern.Quote(),
@@ -74,10 +74,10 @@ public class PgILikeExpression : SqlExpression, IEquatable<PgILikeExpression>
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj is PgILikeExpression other && Equals(other);
+        => obj is H2ILikeExpression other && Equals(other);
 
     /// <inheritdoc />
-    public virtual bool Equals(PgILikeExpression? other)
+    public virtual bool Equals(H2ILikeExpression? other)
         => ReferenceEquals(this, other)
             || other is not null
             && base.Equals(other)

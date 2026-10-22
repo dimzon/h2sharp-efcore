@@ -1,5 +1,5 @@
 using H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
-using ColumnInfo = H2Sharp.EntityFrameworkCore.Query.Expressions.Internal.PgTableValuedFunctionExpression.ColumnInfo;
+using ColumnInfo = H2Sharp.EntityFrameworkCore.Query.Expressions.Internal.H2TableValuedFunctionExpression.ColumnInfo;
 
 namespace H2Sharp.EntityFrameworkCore.Query.Internal;
 
@@ -21,7 +21,7 @@ public class H2SqlTreePruner  : SqlTreePruner
     {
         switch (node)
         {
-            case PgTableValuedFunctionExpression { ColumnInfos: IReadOnlyList<ColumnInfo> columnInfos } tvf:
+            case H2TableValuedFunctionExpression { ColumnInfos: IReadOnlyList<ColumnInfo> columnInfos } tvf:
                 var arguments = this.Visit(tvf.Arguments);
 
                 List<ColumnInfo>? newColumnInfos = null;

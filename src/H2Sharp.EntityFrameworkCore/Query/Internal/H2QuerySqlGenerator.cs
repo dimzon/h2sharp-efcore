@@ -60,20 +60,20 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     protected override Expression VisitExtension(Expression extensionExpression)
         => extensionExpression switch
         {
-            PgAllExpression e => VisitArrayAll(e),
-            PgAnyExpression e => VisitArrayAny(e),
-            PgArrayIndexExpression e => VisitArrayIndex(e),
-            PgArraySliceExpression e => VisitArraySlice(e),
-            PgBinaryExpression e => VisitPgBinary(e),
-            PgDeleteExpression e => VisitPgDelete(e),
-            PgFunctionExpression e => VisitPgFunction(e),
-            PgILikeExpression e => VisitILike(e),
-            PgJsonTraversalExpression e => VisitJsonPathTraversal(e),
-            PgNewArrayExpression e => VisitNewArray(e),
-            PgRegexMatchExpression e => VisitRegexMatch(e),
-            PgRowValueExpression e => VisitRowValue(e),
-            PgUnknownBinaryExpression e => VisitUnknownBinary(e),
-            PgTableValuedFunctionExpression e => VisitPgTableValuedFunctionExpression(e),
+            H2AllExpression e => VisitArrayAll(e),
+            H2AnyExpression e => VisitArrayAny(e),
+            H2ArrayIndexExpression e => VisitArrayIndex(e),
+            H2ArraySliceExpression e => VisitArraySlice(e),
+            H2BinaryExpression e => VisitPgBinary(e),
+            H2DeleteExpression e => VisitH2Delete(e),
+            H2FunctionExpression e => VisitPgFunction(e),
+            H2ILikeExpression e => VisitILike(e),
+            H2JsonTraversalExpression e => VisitJsonPathTraversal(e),
+            H2NewArrayExpression e => VisitNewArray(e),
+            H2RegexMatchExpression e => VisitRegexMatch(e),
+            H2RowValueExpression e => VisitRowValue(e),
+            H2UnknownBinaryExpression e => VisitUnknownBinary(e),
+            H2TableValuedFunctionExpression e => VisitPgTableValuedFunctionExpression(e),
 
             _ => base.VisitExtension(extensionExpression)
         };
@@ -83,9 +83,9 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     {
         switch (queryExpression)
         {
-            case PgDeleteExpression postgresDeleteExpression:
+            case H2DeleteExpression postgresDeleteExpression:
                 GenerateTagsHeaderComment(postgresDeleteExpression.Tags);
-                VisitPgDelete(postgresDeleteExpression);
+                VisitH2Delete(postgresDeleteExpression);
                 break;
 
             default:
@@ -274,24 +274,24 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual Expression VisitPgDelete(PgDeleteExpression pgDeleteExpression)
+    protected virtual Expression VisitH2Delete(H2DeleteExpression h2DeleteExpression)
     {
         Sql.Append("DELETE FROM ");
-        Visit(pgDeleteExpression.Table);
+        Visit(h2DeleteExpression.Table);
 
-        if (pgDeleteExpression.FromItems.Count > 0)
+        if (h2DeleteExpression.FromItems.Count > 0)
         {
             Sql.AppendLine().Append("USING ");
-            GenerateList(pgDeleteExpression.FromItems, t => Visit(t), sql => sql.Append(", "));
+            GenerateList(h2DeleteExpression.FromItems, t => Visit(t), sql => sql.Append(", "));
         }
 
-        if (pgDeleteExpression.Predicate != null)
+        if (h2DeleteExpression.Predicate != null)
         {
             Sql.AppendLine().Append("WHERE ");
-            Visit(pgDeleteExpression.Predicate);
+            Visit(h2DeleteExpression.Predicate);
         }
 
-        return pgDeleteExpression;
+        return h2DeleteExpression;
     }
 
     /// <summary>
@@ -425,13 +425,13 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual Expression VisitNewArray(PgNewArrayExpression pgNewArrayExpression)
+    protected virtual Expression VisitNewArray(H2NewArrayExpression h2NewArrayExpression)
     {
-        Debug.Assert(pgNewArrayExpression.TypeMapping is not null);
+        Debug.Assert(h2NewArrayExpression.TypeMapping is not null);
 
         Sql.Append("ARRAY[");
         var first = true;
-        foreach (var initializer in pgNewArrayExpression.Expressions)
+        foreach (var initializer in h2NewArrayExpression.Expressions)
         {
             if (!first)
             {
@@ -445,7 +445,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         // No cast after the brackets: H2 2.5 says what the array holds without one
         // ("ARRAY[1,2]" is enough), and it has no such cast: the type of the array
         // follows from the elements and from the place the array stands in.
-        return pgNewArrayExpression;
+        return h2NewArrayExpression;
     }
 
     /// <summary>
@@ -454,7 +454,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual Expression VisitPgBinary(PgBinaryExpression binaryExpression)
+    protected virtual Expression VisitPgBinary(H2BinaryExpression binaryExpression)
     {
         Check.NotNull(binaryExpression, nameof(binaryExpression));
 
@@ -480,50 +480,50 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             .Append(
                 binaryExpression.OperatorType switch
                 {
-                    PgExpressionType.Contains
+                    H2ExpressionType.Contains
                         => ">>",
 
-                    PgExpressionType.ContainedBy
+                    H2ExpressionType.ContainedBy
                         => "<<",
 
-                    PgExpressionType.Overlaps => "&&",
+                    H2ExpressionType.Overlaps => "&&",
 
-                    PgExpressionType.NetworkContainedByOrEqual => "<<=",
-                    PgExpressionType.NetworkContainsOrEqual => ">>=",
-                    PgExpressionType.NetworkContainsOrContainedBy => "&&",
+                    H2ExpressionType.NetworkContainedByOrEqual => "<<=",
+                    H2ExpressionType.NetworkContainsOrEqual => ">>=",
+                    H2ExpressionType.NetworkContainsOrContainedBy => "&&",
 
-                    PgExpressionType.RangeIsStrictlyLeftOf => "<<",
-                    PgExpressionType.RangeIsStrictlyRightOf => ">>",
-                    PgExpressionType.RangeDoesNotExtendRightOf => "&<",
-                    PgExpressionType.RangeDoesNotExtendLeftOf => "&>",
-                    PgExpressionType.RangeIsAdjacentTo => "-|-",
-                    PgExpressionType.RangeUnion => "+",
-                    PgExpressionType.RangeIntersect => "*",
-                    PgExpressionType.RangeExcept => "-",
+                    H2ExpressionType.RangeIsStrictlyLeftOf => "<<",
+                    H2ExpressionType.RangeIsStrictlyRightOf => ">>",
+                    H2ExpressionType.RangeDoesNotExtendRightOf => "&<",
+                    H2ExpressionType.RangeDoesNotExtendLeftOf => "&>",
+                    H2ExpressionType.RangeIsAdjacentTo => "-|-",
+                    H2ExpressionType.RangeUnion => "+",
+                    H2ExpressionType.RangeIntersect => "*",
+                    H2ExpressionType.RangeExcept => "-",
 
-                    PgExpressionType.TextSearchMatch => "@@",
-                    PgExpressionType.TextSearchAnd => "&&",
-                    PgExpressionType.TextSearchOr => "||",
+                    H2ExpressionType.TextSearchMatch => "@@",
+                    H2ExpressionType.TextSearchAnd => "&&",
+                    H2ExpressionType.TextSearchOr => "||",
 
-                    PgExpressionType.JsonExists => "?",
-                    PgExpressionType.JsonExistsAny => "?|",
-                    PgExpressionType.JsonExistsAll => "?&",
+                    H2ExpressionType.JsonExists => "?",
+                    H2ExpressionType.JsonExistsAny => "?|",
+                    H2ExpressionType.JsonExistsAll => "?&",
 
-                    PgExpressionType.LTreeMatches
+                    H2ExpressionType.LTreeMatches
                         when binaryExpression.Right.TypeMapping.StoreType == "lquery"
                         || binaryExpression.Right.TypeMapping is H2ArrayTypeMapping { ElementTypeMapping.StoreType: "lquery" } => "~",
-                    PgExpressionType.LTreeMatches
+                    H2ExpressionType.LTreeMatches
                         when binaryExpression.Right.TypeMapping.StoreType == "ltxtquery"
                         => "@",
-                    PgExpressionType.LTreeMatchesAny => "?",
-                    PgExpressionType.LTreeFirstAncestor => "?@>",
-                    PgExpressionType.LTreeFirstDescendent => "?<@",
-                    PgExpressionType.LTreeFirstMatches
+                    H2ExpressionType.LTreeMatchesAny => "?",
+                    H2ExpressionType.LTreeFirstAncestor => "?@>",
+                    H2ExpressionType.LTreeFirstDescendent => "?<@",
+                    H2ExpressionType.LTreeFirstMatches
                         when binaryExpression.Right.TypeMapping.StoreType == "lquery" => "?~",
-                    PgExpressionType.LTreeFirstMatches
+                    H2ExpressionType.LTreeFirstMatches
                         when binaryExpression.Right.TypeMapping.StoreType == "ltxtquery" => "?@",
 
-                    PgExpressionType.Distance => "<->",
+                    H2ExpressionType.Distance => "<->",
 
                     _ => throw new ArgumentOutOfRangeException($"Unhandled operator type: {binaryExpression.OperatorType}")
                 })
@@ -602,11 +602,11 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             {
                 switch (sqlUnaryExpression.Operand)
                 {
-                    case PgRegexMatchExpression regexMatch:
+                    case H2RegexMatchExpression regexMatch:
                         VisitRegexMatch(regexMatch, negated: true);
                         return sqlUnaryExpression;
 
-                    case PgILikeExpression iLike:
+                    case H2ILikeExpression iLike:
                         VisitILike(iLike, negated: true);
                         return sqlUnaryExpression;
                 }
@@ -796,7 +796,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual Expression VisitArrayAll(PgAllExpression expression)
+    protected virtual Expression VisitArrayAll(H2AllExpression expression)
     {
         Visit(expression.Item);
 
@@ -805,8 +805,8 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             .Append(
                 expression.OperatorType switch
                 {
-                    PgAllOperatorType.Like => "LIKE",
-                    PgAllOperatorType.ILike => "ILIKE",
+                    H2AllOperatorType.Like => "LIKE",
+                    H2AllOperatorType.ILike => "ILIKE",
                     _ => throw new ArgumentOutOfRangeException($"Unhandled operator type: {expression.OperatorType}")
                 })
             .Append(" ALL (");
@@ -824,7 +824,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual Expression VisitArrayAny(PgAnyExpression expression)
+    protected virtual Expression VisitArrayAny(H2AnyExpression expression)
     {
         Visit(expression.Item);
 
@@ -833,9 +833,9 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             .Append(
                 expression.OperatorType switch
                 {
-                    PgAnyOperatorType.Equal => "=",
-                    PgAnyOperatorType.Like => "LIKE",
-                    PgAnyOperatorType.ILike => "ILIKE",
+                    H2AnyOperatorType.Equal => "=",
+                    H2AnyOperatorType.Like => "LIKE",
+                    H2AnyOperatorType.ILike => "ILIKE",
                     _ => throw new ArgumentOutOfRangeException($"Unhandled operator type: {expression.OperatorType}")
                 })
             .Append(" ANY (");
@@ -850,7 +850,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// <summary>
     ///     Produces SQL array index expression (e.g. arr[1]).
     /// </summary>
-    protected virtual Expression VisitArrayIndex(PgArrayIndexExpression expression)
+    protected virtual Expression VisitArrayIndex(H2ArrayIndexExpression expression)
     {
         var requiresParentheses = RequiresParentheses(expression, expression.Array);
 
@@ -875,7 +875,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// <summary>
     ///     Produces SQL array slice expression (e.g. arr[1:2]).
     /// </summary>
-    protected virtual Expression VisitArraySlice(PgArraySliceExpression expression)
+    protected virtual Expression VisitArraySlice(H2ArraySliceExpression expression)
     {
         // A slice of an array is a function in H2 2.5 and not a piece of syntax: the reference
         // refuses "arr[1:2]" ("expected "[, ., ::, AT, FORMAT, *, /, %, +, -, ||, NOT, IS,
@@ -923,7 +923,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     The functions of H2 2.5 are in the frozen documentation of the engine:
     ///     <c>../h2sharp/docs/functions.html</c>.
     /// </remarks>
-    protected virtual Expression VisitRegexMatch(PgRegexMatchExpression expression, bool negated = false)
+    protected virtual Expression VisitRegexMatch(H2RegexMatchExpression expression, bool negated = false)
     {
         var options = expression.Options;
 
@@ -998,7 +998,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual Expression VisitRowValue(PgRowValueExpression rowValueExpression)
+    protected virtual Expression VisitRowValue(H2RowValueExpression rowValueExpression)
     {
         Sql.Append("(");
 
@@ -1025,7 +1025,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual Expression VisitILike(PgILikeExpression likeExpression, bool negated = false)
+    protected virtual Expression VisitILike(H2ILikeExpression likeExpression, bool negated = false)
     {
         Visit(likeExpression.Match);
 
@@ -1120,13 +1120,13 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     }
 
     /// <summary>
-    ///     Visits the children of an <see cref="PgJsonTraversalExpression" />.
+    ///     Visits the children of an <see cref="H2JsonTraversalExpression" />.
     /// </summary>
     /// <param name="expression">The expression.</param>
     /// <returns>
     ///     An <see cref="Expression" />.
     /// </returns>
-    protected virtual Expression VisitJsonPathTraversal(PgJsonTraversalExpression expression)
+    protected virtual Expression VisitJsonPathTraversal(H2JsonTraversalExpression expression)
     {
         GenerateJsonPath(expression.Expression, expression.ReturnsText, expression.Path);
         return expression;
@@ -1179,7 +1179,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual Expression VisitPgTableValuedFunctionExpression(PgTableValuedFunctionExpression tableValuedFunctionExpression)
+    protected virtual Expression VisitPgTableValuedFunctionExpression(H2TableValuedFunctionExpression tableValuedFunctionExpression)
     {
         // The elements of an array as rows are not a thing H2 2.5 can say: there is no UNNEST,
         // and no LATERAL either. The reference reads the elements of an array with a range
@@ -1195,7 +1195,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         // the table of the elements is refused rather than written in the words of another
         // dialect: "unnest(arr) WITH ORDINALITY" the reference refuses ("expected
         // "statement"").
-        if (tableValuedFunctionExpression is PgUnnestExpression)
+        if (tableValuedFunctionExpression is H2UnnestExpression)
         {
             throw new InvalidOperationException(
                 "H2 2.5 has no UNNEST and no LATERAL, so the elements of an array cannot be rows here. See docs/DIVERGENCES.md.");
@@ -1276,7 +1276,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
 
             Sql.Append(")");
 
-            void GenerateColumnInfo(PgTableValuedFunctionExpression.ColumnInfo columnInfo)
+            void GenerateColumnInfo(H2TableValuedFunctionExpression.ColumnInfo columnInfo)
             {
                 Sql.Append(_sqlGenerationHelper.DelimitIdentifier(columnInfo.Name));
 
@@ -1289,13 +1289,13 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     }
 
     /// <summary>
-    ///     Visits the children of a <see cref="PgUnknownBinaryExpression" />.
+    ///     Visits the children of a <see cref="H2UnknownBinaryExpression" />.
     /// </summary>
     /// <param name="unknownBinaryExpression">The expression.</param>
     /// <returns>
     ///     An <see cref="Expression" />.
     /// </returns>
-    protected virtual Expression VisitUnknownBinary(PgUnknownBinaryExpression unknownBinaryExpression)
+    protected virtual Expression VisitUnknownBinary(H2UnknownBinaryExpression unknownBinaryExpression)
     {
         Check.NotNull(unknownBinaryExpression, nameof(unknownBinaryExpression));
 
@@ -1336,13 +1336,13 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     }
 
     /// <summary>
-    ///     Visits the children of a <see cref="PgFunctionExpression" />.
+    ///     Visits the children of a <see cref="H2FunctionExpression" />.
     /// </summary>
     /// <param name="e">The expression.</param>
     /// <returns>
     ///     An <see cref="Expression" />.
     /// </returns>
-    protected virtual Expression VisitPgFunction(PgFunctionExpression e)
+    protected virtual Expression VisitPgFunction(H2FunctionExpression e)
     {
         Check.NotNull(e, nameof(e));
 
@@ -1485,7 +1485,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 return true;
 
             // Copy paste of QuerySqlGenerator.RequiresParentheses for SqlBinaryExpression
-            case PgBinaryExpression innerBinary:
+            case H2BinaryExpression innerBinary:
             {
                 // If the provider defined precedence for the two expression, use that
                 if (TryGetOperatorInfo(outerExpression, out var outerPrecedence, out var isOuterAssociative)
@@ -1498,7 +1498,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
 
                         // If both operators have the same precedence, add parentheses unless they're the same operator, and
                         // that operator is associative (e.g. a + b + c)
-                        _ => outerExpression is not PgBinaryExpression outerBinary
+                        _ => outerExpression is not H2BinaryExpression outerBinary
                             || outerBinary.OperatorType != innerBinary.OperatorType
                             || !isOuterAssociative
                             // Arithmetic operators on floating points aren't associative, because of rounding errors.
@@ -1513,7 +1513,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 return true;
             }
 
-            case PgUnknownBinaryExpression:
+            case H2UnknownBinaryExpression:
                 return true;
 
             default:
@@ -1583,15 +1583,15 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
 
             // There's an "any other operator" category in the PG operator precedence table, we assign that a numeric value of 1000.
             // TODO: Some operators here may be associative
-            PgBinaryExpression => (1000, false),
+            H2BinaryExpression => (1000, false),
 
             CollateExpression => (1000, false),
             AtTimeZoneExpression => (1100, false),
             InExpression => (900, false),
-            PgJsonTraversalExpression => (1000, false),
-            PgArrayIndexExpression => (1500, false),
-            PgAllExpression or PgAnyExpression => (800, false),
-            LikeExpression or PgILikeExpression or PgRegexMatchExpression => (900, false),
+            H2JsonTraversalExpression => (1000, false),
+            H2ArrayIndexExpression => (1500, false),
+            H2AllExpression or H2AnyExpression => (800, false),
+            LikeExpression or H2ILikeExpression or H2RegexMatchExpression => (900, false),
 
             _ => default,
         };

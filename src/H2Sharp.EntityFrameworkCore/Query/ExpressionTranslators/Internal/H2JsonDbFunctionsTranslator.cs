@@ -60,10 +60,10 @@ public class H2JsonDbFunctionsTranslator : IMethodCallTranslator
             // If a function is invoked over a JSON traversal expression, that expression may come with
             // returnText: true (i.e. operator ->> and not ->). Since the functions below require a json object and
             // not text, we transform it.
-            .Select(a => a is PgJsonTraversalExpression traversal ? WithReturnsText(traversal, false) : a)
+            .Select(a => a is H2JsonTraversalExpression traversal ? WithReturnsText(traversal, false) : a)
             .ToArray();
 
-        if (!args.Any(a => a.TypeMapping is H2JsonTypeMapping || a is PgJsonTraversalExpression))
+        if (!args.Any(a => a.TypeMapping is H2JsonTypeMapping || a is H2JsonTraversalExpression))
         {
             throw new InvalidOperationException("The EF JSON methods require a JSON parameter and none was found.");
         }
@@ -91,11 +91,11 @@ public class H2JsonDbFunctionsTranslator : IMethodCallTranslator
             nameof(H2JsonDbFunctionsExtensions.JsonContained)
                 => _sqlExpressionFactory.ContainedBy(Jsonb(args[0]), Jsonb(args[1])),
             nameof(H2JsonDbFunctionsExtensions.JsonExists)
-                => _sqlExpressionFactory.MakePostgresBinary(PgExpressionType.JsonExists, Jsonb(args[0]), args[1]),
+                => _sqlExpressionFactory.MakePostgresBinary(H2ExpressionType.JsonExists, Jsonb(args[0]), args[1]),
             nameof(H2JsonDbFunctionsExtensions.JsonExistAny)
-                => _sqlExpressionFactory.MakePostgresBinary(PgExpressionType.JsonExistsAny, Jsonb(args[0]), args[1]),
+                => _sqlExpressionFactory.MakePostgresBinary(H2ExpressionType.JsonExistsAny, Jsonb(args[0]), args[1]),
             nameof(H2JsonDbFunctionsExtensions.JsonExistAll)
-                => _sqlExpressionFactory.MakePostgresBinary(PgExpressionType.JsonExistsAll, Jsonb(args[0]), args[1]),
+                => _sqlExpressionFactory.MakePostgresBinary(H2ExpressionType.JsonExistsAll, Jsonb(args[0]), args[1]),
 
             _ => null
         };
@@ -117,12 +117,12 @@ public class H2JsonDbFunctionsTranslator : IMethodCallTranslator
             return e;
         }
 
-        PgJsonTraversalExpression WithReturnsText(PgJsonTraversalExpression traversal, bool returnsText)
+        H2JsonTraversalExpression WithReturnsText(H2JsonTraversalExpression traversal, bool returnsText)
             => traversal.ReturnsText == returnsText
                 ? traversal
                 : returnsText
-                    ? new PgJsonTraversalExpression(traversal.Expression, traversal.Path, true, typeof(string), _stringTypeMapping)
-                    : new PgJsonTraversalExpression(
+                    ? new H2JsonTraversalExpression(traversal.Expression, traversal.Path, true, typeof(string), _stringTypeMapping)
+                    : new H2JsonTraversalExpression(
                         traversal.Expression, traversal.Path, false, traversal.Type, traversal.Expression.TypeMapping);
     }
 }

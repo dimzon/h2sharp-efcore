@@ -34,36 +34,36 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     #region Expression factory methods
 
     /// <summary>
-    ///     Creates a new <see cref="PgRegexMatchExpression" />, corresponding to the PostgreSQL-specific <c>~</c> operator.
+    ///     Creates a new <see cref="H2RegexMatchExpression" />, corresponding to the PostgreSQL-specific <c>~</c> operator.
     /// </summary>
-    public virtual PgRegexMatchExpression RegexMatch(
+    public virtual H2RegexMatchExpression RegexMatch(
         SqlExpression match,
         SqlExpression pattern,
         RegexOptions options)
-        => (PgRegexMatchExpression)ApplyDefaultTypeMapping(new PgRegexMatchExpression(match, pattern, options, null));
+        => (H2RegexMatchExpression)ApplyDefaultTypeMapping(new H2RegexMatchExpression(match, pattern, options, null));
 
     /// <summary>
-    ///     Creates a new <see cref="PgAnyExpression" />, corresponding to the PostgreSQL-specific <c>= ANY</c> operator.
+    ///     Creates a new <see cref="H2AnyExpression" />, corresponding to the PostgreSQL-specific <c>= ANY</c> operator.
     /// </summary>
-    public virtual PgAnyExpression Any(
+    public virtual H2AnyExpression Any(
         SqlExpression item,
         SqlExpression array,
-        PgAnyOperatorType operatorType)
-        => (PgAnyExpression)ApplyDefaultTypeMapping(new PgAnyExpression(item, array, operatorType, null));
+        H2AnyOperatorType operatorType)
+        => (H2AnyExpression)ApplyDefaultTypeMapping(new H2AnyExpression(item, array, operatorType, null));
 
     /// <summary>
-    ///     Creates a new <see cref="PgAllExpression" />, corresponding to the PostgreSQL-specific <c>LIKE ALL</c> operator.
+    ///     Creates a new <see cref="H2AllExpression" />, corresponding to the PostgreSQL-specific <c>LIKE ALL</c> operator.
     /// </summary>
-    public virtual PgAllExpression All(
+    public virtual H2AllExpression All(
         SqlExpression item,
         SqlExpression array,
-        PgAllOperatorType operatorType)
-        => (PgAllExpression)ApplyDefaultTypeMapping(new PgAllExpression(item, array, operatorType, null));
+        H2AllOperatorType operatorType)
+        => (H2AllExpression)ApplyDefaultTypeMapping(new H2AllExpression(item, array, operatorType, null));
 
     /// <summary>
-    ///     Creates a new <see cref="PgArrayIndexExpression" />, corresponding to the PostgreSQL-specific array subscripting operator.
+    ///     Creates a new <see cref="H2ArrayIndexExpression" />, corresponding to the PostgreSQL-specific array subscripting operator.
     /// </summary>
-    public virtual PgArrayIndexExpression ArrayIndex(
+    public virtual H2ArrayIndexExpression ArrayIndex(
         SqlExpression array,
         SqlExpression index,
         bool nullable,
@@ -74,22 +74,22 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             throw new ArgumentException("Array expression must be of an array or List<> type", nameof(array));
         }
 
-        return (PgArrayIndexExpression)ApplyTypeMapping(
-            new PgArrayIndexExpression(array, index, nullable, elementType, typeMapping: null),
+        return (H2ArrayIndexExpression)ApplyTypeMapping(
+            new H2ArrayIndexExpression(array, index, nullable, elementType, typeMapping: null),
             typeMapping);
     }
 
     /// <summary>
-    ///     Creates a new <see cref="PgArrayIndexExpression" />, corresponding to the PostgreSQL-specific array subscripting operator.
+    ///     Creates a new <see cref="H2ArrayIndexExpression" />, corresponding to the PostgreSQL-specific array subscripting operator.
     /// </summary>
-    public virtual PgArraySliceExpression ArraySlice(
+    public virtual H2ArraySliceExpression ArraySlice(
         SqlExpression array,
         SqlExpression? lowerBound,
         SqlExpression? upperBound,
         bool nullable,
         RelationalTypeMapping? typeMapping = null)
-        => (PgArraySliceExpression)ApplyTypeMapping(
-            new PgArraySliceExpression(array, lowerBound, upperBound, nullable, array.Type, typeMapping: null),
+        => (H2ArraySliceExpression)ApplyTypeMapping(
+            new H2ArraySliceExpression(array, lowerBound, upperBound, nullable, array.Type, typeMapping: null),
             typeMapping);
 
     /// <summary>
@@ -137,16 +137,16 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     ///     Creates a new <see cref="AtTimeZoneExpression" />, for performing a PostgreSQL-specific case-insensitive string match
     ///     (<c>ILIKE</c>).
     /// </summary>
-    public virtual PgILikeExpression ILike(
+    public virtual H2ILikeExpression ILike(
         SqlExpression match,
         SqlExpression pattern,
         SqlExpression? escapeChar = null)
-        => (PgILikeExpression)ApplyDefaultTypeMapping(new PgILikeExpression(match, pattern, escapeChar, null));
+        => (H2ILikeExpression)ApplyDefaultTypeMapping(new H2ILikeExpression(match, pattern, escapeChar, null));
 
     /// <summary>
-    ///     Creates a new <see cref="PgJsonTraversalExpression" />, for traversing inside a JSON document.
+    ///     Creates a new <see cref="H2JsonTraversalExpression" />, for traversing inside a JSON document.
     /// </summary>
-    public virtual PgJsonTraversalExpression JsonTraversal(
+    public virtual H2JsonTraversalExpression JsonTraversal(
         SqlExpression expression,
         bool returnsText,
         Type type,
@@ -154,9 +154,9 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         => JsonTraversal(expression, [], returnsText, type, typeMapping);
 
     /// <summary>
-    ///     Creates a new <see cref="PgJsonTraversalExpression" />, for traversing inside a JSON document.
+    ///     Creates a new <see cref="H2JsonTraversalExpression" />, for traversing inside a JSON document.
     /// </summary>
-    public virtual PgJsonTraversalExpression JsonTraversal(
+    public virtual H2JsonTraversalExpression JsonTraversal(
         SqlExpression expression,
         IEnumerable<SqlExpression> path,
         bool returnsText,
@@ -170,7 +170,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             typeMapping);
 
     /// <summary>
-    ///     Constructs either a <see cref="PgNewArrayExpression" />, or, if all provided expressions are constants, a single
+    ///     Constructs either a <see cref="H2NewArrayExpression" />, or, if all provided expressions are constants, a single
     ///     <see cref="SqlConstantExpression" /> for the entire array.
     /// </summary>
     public virtual SqlExpression NewArrayOrConstant(
@@ -216,13 +216,13 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     }
 
     /// <summary>
-    ///     Creates a new <see cref="PgNewArrayExpression" />, for creating a new PostgreSQL array.
+    ///     Creates a new <see cref="H2NewArrayExpression" />, for creating a new PostgreSQL array.
     /// </summary>
-    public virtual PgNewArrayExpression NewArray(
+    public virtual H2NewArrayExpression NewArray(
         IReadOnlyList<SqlExpression> expressions,
         Type type,
         RelationalTypeMapping? typeMapping = null)
-        => (PgNewArrayExpression)ApplyTypeMapping(new PgNewArrayExpression(expressions, type, typeMapping), typeMapping);
+        => (H2NewArrayExpression)ApplyTypeMapping(new H2NewArrayExpression(expressions, type, typeMapping), typeMapping);
 
     /// <inheritdoc />
     public override SqlExpression? MakeBinary(
@@ -273,15 +273,15 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     }
 
     /// <summary>
-    ///     Creates a new <see cref="PgBinaryExpression" /> with the given arguments.
+    ///     Creates a new <see cref="H2BinaryExpression" /> with the given arguments.
     /// </summary>
     /// <param name="operatorType">An <see cref="T:System.Linq.Expressions.ExpressionType" /> representing SQL unary operator.</param>
     /// <param name="left">The left operand of binary operation.</param>
     /// <param name="right">The right operand of binary operation.</param>
     /// <param name="typeMapping">A type mapping to be assigned to the created expression.</param>
-    /// <returns>A <see cref="PgBinaryExpression" /> with the given arguments.</returns>
+    /// <returns>A <see cref="H2BinaryExpression" /> with the given arguments.</returns>
     public virtual SqlExpression MakePostgresBinary(
-        PgExpressionType operatorType,
+        H2ExpressionType operatorType,
         SqlExpression left,
         SqlExpression right,
         RelationalTypeMapping? typeMapping = null)
@@ -292,70 +292,70 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         var returnType = left.Type;
         switch (operatorType)
         {
-            case PgExpressionType.Contains:
-            case PgExpressionType.ContainedBy:
-            case PgExpressionType.Overlaps:
-            case PgExpressionType.NetworkContainedByOrEqual:
-            case PgExpressionType.NetworkContainsOrEqual:
-            case PgExpressionType.NetworkContainsOrContainedBy:
-            case PgExpressionType.RangeIsStrictlyLeftOf:
-            case PgExpressionType.RangeIsStrictlyRightOf:
-            case PgExpressionType.RangeDoesNotExtendRightOf:
-            case PgExpressionType.RangeDoesNotExtendLeftOf:
-            case PgExpressionType.RangeIsAdjacentTo:
-            case PgExpressionType.TextSearchMatch:
-            case PgExpressionType.JsonExists:
-            case PgExpressionType.JsonExistsAny:
-            case PgExpressionType.JsonExistsAll:
+            case H2ExpressionType.Contains:
+            case H2ExpressionType.ContainedBy:
+            case H2ExpressionType.Overlaps:
+            case H2ExpressionType.NetworkContainedByOrEqual:
+            case H2ExpressionType.NetworkContainsOrEqual:
+            case H2ExpressionType.NetworkContainsOrContainedBy:
+            case H2ExpressionType.RangeIsStrictlyLeftOf:
+            case H2ExpressionType.RangeIsStrictlyRightOf:
+            case H2ExpressionType.RangeDoesNotExtendRightOf:
+            case H2ExpressionType.RangeDoesNotExtendLeftOf:
+            case H2ExpressionType.RangeIsAdjacentTo:
+            case H2ExpressionType.TextSearchMatch:
+            case H2ExpressionType.JsonExists:
+            case H2ExpressionType.JsonExistsAny:
+            case H2ExpressionType.JsonExistsAll:
                 returnType = typeof(bool);
                 break;
 
-            case PgExpressionType.Distance:
+            case H2ExpressionType.Distance:
                 returnType = typeof(double);
                 break;
         }
 
-        return (PgBinaryExpression)ApplyTypeMapping(
-            new PgBinaryExpression(operatorType, left, right, returnType, null), typeMapping);
+        return (H2BinaryExpression)ApplyTypeMapping(
+            new H2BinaryExpression(operatorType, left, right, returnType, null), typeMapping);
     }
 
     /// <summary>
-    ///     Creates a new <see cref="PgBinaryExpression" />, for checking whether one value contains another.
+    ///     Creates a new <see cref="H2BinaryExpression" />, for checking whether one value contains another.
     /// </summary>
     public virtual SqlExpression Contains(SqlExpression left, SqlExpression right)
     {
         Check.NotNull(left, nameof(left));
         Check.NotNull(right, nameof(right));
 
-        return MakePostgresBinary(PgExpressionType.Contains, left, right);
+        return MakePostgresBinary(H2ExpressionType.Contains, left, right);
     }
 
     /// <summary>
-    ///     Creates a new <see cref="PgBinaryExpression" />, for checking whether one value is contained by another.
+    ///     Creates a new <see cref="H2BinaryExpression" />, for checking whether one value is contained by another.
     /// </summary>
     public virtual SqlExpression ContainedBy(SqlExpression left, SqlExpression right)
     {
         Check.NotNull(left, nameof(left));
         Check.NotNull(right, nameof(right));
 
-        return MakePostgresBinary(PgExpressionType.ContainedBy, left, right);
+        return MakePostgresBinary(H2ExpressionType.ContainedBy, left, right);
     }
 
     /// <summary>
-    ///     Creates a new <see cref="PgBinaryExpression" />, for checking whether one value overlaps with another.
+    ///     Creates a new <see cref="H2BinaryExpression" />, for checking whether one value overlaps with another.
     /// </summary>
     public virtual SqlExpression Overlaps(SqlExpression left, SqlExpression right)
     {
         Check.NotNull(left, nameof(left));
         Check.NotNull(right, nameof(right));
 
-        return MakePostgresBinary(PgExpressionType.Overlaps, left, right);
+        return MakePostgresBinary(H2ExpressionType.Overlaps, left, right);
     }
 
     /// <summary>
-    ///     Creates a new <see cref="PgFunctionExpression" /> for a PostgreSQL aggregate function call..
+    ///     Creates a new <see cref="H2FunctionExpression" /> for a PostgreSQL aggregate function call..
     /// </summary>
-    public virtual PgFunctionExpression AggregateFunction(
+    public virtual H2FunctionExpression AggregateFunction(
         string name,
         IEnumerable<SqlExpression> arguments,
         EnumerableExpression aggregateEnumerableExpression,
@@ -371,7 +371,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             typeMappedArguments.Add(ApplyDefaultTypeMapping(argument));
         }
 
-        return new PgFunctionExpression(
+        return new H2FunctionExpression(
             name,
             typeMappedArguments,
             argumentNames: null,
@@ -396,16 +396,16 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                 SqlBinaryExpression e => ApplyTypeMappingOnSqlBinary(e, typeMapping),
 
                 // PostgreSQL-specific expression types
-                PgAnyExpression e => ApplyTypeMappingOnAny(e),
-                PgAllExpression e => ApplyTypeMappingOnAll(e),
-                PgArrayIndexExpression e => ApplyTypeMappingOnArrayIndex(e, typeMapping),
-                PgArraySliceExpression e => ApplyTypeMappingOnArraySlice(e, typeMapping),
-                PgBinaryExpression e => ApplyTypeMappingOnPostgresBinary(e, typeMapping),
-                PgFunctionExpression e => e.ApplyTypeMapping(typeMapping),
-                PgILikeExpression e => ApplyTypeMappingOnILike(e),
-                PgNewArrayExpression e => ApplyTypeMappingOnNewArray(e, typeMapping),
-                PgRegexMatchExpression e => ApplyTypeMappingOnRegexMatch(e),
-                PgRowValueExpression e => ApplyTypeMappingOnRowValue(e, typeMapping),
+                H2AnyExpression e => ApplyTypeMappingOnAny(e),
+                H2AllExpression e => ApplyTypeMappingOnAll(e),
+                H2ArrayIndexExpression e => ApplyTypeMappingOnArrayIndex(e, typeMapping),
+                H2ArraySliceExpression e => ApplyTypeMappingOnArraySlice(e, typeMapping),
+                H2BinaryExpression e => ApplyTypeMappingOnPostgresBinary(e, typeMapping),
+                H2FunctionExpression e => e.ApplyTypeMapping(typeMapping),
+                H2ILikeExpression e => ApplyTypeMappingOnILike(e),
+                H2NewArrayExpression e => ApplyTypeMappingOnNewArray(e, typeMapping),
+                H2RegexMatchExpression e => ApplyTypeMappingOnRegexMatch(e),
+                H2RowValueExpression e => ApplyTypeMappingOnRowValue(e, typeMapping),
 
                 _ => base.ApplyTypeMapping(sqlExpression, typeMapping)
             };
@@ -527,8 +527,8 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             // SqlConstantExpression. This is because each value in the row value needs to have its type mapping.
             binary = new SqlBinaryExpression(
                 binary.OperatorType,
-                new PgRowValueExpression(updatedLeftValues, binary.Left.Type),
-                new PgRowValueExpression(updatedRightValues, binary.Right.Type),
+                new H2RowValueExpression(updatedLeftValues, binary.Left.Type),
+                new H2RowValueExpression(updatedRightValues, binary.Right.Type),
                 binary.Type,
                 binary.TypeMapping);
         }
@@ -555,7 +555,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         {
             switch (e)
             {
-                case PgRowValueExpression rowValueExpression:
+                case H2RowValueExpression rowValueExpression:
                     values = rowValueExpression.Values;
                     return true;
 
@@ -577,46 +577,46 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         }
     }
 
-    private SqlExpression ApplyTypeMappingOnRegexMatch(PgRegexMatchExpression pgRegexMatchExpression)
+    private SqlExpression ApplyTypeMappingOnRegexMatch(H2RegexMatchExpression h2RegexMatchExpression)
     {
         var inferredTypeMapping = ExpressionExtensions.InferTypeMapping(
-                pgRegexMatchExpression.Match, pgRegexMatchExpression.Pattern)
-            ?? _typeMappingSource.FindMapping(pgRegexMatchExpression.Match.Type, Dependencies.Model);
+                h2RegexMatchExpression.Match, h2RegexMatchExpression.Pattern)
+            ?? _typeMappingSource.FindMapping(h2RegexMatchExpression.Match.Type, Dependencies.Model);
 
-        return new PgRegexMatchExpression(
-            ApplyTypeMapping(pgRegexMatchExpression.Match, inferredTypeMapping),
-            ApplyTypeMapping(pgRegexMatchExpression.Pattern, inferredTypeMapping),
-            pgRegexMatchExpression.Options,
+        return new H2RegexMatchExpression(
+            ApplyTypeMapping(h2RegexMatchExpression.Match, inferredTypeMapping),
+            ApplyTypeMapping(h2RegexMatchExpression.Pattern, inferredTypeMapping),
+            h2RegexMatchExpression.Options,
             _boolTypeMapping);
     }
 
     private SqlExpression ApplyTypeMappingOnRowValue(
-        PgRowValueExpression pgRowValueExpression,
+        H2RowValueExpression h2RowValueExpression,
         RelationalTypeMapping? typeMapping)
     {
         // If the row value is in a binary expression (e.g. a comparison, (a, b) > (5, 6)), we have special type inference code
         // to infer from the other row value in ApplyTypeMappingOnSqlBinary.
         // If we're here, that means that no such inference can happen, and we just use the default type mappings.
-        var updatedValues = new SqlExpression[pgRowValueExpression.Values.Count];
+        var updatedValues = new SqlExpression[h2RowValueExpression.Values.Count];
 
         for (var i = 0; i < updatedValues.Length; i++)
         {
-            updatedValues[i] = ApplyDefaultTypeMapping(pgRowValueExpression.Values[i]);
+            updatedValues[i] = ApplyDefaultTypeMapping(h2RowValueExpression.Values[i]);
         }
 
-        return new PgRowValueExpression(updatedValues, pgRowValueExpression.Type, typeMapping);
+        return new H2RowValueExpression(updatedValues, h2RowValueExpression.Type, typeMapping);
     }
 
-    private SqlExpression ApplyTypeMappingOnAny(PgAnyExpression pgAnyExpression)
+    private SqlExpression ApplyTypeMappingOnAny(H2AnyExpression h2AnyExpression)
     {
-        var (item, array) = ApplyTypeMappingsOnItemAndArray(pgAnyExpression.Item, pgAnyExpression.Array);
-        return new PgAnyExpression(item, array, pgAnyExpression.OperatorType, _boolTypeMapping);
+        var (item, array) = ApplyTypeMappingsOnItemAndArray(h2AnyExpression.Item, h2AnyExpression.Array);
+        return new H2AnyExpression(item, array, h2AnyExpression.OperatorType, _boolTypeMapping);
     }
 
-    private SqlExpression ApplyTypeMappingOnAll(PgAllExpression pgAllExpression)
+    private SqlExpression ApplyTypeMappingOnAll(H2AllExpression h2AllExpression)
     {
-        var (item, array) = ApplyTypeMappingsOnItemAndArray(pgAllExpression.Item, pgAllExpression.Array);
-        return new PgAllExpression(item, array, pgAllExpression.OperatorType, _boolTypeMapping);
+        var (item, array) = ApplyTypeMappingsOnItemAndArray(h2AllExpression.Item, h2AllExpression.Array);
+        return new H2AllExpression(item, array, h2AllExpression.OperatorType, _boolTypeMapping);
     }
 
     internal (SqlExpression, SqlExpression) ApplyTypeMappingsOnItemAndArray(SqlExpression itemExpression, SqlExpression arrayExpression)
@@ -672,29 +672,29 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     }
 
     private SqlExpression ApplyTypeMappingOnArrayIndex(
-        PgArrayIndexExpression pgArrayIndexExpression,
+        H2ArrayIndexExpression h2ArrayIndexExpression,
         RelationalTypeMapping? typeMapping)
     {
         // If a (non-null) type mapping is being applied, it's to the element being indexed.
         // Infer the array's mapping from that.
         var (_, array) = typeMapping is not null
-            ? ApplyTypeMappingsOnItemAndArray(Constant(null, typeMapping.ClrType, typeMapping), pgArrayIndexExpression.Array)
-            : (null, ApplyDefaultTypeMapping(pgArrayIndexExpression.Array));
+            ? ApplyTypeMappingsOnItemAndArray(Constant(null, typeMapping.ClrType, typeMapping), h2ArrayIndexExpression.Array)
+            : (null, ApplyDefaultTypeMapping(h2ArrayIndexExpression.Array));
 
-        return new PgArrayIndexExpression(
+        return new H2ArrayIndexExpression(
             array,
-            ApplyDefaultTypeMapping(pgArrayIndexExpression.Index),
-            pgArrayIndexExpression.IsNullable,
-            pgArrayIndexExpression.Type,
+            ApplyDefaultTypeMapping(h2ArrayIndexExpression.Index),
+            h2ArrayIndexExpression.IsNullable,
+            h2ArrayIndexExpression.Type,
             // If the array has a type mapping (i.e. column), prefer that just like we prefer column mappings in general
-            pgArrayIndexExpression.Array.TypeMapping is H2ArrayTypeMapping arrayMapping
+            h2ArrayIndexExpression.Array.TypeMapping is H2ArrayTypeMapping arrayMapping
                 ? arrayMapping.ElementTypeMapping
                 : typeMapping
-                ?? _typeMappingSource.FindMapping(pgArrayIndexExpression.Type, Dependencies.Model));
+                ?? _typeMappingSource.FindMapping(h2ArrayIndexExpression.Type, Dependencies.Model));
     }
 
     private SqlExpression ApplyTypeMappingOnArraySlice(
-        PgArraySliceExpression slice,
+        H2ArraySliceExpression slice,
         RelationalTypeMapping? typeMapping)
     {
         // If the slice operand has a type mapping, that bubbles up (slice is just a view over that). Otherwise apply the external type
@@ -704,7 +704,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         // Infer the array's mapping from that.
         var array = ApplyTypeMapping(slice.Array, typeMapping);
 
-        return new PgArraySliceExpression(
+        return new H2ArraySliceExpression(
             array,
             slice.LowerBound is null ? null : ApplyDefaultTypeMapping(slice.LowerBound),
             slice.UpperBound is null ? null : ApplyDefaultTypeMapping(slice.UpperBound),
@@ -713,7 +713,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             array.TypeMapping);
     }
 
-    private SqlExpression ApplyTypeMappingOnILike(PgILikeExpression ilikeExpression)
+    private SqlExpression ApplyTypeMappingOnILike(H2ILikeExpression ilikeExpression)
     {
         var inferredTypeMapping = (ilikeExpression.EscapeChar is null
                 ? ExpressionExtensions.InferTypeMapping(
@@ -723,7 +723,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                     ilikeExpression.EscapeChar))
             ?? _typeMappingSource.FindMapping(ilikeExpression.Match.Type, Dependencies.Model);
 
-        return new PgILikeExpression(
+        return new H2ILikeExpression(
             ApplyTypeMapping(ilikeExpression.Match, inferredTypeMapping),
             ApplyTypeMapping(ilikeExpression.Pattern, inferredTypeMapping),
             ApplyTypeMapping(ilikeExpression.EscapeChar, inferredTypeMapping),
@@ -731,25 +731,25 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     }
 
     private SqlExpression ApplyTypeMappingOnPostgresBinary(
-        PgBinaryExpression pgBinaryExpression,
+        H2BinaryExpression h2BinaryExpression,
         RelationalTypeMapping? typeMapping)
     {
-        var (left, right) = (pgBinaryExpression.Left, pgBinaryExpression.Right);
+        var (left, right) = (h2BinaryExpression.Left, h2BinaryExpression.Right);
 
         Type resultType;
         RelationalTypeMapping? resultTypeMapping = null;
         RelationalTypeMapping? inferredTypeMapping;
-        var operatorType = pgBinaryExpression.OperatorType;
+        var operatorType = h2BinaryExpression.OperatorType;
         switch (operatorType)
         {
-            case PgExpressionType.Overlaps:
-            case PgExpressionType.Contains:
-            case PgExpressionType.ContainedBy:
-            case PgExpressionType.RangeIsStrictlyLeftOf:
-            case PgExpressionType.RangeIsStrictlyRightOf:
-            case PgExpressionType.RangeDoesNotExtendRightOf:
-            case PgExpressionType.RangeDoesNotExtendLeftOf:
-            case PgExpressionType.RangeIsAdjacentTo:
+            case H2ExpressionType.Overlaps:
+            case H2ExpressionType.Contains:
+            case H2ExpressionType.ContainedBy:
+            case H2ExpressionType.RangeIsStrictlyLeftOf:
+            case H2ExpressionType.RangeIsStrictlyRightOf:
+            case H2ExpressionType.RangeDoesNotExtendRightOf:
+            case H2ExpressionType.RangeDoesNotExtendLeftOf:
+            case H2ExpressionType.RangeIsAdjacentTo:
             {
                 resultType = typeof(bool);
                 resultTypeMapping = _boolTypeMapping;
@@ -769,7 +769,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                 // We need fancier type mapping inference.
                 SqlExpression newLeft, newRight;
 
-                if (operatorType == PgExpressionType.ContainedBy)
+                if (operatorType == H2ExpressionType.ContainedBy)
                 {
                     (newRight, newLeft) = InferContainmentMappings(right, left);
                 }
@@ -778,20 +778,20 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                     (newLeft, newRight) = InferContainmentMappings(left, right);
                 }
 
-                return new PgBinaryExpression(operatorType, newLeft, newRight, resultType, resultTypeMapping);
+                return new H2BinaryExpression(operatorType, newLeft, newRight, resultType, resultTypeMapping);
             }
 
-            case PgExpressionType.NetworkContainedByOrEqual:
-            case PgExpressionType.NetworkContainsOrEqual:
-            case PgExpressionType.NetworkContainsOrContainedBy:
-            case PgExpressionType.TextSearchMatch:
-            case PgExpressionType.JsonExists:
-            case PgExpressionType.JsonExistsAny:
-            case PgExpressionType.JsonExistsAll:
+            case H2ExpressionType.NetworkContainedByOrEqual:
+            case H2ExpressionType.NetworkContainsOrEqual:
+            case H2ExpressionType.NetworkContainsOrContainedBy:
+            case H2ExpressionType.TextSearchMatch:
+            case H2ExpressionType.JsonExists:
+            case H2ExpressionType.JsonExistsAny:
+            case H2ExpressionType.JsonExistsAll:
             {
                 // TODO: For networking, this probably needs to be cleaned up, i.e. we know where the CIDR and INET are
                 // based on operator type?
-                return new PgBinaryExpression(
+                return new H2BinaryExpression(
                     operatorType,
                     ApplyDefaultTypeMapping(left),
                     ApplyDefaultTypeMapping(right),
@@ -799,11 +799,11 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                     _boolTypeMapping);
             }
 
-            case PgExpressionType.RangeUnion:
-            case PgExpressionType.RangeIntersect:
-            case PgExpressionType.RangeExcept:
-            case PgExpressionType.TextSearchAnd:
-            case PgExpressionType.TextSearchOr:
+            case H2ExpressionType.RangeUnion:
+            case H2ExpressionType.RangeIntersect:
+            case H2ExpressionType.RangeExcept:
+            case H2ExpressionType.TextSearchAnd:
+            case H2ExpressionType.TextSearchOr:
             {
                 inferredTypeMapping = typeMapping ?? ExpressionExtensions.InferTypeMapping(left, right);
                 resultType = inferredTypeMapping?.ClrType ?? left.Type;
@@ -811,7 +811,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
                 break;
             }
 
-            case PgExpressionType.Distance:
+            case H2ExpressionType.Distance:
             {
                 inferredTypeMapping = typeMapping ?? ExpressionExtensions.InferTypeMapping(left, right);
 
@@ -840,10 +840,10 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
 
             default:
                 throw new InvalidOperationException(
-                    $"Incorrect {nameof(operatorType)} for {nameof(pgBinaryExpression)}: {operatorType}");
+                    $"Incorrect {nameof(operatorType)} for {nameof(h2BinaryExpression)}: {operatorType}");
         }
 
-        return new PgBinaryExpression(
+        return new H2BinaryExpression(
             operatorType,
             ApplyTypeMapping(left, inferredTypeMapping),
             ApplyTypeMapping(right, inferredTypeMapping),
@@ -912,7 +912,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     }
 
     private SqlExpression ApplyTypeMappingOnNewArray(
-        PgNewArrayExpression pgNewArrayExpression,
+        H2NewArrayExpression h2NewArrayExpression,
         RelationalTypeMapping? typeMapping)
     {
         var arrayTypeMapping = typeMapping as H2ArrayTypeMapping;
@@ -925,7 +925,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
 
         // First, loop over the expressions to infer the array's type mapping (if not provided), and to make
         // sure we don't have heterogeneous store types.
-        foreach (var expression in pgNewArrayExpression.Expressions)
+        foreach (var expression in h2NewArrayExpression.Expressions)
         {
             if (expression.TypeMapping is not { } expressionTypeMapping)
             {
@@ -997,7 +997,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             // we have no type mapping... Just return the original expression, which has no type mapping and will fail translation.
             if (arrayTypeMapping is null)
             {
-                return pgNewArrayExpression;
+                return h2NewArrayExpression;
             }
 
             elementTypeMapping = arrayTypeMapping.ElementTypeMapping;
@@ -1009,38 +1009,38 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             // way H2 2.5 writes it: the type of the element and the word ARRAY after it
             // ("varchar ARRAY"). The brackets ("varchar[]") H2 does not know.
             arrayTypeMapping = (H2ArrayTypeMapping?)_typeMappingSource.FindMapping(
-                pgNewArrayExpression.Type,
+                h2NewArrayExpression.Type,
                 elementTypeMapping.StoreType + " ARRAY");
 
             // If the array's CLR type doesn't match the type mapping inferred from the element (e.g. CLR object[] with up-casted
             // elements). Just return the original expression, which has no type mapping and will fail translation.
             if (arrayTypeMapping is null)
             {
-                return pgNewArrayExpression;
+                return h2NewArrayExpression;
             }
         }
 
         // Now go over all expressions and apply the inferred element type mapping
         List<SqlExpression>? newExpressions = null;
-        for (var i = 0; i < pgNewArrayExpression.Expressions.Count; i++)
+        for (var i = 0; i < h2NewArrayExpression.Expressions.Count; i++)
         {
-            var expression = pgNewArrayExpression.Expressions[i];
+            var expression = h2NewArrayExpression.Expressions[i];
             var newExpression = ApplyTypeMapping(expression, elementTypeMapping);
             if (newExpression != expression && newExpressions is null)
             {
                 newExpressions = [];
                 for (var j = 0; j < i; j++)
                 {
-                    newExpressions.Add(pgNewArrayExpression.Expressions[j]);
+                    newExpressions.Add(h2NewArrayExpression.Expressions[j]);
                 }
             }
 
             newExpressions?.Add(newExpression);
         }
 
-        return new PgNewArrayExpression(
-            newExpressions ?? pgNewArrayExpression.Expressions,
-            pgNewArrayExpression.Type, arrayTypeMapping);
+        return new H2NewArrayExpression(
+            newExpressions ?? h2NewArrayExpression.Expressions,
+            h2NewArrayExpression.Type, arrayTypeMapping);
     }
 
     /// <summary>

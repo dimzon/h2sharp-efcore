@@ -462,18 +462,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
                 .AppendLine(";");
         }
 
-        // Compression
-        var oldCompressionMethod = (string?)operation.OldColumn[H2AnnotationNames.CompressionMethod];
-        var newCompressionMethod = (string?)operation[H2AnnotationNames.CompressionMethod];
-
-        if (newCompressionMethod != oldCompressionMethod)
-        {
-            builder
-                .Append(alterBase)
-                .Append("SET COMPRESSION ")
-                .Append(newCompressionMethod ?? "default");
-        }
-
         CheckForOldValueGenerationAnnotation(operation);
 
         var oldStrategy = operation.OldColumn[H2AnnotationNames.ValueGenerationStrategy] as H2ValueGenerationStrategy?;
@@ -1256,13 +1244,6 @@ public class H2MigrationsSqlGenerator : MigrationsSqlGenerator
             .Append(DelimitIdentifier(name))
             .Append(" ")
             .Append(columnType);
-
-        if (operation[H2AnnotationNames.CompressionMethod] is string compressionMethod)
-        {
-            builder
-                .Append(" COMPRESSION ")
-                .Append(DelimitIdentifier(compressionMethod));
-        }
 
         // H2 2.5 has no collation of a column: the reference reads "COLLATE" only in the
         // compatibility mode, and the catalogue of H2 2.5 has no collation of a column.

@@ -21,7 +21,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 ///         doing so can result in application failures when updating to a new Entity Framework Core release.
 ///     </para>
 /// </remarks>
-public class PgTableValuedFunctionExpression : TableValuedFunctionExpression, IEquatable<PgTableValuedFunctionExpression>
+public class H2TableValuedFunctionExpression : TableValuedFunctionExpression, IEquatable<H2TableValuedFunctionExpression>
 {
     /// <summary>
     ///     The name of the column to be projected out from the <c>unnest</c> call.
@@ -51,7 +51,7 @@ public class PgTableValuedFunctionExpression : TableValuedFunctionExpression, IE
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public PgTableValuedFunctionExpression(
+    public H2TableValuedFunctionExpression(
         string alias,
         string name,
         IReadOnlyList<SqlExpression> arguments,
@@ -67,7 +67,7 @@ public class PgTableValuedFunctionExpression : TableValuedFunctionExpression, IE
     protected override Expression VisitChildren(ExpressionVisitor visitor)
         => visitor.VisitAndConvert(Arguments) is var visitedArguments && visitedArguments == Arguments
             ? this
-            : new PgTableValuedFunctionExpression(Alias, Name, visitedArguments, ColumnInfos, WithOrdinality);
+            : new H2TableValuedFunctionExpression(Alias, Name, visitedArguments, ColumnInfos, WithOrdinality);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -75,10 +75,10 @@ public class PgTableValuedFunctionExpression : TableValuedFunctionExpression, IE
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public override PgTableValuedFunctionExpression Update(IReadOnlyList<SqlExpression> arguments)
+    public override H2TableValuedFunctionExpression Update(IReadOnlyList<SqlExpression> arguments)
         => arguments.SequenceEqual(Arguments, ReferenceEqualityComparer.Instance)
             ? this
-            : new PgTableValuedFunctionExpression(Alias, Name, arguments, ColumnInfos, WithOrdinality);
+            : new H2TableValuedFunctionExpression(Alias, Name, arguments, ColumnInfos, WithOrdinality);
 
     /// <inheritdoc />
     public override TableExpressionBase Clone(string? alias, ExpressionVisitor cloningExpressionVisitor)
@@ -89,11 +89,11 @@ public class PgTableValuedFunctionExpression : TableValuedFunctionExpression, IE
             arguments[i] = (SqlExpression)cloningExpressionVisitor.Visit(Arguments[i]);
         }
 
-        return new PgTableValuedFunctionExpression(Alias, Name, arguments, ColumnInfos, WithOrdinality);
+        return new H2TableValuedFunctionExpression(Alias, Name, arguments, ColumnInfos, WithOrdinality);
     }
 
     /// <inheritdoc />
-    public override PgTableValuedFunctionExpression WithAlias(string newAlias)
+    public override H2TableValuedFunctionExpression WithAlias(string newAlias)
         => new(newAlias, Name, Arguments, ColumnInfos, WithOrdinality);
 
     /// <summary>
@@ -102,7 +102,7 @@ public class PgTableValuedFunctionExpression : TableValuedFunctionExpression, IE
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual PgTableValuedFunctionExpression WithColumnInfos(IReadOnlyList<ColumnInfo> columnInfos)
+    public virtual H2TableValuedFunctionExpression WithColumnInfos(IReadOnlyList<ColumnInfo> columnInfos)
         => new(Alias, Name, Arguments, columnInfos, WithOrdinality);
 
     /// <inheritdoc />
@@ -153,10 +153,10 @@ public class PgTableValuedFunctionExpression : TableValuedFunctionExpression, IE
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => ReferenceEquals(obj, this) || obj is PgTableValuedFunctionExpression e && Equals(e);
+        => ReferenceEquals(obj, this) || obj is H2TableValuedFunctionExpression e && Equals(e);
 
     /// <inheritdoc />
-    public bool Equals(PgTableValuedFunctionExpression? expression)
+    public bool Equals(H2TableValuedFunctionExpression? expression)
         => base.Equals(expression)
             && (
                 expression.ColumnInfos is null && ColumnInfos is null
@@ -168,7 +168,7 @@ public class PgTableValuedFunctionExpression : TableValuedFunctionExpression, IE
         => base.GetHashCode();
 
     /// <summary>
-    ///     Defines the name of a column coming out of a <see cref="PgTableValuedFunctionExpression" /> and optionally its type.
+    ///     Defines the name of a column coming out of a <see cref="H2TableValuedFunctionExpression" /> and optionally its type.
     /// </summary>
     public readonly record struct ColumnInfo(string Name, RelationalTypeMapping? TypeMapping = null);
 }

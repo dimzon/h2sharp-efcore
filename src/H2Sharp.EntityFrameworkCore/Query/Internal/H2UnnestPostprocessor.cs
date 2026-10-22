@@ -4,7 +4,7 @@ using H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 namespace H2Sharp.EntityFrameworkCore.Query.Internal;
 
 /// <summary>
-///     Locates instances of <see cref="PgUnnestExpression" /> in the tree and prunes the WITH ORDINALITY clause from them if the
+///     Locates instances of <see cref="H2UnnestExpression" /> in the tree and prunes the WITH ORDINALITY clause from them if the
 ///     ordinality column isn't referenced anywhere.
 /// </summary>
 /// <remarks>
@@ -46,7 +46,7 @@ public class H2UnnestPostprocessor : ExpressionVisitor
                     // (this is where they may appear); if found, remove the ordinality column from the unnest call.
                     // Note that if the ordinality column is the first ordering, we can still remove it, since unnest already returns
                     // ordered results.
-                    if (unwrappedTable is PgUnnestExpression unnest
+                    if (unwrappedTable is H2UnnestExpression unnest
                         && !selectExpression.Orderings.Skip(1).Select(o => o.Expression)
                             .Concat(selectExpression.Projection.Select(p => p.Expression))
                             .Any(IsOrdinalityColumn))
@@ -61,12 +61,12 @@ public class H2UnnestPostprocessor : ExpressionVisitor
                             }
                         }
 
-                        var newUnnest = new PgUnnestExpression(unnest.Alias, unnest.Array, unnest.ColumnName, withOrdinality: false);
+                        var newUnnest = new H2UnnestExpression(unnest.Alias, unnest.Array, unnest.ColumnName, withOrdinality: false);
 
                         newTables[i] = table switch
                         {
                             JoinExpressionBase j => j.Update(newUnnest),
-                            PgUnnestExpression => newUnnest,
+                            H2UnnestExpression => newUnnest,
                             _ => throw new UnreachableException()
                         };
 

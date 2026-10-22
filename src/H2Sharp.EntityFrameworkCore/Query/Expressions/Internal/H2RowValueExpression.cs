@@ -9,7 +9,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 ///     See the <see href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">PostgreSQL docs</see>
 ///     for more information.
 /// </remarks>
-public class PgRowValueExpression : SqlExpression, IEquatable<PgRowValueExpression>
+public class H2RowValueExpression : SqlExpression, IEquatable<H2RowValueExpression>
 {
     private static ConstructorInfo? _quotingConstructor;
 
@@ -19,7 +19,7 @@ public class PgRowValueExpression : SqlExpression, IEquatable<PgRowValueExpressi
     public virtual IReadOnlyList<SqlExpression> Values { get; }
 
     /// <inheritdoc />
-    public PgRowValueExpression(
+    public H2RowValueExpression(
         IReadOnlyList<SqlExpression> values,
         Type type,
         RelationalTypeMapping? typeMapping = null)
@@ -57,22 +57,22 @@ public class PgRowValueExpression : SqlExpression, IEquatable<PgRowValueExpressi
             }
         }
 
-        return newRowValues is null ? this : new PgRowValueExpression(newRowValues, Type);
+        return newRowValues is null ? this : new H2RowValueExpression(newRowValues, Type);
     }
 
     /// <summary>
     ///     Creates a new expression that is like this one, but using the supplied children. If all of the children are the same, it will
     ///     return this expression.
     /// </summary>
-    public virtual PgRowValueExpression Update(IReadOnlyList<SqlExpression> values)
+    public virtual H2RowValueExpression Update(IReadOnlyList<SqlExpression> values)
         => values.Count == Values.Count && values.Zip(Values, (x, y) => (x, y)).All(tup => tup.x == tup.y)
             ? this
-            : new PgRowValueExpression(values, Type);
+            : new H2RowValueExpression(values, Type);
 
     /// <inheritdoc />
     public override Expression Quote()
         => New(
-            _quotingConstructor ??= typeof(PgRowValueExpression).GetConstructor(
+            _quotingConstructor ??= typeof(H2RowValueExpression).GetConstructor(
                 [typeof(IReadOnlyList<SqlExpression>), typeof(Type), typeof(RelationalTypeMapping)])!,
             NewArrayInit(typeof(SqlExpression), initializers: Values.Select(a => a.Quote())),
             Constant(Type),
@@ -99,10 +99,10 @@ public class PgRowValueExpression : SqlExpression, IEquatable<PgRowValueExpressi
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj is PgRowValueExpression other && Equals(other);
+        => obj is H2RowValueExpression other && Equals(other);
 
     /// <inheritdoc />
-    public virtual bool Equals(PgRowValueExpression? other)
+    public virtual bool Equals(H2RowValueExpression? other)
     {
         if (other is null || !base.Equals(other) || other.Values.Count != Values.Count)
         {

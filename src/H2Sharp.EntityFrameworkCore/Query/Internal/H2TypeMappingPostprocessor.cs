@@ -41,7 +41,7 @@ public class H2TypeMappingPostprocessor : RelationalTypeMappingPostprocessor
     {
         switch (expression)
         {
-            case PgUnnestExpression unnestExpression
+            case H2UnnestExpression unnestExpression
                 when TryGetInferredTypeMapping(unnestExpression.Alias, unnestExpression.ColumnName, out var elementTypeMapping):
             {
                 var collectionTypeMapping = _typeMappingSource.FindMapping(unnestExpression.Array.Type, _model, elementTypeMapping);

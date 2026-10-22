@@ -3,7 +3,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions;
 /// <summary>
 ///     PostgreSQL-specific expression node types.
 /// </summary>
-public enum PgExpressionType
+public enum H2ExpressionType
 {
     #region General operators
 

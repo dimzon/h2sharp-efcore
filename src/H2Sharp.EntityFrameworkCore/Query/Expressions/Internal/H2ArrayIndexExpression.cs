@@ -7,7 +7,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 ///     <see cref="SqlBinaryExpression" /> specifically disallows having an <see cref="SqlBinaryExpression.OperatorType" />
 ///     of value <see cref="ExpressionType.ArrayIndex" /> as arrays are a PostgreSQL-only feature.
 /// </remarks>
-public class PgArrayIndexExpression : SqlExpression, IEquatable<PgArrayIndexExpression>
+public class H2ArrayIndexExpression : SqlExpression, IEquatable<H2ArrayIndexExpression>
 {
     private static ConstructorInfo? _quotingConstructor;
 
@@ -27,14 +27,14 @@ public class PgArrayIndexExpression : SqlExpression, IEquatable<PgArrayIndexExpr
     public virtual bool IsNullable { get; }
 
     /// <summary>
-    ///     Creates a new instance of the <see cref="PgArrayIndexExpression" /> class.
+    ///     Creates a new instance of the <see cref="H2ArrayIndexExpression" /> class.
     /// </summary>
     /// <param name="array">The array tp index into.</param>
     /// <param name="index">An position in the array to index into.</param>
     /// <param name="nullable">Whether the expression is nullable.</param>
     /// <param name="type">The <see cref="Type" /> of the expression.</param>
     /// <param name="typeMapping">The <see cref="RelationalTypeMapping" /> associated with the expression.</param>
-    public PgArrayIndexExpression(
+    public H2ArrayIndexExpression(
         SqlExpression array,
         SqlExpression index,
         bool nullable,
@@ -72,15 +72,15 @@ public class PgArrayIndexExpression : SqlExpression, IEquatable<PgArrayIndexExpr
     /// <param name="array">The <see cref="Array" /> property of the result.</param>
     /// <param name="index">The <see cref="Index" /> property of the result.</param>
     /// <returns>This expression if no children changed, or an expression with the updated children.</returns>
-    public virtual PgArrayIndexExpression Update(SqlExpression array, SqlExpression index)
+    public virtual H2ArrayIndexExpression Update(SqlExpression array, SqlExpression index)
         => array == Array && index == Index
             ? this
-            : new PgArrayIndexExpression(array, index, IsNullable, Type, TypeMapping);
+            : new H2ArrayIndexExpression(array, index, IsNullable, Type, TypeMapping);
 
     /// <inheritdoc />
     public override Expression Quote()
         => New(
-            _quotingConstructor ??= typeof(PgArrayIndexExpression).GetConstructor(
+            _quotingConstructor ??= typeof(H2ArrayIndexExpression).GetConstructor(
                 [typeof(SqlExpression), typeof(SqlExpression), typeof(bool), typeof(Type), typeof(RelationalTypeMapping)])!,
             Array.Quote(),
             Index.Quote(),
@@ -93,7 +93,7 @@ public class PgArrayIndexExpression : SqlExpression, IEquatable<PgArrayIndexExpr
         => Update((SqlExpression)visitor.Visit(Array), (SqlExpression)visitor.Visit(Index));
 
     /// <inheritdoc />
-    public virtual bool Equals(PgArrayIndexExpression? other)
+    public virtual bool Equals(H2ArrayIndexExpression? other)
         => ReferenceEquals(this, other)
             || other is not null
             && base.Equals(other)
@@ -103,7 +103,7 @@ public class PgArrayIndexExpression : SqlExpression, IEquatable<PgArrayIndexExpr
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj is PgArrayIndexExpression e && Equals(e);
+        => obj is H2ArrayIndexExpression e && Equals(e);
 
     /// <inheritdoc />
     public override int GetHashCode()

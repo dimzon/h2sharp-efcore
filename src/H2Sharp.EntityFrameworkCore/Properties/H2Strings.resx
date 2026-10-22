@@ -120,9 +120,6 @@
   <data name="DataSourceAndConfigNotSupported" xml:space="preserve">
     <value>ConfigureDataSource() cannot be used when an externally-provided H2DataSource is passed to UseH2(). Either perform all data source configuration on the external H2DataSource, or pass a connection string to UseH2() and specify the data source configuration there.</value>
   </data>
-  <data name="DuplicateColumnCompressionMethodMismatch" xml:space="preserve">
-    <value>'{entityType1}.{property1}' and '{entityType2}.{property2}' are both mapped to column '{columnName}' in '{table}' but are configured with different compression methods.</value>
-  </data>
   <data name="DuplicateColumnNameValueGenerationStrategyMismatch" xml:space="preserve">
     <value>'{entityType1}.{property1}' and '{entityType2}.{property2}' are both mapped to column '{columnName}' in '{table}' but are configured with different value generation strategies.</value>
   </data>

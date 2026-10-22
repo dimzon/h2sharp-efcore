@@ -194,18 +194,5 @@ public class H2ModelValidator : RelationalModelValidator
         in StoreObjectIdentifier storeObject,
         IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
     {
-        base.ValidateCompatible(property, duplicateProperty, columnName, storeObject, logger);
-
-        if (property.GetCompressionMethod(storeObject) != duplicateProperty.GetCompressionMethod(storeObject))
-        {
-            throw new InvalidOperationException(
-                H2Strings.DuplicateColumnCompressionMethodMismatch(
-                    duplicateProperty.DeclaringType.DisplayName(),
-                    duplicateProperty.Name,
-                    property.DeclaringType.DisplayName(),
-                    property.Name,
-                    columnName,
-                    storeObject.DisplayName()));
-        }
     }
 }

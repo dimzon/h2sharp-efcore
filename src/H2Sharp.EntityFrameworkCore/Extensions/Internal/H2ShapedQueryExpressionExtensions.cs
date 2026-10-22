@@ -48,7 +48,7 @@ public static class H2ShapedQueryExpressionExtensions
     {
         if (source.QueryExpression is SelectExpression
             {
-                Tables: [PgUnnestExpression { Array: var a } unnest],
+                Tables: [H2UnnestExpression { Array: var a } unnest],
                 GroupBy: [],
                 Having: null,
                 IsDistinct: false,
@@ -112,7 +112,7 @@ public static class H2ShapedQueryExpressionExtensions
                 elements[i] = valuesExpression.RowValues[i].Values[1];
             }
 
-            array = new PgNewArrayExpression(elements, valuesExpression.RowValues[0].Values[1].Type.MakeArrayType(), typeMapping: null);
+            array = new H2NewArrayExpression(elements, valuesExpression.RowValues[0].Values[1].Type.MakeArrayType(), typeMapping: null);
             return true;
         }
 

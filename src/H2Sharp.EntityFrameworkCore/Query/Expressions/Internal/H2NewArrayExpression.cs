@@ -3,17 +3,17 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 /// <summary>
 ///     Represents creating a new PostgreSQL array.
 /// </summary>
-public class PgNewArrayExpression : SqlExpression
+public class H2NewArrayExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
 
     /// <summary>
-    ///     Creates a new instance of the <see cref="PgNewArrayExpression" /> class.
+    ///     Creates a new instance of the <see cref="H2NewArrayExpression" /> class.
     /// </summary>
     /// <param name="expressions">The values to initialize the elements of the new array.</param>
     /// <param name="type">The <see cref="Type" /> of the expression.</param>
     /// <param name="typeMapping">The <see cref="RelationalTypeMapping" /> associated with the expression.</param>
-    public PgNewArrayExpression(
+    public H2NewArrayExpression(
         IReadOnlyList<SqlExpression> expressions,
         Type type,
         RelationalTypeMapping? typeMapping)
@@ -23,7 +23,7 @@ public class PgNewArrayExpression : SqlExpression
 
         if (type.TryGetElementType(typeof(IEnumerable<>)) is null)
         {
-            throw new ArgumentException($"{nameof(PgNewArrayExpression)} must have an IEnumerable<T> type");
+            throw new ArgumentException($"{nameof(H2NewArrayExpression)} must have an IEnumerable<T> type");
         }
 
         Expressions = expressions;
@@ -58,7 +58,7 @@ public class PgNewArrayExpression : SqlExpression
 
         return newExpressions is null
             ? this
-            : new PgNewArrayExpression(newExpressions, Type, TypeMapping);
+            : new H2NewArrayExpression(newExpressions, Type, TypeMapping);
     }
 
     /// <summary>
@@ -67,19 +67,19 @@ public class PgNewArrayExpression : SqlExpression
     /// </summary>
     /// <param name="expressions">The values to initialize the elements of the new array.</param>
     /// <returns>This expression if no children changed, or an expression with the updated children.</returns>
-    public virtual PgNewArrayExpression Update(IReadOnlyList<SqlExpression> expressions)
+    public virtual H2NewArrayExpression Update(IReadOnlyList<SqlExpression> expressions)
     {
         Check.NotNull(expressions, nameof(expressions));
 
         return expressions == Expressions
             ? this
-            : new PgNewArrayExpression(expressions, Type, TypeMapping);
+            : new H2NewArrayExpression(expressions, Type, TypeMapping);
     }
 
     /// <inheritdoc />
     public override Expression Quote()
         => New(
-            _quotingConstructor ??= typeof(PgNewArrayExpression).GetConstructor(
+            _quotingConstructor ??= typeof(H2NewArrayExpression).GetConstructor(
                 [typeof(IReadOnlyList<SqlExpression>), typeof(Type), typeof(RelationalTypeMapping)])!,
             NewArrayInit(typeof(SqlExpression), initializers: Expressions.Select(a => a.Quote())),
             Constant(Type),
@@ -112,12 +112,12 @@ public class PgNewArrayExpression : SqlExpression
     public override bool Equals(object? obj)
         => obj is not null
             && (ReferenceEquals(this, obj)
-                || obj is PgNewArrayExpression sqlBinaryExpression
+                || obj is H2NewArrayExpression sqlBinaryExpression
                 && Equals(sqlBinaryExpression));
 
-    private bool Equals(PgNewArrayExpression pgNewArrayExpression)
-        => base.Equals(pgNewArrayExpression)
-            && Expressions.SequenceEqual(pgNewArrayExpression.Expressions);
+    private bool Equals(H2NewArrayExpression h2NewArrayExpression)
+        => base.Equals(h2NewArrayExpression)
+            && Expressions.SequenceEqual(h2NewArrayExpression.Expressions);
 
     /// <inheritdoc />
     public override int GetHashCode()

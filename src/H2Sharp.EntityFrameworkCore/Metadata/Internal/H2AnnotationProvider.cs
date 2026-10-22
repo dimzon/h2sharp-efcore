@@ -77,13 +77,6 @@ public class H2AnnotationProvider : RelationalAnnotationProvider
             }
         }
 
-        // JSON columns have no property mappings so all annotations that rely on property mappings should be skipped for them
-        if (column is not JsonColumn
-            && column.PropertyMappings.FirstOrDefault()?.Property.GetCompressionMethod() is { } compressionMethod)
-        {
-            // Model validation ensures that these facets are the same on all mapped properties
-            yield return new Annotation(H2AnnotationNames.CompressionMethod, compressionMethod);
-        }
     }
 
     /// <summary>

@@ -5,20 +5,20 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 /// <summary>
 ///     An expression that represents a PostgreSQL-specific binary operation in a SQL tree.
 /// </summary>
-public class PgBinaryExpression : SqlExpression
+public class H2BinaryExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
 
     /// <summary>
-    ///     Creates a new instance of the <see cref="PgBinaryExpression" /> class.
+    ///     Creates a new instance of the <see cref="H2BinaryExpression" /> class.
     /// </summary>
     /// <param name="operatorType">The operator to apply.</param>
     /// <param name="left">An expression which is left operand.</param>
     /// <param name="right">An expression which is right operand.</param>
     /// <param name="type">The <see cref="Type" /> of the expression.</param>
     /// <param name="typeMapping">The <see cref="RelationalTypeMapping" /> associated with the expression.</param>
-    public PgBinaryExpression(
-        PgExpressionType operatorType,
+    public H2BinaryExpression(
+        H2ExpressionType operatorType,
         SqlExpression left,
         SqlExpression right,
         Type type,
@@ -36,7 +36,7 @@ public class PgBinaryExpression : SqlExpression
     /// <summary>
     ///     The operator of this PostgreSQL binary operation.
     /// </summary>
-    public virtual PgExpressionType OperatorType { get; }
+    public virtual H2ExpressionType OperatorType { get; }
 
     /// <summary>
     ///     The left operand.
@@ -66,21 +66,21 @@ public class PgBinaryExpression : SqlExpression
     /// <param name="left">The <see cref="Left" /> property of the result.</param>
     /// <param name="right">The <see cref="Right" /> property of the result.</param>
     /// <returns>This expression if no children changed, or an expression with the updated children.</returns>
-    public virtual PgBinaryExpression Update(SqlExpression left, SqlExpression right)
+    public virtual H2BinaryExpression Update(SqlExpression left, SqlExpression right)
     {
         Check.NotNull(left, nameof(left));
         Check.NotNull(right, nameof(right));
 
         return left != Left || right != Right
-            ? new PgBinaryExpression(OperatorType, left, right, Type, TypeMapping)
+            ? new H2BinaryExpression(OperatorType, left, right, Type, TypeMapping)
             : this;
     }
 
     /// <inheritdoc />
     public override Expression Quote()
         => New(
-            _quotingConstructor ??= typeof(PgBinaryExpression).GetConstructor(
-                [typeof(PgExpressionType), typeof(SqlExpression), typeof(SqlExpression), typeof(Type), typeof(RelationalTypeMapping)])!,
+            _quotingConstructor ??= typeof(H2BinaryExpression).GetConstructor(
+                [typeof(H2ExpressionType), typeof(SqlExpression), typeof(SqlExpression), typeof(Type), typeof(RelationalTypeMapping)])!,
             Constant(OperatorType),
             Left.Quote(),
             Right.Quote(),
@@ -111,45 +111,45 @@ public class PgBinaryExpression : SqlExpression
             .Append(
                 OperatorType switch
                 {
-                    PgExpressionType.Contains => "@>",
-                    PgExpressionType.ContainedBy => "<@",
-                    PgExpressionType.Overlaps => "&&",
+                    H2ExpressionType.Contains => "@>",
+                    H2ExpressionType.ContainedBy => "<@",
+                    H2ExpressionType.Overlaps => "&&",
 
-                    PgExpressionType.NetworkContainedByOrEqual => "<<=",
-                    PgExpressionType.NetworkContainsOrEqual => ">>=",
-                    PgExpressionType.NetworkContainsOrContainedBy => "&&",
+                    H2ExpressionType.NetworkContainedByOrEqual => "<<=",
+                    H2ExpressionType.NetworkContainsOrEqual => ">>=",
+                    H2ExpressionType.NetworkContainsOrContainedBy => "&&",
 
-                    PgExpressionType.RangeIsStrictlyLeftOf => "<<",
-                    PgExpressionType.RangeIsStrictlyRightOf => ">>",
-                    PgExpressionType.RangeDoesNotExtendRightOf => "&<",
-                    PgExpressionType.RangeDoesNotExtendLeftOf => "&>",
-                    PgExpressionType.RangeIsAdjacentTo => "-|-",
-                    PgExpressionType.RangeUnion => "+",
-                    PgExpressionType.RangeIntersect => "*",
-                    PgExpressionType.RangeExcept => "-",
+                    H2ExpressionType.RangeIsStrictlyLeftOf => "<<",
+                    H2ExpressionType.RangeIsStrictlyRightOf => ">>",
+                    H2ExpressionType.RangeDoesNotExtendRightOf => "&<",
+                    H2ExpressionType.RangeDoesNotExtendLeftOf => "&>",
+                    H2ExpressionType.RangeIsAdjacentTo => "-|-",
+                    H2ExpressionType.RangeUnion => "+",
+                    H2ExpressionType.RangeIntersect => "*",
+                    H2ExpressionType.RangeExcept => "-",
 
-                    PgExpressionType.TextSearchMatch => "@@",
-                    PgExpressionType.TextSearchAnd => "&&",
-                    PgExpressionType.TextSearchOr => "||",
+                    H2ExpressionType.TextSearchMatch => "@@",
+                    H2ExpressionType.TextSearchAnd => "&&",
+                    H2ExpressionType.TextSearchOr => "||",
 
-                    PgExpressionType.JsonExists => "?",
-                    PgExpressionType.JsonExistsAny => "?|",
-                    PgExpressionType.JsonExistsAll => "?&",
+                    H2ExpressionType.JsonExists => "?",
+                    H2ExpressionType.JsonExistsAny => "?|",
+                    H2ExpressionType.JsonExistsAll => "?&",
 
-                    PgExpressionType.LTreeMatches
+                    H2ExpressionType.LTreeMatches
                         when Right.TypeMapping is { StoreType: "lquery" } or H2ArrayTypeMapping
                         {
                             ElementTypeMapping.StoreType: "lquery"
                         }
                         => "~",
-                    PgExpressionType.LTreeMatches when Right.TypeMapping?.StoreType == "ltxtquery" => "@",
-                    PgExpressionType.LTreeMatchesAny => "?",
-                    PgExpressionType.LTreeFirstAncestor => "?@>",
-                    PgExpressionType.LTreeFirstDescendent => "?<@",
-                    PgExpressionType.LTreeFirstMatches when Right.TypeMapping?.StoreType == "lquery" => "?~",
-                    PgExpressionType.LTreeFirstMatches when Right.TypeMapping?.StoreType == "ltxtquery" => "?@",
+                    H2ExpressionType.LTreeMatches when Right.TypeMapping?.StoreType == "ltxtquery" => "@",
+                    H2ExpressionType.LTreeMatchesAny => "?",
+                    H2ExpressionType.LTreeFirstAncestor => "?@>",
+                    H2ExpressionType.LTreeFirstDescendent => "?<@",
+                    H2ExpressionType.LTreeFirstMatches when Right.TypeMapping?.StoreType == "lquery" => "?~",
+                    H2ExpressionType.LTreeFirstMatches when Right.TypeMapping?.StoreType == "ltxtquery" => "?@",
 
-                    PgExpressionType.Distance => "<->",
+                    H2ExpressionType.Distance => "<->",
 
                     _ => throw new ArgumentOutOfRangeException($"Unhandled operator type: {OperatorType}")
                 })
@@ -170,17 +170,17 @@ public class PgBinaryExpression : SqlExpression
         }
 
         static bool RequiresBrackets(SqlExpression expression)
-            => expression is PgBinaryExpression or LikeExpression;
+            => expression is H2BinaryExpression or LikeExpression;
     }
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
         => obj is not null
             && (ReferenceEquals(this, obj)
-                || obj is PgBinaryExpression sqlBinaryExpression
+                || obj is H2BinaryExpression sqlBinaryExpression
                 && Equals(sqlBinaryExpression));
 
-    private bool Equals(PgBinaryExpression sqlBinaryExpression)
+    private bool Equals(H2BinaryExpression sqlBinaryExpression)
         => base.Equals(sqlBinaryExpression)
             && OperatorType == sqlBinaryExpression.OperatorType
             && Left.Equals(sqlBinaryExpression.Left)
