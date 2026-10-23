@@ -52,6 +52,45 @@ public class ForumSetQueryTests
     }
 
     [Fact]
+    public void Pages_are_read_without_a_limit_and_united_with_the_first_page()
+    {
+        using var database = ForumDatabase.Filled(nameof(Pages_are_read_without_a_limit_and_united_with_the_first_page));
+        using var context = database.Context();
+        var source = ForumData.Topics().OrderBy(t => t.Id).ToArray();
+
+        // H2 2.5 reads OFFSET without LIMIT, and an operand of UNION that carries its
+        // own ORDER BY or LIMIT is written in parentheses.
+        Assert.Equal(
+            source.Skip(2).Select(t => t.Title),
+            context.Topics.OrderBy(t => t.Id).Skip(2).Select(t => t.Title).ToList());
+
+        var first = context.Topics.OrderBy(t => t.Id).Take(2).Select(t => t.Title);
+        var rest = context.Topics.OrderBy(t => t.Id).Skip(2).Select(t => t.Title);
+        Assert.Equal(
+            source.Take(2).Select(t => t.Title).Concat(source.Skip(2).Select(t => t.Title)),
+            first.Concat(rest).ToList());
+    }
+
+    [Fact]
+    public void The_authors_in_both_topics_are_met_on_reference_h2()
+    {
+        using var database = ForumDatabase.Filled(nameof(The_authors_in_both_topics_are_met_on_reference_h2));
+        using var context = database.Context();
+
+        // INTERSECT and EXCEPT below are checked on the reference H2 instead: the engine
+        // does not read set operations other than UNION yet.
+        var met = context.Posts.Where(p => p.TopicId == 1).Select(p => p.AuthorId)
+            .Intersect(context.Posts.Where(p => p.TopicId == 2).Select(p => p.AuthorId))
+            .OrderBy(a => a);
+        Assert.Equal(["1", "2"], ReferenceForum.Query(context, met).Select(row => row[0]));
+
+        var apart = context.Posts.Where(p => p.TopicId == 1).Select(p => p.AuthorId)
+            .Except(context.Posts.Where(p => p.TopicId == 2).Select(p => p.AuthorId))
+            .OrderBy(a => a);
+        Assert.Equal(["3", "4"], ReferenceForum.Query(context, apart).Select(row => row[0]));
+    }
+
+    [Fact]
     [Trait("Category", "BlockedByPort")]
     public void The_rows_of_two_queries_are_met()
     {

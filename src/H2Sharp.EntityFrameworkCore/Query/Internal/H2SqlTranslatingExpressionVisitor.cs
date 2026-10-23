@@ -25,7 +25,6 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
     private readonly H2JsonPocoTranslator _jsonPocoTranslator;
 
     private readonly RelationalTypeMapping _timestampMapping;
-    private readonly RelationalTypeMapping _timestampTzMapping;
 
     private static Type? _nodaTimePeriodType;
 
@@ -51,6 +50,9 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
     private static readonly MethodInfo StringContainsMethod
         = typeof(string).GetRuntimeMethod(nameof(string.Contains), [typeof(string)])!;
 
+    private static readonly MethodInfo StringContainsWithComparisonMethod
+        = typeof(string).GetRuntimeMethod(nameof(string.Contains), [typeof(string), typeof(StringComparison)])!;
+
     private static readonly MethodInfo EscapeLikePatternParameterMethod =
         typeof(H2SqlTranslatingExpressionVisitor).GetTypeInfo().GetDeclaredMethod(nameof(ConstructLikePatternParameter))!;
 
@@ -73,8 +75,7 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
         _sqlExpressionFactory = (H2SqlExpressionFactory)dependencies.SqlExpressionFactory;
         _jsonPocoTranslator = ((H2MemberTranslatorProvider)Dependencies.MemberTranslatorProvider).JsonPocoTranslator;
         _typeMappingSource = dependencies.TypeMappingSource;
-        _timestampMapping = _typeMappingSource.FindMapping("timestamp without time zone")!;
-        _timestampTzMapping = _typeMappingSource.FindMapping("timestamp with time zone")!;
+        _timestampMapping = _typeMappingSource.FindMapping(typeof(DateTime))!;
     }
 
     /// <summary>
@@ -279,6 +280,26 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
             return translation3;
         }
 
+        if (method == StringContainsWithComparisonMethod
+            && methodCallExpression.Arguments[1] is ConstantExpression { Value: StringComparison comparison })
+        {
+            // An explicit ordinal comparison asks exactly what the plain call asks: H2 compares
+            // strings byte-wise, with no linguistic folding on either side.
+            if (comparison == StringComparison.Ordinal
+                && TryTranslateStartsEndsWithContains(
+                    methodCallExpression.Object!, methodCallExpression.Arguments[0], StartsEndsWithContains.Contains, out var ordinalTranslation))
+            {
+                return ordinalTranslation;
+            }
+
+            if (comparison == StringComparison.OrdinalIgnoreCase
+                && TryTranslateInsensitiveContains(
+                    methodCallExpression.Object!, methodCallExpression.Arguments[0], out var insensitiveTranslation))
+            {
+                return insensitiveTranslation;
+            }
+        }
+
         return base.VisitMethodCall(methodCallExpression);
     }
 
@@ -306,76 +327,76 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
                 : QueryCompilationContext.NotTranslatedExpression;
         }
 
-        // Translate new DateTime(...) -> make_timestamp/make_date
+        // Translate new DateTime(...) -> CAST(... AS TIMESTAMP). H2 2.5 has no make_date
+        // or make_timestamp, but reads a timestamp literal, and CAST of the same text:
+        // CAST('2024-1-15 2:3:4' AS TIMESTAMP) answers like the literal with padding.
+        // The parts are concatenated (H2 CONCAT casts the numbers) and cast.
         if (newExpression.Constructor?.DeclaringType == typeof(DateTime))
         {
             if (newExpression.Constructor == DateTimeCtor1)
             {
-                return TryTranslateArguments(out var sqlArguments)
-                    ? _sqlExpressionFactory.Function(
-                        "make_date", sqlArguments, nullable: true, TrueArrays[3], typeof(DateTime), _timestampMapping)
-                    : QueryCompilationContext.NotTranslatedExpression;
+                if (!TryTranslateArguments(out var sqlArguments))
+                {
+                    return QueryCompilationContext.NotTranslatedExpression;
+                }
+
+                return TimestampFromParts(
+                    [sqlArguments[0], "-", sqlArguments[1], "-", sqlArguments[2]], _timestampMapping);
             }
 
-            if (newExpression.Constructor == DateTimeCtor2)
+            if (newExpression.Constructor == DateTimeCtor2
+                || newExpression.Constructor == DateTimeCtor3
+                && newExpression.Arguments[6] is ConstantExpression { Value: DateTimeKind _ })
             {
                 if (!TryTranslateArguments(out var sqlArguments))
                 {
                     return QueryCompilationContext.NotTranslatedExpression;
                 }
 
-                // DateTime's second component is an int, but PostgreSQL's MAKE_TIMESTAMP accepts a double precision
-                sqlArguments[5] = _sqlExpressionFactory.Convert(sqlArguments[5], typeof(double));
-
-                return _sqlExpressionFactory.Function(
-                    "make_timestamp", sqlArguments, nullable: true, TrueArrays[6], typeof(DateTime), _timestampMapping);
-            }
-
-            if (newExpression.Constructor == DateTimeCtor3
-                && newExpression.Arguments[6] is ConstantExpression { Value : DateTimeKind kind })
-            {
-                if (!TryTranslateArguments(out var sqlArguments))
-                {
-                    return QueryCompilationContext.NotTranslatedExpression;
-                }
-
-                // DateTime's second component is an int, but PostgreSQL's make_timestamp/make_timestamptz accepts a double precision.
-                // Also chop off the last Kind argument which does not get sent to PostgreSQL
-                var rewrittenArguments = new List<SqlExpression>
-                {
-                    sqlArguments[0],
-                    sqlArguments[1],
-                    sqlArguments[2],
-                    sqlArguments[3],
-                    sqlArguments[4],
-                    _sqlExpressionFactory.Convert(sqlArguments[5], typeof(double))
-                };
-
-                if (kind == DateTimeKind.Utc)
-                {
-                    rewrittenArguments.Add(_sqlExpressionFactory.Constant("UTC"));
-                }
-
-                return _sqlExpressionFactory.Function(
-                    kind == DateTimeKind.Utc ? "make_timestamptz" : "make_timestamp",
-                    rewrittenArguments,
-                    nullable: true,
-                    TrueArrays[rewrittenArguments.Count],
-                    typeof(DateTime),
-                    kind == DateTimeKind.Utc ? _timestampTzMapping : _timestampMapping);
+                // No double conversion of the seconds and no time zone suffix: the parts go
+                // into text, not into a float parameter, and the wall time is read with a
+                // timestamp mapping either way.
+                return TimestampFromParts(
+                    [sqlArguments[0], "-", sqlArguments[1], "-", sqlArguments[2], " ",
+                        sqlArguments[3], ":", sqlArguments[4], ":", sqlArguments[5]],
+                    _timestampMapping);
             }
         }
 
-        // Translate new DateOnly(...) -> make_date
+        // Translate new DateOnly(...) -> CAST(... AS DATE) for the same reason.
         if (newExpression.Constructor == DateOnlyCtor)
         {
-            return TryTranslateArguments(out var sqlArguments)
-                ? _sqlExpressionFactory.Function(
-                    "make_date", sqlArguments, nullable: true, TrueArrays[3], typeof(DateOnly))
-                : QueryCompilationContext.NotTranslatedExpression;
+            if (!TryTranslateArguments(out var sqlArguments))
+            {
+                return QueryCompilationContext.NotTranslatedExpression;
+            }
+
+            return TimestampFromParts(
+                [sqlArguments[0], "-", sqlArguments[1], "-", sqlArguments[2]],
+                _typeMappingSource.FindMapping(typeof(DateOnly))!);
         }
 
         return QueryCompilationContext.NotTranslatedExpression;
+
+        SqlExpression TimestampFromParts(IReadOnlyList<object> parts, RelationalTypeMapping mapping)
+        {
+            var concatArguments = new List<SqlExpression>(parts.Count);
+            concatArguments.AddRange(
+                parts.Select(
+                    part => part is string text
+                        ? _sqlExpressionFactory.Constant(text)
+                        : (SqlExpression)part));
+
+            var textExpression = _sqlExpressionFactory.Function(
+                "concat",
+                concatArguments,
+                nullable: true,
+                Enumerable.Repeat(true, concatArguments.Count).ToArray(),
+                typeof(string),
+                _typeMappingSource.FindMapping(typeof(string)));
+
+            return _sqlExpressionFactory.Convert(textExpression, mapping.ClrType, mapping);
+        }
 
         bool TryTranslateArguments(out SqlExpression[] sqlArguments)
         {
@@ -535,6 +556,85 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
                 }
 
                 return true;
+        }
+    }
+
+    /// <summary>
+    ///     Translates string.Contains(value, StringComparison.OrdinalIgnoreCase): a case-insensitive
+    ///     substring check is an ILIKE with the value wrapped in %, and H2 2.5 reads ILIKE.
+    ///     Only the ordinal-ignore-case comparison has this form; any other comparison is declined.
+    /// </summary>
+    private bool TryTranslateInsensitiveContains(
+        Expression instance,
+        Expression pattern,
+        [NotNullWhen(true)] out SqlExpression? translation)
+    {
+        if (Visit(instance) is not SqlExpression translatedInstance
+            || Visit(pattern) is not SqlExpression translatedPattern)
+        {
+            translation = null;
+            return false;
+        }
+
+        var stringTypeMapping = ExpressionExtensions.InferTypeMapping(translatedInstance, translatedPattern);
+
+        translatedInstance = _sqlExpressionFactory.ApplyTypeMapping(translatedInstance, stringTypeMapping);
+        translatedPattern = _sqlExpressionFactory.ApplyTypeMapping(translatedPattern, stringTypeMapping);
+
+        switch (translatedPattern)
+        {
+            case SqlConstantExpression patternConstant:
+            {
+                translation = patternConstant.Value switch
+                {
+                    null => _sqlExpressionFactory.ILike(
+                        translatedInstance,
+                        _sqlExpressionFactory.Constant(null, typeof(string), stringTypeMapping)),
+
+                    "" => _sqlExpressionFactory.ILike(translatedInstance, _sqlExpressionFactory.Constant("%")),
+
+                    string s when !s.Contains('\\') => _sqlExpressionFactory.ILike(
+                        translatedInstance,
+                        _sqlExpressionFactory.Constant($"%{EscapeLikePattern(s)}%")),
+
+                    string s => _sqlExpressionFactory.ILike(
+                        translatedInstance,
+                        _sqlExpressionFactory.Constant($"%{EscapeLikePattern(s)}%"),
+                        _sqlExpressionFactory.Constant(string.Empty)),
+
+                    _ => throw new UnreachableException()
+                };
+
+                return true;
+            }
+
+            case SqlParameterExpression patternParameter
+                when patternParameter.Name.StartsWith(QueryCompilationContext.QueryParameterPrefix, StringComparison.Ordinal):
+            {
+                var lambda = Expression.Lambda(
+                    Expression.Call(
+                        EscapeLikePatternParameterMethod,
+                        QueryCompilationContext.QueryContextParameter,
+                        Expression.Constant(patternParameter.Name),
+                        Expression.Constant(StartsEndsWithContains.Contains)),
+                    QueryCompilationContext.QueryContextParameter);
+
+                var escapedPatternParameter = _queryCompilationContext.RegisterRuntimeParameter(
+                    $"{patternParameter.Name}_contains", lambda);
+
+                translation = _sqlExpressionFactory.ILike(
+                    translatedInstance,
+                    new SqlParameterExpression(escapedPatternParameter.Name!, escapedPatternParameter.Type, stringTypeMapping),
+                    _sqlExpressionFactory.Constant(string.Empty));
+
+                return true;
+            }
+
+            default:
+                // A column pattern cannot be escaped, and an unescaped ILIKE would read its
+                // wildcards. Declined instead of answering something else.
+                translation = null;
+                return false;
         }
     }
 

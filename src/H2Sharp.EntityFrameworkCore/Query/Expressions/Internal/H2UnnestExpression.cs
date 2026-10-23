@@ -1,17 +1,16 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     An expression that represents a PostgreSQL <c>unnest</c> function call in a SQL tree.
+///     An expression that represents an H2 <c>UNNEST</c> function call in a SQL tree.
 /// </summary>
 /// <remarks>
 ///     <para>
 ///         This expression is just a <see cref="H2TableValuedFunctionExpression" />, adding the ability to provide an explicit column name
-///         for its output (<c>SELECT * FROM unnest(array) AS f(foo)</c>). This is necessary since when the column name isn't explicitly
-///         specified, it is automatically identical to the table alias (<c>f</c> above); since the table alias may get uniquified by
-///         EF, this would break queries.
+///         for its output (<c>SELECT * FROM UNNEST(array) f(foo)</c>). H2 names the element column
+///         <c>C1</c> and the optional ordinality column <c>NORD</c>; explicit names keep the query tree stable.
 ///     </para>
 ///     <para>
-///         See <see href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest</see> for more
+///         See <see href="https://h2database.com/html/functions.html#unnest">UNNEST</see> for more
 ///         information and examples.
 ///     </para>
 ///     <para>

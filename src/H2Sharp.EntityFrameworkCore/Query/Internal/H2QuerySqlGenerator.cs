@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.NetworkInformation;
+using System.Text;using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using H2Sharp.EntityFrameworkCore.Query.Expressions;
 using H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
@@ -214,6 +214,24 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 // The exclusive or is BITXOR, the function H2 2.5 has. The hash ("a # b") is
                 // not in the grammar of H2 2.5.
                 Sql.Append("BITXOR(");
+                Visit(binary.Left);
+                Sql.Append(", ");
+                Visit(binary.Right);
+                Sql.Append(")");
+                return binary;
+
+            case ExpressionType.And when binary.Type != typeof(bool):
+                // H2 2.5 has no "&": the reference reads the BITAND function instead.
+                Sql.Append("BITAND(");
+                Visit(binary.Left);
+                Sql.Append(", ");
+                Visit(binary.Right);
+                Sql.Append(")");
+                return binary;
+
+            case ExpressionType.Or when binary.Type != typeof(bool):
+                // H2 2.5 has no "|": the reference reads the BITOR function instead.
+                Sql.Append("BITOR(");
                 Visit(binary.Left);
                 Sql.Append(", ");
                 Visit(binary.Right);
@@ -854,11 +872,25 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             Sql.Append(negated ? " !~ " : " ~ ");
         }
 
-        // PG regexps are single-line by default
-        if (options == RegexOptions.Singleline)
+        // Java reads the inline flags the way .NET spells them: (?m) is multiline,
+        // (?s) makes "." match newlines (the Singleline option), (?x) ignores whitespace
+        // in the pattern. With none of them the pattern is read as written, in .NET and
+        // in H2 alike: both leave newlines out of "." unless told otherwise.
+        var inlineFlags = new StringBuilder();
+
+        if (options.HasFlag(RegexOptions.Multiline))
         {
-            Visit(expression.Pattern);
-            return expression;
+            inlineFlags.Append('m');
+        }
+
+        if (options.HasFlag(RegexOptions.Singleline))
+        {
+            inlineFlags.Append('s');
+        }
+
+        if (options.HasFlag(RegexOptions.IgnorePatternWhitespace))
+        {
+            inlineFlags.Append('x');
         }
 
         var constantPattern = (expression.Pattern as SqlConstantExpression)?.Value as string;
@@ -868,36 +900,31 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             Sql.Append("(");
         }
 
-        Sql.Append("'(?");
-
-        if (options.HasFlag(RegexOptions.Multiline))
+        if (inlineFlags.Length == 0)
         {
-            Sql.Append("n");
-        }
-        else if (!options.HasFlag(RegexOptions.Singleline))
-        {
-            // In .NET's default mode, . doesn't match newlines, and the pattern of H2 2.5 is
-            // read as it is written: the flag says that the newlines are not a part of it.
-            Sql.Append("p");
-        }
-
-        if (options.HasFlag(RegexOptions.IgnorePatternWhitespace))
-        {
-            Sql.Append("x");
-        }
-
-        Sql.Append(")");
-
-        if (constantPattern is null)
-        {
-            Sql.Append("' || ");
             Visit(expression.Pattern);
-            Sql.Append(")");
         }
         else
         {
-            Sql.Append(constantPattern.Replace("'", "''"));
-            Sql.Append("'");
+            Sql.Append("'(?");
+            Sql.Append(inlineFlags.ToString());
+            Sql.Append(")");
+
+            if (constantPattern is null)
+            {
+                Sql.Append("' || ");
+                Visit(expression.Pattern);
+            }
+            else
+            {
+                Sql.Append(constantPattern.Replace("'", "''"));
+                Sql.Append("'");
+            }
+        }
+
+        if (constantPattern is null)
+        {
+            Sql.Append(")");
         }
 
         // Sql.Append(")' || ");
@@ -1099,24 +1126,35 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// </summary>
     protected virtual Expression VisitPgTableValuedFunctionExpression(H2TableValuedFunctionExpression tableValuedFunctionExpression)
     {
-        // The elements of an array as rows are not a thing H2 2.5 can say: there is no UNNEST,
-        // and no LATERAL either. The reference reads the elements of an array with a range
-        // table and the element at a place:
-        //
-        //   SELECT t.id, r.x, ARRAY_GET(t.arr, r.x)
-        //     FROM t, SYSTEM_RANGE(1, 65536) r
-        //    WHERE r.x <= ARRAY_LENGTH(t.arr)
-        //
-        // The element there is an expression over the row of the table, and not a column of a
-        // table that is joined -- and the model EF has of a collection is exactly a table whose
-        // column is the element. So the form H2 has cannot be written in the model EF has, and
-        // the table of the elements is refused rather than written in the words of another
-        // dialect: "unnest(arr) WITH ORDINALITY" the reference refuses ("expected
-        // "statement"").
-        if (tableValuedFunctionExpression is H2UnnestExpression)
+        if (tableValuedFunctionExpression is H2UnnestExpression unnest)
         {
-            throw new InvalidOperationException(
-                "H2 2.5 has no UNNEST and no LATERAL, so the elements of an array cannot be rows here. See docs/DIVERGENCES.md.");
+            // H2 supports UNNEST and WITH ORDINALITY, but FunctionTable optimizes its
+            // arguments before outer columns are bound. A column of an outer row is
+            // therefore not a valid argument, including inside a correlated subquery.
+            if (UnnestCorrelationFinder.IsCorrelated(unnest.Array))
+            {
+                throw new InvalidOperationException(
+                    "H2 2.5 cannot bind an outer column in a correlated UNNEST and has no LATERAL. See docs/DIVERGENCES.md.");
+            }
+
+            Sql.Append("UNNEST(");
+            Visit(unnest.Array);
+            Sql.Append(")");
+
+            if (unnest.WithOrdinality)
+            {
+                Sql.Append(" WITH ORDINALITY");
+            }
+
+            Sql.Append(" ").Append(_sqlGenerationHelper.DelimitIdentifier(unnest.Alias));
+            Sql.Append("(").Append(_sqlGenerationHelper.DelimitIdentifier(unnest.ColumnName));
+            if (unnest.WithOrdinality)
+            {
+                Sql.Append(", ").Append(_sqlGenerationHelper.DelimitIdentifier("ordinality"));
+            }
+
+            Sql.Append(")");
+            return unnest;
         }
 
         // H2TableValuedFunctionExpression extends the standard TableValuedFunctionExpression, adding the possibility to specify
@@ -1203,6 +1241,36 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                     Sql.Append(" ").Append(columnInfo.TypeMapping.StoreType);
                 }
             }
+        }
+    }
+
+    private sealed class UnnestCorrelationFinder : ExpressionVisitor
+    {
+        private readonly HashSet<string> _localAliases = [];
+        private bool _collectAliases = true;
+        private bool _correlated;
+
+        public static bool IsCorrelated(SqlExpression array)
+        {
+            var finder = new UnnestCorrelationFinder();
+            finder.Visit(array);
+            finder._collectAliases = false;
+            finder.Visit(array);
+            return finder._correlated;
+        }
+
+        protected override Expression VisitExtension(Expression node)
+        {
+            if (_collectAliases && node is TableExpressionBase { Alias: { } alias })
+            {
+                _localAliases.Add(alias);
+            }
+            else if (!_collectAliases && node is ColumnExpression column && !_localAliases.Contains(column.TableAlias))
+            {
+                _correlated = true;
+            }
+
+            return base.VisitExtension(node);
         }
     }
 

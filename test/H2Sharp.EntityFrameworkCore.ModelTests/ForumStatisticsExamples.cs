@@ -107,6 +107,116 @@ public class ForumStatisticsExamples
         }
     }
 
+    [Fact]
+    public void Dashboard_reports_averages_totals_and_extremes()
+    {
+        using var database = ForumDatabase.Filled(nameof(Dashboard_reports_averages_totals_and_extremes));
+        using var context = database.Context();
+
+        Assert.Equal(3680.0 / 7, context.Topics.Average(t => t.ViewCount), precision: 7);
+        Assert.Equal(14, context.Posts.LongCount());
+        Assert.Equal(3680, context.Topics.Sum(t => (long)t.ViewCount));
+        Assert.Equal(4.70m, context.Users.Average(u => u.Balance));
+        Assert.Equal(1200, context.Topics.Max(t => t.ViewCount));
+        Assert.Equal(80, context.Topics.Min(t => t.ViewCount));
+        Assert.Equal(4, context.Posts.Select(p => p.AuthorId).Distinct().Count());
+        Assert.Equal(3.00m, context.Users.Where(u => u.UserName == "grace").Select(u => EF.Functions.Truncate(u.Balance)).Single());
+        Assert.Equal(
+            [12, 3, 0, 7, 0],
+            context.Users.OrderBy(u => u.Id).Select(u => EF.Functions.Truncate(u.Balance, 0)).ToList());
+        Assert.Equal(
+            [1, 0, -1, 1, -1, -1, -1],
+            context.Topics.OrderBy(t => t.Id).Select(t => EF.Functions.Sign(t.ViewCount - 640)).ToList());
+    }
+
+    [Fact]
+    public void Dashboard_exports_ordered_arrays_and_json_on_reference_h2()
+    {
+        using var database = ForumDatabase.Filled(nameof(Dashboard_exports_ordered_arrays_and_json_on_reference_h2));
+        using var context = database.Context();
+
+        // The engine does not read an ORDER BY inside ARRAY_AGG yet, so the reference
+        // checks the whole statement: the names in view-count order, as JSON and as an array.
+        var query = context.Topics.GroupBy(t => t.ForumId).OrderBy(g => g.Key).Select(g => new
+        {
+            Names = EF.Functions.ArrayAgg(g.OrderBy(t => t.ViewCount).Select(t => t.Title)),
+            Json = EF.Functions.JsonAgg(g.OrderBy(t => t.ViewCount).Select(t => t.Title)),
+            Object = EF.Functions.JsonObjectAgg(g.Select(t => new ValueTuple<string, int>(t.Title, t.ViewCount)))
+        });
+        var rows = ReferenceForum.Query(context, query);
+        var groups = ForumData.Topics().GroupBy(t => t.ForumId).OrderBy(g => g.Key).ToArray();
+
+        Assert.Equal(groups.Length, rows.Count);
+        for (var i = 0; i < groups.Length; i++)
+        {
+            var ordered = groups[i].OrderBy(t => t.ViewCount).Select(t => t.Title).ToArray();
+
+            // H2 renders an array column as [a, b, c]; no title of the forum holds a comma.
+            Assert.Equal("[" + string.Join(", ", ordered) + "]", rows[i][0]);
+            Assert.Equal(ordered, JsonSerializer.Deserialize<string[]>(rows[i][1]!));
+            var objects = JsonSerializer.Deserialize<Dictionary<string, int>>(rows[i][2]!)!;
+            Assert.Equal(groups[i].Count(), objects.Count);
+            Assert.All(groups[i], t => Assert.Equal(t.ViewCount, objects[t.Title]));
+        }
+    }
+
+    [Fact]
+    public void Dashboard_joins_titles_without_an_order()
+    {
+        using var database = ForumDatabase.Filled(nameof(Dashboard_joins_titles_without_an_order));
+        using var context = database.Context();
+
+        // Without an order the text comes back in row order; the sets are what is checked.
+        var joined = context.Topics.GroupBy(t => t.ForumId).OrderBy(g => g.Key)
+            .Select(g => string.Join(", ", g.Select(t => t.Title)))
+            .ToList();
+        var groups = ForumData.Topics().GroupBy(t => t.ForumId).OrderBy(g => g.Key).ToArray();
+
+        Assert.Equal(groups.Length, joined.Count);
+        for (var i = 0; i < groups.Length; i++)
+        {
+            Assert.Equal(
+                groups[i].Select(t => t.Title).OrderBy(t => t, StringComparer.Ordinal),
+                joined[i].Split(", ").OrderBy(t => t, StringComparer.Ordinal).ToArray());
+        }
+    }
+
+    [Fact]
+    public void Balances_round_half_away_from_zero()
+    {
+        using var database = ForumDatabase.Filled(nameof(Balances_round_half_away_from_zero));
+        using var context = database.Context();
+
+        // H2 ROUND breaks ties away from zero, while .NET Math.Round breaks them to even.
+        // The provider passes the value to H2, and the engine of this port answers the
+        // same as the reference: 12.50 becomes 13 on both.
+        var rounded = context.Users.OrderBy(u => u.Id).Select(u => Math.Round(u.Balance));
+        Assert.Equal([13, 3, 0, 8, 0], rounded.ToList());
+        Assert.Equal(
+            ["13", "3", "0", "8", "0"],
+            ReferenceForum.Query(context, rounded).Select(row => row[0]));
+    }
+
+    [Fact]
+    public void Monthly_report_groups_topics_by_truncated_month()
+    {
+        using var database = ForumDatabase.Filled(nameof(Monthly_report_groups_topics_by_truncated_month));
+        using var context = database.Context();
+
+        var months = context.Topics
+            .GroupBy(t => EF.Functions.DateTrunc("MONTH", t.CreatedAt))
+            .OrderBy(g => g.Key)
+            .Select(g => new { Month = g.Key, Count = g.Count() })
+            .ToList();
+
+        Assert.Equal(
+            ForumData.Topics().GroupBy(t => new DateTime(t.CreatedAt.Year, t.CreatedAt.Month, 1))
+                .OrderBy(g => g.Key)
+                .Select(g => (g.Key, g.Count()))
+                .ToArray(),
+            months.Select(m => (m.Month, m.Count)).ToArray());
+    }
+
     private static void AssertClose(double expected, string? actual)
         => Assert.Equal(expected, double.Parse(actual!, CultureInfo.InvariantCulture), precision: 7);
 }

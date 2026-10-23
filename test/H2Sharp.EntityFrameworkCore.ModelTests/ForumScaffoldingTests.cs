@@ -1,6 +1,8 @@
 using H2Sharp.EntityFrameworkCore.Design.Internal;
 using H2Sharp.EntityFrameworkCore.ModelTests.Model;
 using H2Sharp.EntityFrameworkCore.ModelTests.Seeding;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Design.Internal;
 
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Scaffolding;
@@ -96,6 +98,101 @@ public class ForumScaffoldingTests
         var table = model.Tables.Single(t => t.Name == "Tags");
 
         Assert.Contains(table.Indexes, i => i.IsUnique && i.Columns.Count == 1 && i.Columns[0].Name == "Name");
+    }
+
+    [Fact]
+    public void The_model_is_scaffolded_back_with_fluent_calls()
+    {
+        using var database = ForumDatabase.Filled(nameof(The_model_is_scaffolded_back_with_fluent_calls));
+        using var context = database.Context();
+
+        var services = new ServiceCollection()
+            .AddEntityFrameworkH2()
+            .AddDbContext<ForumContext>(options => options.UseH2(context.Database.GetDbConnection()));
+
+        new H2DesignTimeServices().ConfigureDesignTimeServices(services);
+
+        IServiceProvider? provider = null;
+        services.AddEntityFrameworkDesignTimeServices(new QuietReporter(), () => provider!);
+        provider = services.BuildServiceProvider();
+
+        using var scope = provider.CreateScope();
+        var scaffolder = scope.ServiceProvider.GetRequiredService<IReverseEngineerScaffolder>();
+
+        var result = scaffolder.ScaffoldModel(
+            context.Database.GetConnectionString()!,
+            new DatabaseModelFactoryOptions(),
+            new ModelReverseEngineerOptions(),
+            new ModelCodeGenerationOptions { RootNamespace = "Scaffolded" });
+
+        Assert.NotNull(result.ContextFile);
+        Assert.Contains("UseH2", result.ContextFile.Code, StringComparison.Ordinal);
+        Assert.Contains("DbSet<User>", result.ContextFile.Code, StringComparison.Ordinal);
+
+        // Every table comes back as a class of its own, with the columns it has.
+        var userFile = result.AdditionalFiles.Select(f => f.Code).First(code => code.Contains("UserName", StringComparison.Ordinal));
+        Assert.Contains("partial class User", userFile, StringComparison.Ordinal);
+        Assert.Contains("UserName", userFile, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Silent operation reporting for design-time services used outside the tools.
+    /// </summary>
+    private sealed class QuietReporter : IOperationReporter
+    {
+        public void WriteError(string message)
+        {
+        }
+
+        public void WriteInformation(string message)
+        {
+        }
+
+        public void WriteVerbose(string message)
+        {
+        }
+
+        public void WriteWarning(string message)
+        {
+        }
+    }
+
+    [Fact]
+    public void The_sequences_of_the_database_are_read_back()
+    {
+        using var connection = new H2Connection("jdbc:h2:mem:scaffold_sequences_" + Guid.NewGuid().ToString("N"));
+        connection.Open();
+
+        var options = new DbContextOptionsBuilder<DraftContext>().UseH2(connection).Options;
+        using (var context = new DraftContext(options))
+        {
+            context.Database.EnsureCreated();
+        }
+
+        var services = new ServiceCollection()
+            .AddEntityFrameworkH2()
+            .AddDbContext<DraftContext>(options => options.UseH2(connection));
+
+        new H2DesignTimeServices().ConfigureDesignTimeServices(services);
+
+        var provider = services.BuildServiceProvider();
+        var factory = provider.GetRequiredService<IDatabaseModelFactory>();
+        var model = factory.Create(connection, new DatabaseModelFactoryOptions());
+
+        Assert.Contains(model.Sequences, s => s.Name == "DraftKeys");
+    }
+
+    private sealed class Draft
+    {
+        public long Id { get; set; }
+    }
+
+    private sealed class DraftContext(DbContextOptions<DraftContext> options) : DbContext(options)
+    {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Draft>().Property(d => d.Id).UseHiLo("DraftKeys");
+        }
     }
 
     /// <summary>

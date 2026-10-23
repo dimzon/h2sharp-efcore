@@ -1,4 +1,5 @@
 using H2Sharp.EntityFrameworkCore.Internal;
+using H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 using H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 using static H2Sharp.EntityFrameworkCore.Utilities.Statics;
 using ExpressionExtensions = Microsoft.EntityFrameworkCore.Query.ExpressionExtensions;
@@ -95,7 +96,23 @@ public class H2ArrayMethodTranslator : IMethodCallTranslator
             && arguments[1].Type.IsArrayOrGenericList()
             && !IsMappedToNonArray(arguments[1]))
         {
-            return _sqlExpressionFactory.Equal(arguments[0], arguments[1]);
+            var left = arguments[0];
+            var right = arguments[1];
+
+            // An inline array of constants becomes a single array constant: H2 compares
+            // arrays with the plain "=", and a constant carries its mapping with it,
+            // the way a parameterized array does.
+            if (left is H2NewArrayExpression { Expressions: [SqlConstantExpression, ..] } leftNew)
+            {
+                left = _sqlExpressionFactory.NewArrayOrConstant(leftNew.Expressions, left.Type);
+            }
+
+            if (right is H2NewArrayExpression { Expressions: [SqlConstantExpression, ..] } rightNew)
+            {
+                right = _sqlExpressionFactory.NewArrayOrConstant(rightNew.Expressions, right.Type);
+            }
+
+            return _sqlExpressionFactory.Equal(left, right);
         }
 
         // Translate instance methods on List

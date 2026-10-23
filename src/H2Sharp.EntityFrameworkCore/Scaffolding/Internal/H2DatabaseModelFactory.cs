@@ -168,7 +168,14 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                     }
                 }
 
-                current?.Columns.Add(ReadColumn(reader));
+                if (current is null)
+                {
+                    continue;
+                }
+
+                var column = ReadColumn(reader);
+                column.Table = current;
+                current.Columns.Add(column);
             }
         }
     }
@@ -378,10 +385,10 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                         Schema = schema,
                         Name = reader.GetString(0),
                         StoreType = reader.IsDBNull(1) ? null : reader.GetString(1),
-                        StartValue = ToInt(reader.GetValue(2)),
+                        StartValue = ToLong(reader.GetValue(2)),
                         IncrementBy = ToInt(reader.GetValue(3)),
-                        MinValue = ToInt(reader.GetValue(4)),
-                        MaxValue = ToInt(reader.GetValue(5)),
+                        MinValue = ToLong(reader.GetValue(4)),
+                        MaxValue = ToLong(reader.GetValue(5)),
                         IsCyclic = !reader.IsDBNull(6) && reader.GetString(6) == "YES"
                     });
             }

@@ -341,7 +341,6 @@ it stands. The things that wait for the engine:
 
    | What | What happens |
    |---|---|
-| `IN (subquery)` | `IN with a subquery is not ported` |
 | `OVER` | window functions |
 | `COMMENT ON` | `COMMENT ON TABLE …` |
 | large objects | `ValueLob.copyToResult: lob storage is not ported` — the storage of a large object is in the port (`ValueLob`, `LobData`, MVStore); the copy from the storage into the result is not, so a column asked for as `clob` cannot be read back |

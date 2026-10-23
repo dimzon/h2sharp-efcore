@@ -1,3 +1,4 @@
+using System.Globalization;
 using H2Sharp.EntityFrameworkCore.ModelTests.Model;
 using H2Sharp.EntityFrameworkCore.ModelTests.Seeding;
 
@@ -8,6 +9,118 @@ namespace H2Sharp.EntityFrameworkCore.ModelTests;
 /// </summary>
 public class ForumDateAndMathQueryTests
 {
+    [Fact]
+    public void View_counts_are_combined_with_bit_operations()
+    {
+        using var database = ForumDatabase.Filled(nameof(View_counts_are_combined_with_bit_operations));
+        using var context = database.Context();
+        var source = ForumData.Topics().OrderBy(t => t.Id).ToArray();
+
+        // H2 2.5 has no "&", "|" or "^": the reference reads BITAND, BITOR and BITXOR
+        // instead, and the provider writes those. A nested combination also checks that
+        // the functions compose without extra brackets. Shifts ("<<" and ">>") the base
+        // translation declines, so they are answered client-side, like upstream.
+        var query = context.Topics.OrderBy(t => t.Id).Select(
+            t => new
+            {
+                And = t.ViewCount & 6,
+                Or = t.ViewCount | 1,
+                Xor = t.ViewCount ^ 3,
+                Nested = (t.ViewCount & 6) | 1
+            });
+        var expected = source.Select(
+            t => new
+            {
+                And = t.ViewCount & 6,
+                Or = t.ViewCount | 1,
+                Xor = t.ViewCount ^ 3,
+                Nested = (t.ViewCount & 6) | 1
+            }).ToArray();
+
+        Assert.Equal(expected, query.ToList());
+        Assert.Equal(
+            expected.Select(x => x.And).ToArray(),
+            ReferenceForum.Query(context, query.Select(x => x.And)).Select(row => int.Parse(row[0]!, CultureInfo.InvariantCulture)).ToArray());
+    }
+
+    [Fact]
+    public void View_counts_are_negated_twice_and_notes_are_not_null_checked()
+    {
+        using var database = ForumDatabase.Filled(nameof(View_counts_are_negated_twice_and_notes_are_not_null_checked));
+        using var context = database.Context();
+
+        // A double negation keeps the value: the brackets stay where the nesting is.
+        Assert.Equal(
+            ForumData.Topics().OrderBy(t => t.Id).Select(t => -(-t.ViewCount)),
+            context.Topics.OrderBy(t => t.Id).Select(t => -(-t.ViewCount)).ToList());
+
+        // A negated null check reads the opposite rows.
+        Assert.Equal(
+            ForumData.Topics().Where(t => !(t.ModeratorNote == null)).Select(t => t.Title).OrderBy(t => t),
+            context.Topics.Where(t => !(t.ModeratorNote == null)).Select(t => t.Title).OrderBy(t => t).ToList());
+    }
+
+    [Fact]
+    public void Topics_are_moved_by_a_day_on_reference_h2()
+    {
+        using var database = ForumDatabase.Filled(nameof(Topics_are_moved_by_a_day_on_reference_h2));
+        using var context = database.Context();
+
+        // H2 2.5 adds an interval with "+": the engine of this port does not read it yet
+        // (dimzon/h2sharp#20, operations on dates), so the reference checks the statement.
+        var moved = context.Topics
+            .Where(t => t.CreatedAt + TimeSpan.FromDays(1) > new DateTime(2024, 1, 10))
+            .OrderBy(t => t.Id).Select(t => t.Title);
+        Assert.Equal(
+            ForumData.Topics().Where(t => t.CreatedAt + TimeSpan.FromDays(1) > new DateTime(2024, 1, 10)).Select(t => t.Title),
+            ReferenceForum.Query(context, moved).Select(row => row[0]));
+    }
+
+    [Fact]
+    public void View_counts_are_clamped_with_greatest_and_least()
+    {
+        using var database = ForumDatabase.Filled(nameof(View_counts_are_clamped_with_greatest_and_least));
+        using var context = database.Context();
+        var source = ForumData.Topics().OrderBy(t => t.Id).ToArray();
+
+        // H2 2.5 reads GREATEST and LEAST the way .NET Math.Max and Math.Min answer.
+        Assert.Equal(
+            source.Select(t => Math.Max(t.ViewCount, 1000)),
+            context.Topics.OrderBy(t => t.Id).Select(t => Math.Max(t.ViewCount, 1000)).ToList());
+        Assert.Equal(
+            source.Select(t => Math.Min(t.ViewCount, 1000)),
+            context.Topics.OrderBy(t => t.Id).Select(t => Math.Min(t.ViewCount, 1000)).ToList());
+    }
+
+    [Fact]
+    public void Dates_are_built_from_their_parts()
+    {
+        using var database = ForumDatabase.Filled(nameof(Dates_are_built_from_their_parts));
+        using var context = database.Context();
+        var source = ForumData.Topics().OrderBy(t => t.Id).ToArray();
+
+        // H2 2.5 has no make_date or make_timestamp: the parts are concatenated and
+        // cast, the way a timestamp literal reads.
+        Assert.Equal(
+            source.Select(t => new DateTime(t.CreatedAt.Year, t.CreatedAt.Month, t.CreatedAt.Day)),
+            context.Topics.OrderBy(t => t.Id).Select(t => new DateTime(t.CreatedAt.Year, t.CreatedAt.Month, t.CreatedAt.Day)).ToList());
+        Assert.Equal(
+            source.Select(t => new DateTime(t.CreatedAt.Year, t.CreatedAt.Month, t.CreatedAt.Day, t.CreatedAt.Hour, t.CreatedAt.Minute, t.CreatedAt.Second)),
+            context.Topics.OrderBy(t => t.Id).Select(t => new DateTime(t.CreatedAt.Year, t.CreatedAt.Month, t.CreatedAt.Day, t.CreatedAt.Hour, t.CreatedAt.Minute, t.CreatedAt.Second)).ToList());
+        Assert.Equal(
+            source.Select(t => new DateOnly(t.CreatedAt.Year, t.CreatedAt.Month, t.CreatedAt.Day)),
+            context.Topics.OrderBy(t => t.Id).Select(t => new DateOnly(t.CreatedAt.Year, t.CreatedAt.Month, t.CreatedAt.Day)).ToList());
+
+        // Construction inside a predicate cannot move to the client: the reference
+        // reads the generated concatenation and cast as the literal would.
+        var rebuilt = context.Topics
+            .Where(t => t.CreatedAt >= new DateTime(t.CreatedAt.Year, 1, 1))
+            .OrderBy(t => t.Id).Select(t => t.Title);
+        Assert.Equal(
+            ForumData.Topics().Select(t => t.Title),
+            ReferenceForum.Query(context, rebuilt).Select(row => row[0]));
+    }
+
     [Fact]
     public void The_year_of_a_date_is_asked_for()
     {
@@ -172,6 +285,54 @@ public class ForumDateAndMathQueryTests
 
         Assert.Equal(12.5m, balances[0]);
         Assert.Equal(0.3m, balances[2]);
+    }
+
+    [Fact]
+    public void The_topics_created_after_a_cutoff_date_are_asked_for()
+    {
+        using var database = ForumDatabase.Filled(nameof(The_topics_created_after_a_cutoff_date_are_asked_for));
+        using var context = database.Context();
+
+        var cutoff = new DateTime(2024, 2, 1);
+        Assert.Equal(
+            ForumData.Topics().Where(t => t.CreatedAt > cutoff).Select(t => t.Title),
+            context.Topics.Where(t => t.CreatedAt > cutoff).OrderBy(t => t.Id).Select(t => t.Title).ToList());
+    }
+
+    [Fact]
+    public void The_hours_between_the_writes_are_asked_for_on_reference_h2()
+    {
+        using var database = ForumDatabase.Filled(nameof(The_hours_between_the_writes_are_asked_for_on_reference_h2));
+        using var context = database.Context();
+
+        // Subtracting timestamps is H2 arithmetic; the engine does not read date and time
+        // operations yet, so the port run below stays red until it does.
+        var hours = context.Topics.OrderBy(t => t.Id).Select(t => (t.LastPostAt - t.CreatedAt).TotalHours);
+        Assert.Equal(
+            ForumData.Topics().Select(t => (t.LastPostAt - t.CreatedAt).TotalHours),
+            ReferenceForum.Query(context, hours).Select(row => double.Parse(row[0]!, CultureInfo.InvariantCulture)).ToArray());
+    }
+
+    [Fact]
+    public void The_hours_between_the_writes_are_asked_for()
+    {
+        using var database = ForumDatabase.Filled(nameof(The_hours_between_the_writes_are_asked_for));
+        using var context = database.Context();
+
+        // The provider counts whole hours with DATEDIFF, which the engine reads; the raw
+        // "-" of two timestamps is still its gap (dimzon/h2sharp#20). DATEDIFF counts whole
+        // unit boundaries: the same holds for minutes and seconds on these aligned rows.
+        var hours = context.Topics.OrderBy(t => t.Id).Select(t => (t.LastPostAt - t.CreatedAt).TotalHours).ToList();
+
+        Assert.Equal(
+            ForumData.Topics().Select(t => (t.LastPostAt - t.CreatedAt).TotalHours),
+            hours);
+        Assert.Equal(
+            ForumData.Topics().Select(t => (t.LastPostAt - t.CreatedAt).TotalMinutes).ToArray(),
+            context.Topics.OrderBy(t => t.Id).Select(t => (t.LastPostAt - t.CreatedAt).TotalMinutes).ToArray());
+        Assert.Equal(
+            ForumData.Topics().Select(t => (t.LastPostAt - t.CreatedAt).TotalSeconds).ToArray(),
+            context.Topics.OrderBy(t => t.Id).Select(t => (t.LastPostAt - t.CreatedAt).TotalSeconds).ToArray());
     }
 
     [Fact]

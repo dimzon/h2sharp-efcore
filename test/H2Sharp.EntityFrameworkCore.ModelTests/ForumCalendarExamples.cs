@@ -37,6 +37,52 @@ public class ForumCalendarExamples
     }
 
     [Fact]
+    public void Delivery_slots_group_users_by_preferred_hour_and_birth_weekday()
+    {
+        using var database = ForumDatabase.Filled(nameof(Delivery_slots_group_users_by_preferred_hour_and_birth_weekday));
+        using var context = database.Context();
+
+        // H2 reads an expression in ORDER BY, but the engine of this port only reads a
+        // column or an alias there (dimzon/h2sharp#21), so the rows are ordered in .NET.
+        Assert.Equal(
+            ForumData.Users().Where(u => u.PreferredTime.HasValue).Select(u => u.PreferredTime!.Value.Hour).OrderBy(h => h).ToArray(),
+            context.Users.Where(u => u.PreferredTime != null).Select(u => u.PreferredTime!.Value.Hour).ToList().OrderBy(h => h).ToArray());
+        Assert.Equal(
+            ForumData.Users().Where(u => u.BirthDate.HasValue).Select(u => u.BirthDate!.Value.DayOfWeek).OrderBy(d => d).ToArray(),
+            context.Users.Where(u => u.BirthDate != null).Select(u => u.BirthDate!.Value.DayOfWeek).ToList().OrderBy(d => d).ToArray());
+    }
+
+    [Fact]
+    public void Birthdays_group_by_month_and_times_project_their_parts()
+    {
+        using var database = ForumDatabase.Filled(nameof(Birthdays_group_by_month_and_times_project_their_parts));
+        using var context = database.Context();
+
+        Assert.Equal(
+            ForumData.Users().Where(u => u.BirthDate.HasValue).GroupBy(u => u.BirthDate!.Value.Month)
+                .OrderBy(g => g.Key).Select(g => (g.Key, g.Count()))
+                .ToArray(),
+            context.Users.Where(u => u.BirthDate != null)
+                .GroupBy(u => u.BirthDate!.Value.Month).OrderBy(g => g.Key).Select(g => new { Month = g.Key, Count = g.Count() })
+                .ToList().Select(g => (g.Month, g.Count)).ToArray());
+        Assert.Equal(
+            [12, 1, 30],
+            context.Users.Where(u => u.BirthDate != null).OrderBy(u => u.Id).Select(u => u.BirthDate!.Value.Day).ToList());
+        Assert.Equal(
+            [1990, 1985, 1992],
+            context.Users.Where(u => u.BirthDate != null).OrderBy(u => u.Id).Select(u => u.BirthDate!.Value.Year).ToList());
+        Assert.Equal(
+            [30, 0, 15],
+            context.Users.Where(u => u.PreferredTime != null).OrderBy(u => u.Id).Select(u => u.PreferredTime!.Value.Minute).ToList());
+        Assert.Equal(
+            [0, 0, 0],
+            context.Users.Where(u => u.PreferredTime != null).OrderBy(u => u.Id).Select(u => u.PreferredTime!.Value.Second).ToList());
+        Assert.Equal(
+            ForumData.Topics().Select(t => DateOnly.FromDateTime(t.CreatedAt)),
+            context.Topics.OrderBy(t => t.Id).Select(t => DateOnly.FromDateTime(t.CreatedAt)).ToList());
+    }
+
+    [Fact]
     public void Calendar_day_numbers_are_computed_on_reference_h2()
     {
         using var database = ForumDatabase.Filled(nameof(Calendar_day_numbers_are_computed_on_reference_h2));

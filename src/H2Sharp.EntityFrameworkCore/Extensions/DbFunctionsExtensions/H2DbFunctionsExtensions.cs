@@ -100,6 +100,19 @@ public static class H2DbFunctionsExtensions
         => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(LessThanOrEqual)));
 
     /// <summary>
+    ///     Returns whether the row value represented by <paramref name="a" /> is equal to the row value
+    ///     represented by <paramref name="b" />.
+    /// </summary>
+    /// <remarks>
+    ///     For more information on row value comparisons, see
+    ///     <see href="https://www.h2database.com/html/sqlCommands.html#rowValueComparison">
+    ///         the H2 documentation.
+    ///     </see>
+    /// </remarks>
+    public static bool Equal(this DbFunctions _, ITuple a, ITuple b)
+        => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(Equal)));
+
+    /// <summary>
     ///     Adds an amount of time to a date or timestamp, the way H2's <c>DATEADD</c> does.
     /// </summary>
     /// <param name="_">The <see cref="DbFunctions" /> instance.</param>

@@ -188,34 +188,48 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         {
             switch (translatedPredicate)
             {
-                // Pattern match for: new[] { "a", "b", "c" }.All(p => EF.Functions.Like(e.SomeText, p)),
-                // which we translate to WHERE s.""SomeText"" LIKE ALL (ARRAY['a','b','c'])
+                // Pattern match for: new[] { "a", "b", "c" }.All(p => EF.Functions.Like(e.SomeText, p)).
+                // H2 has no quantified LIKE: a constant pattern list asks the same question with
+                // AND, which H2 answers. Anything else would need UNNEST, so it stays refused below.
                 case LikeExpression
                     {
                         Match: var match,
                         Pattern: ColumnExpression pattern,
                         EscapeChar: SqlConstantExpression { Value: "" }
                     }
-                    when pattern.TableAlias == tableAlias:
+                    when pattern.TableAlias == tableAlias && array is H2NewArrayExpression likeArray
+                    && likeArray.Expressions.All(e => e is SqlConstantExpression):
                 {
-                    return BuildSimplifiedShapedQuery(
-                        source,
-                        _sqlExpressionFactory.All(match, array, H2AllOperatorType.Like));
+                    SqlExpression combined = _sqlExpressionFactory.Constant(true);
+
+                    foreach (var element in likeArray.Expressions)
+                    {
+                        combined = _sqlExpressionFactory.AndAlso(combined, _sqlExpressionFactory.Like(match, element));
+                    }
+
+                    return BuildSimplifiedShapedQuery(source, combined);
                 }
 
-                // Pattern match for: new[] { "a", "b", "c" }.All(p => EF.Functions.Like(e.SomeText, p)),
-                // which we translate to WHERE s.""SomeText"" LIKE ALL (ARRAY['a','b','c'])
+                // Pattern match for: new[] { "a", "b", "c" }.All(p => EF.Functions.ILike(e.SomeText, p)).
+                // H2 has no quantified ILIKE either: a constant pattern list asks the same
+                // question with AND, which H2 answers.
                 case H2ILikeExpression
                     {
-                        Match: var match,
-                        Pattern: ColumnExpression pattern,
+                        Match: var ilikeMatch,
+                        Pattern: ColumnExpression ilikePattern,
                         EscapeChar: SqlConstantExpression { Value: "" }
                     }
-                    when pattern.TableAlias == tableAlias:
+                    when ilikePattern.TableAlias == tableAlias && array is H2NewArrayExpression ilikeArray
+                    && ilikeArray.Expressions.All(e => e is SqlConstantExpression):
                 {
-                    return BuildSimplifiedShapedQuery(
-                        source,
-                        _sqlExpressionFactory.All(match, array, H2AllOperatorType.ILike));
+                    SqlExpression ilikeCombined = _sqlExpressionFactory.Constant(true);
+
+                    foreach (var element in ilikeArray.Expressions)
+                    {
+                        ilikeCombined = _sqlExpressionFactory.AndAlso(ilikeCombined, _sqlExpressionFactory.ILike(ilikeMatch, element));
+                    }
+
+                    return BuildSimplifiedShapedQuery(source, ilikeCombined);
                 }
 
                 // Pattern match for: e.SomeArray.All(p => ints.Contains(p)) over non-column.
@@ -284,32 +298,77 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
 
             switch (translatedPredicate)
             {
-                // Pattern match: new[] { "a", "b", "c" }.Any(p => EF.Functions.Like(e.SomeText, p))
-                // Translation: s.SomeText LIKE ANY (ARRAY['a','b','c'])
+                // Pattern match: x.Array.Any(f => f == value).
+                // H2 answers with ARRAY_CONTAINS, and no unnest is needed. The lambda is read
+                // before translation here so that the element itself is recognized precisely:
+                // anything else compared would change what the question asks. A "not equal"
+                // check has no such form: it asks whether another element exists, not whether
+                // the value is missing, so it stays refused below.
+                case SqlBinaryExpression { OperatorType: ExpressionType.Equal } when predicate?.Body is BinaryExpression
+                {
+                    Left: var binaryLeft,
+                    Right: var binaryRight
+                } && predicate.Parameters is [var elementParameter]
+                    && (ReferenceEquals(binaryLeft, elementParameter) ? binaryRight
+                        : ReferenceEquals(binaryRight, elementParameter) ? binaryLeft : null) is { } otherExpression
+                    && !RefersToParameter(elementParameter, otherExpression)
+                    && TranslateExpression(otherExpression) is { } translatedOther:
+                {
+                    (translatedOther, array) = _sqlExpressionFactory.ApplyTypeMappingsOnItemAndArray(translatedOther, array);
+
+                    return BuildSimplifiedShapedQuery(
+                        source,
+                        _sqlExpressionFactory.Function(
+                            "array_contains",
+                            [array, translatedOther],
+                            nullable: true,
+                            argumentsPropagateNullability: TrueArrays[2],
+                            typeof(bool)));
+                }
+
+                // Pattern match: new[] { "a", "b", "c" }.Any(p => EF.Functions.Like(e.SomeText, p)).
+                // H2 has no quantified LIKE: a constant pattern list asks the same question
+                // with OR, which H2 answers. Anything else would need UNNEST, so it is refused
+                // by falling through to the base translation below.
                 case LikeExpression
                     {
                         Match: var match,
                         Pattern: ColumnExpression pattern,
                         EscapeChar: SqlConstantExpression { Value: "" }
                     }
-                    when pattern.TableAlias == tableAlias:
+                    when pattern.TableAlias == tableAlias && array is H2NewArrayExpression likeArray
+                    && likeArray.Expressions.All(e => e is SqlConstantExpression):
                 {
-                    return BuildSimplifiedShapedQuery(
-                        source, _sqlExpressionFactory.Any(match, array, H2AnyOperatorType.Like));
+                    SqlExpression combined = _sqlExpressionFactory.Constant(false);
+
+                    foreach (var element in likeArray.Expressions)
+                    {
+                        combined = _sqlExpressionFactory.OrElse(combined, _sqlExpressionFactory.Like(match, element));
+                    }
+
+                    return BuildSimplifiedShapedQuery(source, combined);
                 }
 
-                // Pattern match: new[] { "a", "b", "c" }.Any(p => EF.Functions.Like(e.SomeText, p))
-                // Translation: s.SomeText LIKE ANY (ARRAY['a','b','c'])
+                // Pattern match: new[] { "a", "b", "c" }.Any(p => EF.Functions.ILike(e.SomeText, p)).
+                // H2 has no quantified ILIKE either: a constant pattern list asks the same
+                // question with OR, which H2 answers.
                 case H2ILikeExpression
                     {
-                        Match: var match,
-                        Pattern: ColumnExpression pattern,
+                        Match: var ilikeMatch,
+                        Pattern: ColumnExpression ilikePattern,
                         EscapeChar: SqlConstantExpression { Value: "" }
                     }
-                    when pattern.TableAlias == tableAlias:
+                    when ilikePattern.TableAlias == tableAlias && array is H2NewArrayExpression ilikeArray
+                    && ilikeArray.Expressions.All(e => e is SqlConstantExpression):
                 {
-                    return BuildSimplifiedShapedQuery(
-                        source, _sqlExpressionFactory.Any(match, array, H2AnyOperatorType.ILike));
+                    SqlExpression ilikeCombined = _sqlExpressionFactory.Constant(false);
+
+                    foreach (var element in ilikeArray.Expressions)
+                    {
+                        ilikeCombined = _sqlExpressionFactory.OrElse(ilikeCombined, _sqlExpressionFactory.ILike(ilikeMatch, element));
+                    }
+
+                    return BuildSimplifiedShapedQuery(source, ilikeCombined);
                 }
 
                 // Array overlap over non-column
@@ -572,10 +631,27 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         LambdaExpression? predicate,
         Type returnType,
         bool returnDefault)
-        // Upstream this override existed only to translate ltree operators applied to an in-memory
-        // array before EF turns the query into one over the database. H2 has no ltree, so there is
-        // nothing left to intercept and the base implementation is the correct one.
-        => base.TranslateFirstOrDefault(source, predicate, returnType, returnDefault);
+    {
+        // x.Array.First() is the first element: H2 arrays are 1-based, and reading past the
+        // end fails in H2 the way First() fails on an empty input, so no unnest is needed.
+        // FirstOrDefault stays refused: H2 answers an out-of-range read with an error, not NULL.
+        if (!returnDefault
+            && predicate is null
+            && source.TryExtractArray(out var array, out var projectedColumn)
+            && TranslateExpression(Expression.Constant(0)) is { } zero)
+        {
+#pragma warning disable EF1001 // SelectExpression constructors are currently internal
+            return source.UpdateQueryExpression(
+                new SelectExpression(
+                    _sqlExpressionFactory.ArrayIndex(
+                        array,
+                        GenerateOneBasedIndexExpression(zero), projectedColumn.IsNullable),
+                    _queryCompilationContext.SqlAliasManager));
+#pragma warning restore EF1001
+        }
+
+        return base.TranslateFirstOrDefault(source, predicate, returnType, returnDefault);
+    }
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -898,6 +974,28 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             Expression.Convert(
                 new ProjectionBindingExpression(translation, new ProjectionMember(), typeof(bool?)), typeof(bool)));
 #pragma warning restore EF1001
+
+    private static bool RefersToParameter(ParameterExpression parameter, Expression expression)
+    {
+        var finder = new ParameterFindingVisitor(parameter);
+        finder.Visit(expression);
+        return finder.Found;
+    }
+
+    private sealed class ParameterFindingVisitor(ParameterExpression parameter) : ExpressionVisitor
+    {
+        public bool Found { get; private set; }
+
+        protected override Expression VisitParameter(ParameterExpression node)
+        {
+            if (ReferenceEquals(node, parameter))
+            {
+                Found = true;
+            }
+
+            return base.VisitParameter(node);
+        }
+    }
 
     private sealed class OuterReferenceFindingExpressionVisitor(TableExpression mainTable) : ExpressionVisitor
     {

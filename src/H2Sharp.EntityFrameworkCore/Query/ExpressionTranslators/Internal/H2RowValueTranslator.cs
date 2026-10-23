@@ -32,12 +32,17 @@ public class H2RowValueTranslator : IMethodCallTranslator
         typeof(H2DbFunctionsExtensions).GetMethods()
             .Single(m => m.Name == nameof(H2DbFunctionsExtensions.LessThanOrEqual));
 
+    private static readonly MethodInfo Equal =
+        typeof(H2DbFunctionsExtensions).GetMethods()
+            .Single(m => m.Name == nameof(H2DbFunctionsExtensions.Equal));
+
     private static readonly Dictionary<MethodInfo, ExpressionType> ComparisonMethods = new()
     {
         { GreaterThan, ExpressionType.GreaterThan },
         { LessThan, ExpressionType.LessThan },
         { GreaterThanOrEqual, ExpressionType.GreaterThanOrEqual },
-        { LessThanOrEqual, ExpressionType.LessThanOrEqual }
+        { LessThanOrEqual, ExpressionType.LessThanOrEqual },
+        { Equal, ExpressionType.Equal }
     };
 
     /// <summary>

@@ -121,9 +121,18 @@ public class ForumTypeTests
         using var database = ForumDatabase.Filled(nameof(The_empty_bytes_come_back_as_they_went_in));
         using var context = database.Context();
 
-        var user = context.Users.Single(u => u.UserName == "grace");
+        Assert.Empty(context.Users.Single(u => u.UserName == "grace").Avatar);
+    }
 
-        Assert.Empty(user.Avatar);
+    [Fact]
+    public void Rows_are_found_by_their_typed_values()
+    {
+        using var database = ForumDatabase.Filled(nameof(Rows_are_found_by_their_typed_values));
+        using var context = database.Context();
+
+        Assert.Equal("ada", context.Users.Single(u => u.BirthDate == new DateOnly(1990, 4, 12)).UserName);
+        Assert.Equal("ada", context.Users.Single(u => u.PreferredTime == new TimeOnly(9, 30)).UserName);
+        Assert.Equal("ada", context.Users.Single(u => u.Avatar == new byte[] { 1, 2, 3 }).UserName);
     }
 
     [Fact]

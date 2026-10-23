@@ -19,6 +19,12 @@ internal static class ReferenceForum
         return H2ReferenceOracle.Query(Setup(context), Sql(command));
     }
 
+    public static IReadOnlyList<string?[]> Query(IQueryable query, string setup)
+    {
+        using var command = query.CreateDbCommand();
+        return H2ReferenceOracle.Query(setup, Sql(command));
+    }
+
     public static string Sql(DbCommand command)
     {
         var values = command.Parameters.Cast<DbParameter>().ToDictionary(
@@ -65,6 +71,9 @@ internal static class ReferenceForum
         DateOnly date => "DATE '" + date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "'",
         TimeOnly time => "TIME '" + time.ToString("HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + "'",
         byte[] bytes => "X'" + Convert.ToHexString(bytes) + "'",
+        TimeSpan span => span == TimeSpan.FromDays(span.TotalDays) && span.TotalDays == Math.Floor(span.TotalDays)
+            ? $"INTERVAL '{span.TotalDays}' DAY"
+            : $"INTERVAL '{Math.Floor(span.TotalDays)} {span.Hours:D2}:{span.Minutes:D2}:{span.Seconds:D2}' DAY TO SECOND",
         Enum role => Literal(role.ToString()),
         System.Collections.IEnumerable array => "ARRAY[" + string.Join(",", array.Cast<object?>().Select(Literal)) + "]",
         IFormattable number => number.ToString(null, CultureInfo.InvariantCulture),

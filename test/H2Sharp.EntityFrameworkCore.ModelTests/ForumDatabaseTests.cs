@@ -72,6 +72,63 @@ public class ForumDatabaseTests
     }
 
     [Fact]
+    public void An_identity_key_of_the_wrong_type_is_refused()
+    {
+        using var connection = new H2Connection("jdbc:h2:mem:wrong_identity_" + Guid.NewGuid().ToString("N"));
+        connection.Open();
+        using var context = new WrongIdentityContext(
+            new DbContextOptionsBuilder<WrongIdentityContext>().UseH2(connection).Options);
+
+        // An identity column counts in whole numbers: a text key cannot be one.
+        var error = Assert.Throws<InvalidOperationException>(() => context.Database.EnsureCreated());
+
+        Assert.Contains("Code", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void An_index_include_of_a_missing_column_is_refused()
+    {
+        using var connection = new H2Connection("jdbc:h2:mem:wrong_include_" + Guid.NewGuid().ToString("N"));
+        connection.Open();
+        using var context = new WrongIncludeContext(
+            new DbContextOptionsBuilder<WrongIncludeContext>().UseH2(connection).Options);
+
+        // The included column must belong to the indexed table, or the index is nonsense.
+        var error = Assert.Throws<InvalidOperationException>(() => context.Database.EnsureCreated());
+
+        Assert.Contains("Missing", error.Message, StringComparison.Ordinal);
+    }
+
+    private sealed class WrongIdentity
+    {
+        public string Code { get; set; } = "";
+    }
+
+    private sealed class WrongIdentityContext(DbContextOptions<WrongIdentityContext> options) : DbContext(options)
+    {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<WrongIdentity>().HasKey(e => e.Code);
+            modelBuilder.Entity<WrongIdentity>().Property(e => e.Code).UseIdentityByDefaultColumn();
+        }
+    }
+
+    private sealed class WrongInclude
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+    }
+
+    private sealed class WrongIncludeContext(DbContextOptions<WrongIncludeContext> options) : DbContext(options)
+    {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<WrongInclude>().HasKey(e => e.Id);
+            modelBuilder.Entity<WrongInclude>().HasIndex(e => e.Name).IncludeProperties("Missing");
+        }
+    }
+
+    [Fact]
     [Trait("Category", "BlockedByPort")]
     public void The_number_of_the_rows_is_read_with_a_raw_statement()
     {

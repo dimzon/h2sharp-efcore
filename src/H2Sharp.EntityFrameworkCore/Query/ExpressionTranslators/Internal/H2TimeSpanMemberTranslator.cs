@@ -1,3 +1,4 @@
+using H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 using static H2Sharp.EntityFrameworkCore.Utilities.Statics;
 
 namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
@@ -42,6 +43,38 @@ public class H2TimeSpanMemberTranslator : IMemberTranslator
 
         if (member.DeclaringType == typeof(TimeSpan) && instance is not null)
         {
+            // A difference of two timestamps is counted with DATEDIFF rather than with the
+            // "-" operator: H2 reads both, but the engine of this port does not read date and
+            // time operations yet, while DATEDIFF is ported. DATEDIFF counts whole unit
+            // boundaries, not exact fractions: DATEDIFF('HOUR', ...) of a 90-minute span is 1,
+            // where .TotalHours is 1.5. The unit matches the member, so whole aligned spans
+            // answer exactly.
+            if (instance is SqlBinaryExpression
+                {
+                    OperatorType: ExpressionType.Subtract,
+                    Left: { TypeMapping: H2TimestampTypeMapping or H2TimestampTzTypeMapping },
+                    Right: { TypeMapping: H2TimestampTypeMapping or H2TimestampTzTypeMapping }
+                } subtract
+                && member.Name switch
+                {
+                    nameof(TimeSpan.TotalDays) => "DAY",
+                    nameof(TimeSpan.TotalHours) => "HOUR",
+                    nameof(TimeSpan.TotalMinutes) => "MINUTE",
+                    nameof(TimeSpan.TotalSeconds) => "SECOND",
+                    nameof(TimeSpan.TotalMilliseconds) => "MILLISECOND",
+                    _ => null
+                } is { } unit)
+            {
+                return _sqlExpressionFactory.Convert(
+                    _sqlExpressionFactory.Function(
+                        "DATEDIFF",
+                        [_sqlExpressionFactory.Constant(unit), subtract.Right, subtract.Left],
+                        nullable: true,
+                        argumentsPropagateNullability: [false, true, true],
+                        typeof(long)),
+                    returnType);
+            }
+
             return member.Name switch
             {
                 nameof(TimeSpan.Days) => Extract("day", instance, typeof(int)),

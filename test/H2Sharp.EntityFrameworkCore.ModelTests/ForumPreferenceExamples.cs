@@ -78,6 +78,38 @@ public class ForumPreferenceExamples
     }
 
     [Fact]
+    public void Document_paths_have_no_form_in_h2()
+    {
+        using var connection = new H2Connection("jdbc:h2:mem:plain_json_path_" + Guid.NewGuid().ToString("N"));
+        connection.Open();
+        using var context = new PlainPreferenceContext(new DbContextOptionsBuilder<PlainPreferenceContext>().UseH2(connection).Options);
+
+        // H2 2.5 stores JSON as text: there is no operator that walks into it, and no
+        // function that counts the elements of a JSON array. The provider refuses instead
+        // of answering with SQL the reference rejects.
+        var traversal = Assert.Throws<NotSupportedException>(
+            () => context.Settings.Where(s => s.Json.RootElement.GetProperty("theme").GetString() == "dark").ToList());
+        var length = Assert.Throws<NotSupportedException>(
+            () => context.Settings.Select(s => s.Json.RootElement.GetArrayLength()).ToList());
+
+        Assert.All(
+            [traversal, length],
+            e => Assert.Contains("JSON", e.Message, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Binary_token_length_is_read_with_length()
+    {
+        using var connection = new H2Connection("jdbc:h2:mem:token_length_" + Guid.NewGuid().ToString("N"));
+        connection.Open();
+        using var context = new PlainPreferenceContext(new DbContextOptionsBuilder<PlainPreferenceContext>().UseH2(connection).Options);
+        context.Database.EnsureCreated();
+        context.Settings.Add(new PlainPreference { UserId = 1, Json = JsonDocument.Parse("{}"), Token = [0, 127, 128, 255] });
+        context.SaveChanges();
+        Assert.Equal(4, context.Settings.Where(s => s.UserId == 1).Select(s => s.Token.Length).Single());
+    }
+
+    [Fact]
     [Trait("Category", "BlockedByPort")]
     public void Binary_token_is_searched_for_a_marker_byte()
     {
