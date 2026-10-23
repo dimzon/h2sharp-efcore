@@ -91,39 +91,33 @@ public class ForumSetQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_rows_of_two_queries_are_met()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_of_two_queries_are_met));
         using var context = database.Context();
 
-        // The engine does not read INTERSECT: "Not ported yet: Parser.parseQuerySelect: INTERSECT
-        // is not ported".
         var authors = context.Posts
-            .Where(p => p.TopicId == 1)
-            .Intersect(context.Posts.Where(p => p.TopicId == 2))
-            .Select(p => p.AuthorId)
+            .Where(p => p.TopicId == 1).Select(p => p.AuthorId)
+            .Intersect(context.Posts.Where(p => p.TopicId == 2).Select(p => p.AuthorId))
+            .OrderBy(a => a)
             .ToList();
 
-        Assert.Equal([2], authors);
+        Assert.Equal([1, 2], authors);
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_rows_of_two_queries_are_set_apart()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_of_two_queries_are_set_apart));
         using var context = database.Context();
 
-        // The engine does not read EXCEPT: "Not ported yet: Parser.parseQuerySelect: EXCEPT is not
-        // ported".
         var authors = context.Posts
-            .Where(p => p.TopicId == 1)
-            .Except(context.Posts.Where(p => p.TopicId == 2))
-            .Select(p => p.AuthorId)
+            .Where(p => p.TopicId == 1).Select(p => p.AuthorId)
+            .Except(context.Posts.Where(p => p.TopicId == 2).Select(p => p.AuthorId))
+            .OrderBy(a => a)
             .ToList();
 
-        Assert.Equal([1, 3, 4], authors);
+        Assert.Equal([3, 4], authors);
     }
 
     [Fact]

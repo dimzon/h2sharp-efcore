@@ -52,7 +52,6 @@ public class ForumAggregateTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void Two_gatherings_in_one_query_take_their_own_order_and_filter()
     {
         using var database = ForumDatabase.Filled(nameof(Two_gatherings_in_one_query_take_their_own_order_and_filter));
@@ -82,13 +81,15 @@ public class ForumAggregateTests
             + "The promise is kept in the statistics, not in the index.",
             rows[0].ShortestVisibleFirst);
 
-        // The third author wrote three answers, and one of them is hidden.
+        // The third author wrote four answers, and one of them is hidden.
         Assert.Equal(
-            "The tree is walked and the code is written., The abstraction is a cost., The old address is dead.",
+            "The order of the nodes is the order of the work., The tree is walked and the code is written., "
+            + "The abstraction is a cost., The old address is dead.",
             rows[2].LongestFirst);
 
         Assert.Equal(
-            "The abstraction is a cost., The tree is walked and the code is written.",
+            "The abstraction is a cost., The tree is walked and the code is written., "
+            + "The order of the nodes is the order of the work.",
             rows[2].ShortestVisibleFirst);
     }
 
