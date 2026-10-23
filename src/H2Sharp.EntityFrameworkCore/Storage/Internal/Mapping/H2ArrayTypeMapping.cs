@@ -283,6 +283,15 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
             }
         }
 
+        // The engine reads a byte[] as a binary string (varbinary), which is what a byte[] means
+        // in every other place. An array of bytes is the one place where the CLR type is
+        // ambiguous: when the element of the array is byte, the value is sent as the array of
+        // small ints the column expects.
+        if (value is byte[] bytes && typeof(TElement) == typeof(byte))
+        {
+            value = bytes.Select(b => (short)b).ToArray();
+        }
+
         var param = base.CreateParameter(command, name, value, nullable, direction);
         if (param is not H2Parameter)
         {

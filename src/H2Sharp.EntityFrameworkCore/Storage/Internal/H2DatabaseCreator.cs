@@ -135,6 +135,35 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
     }
 
     /// <inheritdoc />
+    public override void CreateTables()
+    {
+        // The default executor wraps the whole batch in one transaction, and the engine of
+        // this port cannot see a table the same transaction just created (the FK of the
+        // next statement fails with "Table not found"). The commands are issued directly,
+        // one by one. The connection is left open: an in-memory database dies with its
+        // last connection, and closing the only connection here would drop the tables
+        // that were just made.
+        if (_connection.DbConnection.State == ConnectionState.Closed)
+        {
+            _connection.DbConnection.Open();
+        }
+
+        foreach (var command in GetCreateTablesCommands())
+        {
+            using var dbCommand = _connection.DbConnection.CreateCommand();
+            dbCommand.CommandText = command.CommandText;
+            dbCommand.ExecuteNonQuery();
+        }
+    }
+
+    /// <inheritdoc />
+    public override Task CreateTablesAsync(CancellationToken cancellationToken = default)
+    {
+        CreateTables();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
     public override bool HasTables()
     {
         // The tables of the model live in the schema of the model, and the schema of the model
