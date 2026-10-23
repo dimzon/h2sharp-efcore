@@ -363,5 +363,9 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
             [_sqlExpressionFactory.Constant(unit, _textMapping), amount, instance],
             nullable: true,
             argumentsPropagateNullability: TrueArrays[3],
-            instance.Type);
+            instance.Type,
+            // A member read off the result (AddHours(1).Hour) is translated by the member
+            // translator, which needs the type mapping of the value to work: without it the
+            // value is refused as "could not be translated".
+            instance.TypeMapping ?? _timestampMapping);
 }

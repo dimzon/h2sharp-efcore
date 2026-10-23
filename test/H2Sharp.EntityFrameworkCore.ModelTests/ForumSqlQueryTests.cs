@@ -217,29 +217,26 @@ public class ForumSqlQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_rows_are_asked_for_with_a_date_moved_by_a_year()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_are_asked_for_with_a_date_moved_by_a_year));
         using var context = database.Context();
 
-        // The provider does not translate a member read off the result of a method yet:
-        // "The LINQ expression 'DbSet<Topic>()...' could not be translated".
-        var count = context.Topics.Count(t => t.CreatedAt.AddYears(1).Year == 2025);
-
-        Assert.Equal(7, count);
+        // The engine reads the add and the member read off it; the answer is the count
+        // of the same predicate over the seed, not a number written by hand.
+        Assert.Equal(
+            ForumData.Topics().Count(t => t.CreatedAt.AddYears(1).Year == 2025),
+            context.Topics.Count(t => t.CreatedAt.AddYears(1).Year == 2025));
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_rows_are_asked_for_with_a_date_moved_by_hours()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_are_asked_for_with_a_date_moved_by_hours));
         using var context = database.Context();
 
-        // The provider does not translate a member read off the result of a method yet.
-        var count = context.Posts.Count(p => p.CreatedAt.AddHours(1).Hour == 11);
-
-        Assert.Equal(1, count);
+        Assert.Equal(
+            ForumData.Posts().Count(p => p.CreatedAt.AddHours(1).Hour == 11),
+            context.Posts.Count(p => p.CreatedAt.AddHours(1).Hour == 11));
     }
 }
