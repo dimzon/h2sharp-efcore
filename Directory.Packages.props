@@ -16,7 +16,7 @@
     <PackageVersion Include="Npgsql" Version="$(NpgsqlVersion)" />
     <PackageVersion Include="Npgsql.NodaTime" Version="$(NpgsqlVersion)" />
     <PackageVersion Include="Npgsql.NetTopologySuite" Version="$(NpgsqlVersion)" />
-    <PackageVersion Include="NodaTime" Version="3.2.2" />
+    <PackageVersion Include="NodaTime" Version="3.3.5" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.14" />
     <PackageVersion Include="NetTopologySuite" Version="2.6.0" />
     <PackageVersion Include="Npgsql.DependencyInjection" Version="$(NpgsqlVersion)" />
