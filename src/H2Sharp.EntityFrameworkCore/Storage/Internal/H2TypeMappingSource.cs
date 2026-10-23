@@ -242,7 +242,6 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             ?? FindBaseMapping(mappingInfo)?.Clone(mappingInfo)
             ?? FindEnumMapping(mappingInfo)
             ?? FindRowValueMapping(mappingInfo)?.Clone(mappingInfo);
-
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -443,8 +442,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
         }
 
         if (storeType.EndsWith("[]", StringComparison.Ordinal) || storeType.EndsWith(" ARRAY", StringComparison.Ordinal))
-        {
-            // We have an array store type (either because we're reverse engineering or the user explicitly specified it).
+        {            // We have an array store type (either because we're reverse engineering or the user explicitly specified it).
             // H2 2.5 writes the type of an array as the type of its elements and the word ARRAY after
             // it ("integer ARRAY"); the brackets of PostgreSQL ("integer[]") it does not know, but a
             // store type written that way is still read, so that the mapping of an array found in a

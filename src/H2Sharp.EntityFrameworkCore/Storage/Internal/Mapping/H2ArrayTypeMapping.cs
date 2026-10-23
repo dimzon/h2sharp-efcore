@@ -34,6 +34,35 @@ public abstract class H2ArrayTypeMapping : RelationalTypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
+    public override RelationalTypeMapping WithTypeMappingInfo(in RelationalTypeMappingInfo mappingInfo)
+    {
+        var storeType = mappingInfo.StoreTypeName;
+        if (storeType is not null && storeType.EndsWith("[]", StringComparison.Ordinal))
+        {
+            // A store type written with the brackets of PostgreSQL is read and
+            // rewritten in the form H2 takes: the word ARRAY after the element type.
+            storeType = storeType[..^2] + " ARRAY";
+        }
+
+        return Clone(
+            new RelationalTypeMappingParameters(
+                Parameters.CoreParameters,
+                storeType ?? StoreType,
+                StoreTypePostfix,
+                mappingInfo.DbType ?? DbType,
+                mappingInfo.IsUnicode ?? Parameters.Unicode,
+                mappingInfo.Size ?? Size,
+                mappingInfo.IsFixedLength ?? Parameters.FixedLength,
+                mappingInfo.Precision ?? Precision,
+                mappingInfo.Scale ?? Scale));
+    }
+
+    /// <summary>
+    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+    ///     any release. You should only use it directly in your code with extreme caution and knowing that
+    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+    /// </summary>
     public override RelationalTypeMapping ElementTypeMapping
     {
         get
@@ -96,10 +125,24 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
     /// </summary>
     [UsedImplicitly]
     public H2ArrayTypeMapping(string storeType, RelationalTypeMapping elementTypeMapping)
-        : this(CreateParameters(storeType, elementTypeMapping))
+        : this(CreateParameters(NormalizeStoreType(storeType), elementTypeMapping))
     {
-        Check.DebugAssert(storeType.EndsWith(" ARRAY", StringComparison.Ordinal), "H2ArrayTypeMapping created for a non-array store type");
+        Check.DebugAssert(
+            storeType.EndsWith(" ARRAY", StringComparison.Ordinal)
+            || storeType.EndsWith("[]", StringComparison.Ordinal),
+            "H2ArrayTypeMapping created for a non-array store type: " + storeType);
     }
+
+    /// <summary>
+    ///     H2 writes an array as the type of its elements and the word ARRAY after it.
+    ///     A store type written with the brackets of PostgreSQL ("integer[]") — from a
+    ///     reverse-engineered catalogue or a user's explicit specification — is read and
+    ///     rewritten in the form H2 takes.
+    /// </summary>
+    private static string NormalizeStoreType(string storeType)
+        => storeType.EndsWith("[]", StringComparison.Ordinal)
+            ? storeType[..^2] + " ARRAY"
+            : storeType;
 
     private static RelationalTypeMappingParameters CreateParameters(string storeType, RelationalTypeMapping elementMapping)
     {

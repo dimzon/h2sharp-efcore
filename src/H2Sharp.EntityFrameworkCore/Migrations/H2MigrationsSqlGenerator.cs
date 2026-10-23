@@ -385,9 +385,9 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
             + $"ALTER COLUMN {DelimitIdentifier(operation.Name)} ";
 
         // TYPE + COLLATION
-        var type = operation.ColumnType ?? GetColumnType(operation.Schema, operation.Table, operation.Name, operation, model)!;
+        var type = NormalizeArrayStoreType(operation.ColumnType ?? GetColumnType(operation.Schema, operation.Table, operation.Name, operation, model)!)!;
         var oldType = IsOldColumnSupported(model)
-            ? operation.OldColumn.ColumnType ?? GetColumnType(operation.Schema, operation.Table, operation.Name, operation.OldColumn, model)
+            ? NormalizeArrayStoreType(operation.OldColumn.ColumnType ?? GetColumnType(operation.Schema, operation.Table, operation.Name, operation.OldColumn, model))
             : null;
 
         // H2 2.5 has no collation of a column: the reference reads "COLLATE" only in the
@@ -1143,6 +1143,8 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
             operation.ColumnType = GetColumnType(schema, table, name, operation, model);
         }
 
+        operation.ColumnType = NormalizeArrayStoreType(operation.ColumnType);
+
         CheckForOldValueGenerationAnnotation(operation);
         var valueGenerationStrategy = operation[H2AnnotationNames.ValueGenerationStrategy] as H2ValueGenerationStrategy?;
         if (valueGenerationStrategy == H2ValueGenerationStrategy.SerialColumn)
@@ -1546,6 +1548,16 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
     #endregion System column utilities
 
     #region Helpers
+
+    /// <summary>
+    ///     H2 writes an array as the type of its elements and the word ARRAY after it.
+    ///     A column type written with the brackets of PostgreSQL ("integer[]") from the
+    ///     model is rewritten in the form H2 takes.
+    /// </summary>
+    private static string? NormalizeArrayStoreType(string? storeType)
+        => storeType is not null && storeType.EndsWith("[]", StringComparison.Ordinal)
+            ? storeType[..^2] + " ARRAY"
+            : storeType;
 
     private string DelimitIdentifier(string identifier)
         => Dependencies.SqlGenerationHelper.DelimitIdentifier(identifier);
