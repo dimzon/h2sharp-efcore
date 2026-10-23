@@ -33,6 +33,7 @@
 | dimzon/h2sharp#20 (операции дат) | `Topics_are_moved_by_a_day`, `The_hours_between_the_writes` — только эталон | добавить прогоны на порту |
 | dimzon/h2sharp#21 (выражения в `ORDER BY`) | заблокированные тесты сортировки | разблокировать |
 | dimzon/h2sharp#22 (операторы `~`, `~*`) | `Titles_matching_a_pattern_are_found` — только эталон | добавить прогон на порту |
+| dimzon/h2sharp#27 (`EXISTS`) | `It_is_asked_whether_there_is_a_row`, `It_is_asked_whether_every_row_holds_a_condition`, `The_topics_that_have_answers_are_asked_for` и массивные `Any`/`All` заблокированы | разблокировать |
 | dimzon/h2sharp#13 (`FINAL TABLE`, identity, `ALTER TABLE`) | заблокированные тесты | разблокировать |
 | `ARRAY_REMOVE` (dimzon/h2sharp#24) | провайдер пишет `array_remove` в `TranslateWhere`; не читает ни порт, ни эталон. Код оставлен как есть: если порт реализует функцию, код провайдера заработает без изменений | при закрытии проверить оба движка; если эталон не добавит функцию — решать отдельно (фильтр только через `UNNEST`, колонки отклонять явно) |
 
