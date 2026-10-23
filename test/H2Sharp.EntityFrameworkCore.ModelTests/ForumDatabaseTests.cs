@@ -129,32 +129,28 @@ public class ForumDatabaseTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_number_of_the_rows_is_read_with_a_raw_statement()
     {
         using var database = ForumDatabase.Filled(nameof(The_number_of_the_rows_is_read_with_a_raw_statement));
         using var context = database.Context();
 
-        // The statement is put into a table of its own, "FROM ( SELECT COUNT(*) ... ) AS "t"",
-        // and the engine does not read a table of its own yet: "Table "(" not found".
+        // EF reads the first column of the statement and names it "Value": the raw
+        // statement must name it so, or the derived table has no column to read.
         var count = context.Database
-            .SqlQueryRaw<int>("SELECT COUNT(*) FROM \"Forums\"")
+            .SqlQueryRaw<int>("SELECT COUNT(*) AS \"Value\" FROM \"Forums\"")
             .First();
 
         Assert.Equal(3, count);
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_rows_are_read_with_a_raw_statement_that_asks_for_a_number()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_are_read_with_a_raw_statement_that_asks_for_a_number));
         using var context = database.Context();
 
-        // The statement is put into a table of its own, and the engine does not read a table of
-        // its own yet.
         var total = context.Database
-            .SqlQueryRaw<int>("SELECT SUM(\"ViewCount\") FROM \"Topics\"")
+            .SqlQueryRaw<int>("SELECT SUM(\"ViewCount\") AS \"Value\" FROM \"Topics\"")
             .First();
 
         Assert.Equal(3680, total);

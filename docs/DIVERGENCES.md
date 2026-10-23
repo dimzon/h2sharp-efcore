@@ -35,6 +35,11 @@
 | dimzon/h2sharp#22 (операторы `~`, `~*`) | закрыт (коммит движка «Read regex operators» `29e8e10`) | — |
 | dimzon/h2sharp#27 (`EXISTS`) | закрыт (коммит движка «Ask subqueries whether a row exists» `d86b2e1`): `It_is_asked_whether_there_is_a_row`, `It_is_asked_whether_every_row_holds_a_condition`, `It_is_asked_whether_there_is_a_row_without_waiting` разблокированы | — |
 | dimzon/h2sharp#13 (`FINAL TABLE`, identity, `ALTER TABLE`) | заблокированные тесты | разблокировать |
+| dimzon/h2sharp#33 (`INTERSECT`, `EXCEPT`) | `The_rows_of_two_queries_are_met`, `The_rows_of_two_queries_are_set_apart` заблокированы | разблокировать |
+| dimzon/h2sharp#34 (`SAVEPOINT`) | `The_change_is_kept_when_the_transaction_is_committed`, `The_change_is_thrown_away_when_the_transaction_is_rolled_back` заблокированы | разблокировать |
+| dimzon/h2sharp#35 (`WITHIN GROUP`, `FILTER`) | `Two_gatherings_in_one_query_take_their_own_order_and_filter` заблокирован | разблокировать |
+| dimzon/h2sharp#36 (E-строки) | `The_string_is_trimmed`, `The_rows_are_asked_for_with_a_trimmed_string` заблокированы | разблокировать |
+| dimzon/h2sharp#37 (`CAST(агрегат)` в скалярном подзапросе) | `The_rows_are_asked_for_with_a_table_joined_from_the_left` заблокирован | разблокировать |
 | `ARRAY_REMOVE` (dimzon/h2sharp#24) | провайдер пишет `array_remove` в `TranslateWhere`; не читает ни порт, ни эталон. Код оставлен как есть: если порт реализует функцию, код провайдера заработает без изменений | при закрытии проверить оба движка; если эталон не добавит функцию — решать отдельно (фильтр только через `UNNEST`, колонки отклонять явно) |
 
 Постоянное, не требующее пересмотра: квантованный `LIKE`/`ILIKE` через `OR`/`AND`
@@ -47,10 +52,10 @@ EF их не отдаёт генератору, как в апстриме).
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 960 | 0 | 960 |   | `H2Sharp.EntityFrameworkCore.Tests` | 122 | 0 | 122 |
-   | `H2Sharp.EntityFrameworkCore.ModelTests` | 253 | 0 | 253 |
-   | **Итого** | **1335** | **0** | **1335** |
+   | `H2Sharp.EntityFrameworkCore.ModelTests` | 255 | 0 | 255 |
+   | **Итого** | **1337** | **0** | **1337** |
 
-   Зелёный гейт: 1335 тестов на `net9.0` и `net10.0` против порта `d86b2e1`.
+   Зелёный гейт: 1337 тестов на `net9.0` и `net10.0` против порта `d86b2e1`.
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
@@ -63,7 +68,7 @@ row-value сравнения (#18), `UPDATE` с выражением (#17), па
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 1335 | 0 | 1335 |
+   | `Category!=BlockedByPort` | 1337 | 0 | 1337 |
    | `Category=BlockedByPort` | 69 | 371 | 446 |
 
    Шесть тестов пропущены в прогоне с трейтом. Числа выше — на `net10.0`, порт `56787de`.
