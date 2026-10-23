@@ -168,17 +168,13 @@ public class ForumFunctionTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_strings_are_joined_with_a_separator()
     {
         using var database = ForumDatabase.Filled(nameof(The_strings_are_joined_with_a_separator));
         using var context = database.Context();
 
-        // The provider writes the rest of the strings as an array literal, and the engine does
-        // not read an array literal yet:
-        // "Syntax error in SQL statement "SELECT CONCAT_WS(' | ', ""f"".""Name"", ""f"".""Description"",
-        // ARRAY[*][])\000d\000aFROM ""Forums"" ""f""\000d\000aORDER BY ""f"".""Id""\000d\000aLIMIT 1";
-        // expected ")"" (dimzon/h2sharp#14, the array type).
+        // The provider writes the rest of the strings as an array literal, and the engine
+        // reads array literals now (issue dimzon/h2sharp#14: the array type).
         var joined = context.Forums
             .OrderBy(f => f.Id)
             .Select(f => EF.Functions.ConcatWithSeparator(" | ", f.Name, f.Description))

@@ -18,7 +18,6 @@ public class ForumCursorAndBulkExamples
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void Composite_cursor_reads_the_next_page_without_offset()
     {
         using var database = ForumDatabase.Filled(nameof(Composite_cursor_reads_the_next_page_without_offset));
@@ -63,7 +62,6 @@ public class ForumCursorAndBulkExamples
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void View_counts_are_updated_with_a_database_expression()
     {
         using var database = ForumDatabase.Filled(nameof(View_counts_are_updated_with_a_database_expression));

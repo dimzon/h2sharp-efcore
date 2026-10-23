@@ -123,14 +123,12 @@ public class ForumSearchExamples
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void Composite_key_lookup_is_blocked_on_the_port()
     {
         using var database = ForumDatabase.Filled(nameof(Composite_key_lookup_is_blocked_on_the_port));
         using var context = database.Context();
 
-        // The engine does not read a row-value comparison yet (issue dimzon/h2sharp#18):
-        // expected ")".
+        // A row-value comparison reads on the port now (issue dimzon/h2sharp#18 closed).
         var exact = context.Topics
             .Where(t => EF.Functions.Equal(
                 new ValueTuple<DateTime, int>(t.CreatedAt, t.Id),

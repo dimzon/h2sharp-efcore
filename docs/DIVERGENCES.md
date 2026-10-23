@@ -25,13 +25,14 @@
 
 | Issue порта | Обход в провайдере/тестах | Что сделать при закрытии |
 |---|---|---|
-| dimzon/h2sharp#23 (`UNNEST`, `WITH ORDINALITY`) | `Independent_array_is_unnested_into_rows_on_reference_h2` гоняет `Join` только на эталоне; `Quantified_checks_without_an_h2_form_are_refused` утверждает отказ для колонок (это ограничение эталона, оно постоянно) | добавить прогон `Join`-теста на порту; отказные оставить |
-| dimzon/h2sharp#14 (тип `ARRAY`, литерал) | `Inline_lists_match_whole_rows`, переменные списки, `Whole_arrays_are_compared`, срезы в `Counts_lengths`, `Concat` — всё только на эталоне | добавить прогоны на порту |
+| dimzon/h2sharp#23 (`UNNEST`, `WITH ORDINALITY`) | закрыт: порт читает `UNNEST` (коммит движка «Arrays end to end» `f24e67e`). `Independent_array_is_unnested_into_rows_on_reference_h2` переведён на живой прогон; отказные для коррелированного `UNNEST` остаются (ограничение эталона) | — |
+| dimzon/h2sharp#14 (тип `ARRAY`, литерал) | закрыт целиком: DDL `ARRAY`, литералы, параметры-массивы, `ARRAY_*`, `= ANY` читаются. `The_rows_are_asked_for_with_a_list_in_a_variable` и `The_strings_are_joined_with_a_separator` переведены на живой прогон | — |
+| dimzon/h2sharp#18 (row-value) | закрыт (коммит движка «A new primary key moves the row instead of refusing»): `Composite_key_lookup` и `Composite_cursor_reads_the_next_page_without_offset` разблокированы | — |
+| dimzon/h2sharp#17 (`UPDATE` с выражением) | закрыт: `View_counts_are_updated_with_a_database_expression` разблокирован | — |
 | dimzon/h2sharp#19 (`POSITION` binary) | `Binary_token_is_searched_for_a_marker_byte` заблокирован | разблокировать |
 | dimzon/h2sharp#20 (операции дат) | `Topics_are_moved_by_a_day`, `The_hours_between_the_writes` — только эталон | добавить прогоны на порту |
 | dimzon/h2sharp#21 (выражения в `ORDER BY`) | заблокированные тесты сортировки | разблокировать |
 | dimzon/h2sharp#22 (операторы `~`, `~*`) | `Titles_matching_a_pattern_are_found` — только эталон | добавить прогон на порту |
-| dimzon/h2sharp#18 (row-value) | `Composite_cursor_runs` — эталон; парный заблокирован | разблокировать парный |
 | dimzon/h2sharp#13 (`FINAL TABLE`, identity, `ALTER TABLE`) | заблокированные тесты | разблокировать |
 | `ARRAY_REMOVE` (dimzon/h2sharp#24) | провайдер пишет `array_remove` в `TranslateWhere`; не читает ни порт, ни эталон. Код оставлен как есть: если порт реализует функцию, код провайдера заработает без изменений | при закрытии проверить оба движка; если эталон не добавит функцию — решать отдельно (фильтр только через `UNNEST`, колонки отклонять явно) |
 
@@ -44,41 +45,31 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 1016 | 384 | 1406 |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 960 | 0 | 960 |
    | `H2Sharp.EntityFrameworkCore.Tests` | 122 | 0 | 122 |
-   | `H2Sharp.EntityFrameworkCore.ModelTests` | 188 | 20 | 208 |
-   | **Итого** | **1326** | **404** | **1736** |
+   | `H2Sharp.EntityFrameworkCore.ModelTests` | 246 | 0 | 246 |
+   | **Итого** | **1328** | **0** | **1328** |
 
-   Два красные — тесты `LegacyH2TypeMappingTest`, помеченные `#if DEBUG`; их результат зависит
-   от порядка, в котором отработали тесты функционального набора, и от порта он не зависит
-   (в Release их нет вовсе, и набор юнит-тестов зелёный целиком: 120 из 120).
+   Зелёный гейт: 1328 тестов на `net9.0` и `net10.0` против порта `56787de`.
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
 сбор строк в один текст, сырые запросы и транзакции. Он зелёный целиком, кроме
-двадцати тестов, помеченных `BlockedByPort` по пробелам ниже. Покрытие провайдера,
-измеренное этим набором в Debug на `net9.0` и `net10.0`:
-**4772 из 9493 строк (50,27 %)**, было 39,93 %: прирост **10,34 процентного пункта**.
-Порог повышен до **50 %**. Настройки включения и исключения покрытия не менялись;
-модульные тесты в этот замер не входят.
-
-   Набор `H2Sharp.EntityFrameworkCore.Tests` собирается по-разному в Debug и в Release: четыре
-   теста `LegacyH2TypeMappingTest` написаны под `#if DEBUG`. В Debug их 115, и два из них
-   красные — см. ниже; в Release их 120, и все зелёные.
+семнадцати тестов, помеченных `BlockedByPort` по пробелам ниже. Разблокированы пять:
+row-value сравнения (#18), `UPDATE` с выражением (#17), параметр-массив и `CONCAT_WS`
+(#14) и живой `UNNEST` (#23). Порог покрытия держит `tools/CheckCoverage.ps1`.
 
    Разделение по трейту:
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 1270 | 0 | 1270 |
-   | `Category=BlockedByPort` | 56 | 404 | 466 |
+   | `Category!=BlockedByPort` | 1328 | 0 | 1328 |
+   | `Category=BlockedByPort` | 61 | 379 | 446 |
 
-   Шесть тестов пропущены в прогоне с трейтом. Числа выше — на `net10.0`, порт `8d5fafa`, против движка с
-   `FINAL TABLE`, с последовательностями, с `AS` у псевдонима, со знаком перед членом и без
-   предела в восемь параметров на команду.
+   Шесть тестов пропущены в прогоне с трейтом. Числа выше — на `net10.0`, порт `56787de`.
 
    Прогон без трейта на `net9.0` даёт те же числа: 960 функциональных, 122 модульных и
-   188 модельных тестов. Коллизия одинаково названных методов в `ModelTests` устранена
+   246 модельных тестов. Коллизия одинаково названных методов в `ModelTests` устранена
    уникальным суффиксом имени базы, а не изменением SQL или проверки.
 
    **Прогон с трейтом больше не обрывается.** Раньше тестовое оборудование скаффолдинга
@@ -293,6 +284,8 @@ NTS больше не публикует PostGIS `Transform`, `Force2D`, рас�
 и сверенные с JVM: [#17](https://github.com/dimzon/h2sharp/issues/17) — `UPDATE T SET N = N + 1`
 читает последнюю строку сканирования (10,20 → 81,81 при последней N=80),
 [#18](https://github.com/dimzon/h2sharp/issues/18) — `(CreatedAt, Id) > (...)` не разбирается.
+Оба закрыты портом: `View_counts_are_updated_with_a_database_expression`, `Composite_cursor_reads_the_next_page_without_offset`
+и `Composite_key_lookup` разблокированы и зелёные.
 [#19](https://github.com/dimzon/h2sharp/issues/19) — `POSITION(X'80' IN ...)` не разбирается
 (`POSITION needs readConcat`), хотя извлечение байта через `SUBSTRING` работает.
 `ForumCursorAndBulkExamples` сохраняет строгие `BlockedByPort` проверки значений и парные

@@ -97,6 +97,31 @@ public class ForumArrayColumnExamples
     }
 
     [Fact]
+    public void Independent_array_is_unnested_into_rows_on_the_port()
+    {
+        // A memory database dies with its last connection, so the connection stays open.
+        using var connection = new H2Sharp.Data.H2Connection("jdbc:h2:mem:shelves_live_" + Guid.NewGuid().ToString("N"));
+        connection.Open();
+        using var context = new ShelfContext(new DbContextOptionsBuilder<ShelfContext>().UseH2(connection).Options);
+        Assert.True(context.Database.EnsureCreated());
+
+        context.Shelves.AddRange(
+            new Shelf { Id = 1, Name = "ada", Forums = [1, 2, 3], Levels = [1, null, 2] },
+            new Shelf { Id = 2, Name = "grace", Forums = [2], Levels = [2] },
+            new Shelf { Id = 3, Name = "linus", Forums = [3], Levels = [] });
+        context.SaveChanges();
+
+        // The engine reads UNNEST for a list written in the query (issue dimzon/h2sharp#23
+        // closed): the join answers the rows of the list.
+        var rows = context.Shelves
+            .Join(new[] { 1, 2 }, s => s.Id, x => x, (s, x) => s.Name)
+            .OrderBy(n => n)
+            .ToList();
+
+        Assert.Equal(["ada", "grace"], rows);
+    }
+
+    [Fact]
     public void Any_asks_about_a_single_value()
     {
         using var context = Context();

@@ -453,15 +453,13 @@ public class ForumQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_rows_are_asked_for_with_a_list_in_a_variable()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_are_asked_for_with_a_list_in_a_variable));
         using var context = database.Context();
 
-        // The provider writes "= ANY (@__ids_0)", and the engine does not read the form:
-        // "Not ported yet: Parser.parseQuerySelect: aggregate calls outside the select list are
-        // not ported".
+        // The provider writes "= ANY (@__ids_0)", and the engine reads the form now
+        // (issue dimzon/h2sharp#14: arrays and their parameters).
         int[] ids = [1, 2];
         Assert.Equal(6, context.Topics.Count(t => ids.Contains(t.ForumId)));
     }

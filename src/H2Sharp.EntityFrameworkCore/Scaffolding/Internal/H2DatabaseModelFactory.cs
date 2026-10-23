@@ -403,7 +403,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         // key columns are recovered: H2 exposes no "referenced column" column of its own.
         command.CommandText = """
             SELECT fk.TABLE_SCHEMA, fk.TABLE_NAME, fk.CONSTRAINT_NAME, fk.COLUMN_NAME,
-                   rc.UNIQUE_CONSTRAINT_SCHEMA, fk.UNIQUE_CONSTRAINT_NAME,
+                   rc.UNIQUE_CONSTRAINT_SCHEMA, rc.UNIQUE_CONSTRAINT_NAME,
                    rc.UPDATE_RULE, rc.DELETE_RULE, fk.ORDINAL_POSITION
             FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE fk
             JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
