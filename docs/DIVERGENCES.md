@@ -25,15 +25,15 @@
 
 | Issue порта | Обход в провайдере/тестах | Что сделать при закрытии |
 |---|---|---|
-| dimzon/h2sharp#23 (`UNNEST`, `WITH ORDINALITY`) | закрыт: порт читает `UNNEST` (коммит движка «Arrays end to end» `f24e67e`). `Independent_array_is_unnested_into_rows_on_reference_h2` переведён на живой прогон; отказные для коррелированного `UNNEST` остаются (ограничение эталона) | — |
-| dimzon/h2sharp#14 (тип `ARRAY`, литерал) | закрыт целиком: DDL `ARRAY`, литералы, параметры-массивы, `ARRAY_*`, `= ANY` читаются. `The_rows_are_asked_for_with_a_list_in_a_variable` и `The_strings_are_joined_with_a_separator` переведены на живой прогон | — |
-| dimzon/h2sharp#18 (row-value) | закрыт (коммит движка «A new primary key moves the row instead of refusing»): `Composite_key_lookup` и `Composite_cursor_reads_the_next_page_without_offset` разблокированы | — |
-| dimzon/h2sharp#17 (`UPDATE` с выражением) | закрыт: `View_counts_are_updated_with_a_database_expression` разблокирован | — |
-| dimzon/h2sharp#19 (`POSITION` binary) | `Binary_token_is_searched_for_a_marker_byte` заблокирован | разблокировать |
-| dimzon/h2sharp#20 (операции дат) | `Topics_are_moved_by_a_day`, `The_hours_between_the_writes` — только эталон | добавить прогоны на порту |
-| dimzon/h2sharp#21 (выражения в `ORDER BY`) | заблокированные тесты сортировки | разблокировать |
-| dimzon/h2sharp#22 (операторы `~`, `~*`) | `Titles_matching_a_pattern_are_found` — только эталон | добавить прогон на порту |
-| dimzon/h2sharp#27 (`EXISTS`) | `It_is_asked_whether_there_is_a_row`, `It_is_asked_whether_every_row_holds_a_condition`, `The_topics_that_have_answers_are_asked_for` и массивные `Any`/`All` заблокированы | разблокировать |
+| dimzon/h2sharp#23 (`UNNEST`, `WITH ORDINALITY`) | закрыт (коммит движка «Arrays end to end» `f24e67e`): `Independent_array_is_unnested_into_rows_on_the_port` живёт | — |
+| dimzon/h2sharp#14 (тип `ARRAY`, литерал) | закрыт целиком: `The_rows_are_asked_for_with_a_list_in_a_variable` и `The_strings_are_joined_with_a_separator` живут | — |
+| dimzon/h2sharp#18 (row-value) | закрыт: `Composite_key_lookup`, `Composite_cursor_reads_the_next_page_without_offset` живут | — |
+| dimzon/h2sharp#17 (`UPDATE` с выражением) | закрыт: `View_counts_are_updated_with_a_database_expression` живёт | — |
+| dimzon/h2sharp#19 (`POSITION` binary) | закрыт (коммит движка «Read POSITION through readConcat» `418fc11`): `Binary_token_is_searched_for_a_marker_byte` разблокирован | — |
+| dimzon/h2sharp#20 (операции дат) | закрыт (коммит движка «Subtract timestamps and compute intervals» `22fbbdd`): `The_rows_are_asked_for_with_a_date_moved_by_a_unit` разблокирован | — |
+| dimzon/h2sharp#21 (выражения в `ORDER BY`) | закрыт (коммит движка «Read complete expressions in ORDER BY» `be3d11b`) | — |
+| dimzon/h2sharp#22 (операторы `~`, `~*`) | закрыт (коммит движка «Read regex operators» `29e8e10`) | — |
+| dimzon/h2sharp#27 (`EXISTS`) | закрыт (коммит движка «Ask subqueries whether a row exists» `d86b2e1`): `It_is_asked_whether_there_is_a_row`, `It_is_asked_whether_every_row_holds_a_condition`, `It_is_asked_whether_there_is_a_row_without_waiting` разблокированы | — |
 | dimzon/h2sharp#13 (`FINAL TABLE`, identity, `ALTER TABLE`) | заблокированные тесты | разблокировать |
 | `ARRAY_REMOVE` (dimzon/h2sharp#24) | провайдер пишет `array_remove` в `TranslateWhere`; не читает ни порт, ни эталон. Код оставлен как есть: если порт реализует функцию, код провайдера заработает без изменений | при закрытии проверить оба движка; если эталон не добавит функцию — решать отдельно (фильтр только через `UNNEST`, колонки отклонять явно) |
 
@@ -46,12 +46,11 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 960 | 0 | 960 |
-   | `H2Sharp.EntityFrameworkCore.Tests` | 122 | 0 | 122 |
-   | `H2Sharp.EntityFrameworkCore.ModelTests` | 246 | 0 | 246 |
-   | **Итого** | **1328** | **0** | **1328** |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 960 | 0 | 960 |   | `H2Sharp.EntityFrameworkCore.Tests` | 122 | 0 | 122 |
+   | `H2Sharp.EntityFrameworkCore.ModelTests` | 251 | 0 | 251 |
+   | **Итого** | **1333** | **0** | **1333** |
 
-   Зелёный гейт: 1328 тестов на `net9.0` и `net10.0` против порта `56787de`.
+   Зелёный гейт: 1333 теста на `net9.0` и `net10.0` против порта `d86b2e1`.
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
@@ -64,7 +63,7 @@ row-value сравнения (#18), `UPDATE` с выражением (#17), па
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 1328 | 0 | 1328 |
+   | `Category!=BlockedByPort` | 1333 | 0 | 1333 |
    | `Category=BlockedByPort` | 69 | 371 | 446 |
 
    Шесть тестов пропущены в прогоне с трейтом. Числа выше — на `net10.0`, порт `56787de`.

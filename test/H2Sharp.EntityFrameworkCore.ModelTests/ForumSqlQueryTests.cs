@@ -198,7 +198,6 @@ public class ForumSqlQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_rows_are_asked_for_with_a_date_moved_by_a_unit()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_are_asked_for_with_a_date_moved_by_a_unit));

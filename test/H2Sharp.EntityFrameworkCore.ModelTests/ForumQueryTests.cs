@@ -430,7 +430,6 @@ public class ForumQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void It_is_asked_whether_there_is_a_row()
     {
         using var database = ForumDatabase.Filled(nameof(It_is_asked_whether_there_is_a_row));
@@ -442,7 +441,6 @@ public class ForumQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void It_is_asked_whether_every_row_holds_a_condition()
     {
         using var database = ForumDatabase.Filled(nameof(It_is_asked_whether_every_row_holds_a_condition));

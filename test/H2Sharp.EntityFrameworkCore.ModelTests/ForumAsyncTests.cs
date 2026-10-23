@@ -47,7 +47,6 @@ public class ForumAsyncTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public async Task It_is_asked_whether_there_is_a_row_without_waiting()
     {
         using var database = ForumDatabase.Filled(nameof(It_is_asked_whether_there_is_a_row_without_waiting));

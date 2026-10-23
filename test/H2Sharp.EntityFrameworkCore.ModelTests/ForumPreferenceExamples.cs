@@ -110,7 +110,6 @@ public class ForumPreferenceExamples
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void Binary_token_is_searched_for_a_marker_byte()
     {
         using var connection = new H2Connection("jdbc:h2:mem:token_marker_" + Guid.NewGuid().ToString("N"));
