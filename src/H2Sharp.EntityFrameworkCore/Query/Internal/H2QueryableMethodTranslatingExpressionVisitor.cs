@@ -862,47 +862,15 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
         TableExpressionBase targetTable,
         [NotNullWhen(true)] out TableExpression? tableExpression)
     {
-        if (!base.IsValidSelectExpressionForExecuteUpdate(selectExpression, targetTable, out tableExpression))
+        // A joined source must use EF's key-subquery fallback rather than PostgreSQL's UPDATE ... FROM,
+        // which H2 2.5 rejects (syntax error at FROM).
+        if (selectExpression.Tables.Count != 1)
         {
+            tableExpression = null;
             return false;
         }
 
-        // The main update table cannot be referenced from anywhere except for the UPDATE WHERE clause.
-        // This specifically makes it impossible to have joins which reference the main table in their predicate (ON ...).
-        // Because of this, we detect all such inner joins and lift their predicates to the main WHERE clause (where a reference to the
-        // main table is allowed) - see H2QuerySqlGenerator.VisitUpdate.
-        // For any other type of join which contains a reference to the main table, we return false to trigger a subquery pushdown instead.
-        OuterReferenceFindingExpressionVisitor? visitor = null;
-
-        for (var i = 0; i < selectExpression.Tables.Count; i++)
-        {
-            var table = selectExpression.Tables[i];
-
-            if (ReferenceEquals(table, tableExpression))
-            {
-                continue;
-            }
-
-            visitor ??= new OuterReferenceFindingExpressionVisitor(tableExpression);
-
-            // For inner joins, if the predicate contains a reference to the main table, H2QuerySqlGenerator will lift the predicate
-            // to the WHERE clause; so we only need to check the inner join's table (i.e. subquery) for such a reference.
-            // Cross join and cross/outer apply (lateral joins) don't have predicates, so just check the entire join for a reference to
-            // the main table, and switch to subquery syntax if one is found.
-            // Left join does have a predicate, but it isn't possible to lift it to the main WHERE clause; so also check the entire
-            // join.
-            if (table is InnerJoinExpression innerJoin)
-            {
-                table = innerJoin.Table;
-            }
-
-            if (visitor.ContainsReferenceToMainTable(table))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return base.IsValidSelectExpressionForExecuteUpdate(selectExpression, targetTable, out tableExpression);
     }
 
     /// <summary>
@@ -994,38 +962,6 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
             }
 
             return base.VisitParameter(node);
-        }
-    }
-
-    private sealed class OuterReferenceFindingExpressionVisitor(TableExpression mainTable) : ExpressionVisitor
-    {
-        private bool _containsReference;
-
-        public bool ContainsReferenceToMainTable(TableExpressionBase tableExpression)
-        {
-            _containsReference = false;
-
-            Visit(tableExpression);
-
-            return _containsReference;
-        }
-
-        [return: NotNullIfNotNull("expression")]
-        public override Expression? Visit(Expression? expression)
-        {
-            if (_containsReference)
-            {
-                return expression;
-            }
-
-            if (expression is ColumnExpression { TableAlias: var tableAlias} && tableAlias == mainTable.Alias)
-            {
-                _containsReference = true;
-
-                return expression;
-            }
-
-            return base.Visit(expression);
         }
     }
 }

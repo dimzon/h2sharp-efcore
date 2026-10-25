@@ -289,14 +289,19 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
 
         if (method == TimeOnly_FromTimeSpan)
         {
-            return _sqlExpressionFactory.Convert(arguments[0], typeof(TimeOnly), _typeMappingSource.FindMapping(typeof(TimeOnly)));
+            // H2 has no cast from an interval to a time; a time plus an interval is a time.
+            return TimeOfDay(arguments[0], ExpressionType.Add);
         }
 
         if (instance is not null)
         {
             if (method == TimeOnly_ToTimeSpan)
             {
-                return _sqlExpressionFactory.Convert(instance, typeof(TimeSpan), _typeMappingSource.FindMapping(typeof(TimeSpan)));
+                // H2 has no cast from a time to an interval; the difference of two times is one.
+                return _sqlExpressionFactory.Convert(
+                    TimeOfDay(instance, ExpressionType.Subtract),
+                    typeof(TimeSpan),
+                    _typeMappingSource.FindMapping(typeof(TimeSpan)));
             }
 
             if (method == TimeOnly_IsBetween)
@@ -313,6 +318,34 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
         }
 
         return null;
+    }
+
+    /// <summary>
+    ///     Moves a time around midnight.
+    /// </summary>
+    /// <remarks>
+    ///     H2 reads the difference of two times as an interval and the sum of a time and an
+    ///     interval as a time, but it casts neither a time to an interval nor an interval to a
+    ///     time, so the midnight carries the conversion.
+    /// </remarks>
+    private SqlExpression TimeOfDay(SqlExpression operand, ExpressionType operation)
+    {
+        var midnight = _sqlExpressionFactory.Constant(
+            TimeOnly.MinValue, _typeMappingSource.FindMapping(typeof(TimeOnly)));
+
+        return operation == ExpressionType.Add
+            ? new SqlBinaryExpression(
+                ExpressionType.Add,
+                midnight,
+                _sqlExpressionFactory.ApplyDefaultTypeMapping(operand),
+                typeof(TimeOnly),
+                _typeMappingSource.FindMapping(typeof(TimeOnly)))
+            : new SqlBinaryExpression(
+                ExpressionType.Subtract,
+                _sqlExpressionFactory.ApplyDefaultTypeMapping(operand),
+                midnight,
+                typeof(TimeSpan),
+                _typeMappingSource.FindMapping(typeof(TimeSpan)));
     }
 
     private SqlExpression? TranslateTimeZoneInfo(

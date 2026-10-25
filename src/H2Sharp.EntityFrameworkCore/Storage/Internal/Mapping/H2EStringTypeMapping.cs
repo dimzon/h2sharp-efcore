@@ -3,8 +3,9 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 using System.Text;
 
 /// <summary>
-///     Represents an H2 E-string literal (<c>E'...'</c>, the <c>eString</c> production of the grammar),
-///     which allows C-style escape sequences.
+///     Writes a string literal the way H2 accepts it: <c>E'...'</c> when the text has only printable
+///     ASCII, <c>U&amp;'...'</c> otherwise. H2 decodes no escape sequences in an E-string, so it is the
+///     plain literal with an E in front, and it has no <c>EU&amp;'...'</c> form.
 ///     This is a "virtual" type mapping which is never returned by <see cref="H2TypeMappingSource" />.
 ///     It is only used internally by some method translators to produce literal strings.
 /// </summary>
@@ -39,5 +40,21 @@ public class H2EStringTypeMapping : StringTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => Dialect.AppendEString(new StringBuilder(), (string)value).ToString();
+    {
+        var text = (string)value;
+        var builder = new StringBuilder(text.Length + 2);
+
+        // H2's E-string is a plain literal with an E in front: it decodes no escape sequences.
+        // A text with a control or non-ASCII character travels as U&'...', and H2 has no
+        // EU&'...' form, so such a text takes the plain prefix instead.
+        for (var i = 0; i < text.Length; i++)
+        {
+            if (text[i] < ' ' || text[i] > (char)127)
+            {
+                return Dialect.AppendString(builder, text).ToString();
+            }
+        }
+
+        return Dialect.AppendEString(builder, text).ToString();
+    }
 }

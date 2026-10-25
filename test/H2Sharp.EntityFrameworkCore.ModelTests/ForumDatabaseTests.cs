@@ -1,5 +1,8 @@
 using H2Sharp.EntityFrameworkCore.ModelTests.Model;
 using H2Sharp.EntityFrameworkCore.ModelTests.Seeding;
+using H2Sharp.EntityFrameworkCore.TestUtilities;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace H2Sharp.EntityFrameworkCore.ModelTests;
 
@@ -46,6 +49,103 @@ public class ForumDatabaseTests
         context.Database.EnsureCreated();
 
         Assert.Equal(7, Tables(context));
+    }
+
+    [Fact]
+    public void The_tables_are_asked_for_before_and_after_they_are_made()
+    {
+        using var database = ForumDatabase.Empty(nameof(The_tables_are_asked_for_before_and_after_they_are_made));
+        using var context = database.Context();
+        var creator = context.GetService<IRelationalDatabaseCreator>();
+
+        // The catalogue of an empty database has no tables of the forum in it.
+        Assert.False(creator.HasTables());
+
+        context.Database.EnsureCreated();
+
+        Assert.True(creator.HasTables());
+        Assert.True(creator.Exists());
+        Assert.True(context.Database.CanConnect());
+    }
+
+    [Fact]
+    public async Task The_tables_are_asked_for_asynchronously()
+    {
+        using var database = ForumDatabase.Empty(nameof(The_tables_are_asked_for_asynchronously));
+        await using var context = database.Context();
+        var creator = context.GetService<IRelationalDatabaseCreator>();
+
+        Assert.False(await creator.HasTablesAsync());
+
+        await context.Database.EnsureCreatedAsync();
+
+        Assert.True(await creator.HasTablesAsync());
+        Assert.True(await creator.ExistsAsync());
+    }
+
+    [Fact]
+    public async Task The_database_is_made_and_deleted_asynchronously()
+    {
+        using var database = ForumDatabase.Empty(nameof(The_database_is_made_and_deleted_asynchronously));
+        await using var context = database.Context();
+
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
+
+        Assert.Equal(0, await context.Forums.CountAsync());
+
+        await context.Database.EnsureDeletedAsync();
+
+        Assert.False(context.GetService<IRelationalDatabaseCreator>().HasTables());
+    }
+
+    [Fact]
+    public void A_schema_of_its_own_is_made_and_found()
+    {
+        using var connection = new H2Connection("jdbc:h2:mem:forum_schema_" + Guid.NewGuid().ToString("N"));
+        connection.Open();
+        using var context = new SchemaContext(
+            new DbContextOptionsBuilder<SchemaContext>().UseH2(connection).Options);
+        var creator = context.GetService<IRelationalDatabaseCreator>();
+
+        // The schema the model names is not there until the creator makes it; the default
+        // schema, PUBLIC, is made with the database and is never reported missing.
+        Assert.False(creator.Exists());
+
+        creator.Create();
+
+        Assert.True(creator.Exists());
+    }
+
+    [Fact]
+    [Trait("Category", "BlockedByPort")]
+    public void A_unique_constraint_is_added_to_an_existing_table()
+    {
+        using var database = ForumDatabase.Empty(nameof(A_unique_constraint_is_added_to_an_existing_table));
+        using var context = database.Context();
+        context.Database.EnsureCreated();
+
+        var commands = context.GetService<IMigrationsSqlGenerator>().Generate(
+        [
+            new AddUniqueConstraintOperation
+            {
+                Table = "Forums",
+                Name = "UQ_Forums_Name",
+                Columns = ["Name"]
+            }
+        ]);
+
+        var statement = string.Join("\n", commands.Select(command => command.CommandText + ";"));
+
+        // The reference reads ALTER TABLE ... ADD CONSTRAINT ... UNIQUE; the port reads the
+        // constraint clause only for PRIMARY KEY and answers `expected "PRIMARY"`.
+        var reference = H2ReferenceOracle.Run(context.Database.GenerateCreateScript() + statement);
+        Assert.True(reference.Accepted, reference.Output);
+
+        foreach (var command in commands)
+        {
+            context.Database.ExecuteSqlRaw(command.CommandText);
+        }
     }
 
     /// <summary>
@@ -110,6 +210,20 @@ public class ForumDatabaseTests
         {
             modelBuilder.Entity<WrongIdentity>().HasKey(e => e.Code);
             modelBuilder.Entity<WrongIdentity>().Property(e => e.Code).UseIdentityByDefaultColumn();
+        }
+    }
+
+    private sealed class Thought
+    {
+        public int Id { get; set; }
+    }
+
+    private sealed class SchemaContext(DbContextOptions<SchemaContext> options) : DbContext(options)
+    {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.HasDefaultSchema("forum_notes");
+            modelBuilder.Entity<Thought>().HasKey(e => e.Id);
         }
     }
 

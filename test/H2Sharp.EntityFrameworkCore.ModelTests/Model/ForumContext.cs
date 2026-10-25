@@ -10,8 +10,9 @@ namespace H2Sharp.EntityFrameworkCore.ModelTests.Model;
 ///         alike.
 ///     </para>
 ///     <para>
-///         The relations are joined by their columns: the engine does not read a foreign key
-///         inside CREATE TABLE yet, and a table it cannot read is a table without rows.
+///         The relations are joined by their columns: the forum keeps no navigations, so its
+///         queries name the joins themselves. The port reads a foreign key inside CREATE TABLE
+///         as well, and ForumRelationshipExamples asks the navigations on a model of its own.
 ///     </para>
 /// </remarks>
 public sealed class ForumContext : DbContext

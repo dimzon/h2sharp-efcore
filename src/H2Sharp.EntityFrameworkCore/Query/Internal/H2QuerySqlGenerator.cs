@@ -322,119 +322,107 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     {
         var selectExpression = updateExpression.SelectExpression;
 
-        if (selectExpression.Offset == null
-            && selectExpression.Limit == null
-            && selectExpression.Having == null
-            && selectExpression.Orderings.Count == 0
-            && selectExpression.GroupBy.Count == 0
-            && selectExpression.Projection.Count == 0
-            && (selectExpression.Tables.Count == 1
-                || !ReferenceEquals(selectExpression.Tables[0], updateExpression.Table)
-                || selectExpression.Tables[1] is InnerJoinExpression
-                || selectExpression.Tables[1] is CrossJoinExpression))
+        if (selectExpression.Offset != null
+            || selectExpression.Limit != null
+            || selectExpression.Having != null
+            || selectExpression.Orderings.Count != 0
+            || selectExpression.GroupBy.Count != 0
+            || selectExpression.Projection.Count != 0)
         {
-            Sql.Append("UPDATE ");
-            Visit(updateExpression.Table);
-            Sql.AppendLine();
-            Sql.Append("SET ");
-            Sql.Append(
-                $"{_sqlGenerationHelper.DelimitIdentifier(updateExpression.ColumnValueSetters[0].Column.Name)} = ");
-            Visit(updateExpression.ColumnValueSetters[0].Value);
-            using (Sql.Indent())
+            throw new InvalidOperationException(
+                RelationalStrings.ExecuteOperationWithUnsupportedOperatorInSqlGeneration(
+                    nameof(EntityFrameworkQueryableExtensions.ExecuteUpdate)));
+        }
+
+        // H2 2.5 has no UPDATE ... FROM: the reference rejects the clause. A source that needs a
+        // second table arrives from EF as the target joined on its key to the original query, and
+        // that shape is written as a correlated EXISTS, which H2 reads.
+        SelectExpression? correlatedSource = null;
+        SqlExpression? correlatedPredicate = null;
+
+        switch (selectExpression.Tables)
+        {
+            case [TableExpression table] when ReferenceEquals(table, updateExpression.Table):
+                break;
+
+            case [TableExpression table, InnerJoinExpression { Table: SelectExpression inner } join]
+                when ReferenceEquals(table, updateExpression.Table) && inner.Alias is not null:
+                correlatedSource = inner;
+                correlatedPredicate = selectExpression.Predicate == null
+                    ? join.JoinPredicate
+                    : new SqlBinaryExpression(
+                        ExpressionType.AndAlso,
+                        join.JoinPredicate,
+                        selectExpression.Predicate,
+                        typeof(bool),
+                        join.JoinPredicate.TypeMapping);
+                break;
+
+            default:
+                throw new NotSupportedException(
+                    "H2 2.5 cannot update from another table: the FROM clause is PostgreSQL's, and the "
+                    + "reference rejects it.");
+        }
+
+        Sql.Append("UPDATE ");
+        Visit(updateExpression.Table);
+        Sql.AppendLine();
+        Sql.Append("SET ");
+        Sql.Append(
+            $"{_sqlGenerationHelper.DelimitIdentifier(updateExpression.ColumnValueSetters[0].Column.Name)} = ");
+        Visit(updateExpression.ColumnValueSetters[0].Value);
+        using (Sql.Indent())
+        {
+            foreach (var columnValueSetter in updateExpression.ColumnValueSetters.Skip(1))
             {
-                foreach (var columnValueSetter in updateExpression.ColumnValueSetters.Skip(1))
-                {
-                    Sql.AppendLine(",");
-                    Sql.Append($"{_sqlGenerationHelper.DelimitIdentifier(columnValueSetter.Column.Name)} = ");
-                    Visit(columnValueSetter.Value);
-                }
+                Sql.AppendLine(",");
+                Sql.Append($"{_sqlGenerationHelper.DelimitIdentifier(columnValueSetter.Column.Name)} = ");
+                Visit(columnValueSetter.Value);
             }
+        }
 
-            var predicate = selectExpression.Predicate;
-            var firstTable = true;
-            OuterReferenceFindingExpressionVisitor? visitor = null;
-
-            if (selectExpression.Tables.Count > 1)
-            {
-                Sql.AppendLine().Append("FROM ");
-
-                for (var i = 0; i < selectExpression.Tables.Count; i++)
-                {
-                    var table = selectExpression.Tables[i];
-                    var joinExpression = table as JoinExpressionBase;
-
-                    if (updateExpression.Table.Alias == (joinExpression?.Table.Alias ?? table.Alias))
-                    {
-                        LiftPredicate(table);
-                        continue;
-                    }
-
-                    visitor ??= new OuterReferenceFindingExpressionVisitor(updateExpression.Table);
-
-                    // The main update table cannot be referenced from anywhere except for the UPDATE WHERE clause.
-                    // This specifically makes it impossible to have joins which reference the main table in their predicate (ON ...).
-                    // Because of this, we detect all such inner joins and lift their predicates to the main WHERE clause (where a reference to the
-                    // main table is allowed), producing UPDATE ... FROM x, y WHERE y.foreign_key = x.id instead of INNER JOIN ... ON.
-                    if (firstTable)
-                    {
-                        LiftPredicate(table);
-                        table = joinExpression?.Table ?? table;
-                    }
-                    else if (joinExpression is InnerJoinExpression innerJoinExpression
-                             && visitor.ContainsReferenceToMainTable(innerJoinExpression.JoinPredicate))
-                    {
-                        LiftPredicate(innerJoinExpression);
-
-                        Sql.AppendLine(",");
-                        using (Sql.Indent())
-                        {
-                            Visit(innerJoinExpression.Table);
-                        }
-
-                        continue;
-                    }
-
-                    if (firstTable)
-                    {
-                        firstTable = false;
-                    }
-                    else
-                    {
-                        Sql.AppendLine();
-                    }
-
-                    Visit(table);
-
-                    void LiftPredicate(TableExpressionBase joinTable)
-                    {
-                        if (joinTable is PredicateJoinExpressionBase predicateJoinExpression)
-                        {
-                            Check.DebugAssert(joinExpression is not LeftJoinExpression, "Cannot lift predicate for left join");
-
-                            predicate = predicate == null
-                                ? predicateJoinExpression.JoinPredicate
-                                : new SqlBinaryExpression(
-                                    ExpressionType.AndAlso,
-                                    predicateJoinExpression.JoinPredicate,
-                                    predicate,
-                                    typeof(bool),
-                                    predicate.TypeMapping);
-                        }
-                    }
-                }
-            }
-
-            if (predicate != null)
+        if (correlatedSource == null)
+        {
+            if (selectExpression.Predicate != null)
             {
                 Sql.AppendLine().Append("WHERE ");
-                Visit(predicate);
+                Visit(selectExpression.Predicate);
             }
 
             return updateExpression;
         }
 
-        throw new InvalidOperationException(
-            RelationalStrings.ExecuteOperationWithUnsupportedOperatorInSqlGeneration(nameof(EntityFrameworkQueryableExtensions.ExecuteUpdate)));
+        // The SET clause has no FROM clause to name the joined source, so a setter that reads one
+        // of its columns cannot be written; refuse it rather than emit SQL the engine would reject.
+        foreach (var columnValueSetter in updateExpression.ColumnValueSetters)
+        {
+            if (ReferencesAlias(columnValueSetter.Value, correlatedSource.Alias!))
+            {
+                throw new NotSupportedException(
+                    "H2 2.5 cannot set a column from another table in UPDATE: the statement has no FROM "
+                    + "clause to name that table.");
+            }
+        }
+
+        Sql.AppendLine().Append("WHERE EXISTS (");
+        using (Sql.Indent())
+        {
+            Sql.AppendLine().Append("SELECT 1");
+            Sql.AppendLine().Append("FROM ");
+            Visit(correlatedSource);
+            Sql.AppendLine().Append("WHERE ");
+            Visit(correlatedPredicate);
+        }
+        Sql.Append(")");
+
+        return updateExpression;
+    }
+
+    private static bool ReferencesAlias(SqlExpression expression, string tableAlias)
+    {
+        var finder = new TableAliasFindingExpressionVisitor(tableAlias);
+        finder.Visit(expression);
+        return finder.Found;
     }
 
     /// <summary>
@@ -1606,31 +1594,21 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         }
     }
 
-    private sealed class OuterReferenceFindingExpressionVisitor(TableExpression mainTable) : ExpressionVisitor
+    private sealed class TableAliasFindingExpressionVisitor(string tableAlias) : ExpressionVisitor
     {
-        private bool _containsReference;
-
-        public bool ContainsReferenceToMainTable(SqlExpression sqlExpression)
-        {
-            _containsReference = false;
-
-            Visit(sqlExpression);
-
-            return _containsReference;
-        }
+        public bool Found { get; private set; }
 
         [return: NotNullIfNotNull("expression")]
         public override Expression? Visit(Expression? expression)
         {
-            if (_containsReference)
+            if (Found)
             {
                 return expression;
             }
 
-            if (expression is ColumnExpression { TableAlias: var tableAlias }
-                && tableAlias == mainTable.Alias)
+            if (expression is ColumnExpression column && column.TableAlias == tableAlias)
             {
-                _containsReference = true;
+                Found = true;
 
                 return expression;
             }

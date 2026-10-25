@@ -87,7 +87,6 @@ public class ForumSqlQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_rows_are_asked_for_with_a_table_joined_from_the_left()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_are_asked_for_with_a_table_joined_from_the_left));
@@ -95,7 +94,7 @@ public class ForumSqlQueryTests
 
         // The join from the left becomes a query in the list of the columns,
         // "( SELECT count(*) FROM "TopicTags" "t0" WHERE "t"."Id" = "t0"."TopicId" )", and the
-        // engine does not read a query in the list of the columns: "expected )".
+        // port reads a scalar query there (dimzon/h2sharp#37).
         var rows = context.Topics
             .GroupJoin(
                 context.TopicTags,

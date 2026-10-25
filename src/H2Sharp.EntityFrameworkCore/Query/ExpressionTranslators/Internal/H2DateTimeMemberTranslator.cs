@@ -63,12 +63,13 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
 
         if (member.Name == nameof(DateTime.Date))
         {
-            // Note that DateTime.Date returns a DateTime, not a DateOnly (introduced later); so we convert using date_trunc (which returns
-            // a PG timestamp/timestamptz) rather than a conversion to PG date (compare with NodaTime where we want a LocalDate).
+            // Note that DateTime.Date returns a DateTime, not a DateOnly (introduced later); so we truncate rather than convert to a
+            // date (compare with NodaTime where we want a LocalDate).
 
-            // When given a timestamptz, date_trunc performs the truncation with respect to TimeZone; to avoid that, we use the overload
-            // accepting a time zone, and pass UTC. For regular timestamp (or in legacy timestamp mode), we use the simpler overload without
-            // a time zone.
+            // The parts of a timestamp with a zone are read in the value's own offset, and the
+            // wall clock of a DateTime is exactly that. H2 reads neither the three-argument
+            // DATE_TRUNC nor a CAST of the value to a timestamp that way: both use the zone of
+            // the session. So the wall clock is written out and read back.
             switch (instance)
             {
                 case { TypeMapping: H2TimestampTypeMapping }:
@@ -82,13 +83,7 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
                         instance.TypeMapping);
 
                 case { TypeMapping: H2TimestampTzTypeMapping }:
-                    return _sqlExpressionFactory.Function(
-                        "date_trunc",
-                        [_sqlExpressionFactory.Constant("day"), instance, _sqlExpressionFactory.Constant("UTC")],
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[3],
-                        returnType,
-                        instance.TypeMapping);
+                    return WallClock(instance, "yyyy-MM-dd");
 
                 // If DateTime.Date is invoked on a PostgreSQL date (or DateOnly, which can only be mapped to datE), simply no-op.
                 case { TypeMapping: H2DateTimeDateTypeMapping }:
@@ -179,14 +174,9 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
         // ISO_DAY_OF_WEEK, and its number is taken by seven, because .NET counts the week
         // from Sunday and ISO counts it from Monday.
         //
-        // The value is brought to a timestamp without a time zone first, the way the
-        // date_part of PostgreSQL worked: a value with a zone is read in the zone of the
-        // session, and .NET wants the fields of the value as they were written.
-        if (!TryConvertAwayFromTimestampTz(instance, out instance!))
-        {
-            return null;
-        }
-
+        // H2 reads the parts of a timestamp with a zone in the value's own offset, which is
+        // what .NET wants; a conversion to a timestamp first is not needed, and a CAST would
+        // read the value in the zone of the session instead.
         if (partName == "dow")
         {
             var dayOfWeek = _sqlExpressionFactory.Function(
@@ -227,32 +217,52 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
     private SqlExpression? TranslateDateTimeOffset(SqlExpression instance, MemberInfo member)
         => member.Name switch
         {
-            // We only support UTC DateTimeOffset, so DateTimeOffset.DateTime is just a matter of converting to timestamp without time zone
-            nameof(DateTimeOffset.DateTime) => _sqlExpressionFactory.AtUtc(instance),
+            // The wall clock of the value itself: H2 keeps the offset the value was written
+            // with, and FORMATDATETIME without a named zone writes that offset's wall clock.
+            // A CAST of the value to a timestamp would read it in the zone of the session.
+            nameof(DateTimeOffset.DateTime) => WallClock(instance, "yyyy-MM-dd HH:mm:ss.SSSSSSSSS"),
 
-            // We only support UTC DateTimeOffset, so DateTimeOffset.UtcDateTime does nothing (type change on CLR change, no change on the
-            // PG side.
-            nameof(DateTimeOffset.UtcDateTime) => instance,
+            // The instant in UTC: FORMATDATETIME with a named zone writes the wall clock of
+            // that zone. A cast of the value to a timestamp would read it in the session zone
+            // even after AT TIME ZONE restated the value in UTC.
+            nameof(DateTimeOffset.UtcDateTime) => WallClock(instance, "yyyy-MM-dd HH:mm:ss.SSSSSSSSS", "UTC"),
 
-            // Convert to timestamp without time zone, applying a time zone conversion based on the TimeZone connection parameter.
+            // A CAST of a timestamp with a zone to a timestamp without one reads the value in
+            // the zone of the session, which is the local time of .NET.
             nameof(DateTimeOffset.LocalDateTime) => _sqlExpressionFactory.Convert(instance, typeof(DateTime), _timestampMapping),
 
-            // In PG, date_trunc over timestamptz looks at TimeZone, and returns timestamptz. .NET DateTimeOffset.Date just returns the
-            // date part (no conversion), and returns an Unspecified DateTime. So we first convert the timestamptz argument to timestamp
-            // via AT TIME ZONE 'UTC".
-            // Note that we don't use the overload of date_trunc that accepts a timezone as its 3rd argument (like we do for DateTime.Date),
-            // since that returns a timestamptz, but DateTimeOffset.Date should return DateTime with Kind=Unspecified
-            nameof(DateTimeOffset.Date) =>
-                _sqlExpressionFactory.Function(
-                    "date_trunc",
-                    [_sqlExpressionFactory.Constant("day"), _sqlExpressionFactory.AtUtc(instance)],
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[2],
-                    typeof(DateTime),
-                    _timestampMapping),
+            // The date of the value's own offset, at midnight.
+            nameof(DateTimeOffset.Date) => WallClock(instance, "yyyy-MM-dd"),
 
             _ => null
         };
+
+    // The wall clock of a timestamp with a zone, written out by FORMATDATETIME in the zone of
+    // the value (or the named zone) and read back as a timestamp without a zone.
+    private SqlExpression WallClock(SqlExpression timestampWithZone, string pattern, string? zone = null)
+    {
+        SqlExpression[] arguments = zone is null
+            ?
+            [
+                timestampWithZone, _sqlExpressionFactory.Constant(pattern),
+                _sqlExpressionFactory.Constant("en")
+            ]
+            :
+            [
+                timestampWithZone, _sqlExpressionFactory.Constant(pattern),
+                _sqlExpressionFactory.Constant("en"), _sqlExpressionFactory.Constant(zone)
+            ];
+
+        return _sqlExpressionFactory.Convert(
+            _sqlExpressionFactory.Function(
+                "FORMATDATETIME",
+                arguments,
+                nullable: true,
+                argumentsPropagateNullability: arguments.Select(_ => true).ToArray(),
+                typeof(string)),
+            typeof(DateTime),
+            _timestampMapping);
+    }
 
     private SqlExpression? TranslateDateOnly(SqlExpression? instance, MemberInfo member)
         => member.Name switch

@@ -42,14 +42,13 @@ public class ForumCalendarExamples
         using var database = ForumDatabase.Filled(nameof(Delivery_slots_group_users_by_preferred_hour_and_birth_weekday));
         using var context = database.Context();
 
-        // H2 reads an expression in ORDER BY, but the engine of this port only reads a
-        // column or an alias there (dimzon/h2sharp#21), so the rows are ordered in .NET.
+        // H2 reads an expression in ORDER BY, and the port reads it too (dimzon/h2sharp#21).
         Assert.Equal(
-            ForumData.Users().Where(u => u.PreferredTime.HasValue).Select(u => u.PreferredTime!.Value.Hour).OrderBy(h => h).ToArray(),
-            context.Users.Where(u => u.PreferredTime != null).Select(u => u.PreferredTime!.Value.Hour).ToList().OrderBy(h => h).ToArray());
+            ForumData.Users().Where(u => u.PreferredTime.HasValue).OrderBy(u => u.PreferredTime!.Value.Hour).Select(u => u.PreferredTime!.Value.Hour).ToArray(),
+            context.Users.Where(u => u.PreferredTime != null).OrderBy(u => u.PreferredTime!.Value.Hour).Select(u => u.PreferredTime!.Value.Hour).ToList());
         Assert.Equal(
-            ForumData.Users().Where(u => u.BirthDate.HasValue).Select(u => u.BirthDate!.Value.DayOfWeek).OrderBy(d => d).ToArray(),
-            context.Users.Where(u => u.BirthDate != null).Select(u => u.BirthDate!.Value.DayOfWeek).ToList().OrderBy(d => d).ToArray());
+            ForumData.Users().Where(u => u.BirthDate.HasValue).OrderBy(u => u.BirthDate!.Value.DayOfWeek).Select(u => u.BirthDate!.Value.DayOfWeek).ToArray(),
+            context.Users.Where(u => u.BirthDate != null).OrderBy(u => u.BirthDate!.Value.DayOfWeek).Select(u => u.BirthDate!.Value.DayOfWeek).ToList());
     }
 
     [Fact]

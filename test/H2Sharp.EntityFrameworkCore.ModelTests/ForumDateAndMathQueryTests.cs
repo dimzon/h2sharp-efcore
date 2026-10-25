@@ -66,11 +66,14 @@ public class ForumDateAndMathQueryTests
         using var database = ForumDatabase.Filled(nameof(Topics_are_moved_by_a_day_on_reference_h2));
         using var context = database.Context();
 
-        // H2 2.5 adds an interval with "+": the engine of this port does not read it yet
-        // (dimzon/h2sharp#20, operations on dates), so the reference checks the statement.
+        // H2 2.5 adds an interval with "+", and the port reads date and time operations
+        // (dimzon/h2sharp#20): both engines answer the same rows.
         var moved = context.Topics
             .Where(t => t.CreatedAt + TimeSpan.FromDays(1) > new DateTime(2024, 1, 10))
             .OrderBy(t => t.Id).Select(t => t.Title);
+        Assert.Equal(
+            ForumData.Topics().Where(t => t.CreatedAt + TimeSpan.FromDays(1) > new DateTime(2024, 1, 10)).Select(t => t.Title),
+            moved.ToList());
         Assert.Equal(
             ForumData.Topics().Where(t => t.CreatedAt + TimeSpan.FromDays(1) > new DateTime(2024, 1, 10)).Select(t => t.Title),
             ReferenceForum.Query(context, moved).Select(row => row[0]));
@@ -215,6 +218,21 @@ public class ForumDateAndMathQueryTests
     }
 
     [Fact]
+    public void The_clock_and_the_calendar_are_asked_of_the_engine()
+    {
+        using var database = ForumDatabase.Filled(nameof(The_clock_and_the_calendar_are_asked_of_the_engine));
+        using var context = database.Context();
+
+        // DateTime.Now is CURRENT_TIMESTAMP cast to a timestamp without a zone, and Today
+        // is that local time truncated to the day.
+        var now = context.Topics.OrderBy(t => t.Id).Select(t => DateTime.Now).First();
+        var today = context.Topics.OrderBy(t => t.Id).Select(t => DateTime.Today).First();
+
+        Assert.True(Math.Abs((now - DateTime.Now).TotalMinutes) < 5, "DateTime.Now is not the clock of this run");
+        Assert.Equal(DateTime.Today, today);
+    }
+
+    [Fact]
     public void The_rows_are_asked_for_with_the_year_of_a_date()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_are_asked_for_with_the_year_of_a_date));
@@ -305,8 +323,8 @@ public class ForumDateAndMathQueryTests
         using var database = ForumDatabase.Filled(nameof(The_hours_between_the_writes_are_asked_for_on_reference_h2));
         using var context = database.Context();
 
-        // Subtracting timestamps is H2 arithmetic; the engine does not read date and time
-        // operations yet, so the port run below stays red until it does.
+        // Subtracting timestamps is H2 arithmetic: the reference answers the span in whole
+        // hours, and so does the port (dimzon/h2sharp#20 closed).
         var hours = context.Topics.OrderBy(t => t.Id).Select(t => (t.LastPostAt - t.CreatedAt).TotalHours);
         Assert.Equal(
             ForumData.Topics().Select(t => (t.LastPostAt - t.CreatedAt).TotalHours),
@@ -319,9 +337,8 @@ public class ForumDateAndMathQueryTests
         using var database = ForumDatabase.Filled(nameof(The_hours_between_the_writes_are_asked_for));
         using var context = database.Context();
 
-        // The provider counts whole hours with DATEDIFF, which the engine reads; the raw
-        // "-" of two timestamps is still its gap (dimzon/h2sharp#20). DATEDIFF counts whole
-        // unit boundaries: the same holds for minutes and seconds on these aligned rows.
+        // The share of a unit is taken from the interval EXTRACT answers, exactly: the seed
+        // keeps the two stamps on whole hours and minutes, so every unit is whole here.
         var hours = context.Topics.OrderBy(t => t.Id).Select(t => (t.LastPostAt - t.CreatedAt).TotalHours).ToList();
 
         Assert.Equal(
@@ -333,6 +350,81 @@ public class ForumDateAndMathQueryTests
         Assert.Equal(
             ForumData.Topics().Select(t => (t.LastPostAt - t.CreatedAt).TotalSeconds).ToArray(),
             context.Topics.OrderBy(t => t.Id).Select(t => (t.LastPostAt - t.CreatedAt).TotalSeconds).ToArray());
+    }
+
+    [Fact]
+    public void The_span_between_two_writes_comes_back_as_an_interval()
+    {
+        using var database = ForumDatabase.Filled(nameof(The_span_between_two_writes_comes_back_as_an_interval));
+        using var context = database.Context();
+
+        var spans = context.Topics.OrderBy(t => t.Id).Select(t => t.LastPostAt - t.CreatedAt).ToList();
+
+        Assert.Equal(
+            ForumData.Topics().OrderBy(t => t.Id).Select(t => t.LastPostAt - t.CreatedAt),
+            spans);
+    }
+
+    [Fact]
+    public void The_parts_of_a_span_are_asked_for()
+    {
+        using var database = ForumDatabase.Filled(nameof(The_parts_of_a_span_are_asked_for));
+        using var context = database.Context();
+
+        var topic = context.Topics.OrderBy(t => t.Id).First();
+        topic.CreatedAt = new DateTime(2024, 1, 1, 9, 0, 0);
+        topic.LastPostAt = topic.CreatedAt.AddDays(1).AddHours(2).AddMinutes(3).AddSeconds(4).AddMilliseconds(5);
+        context.SaveChanges();
+
+        var span = context.Topics.Where(t => t.Id == topic.Id)
+            .Select(t => new
+            {
+                Days = (t.LastPostAt - t.CreatedAt).Days,
+                Hours = (t.LastPostAt - t.CreatedAt).Hours,
+                Minutes = (t.LastPostAt - t.CreatedAt).Minutes,
+                Seconds = (t.LastPostAt - t.CreatedAt).Seconds,
+                Milliseconds = (t.LastPostAt - t.CreatedAt).Milliseconds
+            })
+            .Single();
+
+        Assert.Equal(1, span.Days);
+        Assert.Equal(2, span.Hours);
+        Assert.Equal(3, span.Minutes);
+        Assert.Equal(4, span.Seconds);
+        Assert.Equal(5, span.Milliseconds);
+    }
+
+    [Fact]
+    [Trait("Category", "BlockedByPort")]
+    public void The_total_of_a_span_keeps_the_fraction_of_a_unit()
+    {
+        using var database = ForumDatabase.Filled(nameof(The_total_of_a_span_keeps_the_fraction_of_a_unit));
+        using var context = database.Context();
+
+        var topic = context.Topics.OrderBy(t => t.Id).First();
+        topic.CreatedAt = new DateTime(2024, 1, 1, 9, 0, 0);
+        topic.LastPostAt = topic.CreatedAt.AddDays(1).AddHours(2).AddMinutes(3).AddSeconds(4).AddMilliseconds(5);
+        context.SaveChanges();
+
+        // The span is 1 day, 2:03:04.005. EXTRACT answers the seconds exactly and the share of a
+        // unit divides them; the port reads the NUMERIC of the division as a Decimal and refuses
+        // a scale above 28.
+        var totals = context.Topics.Where(t => t.Id == topic.Id)
+            .Select(t => new
+            {
+                TotalDays = (t.LastPostAt - t.CreatedAt).TotalDays,
+                TotalHours = (t.LastPostAt - t.CreatedAt).TotalHours,
+                TotalMinutes = (t.LastPostAt - t.CreatedAt).TotalMinutes,
+                TotalSeconds = (t.LastPostAt - t.CreatedAt).TotalSeconds,
+                TotalMilliseconds = (t.LastPostAt - t.CreatedAt).TotalMilliseconds
+            })
+            .Single();
+
+        Assert.Equal(1.0854630208333333, totals.TotalDays, 9);
+        Assert.Equal(26.05111111111111, totals.TotalHours, 9);
+        Assert.Equal(1563.0666666666666, totals.TotalMinutes, 9);
+        Assert.Equal(93784.005, totals.TotalSeconds, 6);
+        Assert.Equal(93784005.0, totals.TotalMilliseconds, 3);
     }
 
     [Fact]

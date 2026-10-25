@@ -64,16 +64,62 @@ public class ForumStringQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
+    public void A_single_character_is_trimmed_on_reference_h2()
+    {
+        using var database = ForumDatabase.Filled(nameof(A_single_character_is_trimmed_on_reference_h2));
+        using var context = database.Context();
+        // The provider writes BTRIM with the set of one character; the reference answers the
+        // same statement, so the SQL is checked against H2 itself as well as against the port.
+        var query = context.Topics.OrderBy(t => t.Id).Select(t => t.Title.Trim('W'));
+        var expected = ForumData.Topics().OrderBy(t => t.Id).Select(t => t.Title.Trim('W'));
+
+        Assert.Equal(expected, query.ToList());
+        Assert.Equal(
+            expected,
+            ReferenceForum.Query(context, query).Select(row => row[0]));
+    }
+
+    [Fact]
+    public void A_null_or_blank_note_is_asked_about_on_reference_h2()
+    {
+        using var database = ForumDatabase.Filled(nameof(A_null_or_blank_note_is_asked_about_on_reference_h2));
+        using var context = database.Context();
+
+        // The provider writes BTRIM with every character .NET calls whitespace; the reference
+        // answers the same statement, so the SQL is checked against H2 itself as well.
+        var query = context.Topics.OrderBy(t => t.Id).Select(t => string.IsNullOrWhiteSpace(t.ModeratorNote));
+        var expected = ForumData.Topics().OrderBy(t => t.Id).Select(t => string.IsNullOrWhiteSpace(t.ModeratorNote));
+
+        Assert.Equal(expected, query.ToList());
+        Assert.Equal(
+            expected,
+            ReferenceForum.Query(context, query).Select(row => bool.Parse(row[0]!)));
+    }
+
+    [Fact]
+    public void A_list_written_in_the_query_is_joined_into_one_text()
+    {
+        using var database = ForumDatabase.Filled(nameof(A_list_written_in_the_query_is_joined_into_one_text));
+        using var context = database.Context();
+        var first = ForumData.Topics().OrderBy(t => t.Id).First();
+
+        // An array written in the query is not a parameter: CONCAT_WS takes its elements,
+        // and a null one becomes an empty text.
+        var joined = context.Topics.OrderBy(t => t.Id)
+            .Select(t => string.Join(" | ", new[] { t.Title, t.ModeratorNote }))
+            .First();
+
+        Assert.Equal($"{first.Title} | ", joined);
+    }
+
+    [Fact]
     public void The_string_is_trimmed()
     {
         using var database = ForumDatabase.Filled(nameof(The_string_is_trimmed));
         using var context = database.Context();
 
         // The provider writes BTRIM with the set of the characters .NET's Trim treats as
-        // whitespace -- the characters themselves in an E-string, because the E-string of H2
-        // decodes no escape sequences. The port does not read the second argument of BTRIM
-        // yet: "expected ")".
+        // whitespace, spelled as a U& literal because the set has non-ASCII members.
         var trimmed = context.Topics.OrderBy(t => t.Id).Select(t => t.Title.Trim()).First();
 
         Assert.Equal("What a compiler does with the source", trimmed);
@@ -164,14 +210,12 @@ public class ForumStringQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_rows_are_asked_for_with_a_trimmed_string()
     {
         using var database = ForumDatabase.Filled(nameof(The_rows_are_asked_for_with_a_trimmed_string));
         using var context = database.Context();
 
-        // The provider writes BTRIM with the whitespace set, and the engine does
-        // not read that form of the function.
+        // The provider writes BTRIM with the whitespace set, and the engine reads it.
         int count = context.Topics.Count(t => t.Body.Trim() == "A walk through the phases, from the characters to the code.");
 
         Assert.Equal(1, count);

@@ -64,14 +64,12 @@ public class ForumRawSqlTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_change_is_kept_when_the_transaction_is_committed()
     {
         using var database = ForumDatabase.Filled(nameof(The_change_is_kept_when_the_transaction_is_committed));
         using var context = database.Context();
 
-        // The engine does not read the savepoint that EF Core puts inside a transaction yet:
-        // "Syntax error in SQL statement "[*]SAVEPOINT ""__EFSavePoint"";"; expected "statement"".
+        // EF Core puts a savepoint inside the transaction, and the port reads it (dimzon/h2sharp#34).
         using var transaction = context.Database.BeginTransaction();
 
         var topic = context.Topics.OrderBy(t => t.Id).First();
@@ -85,13 +83,11 @@ public class ForumRawSqlTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_change_is_thrown_away_when_the_transaction_is_rolled_back()
     {
         using var database = ForumDatabase.Filled(nameof(The_change_is_thrown_away_when_the_transaction_is_rolled_back));
         using var context = database.Context();
 
-        // The engine does not read the savepoint that EF Core puts inside a transaction yet.
         using (var transaction = context.Database.BeginTransaction())
         {
             var topic = context.Topics.OrderBy(t => t.Id).First();
