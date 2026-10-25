@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
@@ -67,7 +68,7 @@ public class H2DateOnlyTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"DATE '{GenerateEmbeddedNonNullSqlLiteral(value)}'";
+        => Dialect.AppendDate(new StringBuilder(), (DateOnly)value).ToString();
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

@@ -9,8 +9,8 @@ namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 /// </summary>
 /// <remarks>
 ///     See:
-///     - https://www.postgresql.org/docs/current/static/functions-math.html
-///     - https://www.postgresql.org/docs/current/static/functions-conditional.html#FUNCTIONS-GREATEST-LEAST
+///     - https://www.h2database.com/html/functions.html
+///     - https://www.h2database.com/html/functions.html
 /// </remarks>
 public class H2MathTranslator : IMethodCallTranslator
 {
@@ -62,7 +62,7 @@ public class H2MathTranslator : IMethodCallTranslator
         { typeof(double).GetRuntimeMethod(nameof(double.RadiansToDegrees), [typeof(double)])!, "degrees" },
         { typeof(float).GetRuntimeMethod(nameof(float.RadiansToDegrees), [typeof(float)])!, "degrees" },
 
-        // https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-GREATEST-LEAST
+        // https://www.h2database.com/html/functions.html
         { typeof(Math).GetRuntimeMethod(nameof(Math.Max), [typeof(decimal), typeof(decimal)])!, "GREATEST" },
         { typeof(Math).GetRuntimeMethod(nameof(Math.Max), [typeof(double), typeof(double)])!, "GREATEST" },
         { typeof(Math).GetRuntimeMethod(nameof(Math.Max), [typeof(float), typeof(float)])!, "GREATEST" },
@@ -72,7 +72,7 @@ public class H2MathTranslator : IMethodCallTranslator
         { typeof(MathF).GetRuntimeMethod(nameof(MathF.Max), [typeof(float), typeof(float)])!, "GREATEST" },
         { typeof(BigInteger).GetRuntimeMethod(nameof(BigInteger.Max), [typeof(BigInteger), typeof(BigInteger)])!, "GREATEST" },
 
-        // https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-GREATEST-LEAST
+        // https://www.h2database.com/html/functions.html
         { typeof(Math).GetRuntimeMethod(nameof(Math.Min), [typeof(decimal), typeof(decimal)])!, "LEAST" },
         { typeof(Math).GetRuntimeMethod(nameof(Math.Min), [typeof(double), typeof(double)])!, "LEAST" },
         { typeof(Math).GetRuntimeMethod(nameof(Math.Min), [typeof(float), typeof(float)])!, "LEAST" },

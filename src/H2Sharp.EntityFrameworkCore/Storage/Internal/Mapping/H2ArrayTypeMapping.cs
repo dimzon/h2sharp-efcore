@@ -10,10 +10,10 @@ using H2Sharp.EntityFrameworkCore.Storage.ValueConversion;
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
 /// <summary>
-///     Type mapping for PostgreSQL arrays.
+///     Type mapping for H2 arrays.
 /// </summary>
 /// <remarks>
-///     See: https://www.postgresql.org/docs/current/static/arrays.html
+///     See: https://www.h2database.com/html/datatypes.html
 /// </remarks>
 public abstract class H2ArrayTypeMapping : RelationalTypeMapping
 {
@@ -342,32 +342,18 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
             throw new NotSupportedException("Multidimensional array literals aren't supported");
         }
 
-        var sb = new StringBuilder();
-        sb.Append("ARRAY[");
-
-        var isFirst = true;
-        foreach (var element in enumerable)
-        {
-            if (isFirst)
-            {
-                isFirst = false;
-            }
-            else
-            {
-                sb.Append(",");
-            }
-
-            sb.Append(ElementTypeMapping.GenerateProviderValueSqlLiteral(element));
-        }
-
-        sb.Append("]");
-
         // No cast after the brackets. PostgreSQL needs one to say what the array holds
         // ("ARRAY[1,2]::integer[]"), and H2 2.5 has no such cast at all: the short form
         // "x::y" is not in the grammar, and the type of the array follows from the
         // elements and from the place the array stands in. The reference takes
         // "ARRAY[1,2,3]" as it is.
-        return sb.ToString();
+        var literals = new List<string>();
+        foreach (var element in enumerable)
+        {
+            literals.Add(ElementTypeMapping.GenerateProviderValueSqlLiteral(element));
+        }
+
+        return Dialect.AppendArray(new StringBuilder(), literals, static (sb, literal) => sb.Append(literal)).ToString();
     }
 
     /// <summary>

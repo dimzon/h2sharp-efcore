@@ -13,7 +13,7 @@ namespace H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 public sealed class EnumDefinition : IEquatable<EnumDefinition>
 {
     /// <summary>
-    ///     Maps the CLR member values to the PostgreSQL value labels.
+    ///     Maps the CLR member values to the H2 value labels.
     /// </summary>
     /// <remarks>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -24,7 +24,7 @@ public sealed class EnumDefinition : IEquatable<EnumDefinition>
     public IReadOnlyDictionary<object, string> Labels { get; }
 
     /// <summary>
-    ///     The name of the PostgreSQL enum type to be mapped.
+    ///     The name of the H2 enum type to be mapped.
     /// </summary>
     /// <remarks>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -35,7 +35,7 @@ public sealed class EnumDefinition : IEquatable<EnumDefinition>
     public string StoreTypeName { get; }
 
     /// <summary>
-    ///     The PostgreSQL schema in which the enum is defined. If null, the default schema is used
+    ///     The schema in which the enum is defined. If null, the default schema is used
     ///     (which is public unless changed on the model).
     /// </summary>
     /// <remarks>

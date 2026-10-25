@@ -1,7 +1,7 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     Represents creating a new PostgreSQL array.
+///     Represents creating a new H2 array literal.
 /// </summary>
 public class H2NewArrayExpression : SqlExpression
 {
@@ -30,7 +30,7 @@ public class H2NewArrayExpression : SqlExpression
     }
 
     /// <summary>
-    ///     The operator of this PostgreSQL binary operation.
+    ///     The operator of this binary operation.
     /// </summary>
     public virtual IReadOnlyList<SqlExpression> Expressions { get; }
 

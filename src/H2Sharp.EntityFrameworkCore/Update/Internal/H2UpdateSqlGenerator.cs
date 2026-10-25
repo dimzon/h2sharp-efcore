@@ -148,7 +148,7 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
         int commandPosition,
         out bool requiresTransaction)
     {
-        // The default implementation adds RETURNING 1 to do concurrency check (was the row actually updated), but in PostgreSQL we check
+        // The default implementation adds RETURNING 1 to do concurrency check (was the row actually updated), but in H2 we check
         // the per-statement row-affected value exposed by H2 in the batch; so no need for RETURNING 1.
         var name = command.TableName;
         var schema = command.Schema;
@@ -201,7 +201,7 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
         int commandPosition,
         out bool requiresTransaction)
     {
-        // The default implementation adds RETURNING 1 to do concurrency check (was the row actually deleted), but in PostgreSQL we check
+        // The default implementation adds RETURNING 1 to do concurrency check (was the row actually deleted), but in H2 we check
         // the per-statement row-affected value exposed by H2 in the batch; so no need for RETURNING 1.
         var name = command.TableName;
         var schema = command.Schema;
@@ -238,7 +238,7 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
 
         commandStringBuilder.Append("CALL ");
 
-        // PostgreSQL supports neither a return value nor a result set with stored procedures, only output parameters.
+        // H2 supports neither a return value nor a result set with stored procedures, only output parameters.
         Check.DebugAssert(storedProcedure.ReturnValue is null, "storedProcedure.Return is null");
         Check.DebugAssert(!storedProcedure.ResultColumns.Any(), "!storedProcedure.ResultColumns.Any()");
 
@@ -281,7 +281,7 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
                         : columnModification.ParameterName!);
             }
 
-            // PostgreSQL stored procedures cannot return a regular result set, and output parameter values are simply sent back as the
+            // H2 stored procedures cannot return a regular result set, and output parameter values are simply sent back as the
             // result set; this is very different from SQL Server, where output parameter values can be sent back in addition to result
             // sets.
             if (parameter.Direction.HasFlag(ParameterDirection.Output))

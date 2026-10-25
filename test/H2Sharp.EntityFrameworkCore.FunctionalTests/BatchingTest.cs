@@ -200,22 +200,10 @@ public class BatchingTest(BatchingTest.BatchingTestFixture fixture) : IClassFixt
     {
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Owner>(
-                b =>
-                {
-                    b.Property(e => e.Id).ValueGeneratedOnAdd();
-                    b.Property(e => e.Version)
-                        .HasColumnName("xmin")
-                        .HasColumnType("xid")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .IsConcurrencyToken();
-                });
-
-            modelBuilder.Entity<Blog>().Property(b => b.Version)
-                .HasColumnName("xmin")
-                .HasColumnType("xid")
-                .ValueGeneratedOnAddOrUpdate()
-                .IsConcurrencyToken();
+            // Upstream mapped Version onto the PostgreSQL xmin system column as a concurrency
+            // token. H2 2.5 has no system columns and no xid type, so Version stays a plain
+            // property here; the batching these tests ask about does not depend on it.
+            modelBuilder.Entity<Owner>().Property(o => o.Id).ValueGeneratedOnAdd();
         }
 
         // ReSharper disable once UnusedMember.Local

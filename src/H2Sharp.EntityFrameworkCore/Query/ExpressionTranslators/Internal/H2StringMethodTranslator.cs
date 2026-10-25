@@ -7,10 +7,10 @@ using ExpressionExtensions = Microsoft.EntityFrameworkCore.Query.ExpressionExten
 namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 
 /// <summary>
-///     Provides translation services for PostgreSQL string functions.
+///     Provides translation services for H2 string functions.
 /// </summary>
 /// <remarks>
-///     See: https://www.postgresql.org/docs/current/static/functions-string.html
+///     See: https://www.h2database.com/html/functions.html
 /// </remarks>
 public class H2StringMethodTranslator : IMethodCallTranslator
 {
@@ -127,8 +127,14 @@ public class H2StringMethodTranslator : IMethodCallTranslator
     {
         _typeMappingSource = typeMappingSource;
         _sqlExpressionFactory = sqlExpressionFactory;
+        // The set of the characters .NET's Trim treats as whitespace, every one char.IsWhitespace
+        // answers for. They travel as the characters themselves: the E-string of H2 only collapses
+        // a doubled backslash and decodes no escape sequences -- on the reference, E'\t' has length
+        // two, checked -- so writing them as escapes would trim backslashes and letters instead of
+        // whitespace. BTRIM takes a set, so the order does not matter.
         _whitespace = _sqlExpressionFactory.Constant(
-            @" \t\n\r", // TODO: Complete this
+            " \t\n\v\f\r\u0085\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007"
+            + "\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000",
             typeMappingSource.EStringTypeMapping);
     }
 

@@ -134,7 +134,7 @@ public class H2QueryableAggregateMethodTranslator : IAggregateMethodCallTranslat
 
                 // In PostgreSQL SUM() doesn't return the same type as its argument for smallint, int and bigint.
                 // Cast to get the same type.
-                // http://www.postgresql.org/docs/current/static/functions-aggregate.html
+                // https://www.h2database.com/html/functions-aggregate.html
                 case nameof(Queryable.Sum)
                     when (QueryableMethods.IsSumWithoutSelector(methodInfo)
                         || QueryableMethods.IsSumWithSelector(methodInfo))

@@ -133,10 +133,10 @@ public static class H2IndexBuilderExtensions
     #region Null sort order
 
     /// <summary>
-    ///     The PostgreSQL index NULL sort ordering to be used.
+    ///     The index NULL sort ordering (<c>NULLS FIRST</c>/<c>NULLS LAST</c>) to be used.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-ordering.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="values">The sort order to use for each column.</param>
@@ -157,10 +157,10 @@ public static class H2IndexBuilderExtensions
     }
 
     /// <summary>
-    ///     The PostgreSQL index NULL sort ordering to be used.
+    ///     The index NULL sort ordering (<c>NULLS FIRST</c>/<c>NULLS LAST</c>) to be used.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-ordering.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="values">The sort order to use for each column.</param>
@@ -171,10 +171,10 @@ public static class H2IndexBuilderExtensions
         => (IndexBuilder<TEntity>)HasNullSortOrder((IndexBuilder)indexBuilder, values);
 
     /// <summary>
-    ///     The PostgreSQL index NULL sort ordering to be used.
+    ///     The index NULL sort ordering (<c>NULLS FIRST</c>/<c>NULLS LAST</c>) to be used.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-ordering.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="values">The sort order to use for each column.</param>
@@ -199,10 +199,10 @@ public static class H2IndexBuilderExtensions
     }
 
     /// <summary>
-    ///     Returns a value indicating whether the PostgreSQL index null sort ordering can be set.
+    ///     Returns a value indicating whether the index null sort ordering can be set.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-ordering.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="values">The sort order to use for each column.</param>
@@ -227,7 +227,7 @@ public static class H2IndexBuilderExtensions
     ///     This clause specifies a list of columns which will be included as a non-key part in the index.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="propertyNames">An array of property names to be used in INCLUDE clause.</param>
@@ -249,7 +249,7 @@ public static class H2IndexBuilderExtensions
     ///     This clause specifies a list of columns which will be included as a non-key part in the index.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="propertyNames">An array of property names to be used in INCLUDE clause.</param>
@@ -271,7 +271,7 @@ public static class H2IndexBuilderExtensions
     ///     This clause specifies a list of columns which will be included as a non-key part in the index.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="includeExpression">
@@ -302,7 +302,7 @@ public static class H2IndexBuilderExtensions
     ///     This clause specifies a list of columns which will be included as a non-key part in the index.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="propertyNames">An array of property names to be used in INCLUDE clause.</param>
@@ -353,7 +353,7 @@ public static class H2IndexBuilderExtensions
     ///     The default is that they are distinct, so that a unique index could contain multiple null values in a column.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="nullsDistinct">Whether nulls should be considered distinct.</param>
@@ -374,7 +374,7 @@ public static class H2IndexBuilderExtensions
     ///     The default is that they are distinct, so that a unique index could contain multiple null values in a column.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="nullsDistinct">Whether nulls should be considered distinct.</param>
@@ -389,7 +389,7 @@ public static class H2IndexBuilderExtensions
     ///     The default is that they are distinct, so that a unique index could contain multiple null values in a column.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="nullsDistinct">Whether nulls should be considered distinct.</param>
@@ -415,7 +415,7 @@ public static class H2IndexBuilderExtensions
     ///     The default is that they are distinct, so that a unique index could contain multiple null values in a column.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     /// <param name="indexBuilder">The builder for the index being configured.</param>
     /// <param name="nullsDistinct">Whether nulls should be considered distinct.</param>

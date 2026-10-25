@@ -1,7 +1,7 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     An expression that represents a PostgreSQL <c>unnest</c> function call in a SQL tree.
+///     An expression that represents an H2 <c>UNNEST</c> function call in a SQL tree.
 /// </summary>
 /// <remarks>
 ///     <para>
@@ -11,7 +11,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 ///         EF, this would break queries.
 ///     </para>
 ///     <para>
-///         See <see href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest</see> for more
+///         See <see href="https://www.h2database.com/html/functions.html">unnest</see> for more
 ///         information and examples.
 ///     </para>
 ///     <para>

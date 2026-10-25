@@ -2,8 +2,8 @@ namespace H2Sharp.EntityFrameworkCore.Metadata.Conventions;
 
 /// <summary>
 ///     A convention that configures the default model <see cref="H2ValueGenerationStrategy" /> as
-///     <see cref="H2ValueGenerationStrategy.IdentityByDefaultColumn" /> for newer PostgreSQL versions,
-///     and <see cref="H2ValueGenerationStrategy.SerialColumn" /> for pre-10.0 versions.
+///     <see cref="H2ValueGenerationStrategy.IdentityByDefaultColumn" />: the identity column is the only
+///     auto-generated column H2 2.5 has.
 /// </summary>
 public class H2ValueGenerationStrategyConvention : IModelInitializedConvention, IModelFinalizingConvention
 {

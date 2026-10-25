@@ -64,7 +64,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     }
 
     /// <summary>
-    ///     Creates a new <see cref="H2RegexMatchExpression" />, corresponding to the PostgreSQL-specific <c>~</c> operator.
+    ///     Creates a new <see cref="H2RegexMatchExpression" />, corresponding to the H2 <c>~</c> regexp operator.
     /// </summary>
     public virtual H2RegexMatchExpression RegexMatch(
         SqlExpression match,
@@ -73,7 +73,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         => (H2RegexMatchExpression)ApplyDefaultTypeMapping(new H2RegexMatchExpression(match, pattern, options, null));
 
     /// <summary>
-    ///     Creates a new <see cref="H2AnyExpression" />, corresponding to the PostgreSQL-specific <c>= ANY</c> operator.
+    ///     Creates a new <see cref="H2AnyExpression" />, corresponding to the H2 quantified comparison <c>= ANY</c>.
     /// </summary>
     public virtual H2AnyExpression Any(
         SqlExpression item,
@@ -82,7 +82,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         => (H2AnyExpression)ApplyDefaultTypeMapping(new H2AnyExpression(item, array, operatorType, null));
 
     /// <summary>
-    ///     Creates a new <see cref="H2AllExpression" />, corresponding to the PostgreSQL-specific <c>LIKE ALL</c> operator.
+    ///     Creates a new <see cref="H2AllExpression" />, corresponding to the H2 quantified comparison <c>LIKE ALL</c>.
     /// </summary>
     public virtual H2AllExpression All(
         SqlExpression item,
@@ -91,7 +91,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         => (H2AllExpression)ApplyDefaultTypeMapping(new H2AllExpression(item, array, operatorType, null));
 
     /// <summary>
-    ///     Creates a new <see cref="H2ArrayIndexExpression" />, corresponding to the PostgreSQL-specific array subscripting operator.
+    ///     Creates a new <see cref="H2ArrayIndexExpression" />, corresponding to the H2 array subscripting operator.
     /// </summary>
     public virtual H2ArrayIndexExpression ArrayIndex(
         SqlExpression array,
@@ -110,7 +110,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     }
 
     /// <summary>
-    ///     Creates a new <see cref="H2ArrayIndexExpression" />, corresponding to the PostgreSQL-specific array subscripting operator.
+    ///     Creates a new <see cref="H2ArrayIndexExpression" />, corresponding to the H2 array subscripting operator.
     /// </summary>
     public virtual H2ArraySliceExpression ArraySlice(
         SqlExpression array,
@@ -142,7 +142,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
         if (typeMapping is null)
         {
             // PostgreSQL AT TIME ZONE flips the given type from timestamptz to timestamp and vice versa
-            // See https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT
+            // See https://www.h2database.com/html/functions.html
             typeMapping = timestamp.TypeMapping ?? _typeMappingSource.FindMapping(timestamp.Type, Dependencies.Model)!;
             var storeType = typeMapping.StoreType;
 
@@ -164,7 +164,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     }
 
     /// <summary>
-    ///     Creates a new <see cref="AtTimeZoneExpression" />, for performing a PostgreSQL-specific case-insensitive string match
+    ///     Creates a new <see cref="H2ILikeExpression" />, for performing a case-insensitive string match
     ///     (<c>ILIKE</c>).
     /// </summary>
     public virtual H2ILikeExpression ILike(
@@ -392,7 +392,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             {
                 SqlBinaryExpression e => ApplyTypeMappingOnSqlBinary(e, typeMapping),
 
-                // PostgreSQL-specific expression types
+                // Provider-specific expression types
                 H2AnyExpression e => ApplyTypeMappingOnAny(e),
                 H2AllExpression e => ApplyTypeMappingOnAll(e),
                 H2ArrayIndexExpression e => ApplyTypeMappingOnArrayIndex(e, typeMapping),

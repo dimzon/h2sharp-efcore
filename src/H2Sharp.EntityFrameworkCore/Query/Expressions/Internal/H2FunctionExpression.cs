@@ -3,8 +3,8 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     Represents a SQL function call expression, supporting PostgreSQL's named parameter notation
-///     (e.g. make_interval(weeks => 2) and non-comma parameter separators (e.g. position(substring in string)).
+///     Represents a SQL function call expression, supporting non-comma parameter separators
+///     (e.g. <c>POSITION(substring IN string)</c>) and aggregate clauses (<c>FILTER</c>, <c>WITHIN GROUP</c>).
 /// </summary>
 public class H2FunctionExpression : SqlFunctionExpression, IEquatable<H2FunctionExpression>
 {

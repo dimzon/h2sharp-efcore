@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
@@ -13,7 +14,7 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 public class H2EnumTypeMapping : RelationalTypeMapping
 {
     /// <summary>
-    ///     Maps the CLR member values to the PostgreSQL value labels.
+    ///     Maps the CLR member values to the H2 value labels.
     /// </summary>
     /// <remarks>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -142,7 +143,7 @@ public class H2EnumTypeMapping : RelationalTypeMapping
     ///     error, and takes "CAST('a' AS my_enum)".
     /// </remarks>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"CAST('{Labels[value]}' AS {StoreType})";
+        => Dialect.AppendEnum(new StringBuilder(), Labels[value], StoreType).ToString();
 
     // This is public for the compiled model
     /// <summary>

@@ -3,10 +3,10 @@ using System.Runtime.CompilerServices;
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     An expression that represents a PostgreSQL-specific row value expression in a SQL tree.
+///     An expression that represents a row value expression in a SQL tree.
 /// </summary>
 /// <remarks>
-///     See the <see href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">PostgreSQL docs</see>
+///     See the <see href="https://www.h2database.com/html/grammar.html">H2 grammar</see>
 ///     for more information.
 /// </remarks>
 public class H2RowValueExpression : SqlExpression, IEquatable<H2RowValueExpression>
@@ -14,7 +14,7 @@ public class H2RowValueExpression : SqlExpression, IEquatable<H2RowValueExpressi
     private static ConstructorInfo? _quotingConstructor;
 
     /// <summary>
-    ///     The values of this PostgreSQL row value expression.
+    ///     The values of this row value expression.
     /// </summary>
     public virtual IReadOnlyList<SqlExpression> Values { get; }
 

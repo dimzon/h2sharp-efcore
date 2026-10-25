@@ -41,7 +41,7 @@ public class H2StatisticsAggregateMethodTranslator : IAggregateMethodCallTransla
         IReadOnlyList<SqlExpression> arguments,
         IDiagnosticsLogger<DbLoggerCategory.Query> logger)
     {
-        // Docs: https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE
+        // Docs: https://www.h2database.com/html/functions-aggregate.html
 
         if (method.DeclaringType != typeof(H2AggregateDbFunctionsExtensions)
             || source.Selector is not SqlExpression sqlExpression)

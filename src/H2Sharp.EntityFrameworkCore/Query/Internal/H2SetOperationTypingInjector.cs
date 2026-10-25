@@ -1,11 +1,11 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Internal;
 
 /// <summary>
-///     A visitor that injects explicit typing on null projections in set operations, to ensure PostgreSQL gets the typing right.
+///     A visitor that injects explicit typing on null projections in set operations, to ensure the engine gets the typing right.
 /// </summary>
 /// <remarks>
 ///     <para>
-///         See the <see href="https://www.postgresql.org/docs/current/typeconv-union-case.html">
+///         See the <see href="https://www.h2database.com/html/commands.html">
 ///         PostgreSQL docs on type conversion and set operations</see>.
 ///     </para>
 ///     <para>

@@ -732,7 +732,7 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
     /// </summary>
     public override SqlExpression GenerateGreatest(IReadOnlyList<SqlExpression> expressions, Type resultType)
     {
-        // Docs: https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-GREATEST-LEAST
+        // Docs: https://www.h2database.com/html/functions.html
         var resultTypeMapping = ExpressionExtensions.InferTypeMapping(expressions);
 
         // If one or more arguments aren't NULL, then NULL arguments are ignored during comparison.
@@ -749,7 +749,7 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
     /// </summary>
     public override SqlExpression GenerateLeast(IReadOnlyList<SqlExpression> expressions, Type resultType)
     {
-        // Docs: https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-GREATEST-LEAST
+        // Docs: https://www.h2database.com/html/functions.html
         var resultTypeMapping = ExpressionExtensions.InferTypeMapping(expressions);
 
         // If one or more arguments aren't NULL, then NULL arguments are ignored during comparison.

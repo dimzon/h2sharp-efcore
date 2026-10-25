@@ -66,14 +66,14 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             H2ArraySliceExpression e => VisitArraySlice(e),
             H2BinaryExpression e => VisitH2Binary(e),
             H2DeleteExpression e => VisitH2Delete(e),
-            H2FunctionExpression e => VisitPgFunction(e),
+            H2FunctionExpression e => VisitH2Function(e),
             H2ILikeExpression e => VisitILike(e),
             H2JsonTraversalExpression e => VisitJsonPathTraversal(e),
             H2NewArrayExpression e => VisitNewArray(e),
             H2RegexMatchExpression e => VisitRegexMatch(e),
             H2RowValueExpression e => VisitRowValue(e),
             H2UnknownBinaryExpression e => VisitUnknownBinary(e),
-            H2TableValuedFunctionExpression e => VisitPgTableValuedFunctionExpression(e),
+            H2TableValuedFunctionExpression e => VisitH2TableValuedFunctionExpression(e),
 
             _ => base.VisitExtension(extensionExpression)
         };
@@ -246,7 +246,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         }
     }
 
-    // NonQueryConvertingExpressionVisitor converts the relational DeleteExpression to PostgresDeleteExpression, so we should never
+    // NonQueryConvertingExpressionVisitor converts the relational DeleteExpression to H2DeleteExpression, so we should never
     // get here
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -712,7 +712,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
         }
     }
 
-    #region PostgreSQL-specific expression types
+    #region Provider-specific expression types
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -1124,7 +1124,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    protected virtual Expression VisitPgTableValuedFunctionExpression(H2TableValuedFunctionExpression tableValuedFunctionExpression)
+    protected virtual Expression VisitH2TableValuedFunctionExpression(H2TableValuedFunctionExpression tableValuedFunctionExpression)
     {
         if (tableValuedFunctionExpression is H2UnnestExpression unnest)
         {
@@ -1328,7 +1328,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     /// <returns>
     ///     An <see cref="Expression" />.
     /// </returns>
-    protected virtual Expression VisitPgFunction(H2FunctionExpression e)
+    protected virtual Expression VisitH2Function(H2FunctionExpression e)
     {
         Check.NotNull(e, nameof(e));
 
@@ -1453,7 +1453,7 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     private static bool TakesOrderInWithinGroup(string name)
         => name.Equals("LISTAGG", StringComparison.OrdinalIgnoreCase);
 
-    #endregion PostgreSQL-specific expression types
+    #endregion Provider-specific expression types
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

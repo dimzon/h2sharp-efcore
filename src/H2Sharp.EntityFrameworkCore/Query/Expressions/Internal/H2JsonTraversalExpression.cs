@@ -1,7 +1,8 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     Represents a PostgreSQL JSON operator traversing a JSON document with a path (i.e. x#>y or x#>>y)
+///     Represents a JSON traversal with a path. H2 2.5 has no path operators, so the reader and writers go
+///     through this node only on their way to reading the document in .NET.
 /// </summary>
 public class H2JsonTraversalExpression : SqlExpression, IEquatable<H2JsonTraversalExpression>
 {

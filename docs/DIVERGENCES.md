@@ -42,6 +42,8 @@
 | dimzon/h2sharp#37 (`CAST(агрегат)` в скалярном подзапросе) | закрыт (коммит движка `69d522a`): `The_rows_are_asked_for_with_a_table_joined_from_the_left` живёт | — |
 | dimzon/h2sharp#38 (`FILTER` молча игнорировался) | закрыт (коммит движка `69d522a`): `Two_gatherings` проверяет фильтр | — |
 | `ARRAY_REMOVE` (dimzon/h2sharp#24) | провайдер пишет `array_remove` в `TranslateWhere`; не читает ни порт, ни эталон. Код оставлен как есть: если порт реализует функцию, код провайдера заработает без изменений | при закрытии проверить оба движка; если эталон не добавит функцию — решать отдельно (фильтр только через `UNNEST`, колонки отклонять явно) |
+| ambient-транзакции (`EnlistTransaction` в ADO-слое порта) | `TransactionH2Test` объявляет `AmbientTransactionsSupported = false` и вручную скипает четырнадцать ambient/enlisted-тестов, у которых в спеке 9.0.14 нет гейта по этому флагу | вернуть флаг в `true`, удалить скипы |
+| перехват транзакций (`H2Transaction.IsolationLevel` отвечает запрошенное, а не фактическое; `H2Connection` отказывает во второй транзакции на соединении) | набор `TransactionInterceptionH2Test` помечен трейтом `BlockedByPort` и красный в прогоне с трейтом | научить ADO-слой отчёту фактического уровня изоляции и подавляемого старта; снять трейт |
 
 Постоянное, не требующее пересмотра: квантованный `LIKE`/`ILIKE` через `OR`/`AND`
 (у H2 формы нет вовсе), отказ коррелированного `UNNEST` (ограничение эталона),
@@ -52,11 +54,13 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 960 | 0 | 960 |   | `H2Sharp.EntityFrameworkCore.Tests` | 122 | 0 | 122 |
-   | `H2Sharp.EntityFrameworkCore.ModelTests` | 258 | 0 | 258 |
-   | **Итого** | **1340** | **0** | **1340** |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 1187 | 0 | 1187 |
+   | `H2Sharp.EntityFrameworkCore.Tests` | 122 | 0 | 122 |
+   | `H2Sharp.EntityFrameworkCore.ModelTests` | 268 | 0 | 268 |
+   | **Итого** | **1577** | **0** | **1577** |
 
-   Зелёный гейт: 1340 тестов на `net9.0` и `net10.0` против порта `69d522a`.
+   Зелёный гейт: 1577 тестов на `net9.0` и `net10.0` против порта `b6ad96b`. Из них 116
+   новых — возвращённые в сборку семейства спецификационного набора (см. раздел о них выше).
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
@@ -69,10 +73,15 @@ row-value сравнения (#18), `UPDATE` с выражением (#17), па
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 1338 | 0 | 1338 |
-   | `Category=BlockedByPort` | 69 | 371 | 446 |
+   | `Category!=BlockedByPort` | 1577 | 0 | 1577 |
+   | `Category=BlockedByPort` | 203 | 4593 | 4800 |
 
-   Шесть тестов пропущены в прогоне с трейтом. Числа выше — на `net10.0`, порт `56787de`.
+   Девять тестов пропущены в прогоне с трейтом. Числа выше — на `net10.0`, порт `b6ad96b`.
+   Красный список держит и новые семейства: `FieldMapping`, `PropertyValues` (340 тестов на
+   «Prepared.update»), `ConvertToProviderTypes` (29 на `ALTER SEQUENCE RESTART WITH`),
+   `Find`/`Load`/`StoreGeneratedFixup`/`Updates` (537 на табличные ограничения и `DEFAULT
+   VALUES`) и `TransactionInterception` (66 на ADO-уровень изоляции и повторный старт
+   транзакции).
 
    Прогон без трейта на `net9.0` даёт те же числа: 960 функциональных, 122 модульных и
    246 модельных тестов. Коллизия одинаково названных методов в `ModelTests` устранена
@@ -108,6 +117,91 @@ row-value сравнения (#18), `UPDATE` с выражением (#17), па
 | `H2PostgresModelFinalizingConventionTest` | 1 | `xmin` — столбец PostgreSQL, в H2 такого нет; тест убран |
 | `H2QuerySqlGenerator` | 1 | приведение типа пишется как `CAST(x AS y)`. Эталон также принимает `x::y`, включая `count(*)::int`; прежнее утверждение об отсутствии этой формы было неверным |
 | `H2MigrationsSqlGenerator`, `H2HistoryRepository` | 6 | блок `DO $EF$` — анонимный блок PL/pgSQL — заменён на H2'овское `CREATE SCHEMA IF NOT EXISTS` и на условие внутри самой вставки: `INSERT … SELECT … WHERE NOT EXISTS (…)` |
+| `H2IntervalTypeMapping` | — | литерал интервала без дней (`CAST('10:09:08.007' AS INTERVAL DAY TO SECOND)`) эталон отвергает: «невозможно преобразовать строку "10:09:08.007" в тип "INTERVAL"». Провайдер перешёл на фасад `Dialect.AppendInterval`: `INTERVAL '0 10:09:08.007' DAY TO SECOND` — типизированный литерал с числом дней (ноль включительно). Проверено на эталоне: формы с днями принимаются, включая `-0`, `-1`, `11 23:59:59.999999` |
+| `TransactionH2Test.SaveChanges_can_be_used_with_no_savepoint` | 1 | тест ждал PostgreSQL: там неудачный оператор переводит транзакцию в aborted и COMMIT выбрасывает всё. H2 следует стандарту — оператор неудачен, транзакция нет, — проверено на эталонном jar: `COMMIT` проходит, `MAX(ID)` — 77. Ожидание переписано под это |
+| `TransactionH2Test` (семейство ambient/enlisted) | 14 | тесты требуют enlistment в System.Transactions; ADO-слой порта его не имеет. Флаг `AmbientTransactionsSupported` переведён в `false`, тесты без гейта в спеке скипнуты с причиной |
+
+## Плагин NodaTime: переводы членов даты и времени
+
+У апстримного провайдера NodaTime — большой набор переводчиков; у форка долгое время были только
+маппинги типов, и LINQ по NodaTime-свойствам уходил в клиентский вычисление. Теперь плагин приносит
+и переводы: `H2NodaTimeMemberTranslator` подключается через `IMemberTranslatorPlugin` и переводит
+члены `Year`, `Month`, `Day`, `DayOfYear`, `DayOfWeek`, `Hour`, `Minute`, `Second` в функции H2
+(`YEAR`, `MONTH`, `DAY`, `DAY_OF_YEAR`, `ISO_DAY_OF_WEEK`, `HOUR`, `MINUTE`, `SECOND`).
+
+Границы перевода — не прихоть, а семантика:
+
+* **`LocalDate`, `LocalTime`, `LocalDateTime` переводятся**: их колонки (`date`, `time`,
+  `timestamp`) несут поля такими, как их записали, и функции частей отвечают ровно это.
+  `DayOfWeek` у NodaTime — это `IsoDayOfWeek`, неделя с понедельника, то есть ровно ответ
+  `ISO_DAY_OF_WEEK` без арифметики (у BCL `DayOfWeek` неделя с воскресенья, и там берётся
+  остаток по семи).
+* **`OffsetDateTime` и `ZonedDateTime` не переводятся.** Их колонка — `timestamp with time zone`,
+  и функции частей H2 читают такое значение в зоне сессии, а NodaTime спрашивает поля смещения
+  самого значения. EF Core честно отвечает «не переводится», а не выдаёт поля чужой зоны.
+* **Арифметика (`PlusDays`, `Period`), `Interval` и прочее** — не переведено; это работа под
+  будущие примеры.
+
+Материализация тоже поправлена: `H2NodaTimeTypeMapping` теперь читает `date`-колонку как
+`GetDateTime` → `DateOnly.FromDateTime` и `time`-колонку как `GetFieldValue<TimeSpan>` →
+`TimeOnly.FromTimeSpan` — так же, как это делают собственные маппинги провайдера, — потому что
+движок отвечает `DateTime` из `date` и `TimeSpan` из `time`, а конвертер плагина ждёт
+именно `DateOnly` и `TimeOnly`.
+
+Живой пример — `ForumNodaTimeExamples` в `ModelTests`: расписание с колонками всех трёх
+переводимых типов, запросы полей по живым строкам и тест, держащий EF за отказ по
+`OffsetDateTime.Year`. Полный порт спецификационного набора NodaTime (`NodaTimeQueryH2Test`,
+две тысячи строк) лежит непереписанным с диалектом PostgreSQL (`DATE '…'`, `INTERVAL 'P1M'`,
+диапазоны) и в solution не входит.
+
+## Спецификационный набор: возвращены ещё шесть семейств
+
+Следующая партия исключённых файлов вернулась в компиляцию и зелёная:
+
+| Семейство | Тестов | Что поправлено |
+|---|---:|---|
+| `WithConstructorsH2Test` | 41 | — |
+| `KeysWithConvertersH2Test` | 47 | — |
+| `BatchingTest` | 12 | `xid`/`xmin` (колонки PostgreSQL) убраны из модели; `Owner.Id` получил `ValueGeneratedOnAdd`; частичный индекс убран (в H2 его нет, а уникальность и так даёт NULL-distinct) |
+| `TwoDatabasesH2Test` | 4 | `DummyConnectionString` — H2-URL вместо `Host=...;Database=...` |
+| `ConnectionSpecificationTest`, `ExistingConnectionTest` | 12 | северный ветер в этих тестах был только полигоном для проверки подключений; H2-скрипта Northwind всё ещё нет, поэтому тесты переведены на собственную заводскую базу с двумя клиентами (стор держит своё соединение открытым, иначе in-memory база умирает) |
+
+Красное из этой партии не спрятано, а переведено в трейт `BlockedByPort` — два дефекта порта:
+
+| Семейство | Тестов | Симптом порта |
+|---|---:|---|
+| `FieldMappingH2Test`, `PropertyValuesH2Test` | 340 | «Not ported yet: Prepared.update: the statement is not run yet» — путь обновления движка не перенесён, и любой батч-сохранённый save падает в движке |
+| `ConvertToProviderTypesH2Test` | 29 | `ALTER SEQUENCE ... RESTART WITH` падает с `NullReferenceException` внутри `Select.Run` движка (чтение значения перезапуска) |
+
+`ValueConvertersEndToEndH2Test` и `CustomConvertersH2Test` остаются вне компиляции: их модели
+назначают свойствам типа `string` store-тип `date`/`time`, а наш `H2TypeMappingSource` для CLR
+`string` поверх `date`/`time` mapping не имеет — валидация модели отказывает до генерации SQL.
+Это не пробел движка, а решение маппинга, которое надо принять отдельно.
+
+## Транзакционное семейство вернулось в сборку
+
+`TransactionH2Test` (111 тестов) и `TransactionInterceptionH2Test` исключались из компиляции
+со времён форка. `SAVEPOINT` порт давно читает, и семейство вернулось: сто одиннадцать тестов
+зелёные на обоих TFM. По пути исправлено в провайдере:
+* **Откат к savepoint пишется формой H2.** EF Core 9 сам формирует текст savepoint-команд
+  через `ISqlGenerationHelper`, и дефолт — `ROLLBACK TO "name"` (форма PostgreSQL, где слово
+  `SAVEPOINT` необязательно). Грамматика H2 2.5 требует `ROLLBACK [WORK] TO SAVEPOINT name`:
+  `H2SqlGenerationHelper.GenerateRollbackToSavepointStatement` переписан, и откат к точке
+  сохранения доезжает до движка. `SAVEPOINT x` и `RELEASE SAVEPOINT x` дефолтные формы уже
+  читает.
+* **Reseed тестового стора.** `H2TestStore.CleanAsync` делал `DROP ALL OBJECTS` и возвращался;
+  `ReseedAsync` спеки чистит и сеет одним вдохом, и посев падал на «Table not found (this
+  database is empty)». Теперь `CleanAsync` пересоздаёт схему через `EnsureCreated` после
+  очистки.
+* **Ambient-транзакции.** ADO-слой порта не умеет `EnlistTransaction`, EF отвечает
+  `AmbientTransactionWarning`; наследованный от Npgsql флаг `AmbientTransactionsSupported =
+  true` переведён в `false`.
+* **Перехват транзакций** остался красным по двум дефектам ADO-слоя порта (см. реестр
+  пересмотра выше) и помечен `BlockedByPort`.
+
+Заодно из генератора миграций убрана таблица системных столбцов PostgreSQL (`xmin`, `ctid` и
+прочие): H2 системных столбцов не имеет, а колонка пользователя с таким именем молча
+выпадала бы из миграций.
 
 ### Что нашёл набор `ModelTests` и что в провайдере из-за этого исправлено
 
@@ -359,7 +453,7 @@ Identity не откатывается назад. Legacy-аннотация `Se
    | 9 | **`EXISTS` и `NOT EXISTS`** | `Not ported yet: Parser.readTerm: the keyword function EXISTS is not ported` | `EXISTS` в условии: без него `Any` и `All` не читаются |
    | 10 | **Квантованное сравнение с массивом-параметром** | `= ANY (@__ids_0)` → `Not ported yet: Parser.parseQuerySelect: aggregate calls outside the select list are not ported` | `x = ANY (массив)`: эталон берёт эту форму (`SELECT 1 = ANY(ARRAY[1,2,3])` → TRUE), а порт читает `ANY` только как вызов агрегата |
    | 11 | **`SAVEPOINT` внутри транзакции** | `Syntax error in SQL statement "[*]SAVEPOINT ""__EFSavePoint"";"; expected "statement"` | транзакции: EF Core ставит точку сохранения перед каждым изменением |
-   | 12 | **`BTRIM` с набором символов** | `Syntax error in SQL statement "SELECT btrim(""t"".""Title"", E[*]' \t\n\r')"; expected ")"` | второй аргумент `BTRIM` |
+   | 12 | **`BTRIM` с набором символов** | `Syntax error in SQL statement "SELECT btrim(""t"".""Title"", E'…')"; expected ")"` | второй аргумент `BTRIM`. Набор — все символы, которые `char.IsWhiteSpace` считает пробелами (E-строка H2 не разбирает эскейп-последовательности: `E'\t'` в эталоне имеет длину два, проверено, поэтому символы едут в литерал сами); проверено на эталоне: `BTRIM` с таким набором режет и таб, и неразрывный пробел |
    | 13 | **Оператор склейки строк** | ~~`Syntax error in SQL statement "SELECT ""t"".""Title"" \|\| ' (a topic)'"; expected "statement"``~~ | **закрыто**: провайдер пишет `CONCAT(a, b)`, и порт её читает |
    | 14 | **`INTERSECT` и `EXCEPT`** | `Not ported yet: Parser.parseQuerySelect: INTERSECT is not ported` | `INTERSECT` и `EXCEPT` |
    | 15 | **Запрос в списке столбцов** | `Syntax error in SQL statement "SELECT ""t"".""Title"", ( SELECT [*]CAST(count(*) AS integer) FROM ""TopicTags"" ""t0"" ... )"; expected ")"` | скалярный запрос в списке столбцов |
@@ -495,6 +589,14 @@ Identity не откатывается назад. Legacy-аннотация `Se
   не `PK_<таблица>`, как PostgreSQL. Проверено на эталоне: `SELECT SCHEMA_NAME FROM
   INFORMATION_SCHEMA.SCHEMATA` даёт `PUBLIC`, а `CONSTRAINT_NAME` первичного ключа —
   `CONSTRAINT_3`.
+* **Перечисления из каталога не скаффолдятся — движок.** Порт не читает ни `CREATE TYPE … AS
+  ENUM` (домен перечисления), ни инлайн-тип колонки `ENUM('a','b')`: в его парсере нет слова
+  `ENUM`, а представление `DOMAINS` каталога объявлено, но всегда пусто. Метки перечислений
+  движок умеет отдавать только для колонок (`ENUM_VALUES`), но создать такую колонку через SQL
+  нельзя. Поэтому скаффолдинг перечислений ждёт движок: когда `CREATE TYPE` и `DOMAINS`
+  появятся, `H2DatabaseModelFactory` начнёт читать домены, а `H2CodeGenerator` — писать
+  `HasH2Enum`. Провайдер при этом уже сегодня пишет правильное DDL, а `ForumEnumExamples`
+  проверяет перечисления по эталону на JVM.
 
 ## Что движок умеет сегодня, и почему спецификационный набор ещё не гоняется по базе
 

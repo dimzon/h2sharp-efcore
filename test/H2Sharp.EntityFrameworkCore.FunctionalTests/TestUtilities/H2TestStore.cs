@@ -163,16 +163,6 @@ public class H2TestStore : RelationalTestStore
     }
 
 
-    // ReSharper disable once MemberCanBePrivate.Global
-    // Kill all connection to the database
-    private static string GetDisconnectDatabaseSql(string name)
-        => $"""
-REVOKE CONNECT ON DATABASE "{name}" FROM PUBLIC;
-SELECT pg_terminate_backend (pg_stat_activity.pid)
-   FROM pg_stat_activity
-   WHERE datname = '{name}'
-""";
-
     public override void OpenConnection()
         => Connection.Open();
 
@@ -351,6 +341,8 @@ SELECT pg_terminate_backend (pg_stat_activity.pid)
             }
         }
 
-        return Task.CompletedTask;
+        // The schema comes back: ReseedAsync cleans and seeds in one breath, and the seed expects
+        // the tables the fixture created once to be there again.
+        return context.Database.EnsureCreatedAsync();
     }
 }

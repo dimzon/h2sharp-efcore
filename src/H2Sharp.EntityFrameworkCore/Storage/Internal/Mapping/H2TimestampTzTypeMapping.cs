@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
@@ -80,7 +81,14 @@ public class H2TimestampTzTypeMapping : H2TypeMapping
     ///     true of the type in the DDL, where the provider writes "timestamp with time zone".
     /// </remarks>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"TIMESTAMP WITH TIME ZONE '{Format(value)}'";
+    {
+        if (value is DateTimeOffset)
+        {
+            return Dialect.AppendTimestampWithTimeZone(new StringBuilder(), (DateTimeOffset)value).ToString();
+        }
+
+        return $"TIMESTAMP WITH TIME ZONE '{Format(value)}'";
+    }
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

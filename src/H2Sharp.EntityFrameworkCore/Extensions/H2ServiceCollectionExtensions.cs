@@ -25,7 +25,7 @@ public static class H2ServiceCollectionExtensions
     /// <summary>
     ///     <para>
     ///         Registers the given Entity Framework context as a service in the <see cref="IServiceCollection" />
-    ///         and configures it to connect to a PostgreSQL database.
+    ///         and configures it to connect to an H2 database.
     ///     </para>
     ///     <para>
     ///         Use this method when using dependency injection in your application, such as with ASP.NET Core.

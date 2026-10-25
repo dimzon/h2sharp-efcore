@@ -7,13 +7,13 @@ namespace Microsoft.EntityFrameworkCore;
 
 /// <summary>
 ///     Provides extension methods on <see cref="DbContextOptionsBuilder" /> and <see cref="DbContextOptionsBuilder{T}" />
-///     used to configure a <see cref="DbContext" /> to context to a PostgreSQL database with H2.
+///     used to configure a <see cref="DbContext" /> to connect to an H2 database.
 /// </summary>
 public static class H2DbContextOptionsBuilderExtensions
 {
     /// <summary>
     ///     <para>
-    ///         Configures the context to connect to a PostgreSQL server with H2, but without initially setting any
+    ///         Configures the context to connect to the H2 database engine, but without initially setting any
     ///         <see cref="DbConnection" /> or connection string.
     ///     </para>
     ///     <para>
@@ -41,7 +41,7 @@ public static class H2DbContextOptionsBuilderExtensions
     }
 
     /// <summary>
-    ///     Configures the context to connect to a PostgreSQL database with H2.
+    ///     Configures the context to connect to an H2 database.
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
     /// <param name="connectionString">The connection string of the database to connect to.</param>
@@ -68,7 +68,7 @@ public static class H2DbContextOptionsBuilderExtensions
     }
 
     /// <summary>
-    ///     Configures the context to connect to a PostgreSQL database with H2.
+    ///     Configures the context to connect to an H2 database.
     /// </summary>
     /// <param name="optionsBuilder">The builder being used to configure the context.</param>
     /// <param name="connection">
@@ -86,7 +86,7 @@ public static class H2DbContextOptionsBuilderExtensions
         => UseH2(optionsBuilder, connection, contextOwnsConnection: false, h2OptionsAction);
 
     /// <summary>
-    ///     Configures the context to connect to a PostgreSQL database with H2.
+    ///     Configures the context to connect to an H2 database.
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
     /// <param name="connection">
@@ -124,7 +124,7 @@ public static class H2DbContextOptionsBuilderExtensions
     }
 
     /// <summary>
-    ///     Configures the context to connect to a PostgreSQL database with H2.
+    ///     Configures the context to connect to an H2 database.
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
     /// <param name="dataSource">A <see cref="DbDataSource" /> which will be used to get database connections.</param>
@@ -172,7 +172,7 @@ public static class H2DbContextOptionsBuilderExtensions
             (DbContextOptionsBuilder)optionsBuilder, h2OptionsAction);
 
     /// <summary>
-    ///     Configures the context to connect to a PostgreSQL database with H2.
+    ///     Configures the context to connect to an H2 database.
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
     /// <param name="connectionString">The connection string of the database to connect to.</param>
@@ -189,7 +189,7 @@ public static class H2DbContextOptionsBuilderExtensions
             (DbContextOptionsBuilder)optionsBuilder, connectionString, h2OptionsAction);
 
     /// <summary>
-    ///     Configures the context to connect to a PostgreSQL database with H2.
+    ///     Configures the context to connect to an H2 database.
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
     /// <param name="connection">
@@ -211,7 +211,7 @@ public static class H2DbContextOptionsBuilderExtensions
             (DbContextOptionsBuilder)optionsBuilder, connection, h2OptionsAction);
 
     /// <summary>
-    ///     Configures the context to connect to a PostgreSQL database with H2.
+    ///     Configures the context to connect to an H2 database.
     /// </summary>
     /// <typeparam name="TContext">The type of context to be configured.</typeparam>
     /// <param name="optionsBuilder">The builder being used to configure the context.</param>
@@ -237,7 +237,7 @@ public static class H2DbContextOptionsBuilderExtensions
             (DbContextOptionsBuilder)optionsBuilder, connection, contextOwnsConnection, h2OptionsAction);
 
     /// <summary>
-    ///     Configures the context to connect to a PostgreSQL database with H2.
+    ///     Configures the context to connect to an H2 database.
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
     /// <param name="dataSource">A <see cref="DbDataSource" /> which will be used to get database connections.</param>

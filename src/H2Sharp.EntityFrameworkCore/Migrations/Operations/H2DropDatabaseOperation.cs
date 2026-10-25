@@ -1,7 +1,7 @@
 namespace H2Sharp.EntityFrameworkCore.Migrations.Operations;
 
 /// <summary>
-///     A PostgreSQL-specific <see cref="MigrationOperation" /> to drop a database.
+///     An H2-specific <see cref="MigrationOperation" /> to drop a database.
 /// </summary>
 /// <remarks>
 ///     See <see href="https://aka.ms/efcore-docs-migrations">Database migrations</see>.

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
@@ -81,7 +82,7 @@ public class H2IntervalTypeMapping : H2TypeMapping
     ///     the reference answers "INTERVAL '1 02:03:04' DAY TO SECOND" for either.
     /// </remarks>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"CAST('{FormatTimeSpanAsInterval((TimeSpan)value)}' AS INTERVAL DAY TO SECOND)";
+        => Dialect.AppendInterval(new StringBuilder(), (TimeSpan)value).ToString();
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -101,9 +102,17 @@ public class H2IntervalTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public static string FormatTimeSpanAsInterval(TimeSpan ts)
-        => ts.ToString(
-            $@"{(ts < TimeSpan.Zero ? "\\-" : "")}{(ts.Days == 0 ? "" : "d\\ ")}hh\:mm\:ss{(ts.Ticks % 10000000 == 0 ? "" : "\\.FFFFFF")}",
-            CultureInfo.InvariantCulture);
+    {
+        // H2 reads an interval text with the day count spelled out: "0 10:09:08.007" is
+        // accepted and "10:09:08.007" is refused (checked on the reference). So the day count
+        // is always written, zero included, and the sign travels with it.
+        var sign = ts < TimeSpan.Zero ? "-" : "";
+        var ticks = ts.Duration();
+        var time = ticks.Ticks % 10000000 == 0
+            ? ticks.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture)
+            : ticks.ToString(@"hh\:mm\:ss\.FFFFFF", CultureInfo.InvariantCulture);
+        return $"{sign}{ticks.Days} {time}";
+    }
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

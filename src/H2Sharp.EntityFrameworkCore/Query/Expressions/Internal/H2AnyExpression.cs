@@ -1,13 +1,13 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     Represents a PostgreSQL array ANY expression.
+///     Represents an H2 array ANY expression.
 /// </summary>
 /// <example>
 ///     1 = ANY ('{0,1,2}'), 'cat' LIKE ANY ('{a%,b%,c%}')
 /// </example>
 /// <remarks>
-///     See https://www.postgresql.org/docs/current/static/functions-comparisons.html
+///     See https://www.h2database.com/html/functions.html
 /// </remarks>
 public class H2AnyExpression : SqlExpression, IEquatable<H2AnyExpression>
 {
@@ -138,17 +138,17 @@ public class H2AnyExpression : SqlExpression, IEquatable<H2AnyExpression>
 public enum H2AnyOperatorType
 {
     /// <summary>
-    ///     Represents a PostgreSQL = ANY operator.
+    ///     Represents an H2 = ANY operator.
     /// </summary>
     Equal,
 
     /// <summary>
-    ///     Represents a PostgreSQL LIKE ANY operator.
+    ///     Represents an H2 LIKE ANY operator.
     /// </summary>
     Like,
 
     /// <summary>
-    ///     Represents a PostgreSQL ILIKE ANY operator.
+    ///     Represents an H2 ILIKE ANY operator.
     /// </summary>
     ILike,
 }

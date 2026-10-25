@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
@@ -71,7 +72,10 @@ public class H2TimeTzTypeMapping : H2TypeMapping
     ///     is PostgreSQL's, and the reference refuses it with a syntax error.
     /// </remarks>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => FormattableString.Invariant($"TIME WITH TIME ZONE '{(DateTimeOffset)value:HH:mm:ss.FFFFFFz}'");
+    {
+        var dto = (DateTimeOffset)value;
+        return Dialect.AppendTimeWithTimeZone(new StringBuilder(), TimeOnly.FromTimeSpan(dto.TimeOfDay), dto.Offset).ToString();
+    }
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

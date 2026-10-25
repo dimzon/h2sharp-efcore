@@ -125,7 +125,9 @@ public class H2TypeFormTests
         Assert.NotNull(mapping);
 
         // No redundant cast after the brackets: the type of the array follows from its elements.
-        Assert.Equal("ARRAY[1,2]", mapping!.GenerateSqlLiteral(new[] { 1, 2 }));
+        // The spaced separator is the form the Dialect facade writes; the reference takes both
+        // it and the compact one for the same value.
+        Assert.Equal("ARRAY [1, 2]", mapping!.GenerateSqlLiteral(new[] { 1, 2 }));
     }
 
     [Fact]
@@ -164,11 +166,11 @@ public class H2TypeFormTests
 
         // H2 2.5 takes the interval literal with its qualifier -- INTERVAL '1 2:3:4' DAY TO
         // SECOND -- and refuses the bare one: "Cannot parse "INTERVAL" constant "1 2:3:4"".
-        // The cast of the same text to the same type is the form the engine of this port reads,
-        // and the reference gives the same value for either.
+        // The typed literal is the form the Dialect facade writes, so this is the form the
+        // provider writes too; the reference answers the same value for the cast as well.
         var literal = mapping!.GenerateSqlLiteral(new TimeSpan(1, 2, 3, 4));
 
-        Assert.Equal("CAST('1 02:03:04' AS INTERVAL DAY TO SECOND)", literal);
+        Assert.Equal("INTERVAL '1 02:03:04' DAY TO SECOND", literal);
     }
 
     [Fact]

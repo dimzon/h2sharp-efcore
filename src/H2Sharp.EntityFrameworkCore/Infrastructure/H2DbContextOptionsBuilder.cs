@@ -4,7 +4,7 @@ using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 namespace H2Sharp.EntityFrameworkCore.Infrastructure;
 
 /// <summary>
-///     Allows for options specific to PostgreSQL to be configured for a <see cref="DbContext" />.
+///     Allows for options specific to H2 to be configured for a <see cref="DbContext" />.
 /// </summary>
 public class H2DbContextOptionsBuilder
     : RelationalDbContextOptionsBuilder<H2DbContextOptionsBuilder, H2OptionsExtension>
@@ -22,11 +22,11 @@ public class H2DbContextOptionsBuilder
     #region MapEnum
 
     /// <summary>
-    ///     Maps a PostgreSQL enum type for use.
+    ///     Maps an H2 enum type for use.
     /// </summary>
-    /// <param name="enumName">The name of the PostgreSQL enum type to be mapped.</param>
-    /// <param name="schemaName">The name of the PostgreSQL schema in which the range is defined.</param>
-    /// <param name="nameTranslator">The name translator used to map enum value names to PostgreSQL enum values.</param>
+    /// <param name="enumName">The name of the H2 enum type to be mapped.</param>
+    /// <param name="schemaName">The name of the schema in which the enum type is defined.</param>
+    /// <param name="nameTranslator">The name translator used to map enum value names to H2 enum values.</param>
     public virtual H2DbContextOptionsBuilder MapEnum<T>(
         string? enumName = null,
         string? schemaName = null,
@@ -35,12 +35,12 @@ public class H2DbContextOptionsBuilder
         => MapEnum(typeof(T), enumName, schemaName, nameTranslator);
 
     /// <summary>
-    ///     Maps a PostgreSQL enum type for use.
+    ///     Maps an H2 enum type for use.
     /// </summary>
     /// <param name="clrType">The CLR type of the enum.</param>
-    /// <param name="enumName">The name of the PostgreSQL enum type to be mapped.</param>
-    /// <param name="schemaName">The name of the PostgreSQL schema in which the range is defined.</param>
-    /// <param name="nameTranslator">The name translator used to map enum value names to PostgreSQL enum values.</param>
+    /// <param name="enumName">The name of the H2 enum type to be mapped.</param>
+    /// <param name="schemaName">The name of the schema in which the enum type is defined.</param>
+    /// <param name="nameTranslator">The name translator used to map enum value names to H2 enum values.</param>
     public virtual H2DbContextOptionsBuilder MapEnum(
         Type clrType,
         string? enumName = null,

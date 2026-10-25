@@ -4,7 +4,7 @@ using H2Sharp.EntityFrameworkCore.Storage.Internal;
 namespace H2Sharp.EntityFrameworkCore;
 
 /// <summary>
-///     An <see cref="IExecutionStrategy" /> implementation for retrying failed executions on PostgreSQL.
+///     An <see cref="IExecutionStrategy" /> implementation for retrying failed executions on H2.
 /// </summary>
 /// <remarks>
 ///     <para>
@@ -122,6 +122,6 @@ public class H2RetryingExecutionStrategy : ExecutionStrategy
     // Would be good to provide a way to add these into the additional list.
     /// <inheritdoc />
     protected override bool ShouldRetryOn(Exception? exception)
-        => exception is H2SharpException postgresException && _additionalErrorCodes?.Contains(postgresException.SqlState) == true
+        => exception is H2SharpException h2Exception && _additionalErrorCodes?.Contains(h2Exception.SqlState) == true
             || H2TransientExceptionDetector.ShouldRetryOn(exception);
 }

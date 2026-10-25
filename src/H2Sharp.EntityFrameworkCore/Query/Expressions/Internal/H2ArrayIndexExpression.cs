@@ -1,11 +1,11 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     An SQL expression that represents an indexing into a PostgreSQL array.
+///     An SQL expression that represents an indexing into an H2 array.
 /// </summary>
 /// <remarks>
 ///     <see cref="SqlBinaryExpression" /> specifically disallows having an <see cref="SqlBinaryExpression.OperatorType" />
-///     of value <see cref="ExpressionType.ArrayIndex" /> as arrays are a PostgreSQL-only feature.
+///     of value <see cref="ExpressionType.ArrayIndex" /> as arrays are a provider-specific feature.
 /// </remarks>
 public class H2ArrayIndexExpression : SqlExpression, IEquatable<H2ArrayIndexExpression>
 {

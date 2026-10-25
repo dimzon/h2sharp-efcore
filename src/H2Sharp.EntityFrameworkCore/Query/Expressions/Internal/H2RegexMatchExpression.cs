@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     Represents a PostgreSQL regular expression match expression.
+///     Represents an H2 regular expression match expression.
 /// </summary>
 public class H2RegexMatchExpression : SqlExpression, IEquatable<H2RegexMatchExpression>
 {

@@ -3,7 +3,7 @@ using H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     An expression that represents a PostgreSQL-specific binary operation in a SQL tree.
+///     An expression that represents a provider-specific binary operation in a SQL tree.
 /// </summary>
 public class H2BinaryExpression : SqlExpression
 {
@@ -34,7 +34,7 @@ public class H2BinaryExpression : SqlExpression
     }
 
     /// <summary>
-    ///     The operator of this PostgreSQL binary operation.
+    ///     The operator of this binary operation.
     /// </summary>
     public virtual H2ExpressionType OperatorType { get; }
 

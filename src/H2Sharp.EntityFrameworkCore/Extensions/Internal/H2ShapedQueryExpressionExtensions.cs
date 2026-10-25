@@ -121,7 +121,7 @@ public static class H2ShapedQueryExpressionExtensions
     }
 
     /// <summary>
-    ///     Checks whether the given expression maps to a PostgreSQL array, as opposed to a multirange type.
+    ///     Checks whether the given expression maps to an H2 array type.
     /// </summary>
     private static bool IsH2Array(SqlExpression expression)
         => expression switch

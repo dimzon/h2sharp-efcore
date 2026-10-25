@@ -1,6 +1,7 @@
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using System.Text;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
@@ -85,7 +86,12 @@ public class H2TimeTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"TIME '{GenerateEmbeddedNonNullSqlLiteral(value)}'";
+        => value switch
+        {
+            TimeSpan ts => Dialect.AppendTime(new StringBuilder(), ts).ToString(),
+            TimeOnly t => Dialect.AppendTime(new StringBuilder(), t).ToString(),
+            _ => throw new InvalidCastException($"Can't generate a time SQL literal for CLR type {value.GetType()}")
+        };
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

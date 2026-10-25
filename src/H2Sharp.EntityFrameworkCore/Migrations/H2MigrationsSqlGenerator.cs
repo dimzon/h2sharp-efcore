@@ -9,7 +9,7 @@ using H2Sharp.EntityFrameworkCore.Update.Internal;
 namespace H2Sharp.EntityFrameworkCore.Migrations;
 
 /// <summary>
-///     PostgreSQL-specific implementation of <see cref="MigrationsSqlGenerator" />.
+///     H2-specific implementation of <see cref="MigrationsSqlGenerator" />.
 /// </summary>
 /// <remarks>
 ///     <para>
@@ -163,8 +163,6 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
                 $"When generating migrations SQL for {nameof(CreateTableOperation)}, can't produce unterminated SQL with comments");
         }
 
-        operation.Columns.RemoveAll(c => IsSystemColumn(c.Name));
-
         builder.Append("CREATE ");
 
         builder
@@ -248,15 +246,7 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
         IModel? model,
         MigrationCommandListBuilder builder,
         bool terminate = true)
-    {
-        // Never touch system columns
-        if (IsSystemColumn(operation.Name))
-        {
-            return;
-        }
-
-        base.Generate(operation, model, builder, terminate);
-    }
+        => base.Generate(operation, model, builder, terminate);
 
     /// <inheritdoc />
     protected override void Generate(
@@ -269,12 +259,6 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
         {
             throw new ArgumentException(
                 $"When generating migrations SQL for {nameof(AddColumnOperation)}, can't produce unterminated SQL with comments");
-        }
-
-        // Never touch system columns
-        if (IsSystemColumn(operation.Name))
-        {
-            return;
         }
 
         if (operation[H2AnnotationNames.ValueGenerationStrategy] is H2ValueGenerationStrategy strategy)
@@ -319,12 +303,6 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
         Check.NotNull(operation, nameof(operation));
         Check.NotNull(builder, nameof(builder));
 
-        // Never touch system columns
-        if (IsSystemColumn(operation.Name))
-        {
-            return;
-        }
-
         var column = model?.GetRelationalModel().FindTable(operation.Table, operation.Schema)
             ?.Columns.FirstOrDefault(c => c.Name == operation.Name);
 
@@ -336,7 +314,7 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
             || operation.IsStored != operation.OldColumn.IsStored)
         {
             // TODO: The following will fail if the column being altered is part of an index.
-            // SqlServer recreates indexes, but wait to see if PostgreSQL will introduce a proper ALTER TABLE ALTER COLUMN
+            // H2 recreates the column: rebuild the whole path when the engine grows a proper ALTER TABLE ALTER COLUMN
             // that allows us to do this cleanly.
             var dropColumnOperation = new DropColumnOperation
             {
@@ -418,7 +396,7 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
         else if (operation is { IsNullable: false, OldColumn.IsNullable: true })
         {
             // The column is being made non-nullable. Generate an update statement before doing that, to convert any existing null values to
-            // the default value (otherwise PostgreSQL fails).
+            // the default value (otherwise the engine rejects the constraint).
             if (operation.DefaultValueSql is not null || operation.DefaultValue is not null)
             {
                 string defaultValueSql;
@@ -1378,11 +1356,6 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
         Check.NotNull(operation, nameof(operation));
         Check.NotNull(builder, nameof(builder));
 
-        if (false)
-        {
-            throw new NotSupportedException("Computed/generated columns aren't supported in PostgreSQL prior to version 12");
-        }
-
         if (operation.IsStored != true)
         {
             throw new NotSupportedException(
@@ -1423,7 +1396,7 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
         if (annotatable.FindAnnotation(H2AnnotationNames.ValueGeneratedOnAdd) is not null)
         {
             throw new NotSupportedException(
-                "The H2:ValueGeneratedOnAdd annotation has been found in your migrations, but is no longer supported. Please replace it with '.Annotation(\"H2:ValueGenerationStrategy\", H2ValueGenerationStrategy.SerialColumn)' where you want PostgreSQL serial (autoincrement) columns, and remove it in all other cases.");
+                "The H2:ValueGeneratedOnAdd annotation has been found in your migrations, but is no longer supported. Please replace it with '.Annotation(\"H2:ValueGenerationStrategy\", H2ValueGenerationStrategy.SerialColumn)' where you want H2 identity (autoincrement) columns, and remove it in all other cases.");
         }
     }
 #pragma warning restore 618
@@ -1529,23 +1502,6 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
     }
 
     #endregion Utilities
-
-    #region System column utilities
-
-    private bool IsSystemColumn(string name)
-        => SystemColumnNames.Contains(name);
-
-    /// <summary>
-    ///     Tables in PostgreSQL implicitly have a set of system columns, which are always there.
-    ///     We want to allow users to access these columns (i.e. xmin for optimistic concurrency) but
-    ///     they should never generate migration operations.
-    /// </summary>
-    /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/ddl-system-columns.html
-    /// </remarks>
-    private static readonly string[] SystemColumnNames = ["tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"];
-
-    #endregion System column utilities
 
     #region Helpers
 

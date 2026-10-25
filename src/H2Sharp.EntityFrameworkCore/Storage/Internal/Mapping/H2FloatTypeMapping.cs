@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
 /// <summary>
@@ -54,23 +56,5 @@ public class H2FloatTypeMapping : FloatTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-    {
-        var singleValue = Convert.ToSingle(value);
-        if (double.IsNaN(singleValue))
-        {
-            return "'NaN'";
-        }
-
-        if (double.IsPositiveInfinity(singleValue))
-        {
-            return "'Infinity'";
-        }
-
-        if (double.IsNegativeInfinity(singleValue))
-        {
-            return "'-Infinity'";
-        }
-
-        return base.GenerateNonNullSqlLiteral(singleValue);
-    }
+        => Dialect.AppendReal(new StringBuilder(), Convert.ToSingle(value)).ToString();
 }

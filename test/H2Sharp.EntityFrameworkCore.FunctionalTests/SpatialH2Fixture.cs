@@ -19,6 +19,6 @@ public class SpatialH2Fixture : SpatialFixtureBase
     {
         base.OnModelCreating(modelBuilder, context);
 
-        modelBuilder.HasPostgresExtension("uuid-ossp");
+        // H2 has no extensions; the uuid-ossp call of upstream has no equivalent to register.
     }
 }

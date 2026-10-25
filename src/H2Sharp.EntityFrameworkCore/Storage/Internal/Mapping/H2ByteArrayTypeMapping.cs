@@ -65,19 +65,9 @@ public class H2ByteArrayTypeMapping : RelationalTypeMapping
     protected override string GenerateNonNullSqlLiteral(object value)
     {
         Check.NotNull(value, nameof(value));
-        var bytes = (byte[])value;
 
         // H2 spells a binary literal X'..' with uppercase hex digits; the PostgreSQL form this replaces
         // was BYTEA E'\\x..' and does not parse in H2.
-        var builder = new StringBuilder(bytes.Length * 2 + 3);
-        builder.Append("X'");
-        foreach (var b in bytes)
-        {
-            builder.Append(b.ToString("X2", CultureInfo.InvariantCulture));
-        }
-
-        builder.Append('\'');
-
-        return builder.ToString();
+        return Dialect.AppendBytes(new StringBuilder(), (byte[])value).ToString();
     }
 }

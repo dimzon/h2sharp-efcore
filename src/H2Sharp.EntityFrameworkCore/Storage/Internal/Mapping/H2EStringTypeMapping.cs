@@ -1,12 +1,15 @@
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
+using System.Text;
+
 /// <summary>
-///     Represents a so-called PostgreSQL E-string literal string, which allows C-style escape sequences.
+///     Represents an H2 E-string literal (<c>E'...'</c>, the <c>eString</c> production of the grammar),
+///     which allows C-style escape sequences.
 ///     This is a "virtual" type mapping which is never returned by <see cref="H2TypeMappingSource" />.
 ///     It is only used internally by some method translators to produce literal strings.
 /// </summary>
 /// <remarks>
-///     See https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS
+///     See https://www.h2database.com/html/grammar.html
 /// </remarks>
 public class H2EStringTypeMapping : StringTypeMapping
 {
@@ -36,5 +39,5 @@ public class H2EStringTypeMapping : StringTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"E'{EscapeSqlLiteral((string)value)}'";
+        => Dialect.AppendEString(new StringBuilder(), (string)value).ToString();
 }

@@ -8,6 +8,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore\H2Sharp.EntityFrameworkCore.csproj" />
+    <!--
+      The NodaTime plugin: ForumNodaTimeExamples asks the database for the parts of a NodaTime
+      date and time on live rows, the way the rest of this suite asks about the forum.
+    -->
+    <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore.NodaTime\H2Sharp.EntityFrameworkCore.NodaTime.csproj" />
     <Compile Include="..\H2Sharp.EntityFrameworkCore.FunctionalTests\TestUtilities\H2ReferenceOracle.cs" Link="TestUtilities\H2ReferenceOracle.cs" />
   </ItemGroup>
 

@@ -6,6 +6,42 @@ namespace H2Sharp.EntityFrameworkCore;
 
 public class ConnectionSpecificationTest
 {
+    private const string StoreName = "connectionspec";
+
+    private static string ConnectionString
+        => $"jdbc:h2:mem:{StoreName}";
+
+    // The spec suites use the Northwind sample database; H2 has no Northwind script yet, so
+    // the connection tests here use a small store of their own -- the point under test is the
+    // connection wiring, not the data.
+    private static async Task<H2TestStore> CreateSeededStoreAsync()
+    {
+        var store = H2TestStore.Create(StoreName);
+        // An in-memory database of the port dies with its last connection, so the store's own
+        // connection is opened here and stays open for the life of the store; the tests then
+        // work against the same database through their own connections.
+        store.OpenConnection();
+
+        await using (var context = new SeedContext(new DbContextOptionsBuilder().UseH2(store.ConnectionString).Options))
+        {
+            await context.Database.EnsureCreatedAsync();
+            context.Customers.AddRange(
+                new Customer { CustomerId = "ALFKI", CompanyName = "Alfreds" },
+                new Customer { CustomerId = "ANATR", CompanyName = "Ana Trujillo" });
+            await context.SaveChangesAsync();
+        }
+
+        return store;
+    }
+
+    private sealed class SeedContext(DbContextOptions options) : DbContext(options)
+    {
+        public DbSet<Customer> Customers { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+            => modelBuilder.Entity<Customer>(b => b.HasKey(c => c.CustomerId));
+    }
+
     [Fact]
     public async Task Can_specify_connection_string_in_OnConfiguring()
     {
@@ -13,7 +49,7 @@ public class ConnectionSpecificationTest
             .AddDbContext<StringInOnConfiguringContext>()
             .BuildServiceProvider();
 
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
+        await using var _ = await CreateSeededStoreAsync();
         await using var context = serviceProvider.GetRequiredService<StringInOnConfiguringContext>();
 
         Assert.True(await context.Customers.AnyAsync());
@@ -22,7 +58,7 @@ public class ConnectionSpecificationTest
     [Fact]
     public async Task Can_specify_connection_string_in_OnConfiguring_with_default_service_provider()
     {
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
+        await using var _ = await CreateSeededStoreAsync();
         await using var context = new StringInOnConfiguringContext();
 
         Assert.True(await context.Customers.AnyAsync());
@@ -31,17 +67,17 @@ public class ConnectionSpecificationTest
     private class StringInOnConfiguringContext : NorthwindContextBase
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseH2(H2TestStore.NorthwindConnectionString, b => b.ApplyConfiguration());
+            => optionsBuilder.UseH2(ConnectionString, b => b.ApplyConfiguration());
     }
 
     [Fact]
     public async Task Can_specify_connection_in_OnConfiguring()
     {
         var serviceProvider = new ServiceCollection()
-            .AddScoped(_ => new H2Connection(H2TestStore.NorthwindConnectionString))
+            .AddScoped(_ => new H2Connection(ConnectionString))
             .AddDbContext<ConnectionInOnConfiguringContext>().BuildServiceProvider();
 
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
+        await using var _ = await CreateSeededStoreAsync();
         await using var context = serviceProvider.GetRequiredService<ConnectionInOnConfiguringContext>();
 
         Assert.True(await context.Customers.AnyAsync());
@@ -50,8 +86,8 @@ public class ConnectionSpecificationTest
     [Fact]
     public async Task Can_specify_connection_in_OnConfiguring_with_default_service_provider()
     {
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
-        await using var context = new ConnectionInOnConfiguringContext(new H2Connection(H2TestStore.NorthwindConnectionString));
+        await using var _ = await CreateSeededStoreAsync();
+        await using var context = new ConnectionInOnConfiguringContext(new H2Connection(ConnectionString));
 
         Assert.True(await context.Customers.AnyAsync());
     }
@@ -107,11 +143,11 @@ public class ConnectionSpecificationTest
     public async Task Can_depend_on_DbContextOptions()
     {
         var serviceProvider = new ServiceCollection()
-            .AddScoped(_ => new H2Connection(H2TestStore.NorthwindConnectionString))
+            .AddScoped(_ => new H2Connection(ConnectionString))
             .AddDbContext<OptionsContext>()
             .BuildServiceProvider();
 
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
+        await using var _ = await CreateSeededStoreAsync();
         await using var context = serviceProvider.GetRequiredService<OptionsContext>();
 
         Assert.True(await context.Customers.AnyAsync());
@@ -120,10 +156,10 @@ public class ConnectionSpecificationTest
     [Fact]
     public async Task Can_depend_on_DbContextOptions_with_default_service_provider()
     {
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
+        await using var _ = await CreateSeededStoreAsync();
         await using var context = new OptionsContext(
             new DbContextOptions<OptionsContext>(),
-            new H2Connection(H2TestStore.NorthwindConnectionString));
+            new H2Connection(ConnectionString));
 
         Assert.True(await context.Customers.AnyAsync());
     }
@@ -154,7 +190,7 @@ public class ConnectionSpecificationTest
             .AddDbContext<NonGenericOptionsContext>()
             .BuildServiceProvider();
 
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
+        await using var _ = await CreateSeededStoreAsync();
         await using var context = serviceProvider.GetRequiredService<NonGenericOptionsContext>();
 
         Assert.True(await context.Customers.AnyAsync());
@@ -163,7 +199,7 @@ public class ConnectionSpecificationTest
     [Fact]
     public async Task Can_depend_on_non_generic_options_when_only_one_context_with_default_service_provider()
     {
-        await using var _ = await H2TestStore.GetNorthwindStoreAsync();
+        await using var _ = await CreateSeededStoreAsync();
         await using var context = new NonGenericOptionsContext(new DbContextOptions<DbContext>());
 
         Assert.True(await context.Customers.AnyAsync());
@@ -177,7 +213,7 @@ public class ConnectionSpecificationTest
         {
             Assert.Same(_options, optionsBuilder.Options);
 
-            optionsBuilder.UseH2(H2TestStore.NorthwindConnectionString, b => b.ApplyConfiguration());
+            optionsBuilder.UseH2(ConnectionString, b => b.ApplyConfiguration());
 
             Assert.NotSame(_options, optionsBuilder.Options);
         }

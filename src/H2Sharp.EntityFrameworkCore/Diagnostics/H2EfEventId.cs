@@ -4,7 +4,7 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics;
 
 /// <summary>
 ///     <para>
-///         Event IDs for PostgreSQL/H2 events that correspond to messages logged to an <see cref="ILogger" />
+///         Event IDs for H2 events that correspond to messages logged to an <see cref="ILogger" />
 ///         and events sent to a <see cref="DiagnosticSource" />.
 ///     </para>
 ///     <para>

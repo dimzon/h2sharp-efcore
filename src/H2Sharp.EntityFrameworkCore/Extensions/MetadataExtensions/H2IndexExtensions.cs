@@ -16,7 +16,7 @@ public static class H2IndexExtensions
     ///     <c>null</c> selects the default (currently <c>btree</c>).
     /// </summary>
     /// <remarks>
-    ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     public static string? GetMethod(this IReadOnlyIndex index)
         => (string?)index[H2AnnotationNames.IndexMethod];
@@ -26,7 +26,7 @@ public static class H2IndexExtensions
     ///     <c>null</c> selects the default (currently <c>btree</c>).
     /// </summary>
     /// <remarks>
-    ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     public static void SetMethod(this IMutableIndex index, string? method)
         => index.SetOrRemoveAnnotation(H2AnnotationNames.IndexMethod, method);
@@ -36,7 +36,7 @@ public static class H2IndexExtensions
     ///     <c>null</c> selects the default (currently <c>btree</c>).
     /// </summary>
     /// <remarks>
-    ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     public static string? SetMethod(
         this IConventionIndex index,
@@ -68,7 +68,7 @@ public static class H2IndexExtensions
     ///     Returns the column NULL sort orders to be used, or <c>null</c> if they have not been specified.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-ordering.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     public static IReadOnlyList<NullSortOrder>? GetNullSortOrder(this IReadOnlyIndex index)
         => (IReadOnlyList<NullSortOrder>?)index[H2AnnotationNames.IndexNullSortOrder];
@@ -77,7 +77,7 @@ public static class H2IndexExtensions
     ///     Sets the column NULL sort orders to be used, or <c>null</c> if they have not been specified.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-ordering.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     public static void SetNullSortOrder(this IMutableIndex index, IReadOnlyList<NullSortOrder>? nullSortOrder)
         => index.SetOrRemoveAnnotation(H2AnnotationNames.IndexNullSortOrder, nullSortOrder);
@@ -86,7 +86,7 @@ public static class H2IndexExtensions
     ///     Sets the column NULL sort orders to be used, or <c>null</c> if they have not been specified.
     /// </summary>
     /// <remarks>
-    ///     https://www.postgresql.org/docs/current/static/indexes-ordering.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     public static IReadOnlyList<NullSortOrder>? SetNullSortOrder(
         this IConventionIndex index,
@@ -169,7 +169,7 @@ public static class H2IndexExtensions
     ///     The default is that they are distinct, so that a unique index could contain multiple null values in a column.
     /// </summary>
     /// <remarks>
-    ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     public static bool? GetAreNullsDistinct(this IReadOnlyIndex index)
         => (bool?)index[H2AnnotationNames.NullsDistinct];
@@ -179,7 +179,7 @@ public static class H2IndexExtensions
     ///     The default is that they are distinct, so that a unique index could contain multiple null values in a column.
     /// </summary>
     /// <remarks>
-    ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     public static void SetAreNullsDistinct(this IMutableIndex index, bool? nullsDistinct)
         => index.SetOrRemoveAnnotation(H2AnnotationNames.NullsDistinct, nullsDistinct);
@@ -189,7 +189,7 @@ public static class H2IndexExtensions
     ///     The default is that they are distinct, so that a unique index could contain multiple null values in a column.
     /// </summary>
     /// <remarks>
-    ///     http://www.postgresql.org/docs/current/static/sql-createindex.html
+    ///     https://www.h2database.com/html/commands.html#create_index
     /// </remarks>
     public static bool? SetAreNullsDistinct(this IConventionIndex index, bool? nullsDistinct, bool fromDataAnnotation = false)
     {

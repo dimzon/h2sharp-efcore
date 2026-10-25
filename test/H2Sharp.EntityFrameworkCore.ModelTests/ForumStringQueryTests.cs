@@ -70,8 +70,10 @@ public class ForumStringQueryTests
         using var database = ForumDatabase.Filled(nameof(The_string_is_trimmed));
         using var context = database.Context();
 
-        // The provider writes BTRIM with the set of the characters to trim:
-        // "Syntax error in SQL statement "SELECT btrim(""t"".""Title"", E[*]' \t\n\r')"; expected ")".
+        // The provider writes BTRIM with the set of the characters .NET's Trim treats as
+        // whitespace -- the characters themselves in an E-string, because the E-string of H2
+        // decodes no escape sequences. The port does not read the second argument of BTRIM
+        // yet: "expected ")".
         var trimmed = context.Topics.OrderBy(t => t.Id).Select(t => t.Title.Trim()).First();
 
         Assert.Equal("What a compiler does with the source", trimmed);
@@ -168,7 +170,7 @@ public class ForumStringQueryTests
         using var database = ForumDatabase.Filled(nameof(The_rows_are_asked_for_with_a_trimmed_string));
         using var context = database.Context();
 
-        // The provider writes BTRIM with the set of the characters to trim, and the engine does
+        // The provider writes BTRIM with the whitespace set, and the engine does
         // not read that form of the function.
         int count = context.Topics.Count(t => t.Body.Trim() == "A walk through the phases, from the characters to the code.");
 

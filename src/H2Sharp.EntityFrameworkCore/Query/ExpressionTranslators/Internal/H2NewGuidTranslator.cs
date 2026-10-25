@@ -3,10 +3,10 @@ using static H2Sharp.EntityFrameworkCore.Utilities.Statics;
 namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 
 /// <summary>
-///     Provides translation services for PostgreSQL UUID functions.
+///     Provides translation services for H2 UUID functions.
 /// </summary>
 /// <remarks>
-///     See: https://www.postgresql.org/docs/current/datatype-uuid.html
+///     See: https://www.h2database.com/html/datatypes.html
 /// </remarks>
 public class H2NewGuidTranslator : IMethodCallTranslator
 {

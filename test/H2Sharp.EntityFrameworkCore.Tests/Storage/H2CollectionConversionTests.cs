@@ -66,12 +66,14 @@ public class H2CollectionConversionTests
         var plain = new H2ArrayTypeMapping<int[], int[], int>(intMapping);
         var streamedParameter = plain.CreateParameter(command, "ids", Enumerable.Range(1, 3).Where(i => i > 1));
         Assert.Equal(new[] { 2, 3 }, (IEnumerable<int>)streamedParameter.Value!);
-        Assert.Equal("ARRAY[2,3]", plain.GenerateSqlLiteral(new[] { 2, 3 }));
+        Assert.Equal("ARRAY [2, 3]", plain.GenerateSqlLiteral(new[] { 2, 3 }));
         var nullable = new H2ArrayTypeMapping<int?[], int?[], int?>(intMapping);
-        Assert.Equal("ARRAY[2,NULL,3]", nullable.GenerateSqlLiteral(new int?[] { 2, null, 3 }));
+        Assert.Equal("ARRAY [2, NULL, 3]", nullable.GenerateSqlLiteral(new int?[] { 2, null, 3 }));
 
         if (H2ReferenceOracle.IsAvailable)
         {
+            // Both spellings of the separator are the reference's own: it takes "ARRAY[2,NULL,3]"
+            // and "ARRAY [2, NULL, 3]" for the same value, and the facade writes the spaced one.
             var oracle = H2ReferenceOracle.Run($"SELECT 1 / CASE WHEN {nullable.GenerateSqlLiteral(new int?[] { 2, null, 3 })} IS NOT DISTINCT FROM ARRAY[2,NULL,3] THEN 1 ELSE 0 END;");
             Assert.True(oracle.Accepted, oracle.Output);
         }

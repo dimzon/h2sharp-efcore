@@ -67,17 +67,6 @@ public class H2BlobTypeMapping : RelationalTypeMapping
     protected override string GenerateNonNullSqlLiteral(object value)
     {
         Check.NotNull(value, nameof(value));
-        var bytes = (byte[])value;
-
-        var builder = new StringBuilder(bytes.Length * 2 + 3);
-        builder.Append("X'");
-        foreach (var b in bytes)
-        {
-            builder.Append(b.ToString("X2", CultureInfo.InvariantCulture));
-        }
-
-        builder.Append('\'');
-
-        return builder.ToString();
+        return Dialect.AppendBlob(new StringBuilder(), (byte[])value).ToString();
     }
 }

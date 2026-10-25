@@ -1,3 +1,6 @@
+using System.Data.Common;
+using System.Linq.Expressions;
+using System.Reflection;
 using H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -134,4 +137,35 @@ public class H2NodaTimeTypeMapping : H2TypeMapping
     /// <inheritdoc />
     protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
         => new H2NodaTimeTypeMapping(parameters);
+
+    /// <summary>
+    ///     The engine answers a <c>date</c> column with a <see cref="DateTime" /> and a <c>time</c> column
+    ///     with a <see cref="TimeSpan" /> -- the same values the main provider's own mappings read -- so the
+    ///     reader method follows the provider type of the conversion, the way <c>H2DateOnlyTypeMapping</c>
+    ///     and <c>H2TimeTypeMapping</c> do it.
+    /// </summary>
+    public override MethodInfo GetDataReaderMethod()
+        => (Converter?.ProviderClrType ?? ClrType) == typeof(DateOnly)
+            ? typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDateTime), [typeof(int)])!
+            : (Converter?.ProviderClrType ?? ClrType) == typeof(TimeOnly)
+                ? typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetFieldValue))!.MakeGenericMethod(typeof(TimeSpan))
+                : base.GetDataReaderMethod();
+
+    /// <inheritdoc />
+    public override Expression CustomizeDataReaderExpression(Expression expression)
+    {
+        var providerType = Converter?.ProviderClrType ?? ClrType;
+
+        if (providerType == typeof(DateOnly))
+        {
+            return Expression.Call(typeof(DateOnly).GetMethod(nameof(DateOnly.FromDateTime), [typeof(DateTime)])!, expression);
+        }
+
+        if (providerType == typeof(TimeOnly))
+        {
+            return Expression.Call(typeof(TimeOnly).GetMethod(nameof(TimeOnly.FromTimeSpan), [typeof(TimeSpan)])!, expression);
+        }
+
+        return base.CustomizeDataReaderExpression(expression);
+    }
 }

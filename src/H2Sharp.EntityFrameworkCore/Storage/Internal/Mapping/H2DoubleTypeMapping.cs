@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
 /// <summary>
@@ -54,11 +56,5 @@ public class H2DoubleTypeMapping : DoubleTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => Convert.ToDouble(value) switch
-        {
-            var d when double.IsNaN(d) => "'NaN'",
-            var d when double.IsPositiveInfinity(d) => "'Infinity'",
-            var d when double.IsNegativeInfinity(d) => "'-Infinity'",
-            var d => base.GenerateNonNullSqlLiteral(d)
-        };
+        => Dialect.AppendDouble(new StringBuilder(), Convert.ToDouble(value)).ToString();
 }

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
@@ -58,7 +59,23 @@ public class H2DateTimeDateTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => $"DATE '{GenerateEmbeddedNonNullSqlLiteral(value)}'";
+    {
+        var date = (DateTime)value;
+        if (!H2TypeMappingSource.DisableDateTimeInfinityConversions)
+        {
+            if (date == DateTime.MinValue)
+            {
+                return "CAST('-Infinity' AS DATE)";
+            }
+
+            if (date == DateTime.MaxValue)
+            {
+                return "CAST('Infinity' AS DATE)";
+            }
+        }
+
+        return Dialect.AppendDate(new StringBuilder(), DateOnly.FromDateTime(date)).ToString();
+    }
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

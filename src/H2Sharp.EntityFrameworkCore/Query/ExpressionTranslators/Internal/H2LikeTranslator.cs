@@ -1,7 +1,7 @@
 namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 
 /// <summary>
-///     Translates <see cref="T:DbFunctionsExtensions.Like" /> methods into PostgreSQL LIKE expressions.
+///     Translates <see cref="T:DbFunctionsExtensions.Like" /> methods into H2 LIKE expressions.
 /// </summary>
 public class H2LikeTranslator : IMethodCallTranslator
 {

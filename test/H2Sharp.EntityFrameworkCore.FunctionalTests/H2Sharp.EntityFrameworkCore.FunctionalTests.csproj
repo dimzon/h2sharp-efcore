@@ -16,7 +16,36 @@
     -->
     <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
     <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
+    <!--
+      Fabricates connection failures, which needs a public constructor on the engine's
+      H2SharpException; the port's is internal (a port defect, see docs/DIVERGENCES.md).
+    -->
+    <Compile Remove="TestUtilities\TestH2Connection.cs" />
+    <!--
+      Needs the TestRelationalCommandBuilderFactory/TestRelationalTransactionFactory fakes, which
+      the EF Core 9 template-based IRelationalCommand makes into a rewrite rather than a port;
+      see docs/DIVERGENCES.md.
+    -->
+    <Compile Remove="ExecutionStrategyTest.cs" />
+    <!--
+      Both suites save through the batch, and the port's Prepared update path is a stub ("Not
+      ported yet: Prepared.update"), so every save fails at the engine. The classes carry the
+      BlockedByPort trait; the reference accepts the statements this provider writes.
+    -->
+    <!--
+      Both refer to model classes the fork did not carry over (BronieContext, BlogContextSequence
+      and the rest of that family), so they do not compile until those models are ported.
+    -->
+    <Compile Remove="SequenceEndToEndTest.cs" />
     <Compile Remove="H2ValueGenerationScenariosTest.cs" />
+    <!--
+      These two spec suites model string properties whose store type is an H2 date or time
+      (for example BuiltInDataTypes.TestDateOnly), and our type mapping source has no mapping
+      for CLR string over date/time columns, so model validation fails before any SQL is
+      generated. Settlement needs a design decision, not an engine fix: see docs/DIVERGENCES.md.
+    -->
+    <Compile Remove="ValueConvertersEndToEndH2Test.cs" />
+    <Compile Remove="CustomConvertersH2Test.cs" />
     <!--
       The NodaTime mapping test of the PostgreSQL provider: it needs the legacy timestamp
       behaviour, which only PostgreSQL had, and the range types, which H2 has no answer for.
@@ -33,7 +62,7 @@
       the network address types, sequences, Redshift and the compatibility mode, the ICU collation,
       PostGIS, and PostgreSQL's arrays, jsonb operators and trigram search. They are excluded from the
       compilation until they are rewritten against H2, and each one is listed in docs/DIVERGENCES.md.
-    -->    <Compile Remove="BatchingTest.cs" />
+    -->
     <Compile Remove="BuiltInDataTypesH2Test.cs" />
     <Compile Remove="BulkUpdates\ComplexTypeBulkUpdatesH2Test.cs" />
     <Compile Remove="BulkUpdates\NonSharedModelBulkUpdatesH2Test.cs" />
@@ -52,29 +81,13 @@
     <Compile Remove="BulkUpdates\TPTInheritanceBulkUpdatesH2Fixture.cs" />
     <Compile Remove="BulkUpdates\TPTInheritanceBulkUpdatesH2Test.cs" />
     <Compile Remove="CommandInterceptionH2Test.cs" />
-    <Compile Remove="ComplexTypesTrackingH2Test.cs" />
     <Compile Remove="CompositeKeyEndToEndTest.cs" />
     <Compile Remove="ComputedColumnTest.cs" />
-    <Compile Remove="ConcurrencyDetectorDisabledH2Test.cs" />
-    <Compile Remove="ConcurrencyDetectorEnabledH2Test.cs" />
     <Compile Remove="ConferencePlannerH2Test.cs" />
     <Compile Remove="ConnectionInterceptionH2Test.cs" />
-    <Compile Remove="ConnectionSpecificationTest.cs" />
-    <Compile Remove="ConvertToProviderTypesH2Test.cs" />
-    <Compile Remove="CustomConvertersH2Test.cs" />
     <Compile Remove="DataAnnotationH2Test.cs" />
-    <Compile Remove="DataBindingH2Test.cs" />
     <Compile Remove="EntitySplittingH2Test.cs" />
-    <Compile Remove="ExecutionStrategyTest.cs" />
-    <Compile Remove="ExistingConnectionTest.cs" />
-    <Compile Remove="F1H2Fixture.cs" />
-    <Compile Remove="FieldMappingH2Test.cs" />
-    <Compile Remove="FindH2Test.cs" />
-    <Compile Remove="H2Fixture.cs" />
     <Compile Remove="JsonTypesH2Test.cs" />
-    <Compile Remove="KeysWithConvertersH2Test.cs" />
-    <Compile Remove="LazyLoadProxyH2Test.cs" />
-    <Compile Remove="LoadH2Test.cs" />
     <Compile Remove="ManyToManyFieldsLoadH2Test.cs" />
     <Compile Remove="ManyToManyLoadH2Test.cs" />
     <Compile Remove="ManyToManyTrackingH2Test.cs" />
@@ -85,7 +98,6 @@
     <Compile Remove="NotificationEntitiesH2Test.cs" />
     <Compile Remove="OptimisticConcurrencyH2Test.cs" />
     <Compile Remove="OverzealousInitializationH2Test.cs" />
-    <Compile Remove="PropertyValuesH2Test.cs" />
     <Compile Remove="Query\AdHocAdvancedMappingsQueryH2Test.cs" />
     <Compile Remove="Query\AdHocComplexTypeQueryH2Test.cs" />
     <Compile Remove="Query\AdHocJsonQueryH2Test.cs" />
@@ -157,7 +169,7 @@
     <Compile Remove="Query\NorthwindSelectQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindSetOperationsQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindSplitIncludeNoTrackingQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindSplitIncludeQueryH2eTest.cs" />
+    <Compile Remove="Query\NorthwindSplitIncludeQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindSqlQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindStringIncludeQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindWhereQueryH2Test.cs" />
@@ -209,39 +221,19 @@
     <Compile Remove="QueryExpressionInterceptionH2TestBase.cs" />
     <Compile Remove="SaveChangesInterceptionH2Test.cs" />
     <Compile Remove="SeedingH2Test.cs" />
-    <Compile Remove="SequenceEndToEndTest.cs" />
-    <Compile Remove="SerializationH2Test.cs" />
-    <Compile Remove="SpatialH2Fixture.cs" />
-    <Compile Remove="SpatialH2Test.cs" />
-    <Compile Remove="StoreGeneratedFixupH2Test.cs" />
-    <Compile Remove="StoreGeneratedH2Test.cs" />
     <Compile Remove="SystemColumnTest.cs" />
     <Compile Remove="TableSplittingH2Test.cs" />
     <Compile Remove="TPTTableSplittingH2Test.cs" />
-    <Compile Remove="TransactionH2Test.cs" />
-    <Compile Remove="TransactionInterceptionH2Test.cs" />
-    <Compile Remove="TwoDatabasesH2Test.cs" />
     <Compile Remove="Update\JsonUpdateH2Test.cs" />
     <Compile Remove="Update\NonSharedModelUpdatesH2Test.cs" />
     <Compile Remove="Update\StoredProcedureUpdateH2Test.cs" />
     <Compile Remove="Update\StoreValueGenerationH2Test.cs" />
-    <Compile Remove="UpdatesH2Test.cs" />
-    <Compile Remove="ValueConvertersEndToEndH2Test.cs" />
-    <Compile Remove="WithConstructorsH2Test.cs" />
-    <Compile Remove="TestUtilities\TestH2Connection.cs" />
-    <Compile Remove="TestUtilities\TestH2RetryingExecutionStrategy.cs" />
-    <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
-    <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
-    <Compile Remove="H2ValueGenerationScenariosTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore\H2Sharp.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore.NTS\H2Sharp.EntityFrameworkCore.NTS.csproj" />
     <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore.NodaTime\H2Sharp.EntityFrameworkCore.NodaTime.csproj" />
-    <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
-    <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
-    <Compile Remove="H2ValueGenerationScenariosTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -262,17 +254,11 @@
     <!-- Needed to override xunit dependencies from EFCore projects on versions which aren't available on nuget.org -->
     <PackageReference Include="xunit.assert" />
     <PackageReference Include="xunit.core" />
-    <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
-    <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
-    <Compile Remove="H2ValueGenerationScenariosTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="Northwind.sql" CopyToOutputDirectory="PreserveNewest" />
     <None Update="config.json" CopyToOutputDirectory="PreserveNewest" />
-    <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
-    <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
-    <Compile Remove="H2ValueGenerationScenariosTest.cs" />
   </ItemGroup>
 
 </Project>

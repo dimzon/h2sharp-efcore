@@ -1,10 +1,10 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     A SQL expression that represents a slicing into a PostgreSQL array (e.g. array[2:3]).
+///     A SQL expression that represents a slice of an array, written as ARRAY_SLICE(array, 2, 3).
 /// </summary>
 /// <remarks>
-///     <see href="https://www.postgresql.org/docs/current/arrays.html#ARRAYS-ACCESSING" />.
+///     <see href="https://www.h2database.com/html/datatypes.html" />.
 /// </remarks>
 public class H2ArraySliceExpression : SqlExpression, IEquatable<H2ArraySliceExpression>
 {

@@ -2,6 +2,10 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
+// BlockedByPort: the fixture's model carries UNIQUE and FOREIGN KEY table constraints, and the
+// port's CREATE TABLE reads only the primary key of them ("expected PRIMARY"). The reference
+// accepts the statement the provider writes (checked on the jar).
+[Trait("Category", "BlockedByPort")]
 public class StoreGeneratedFixupH2Test(StoreGeneratedFixupH2Test.StoreGeneratedFixupH2Fixture fixture)
     : StoreGeneratedFixupRelationalTestBase<StoreGeneratedFixupH2Test.StoreGeneratedFixupH2Fixture>(fixture)
 {
@@ -66,20 +70,20 @@ public class StoreGeneratedFixupH2Test(StoreGeneratedFixupH2Test.StoreGeneratedF
         {
             base.OnModelCreating(modelBuilder, context);
 
-            modelBuilder.HasPostgresExtension("uuid-ossp");
-
+            // H2 has no extensions: the UUID generator the uuid-ossp extension provided upstream
+            // is the built-in RANDOM_UUID().
             modelBuilder.Entity<Parent>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<Child>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<ParentPN>(

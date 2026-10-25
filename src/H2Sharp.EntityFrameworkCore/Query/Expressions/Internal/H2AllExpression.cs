@@ -1,10 +1,10 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     Represents a PostgreSQL array ALL expression.
+///     Represents an H2 array ALL expression.
 /// </summary>
 /// <remarks>
-///     See https://www.postgresql.org/docs/current/static/functions-comparisons.html
+///     See https://www.h2database.com/html/functions.html
 /// </remarks>
 public class H2AllExpression : SqlExpression, IEquatable<H2AllExpression>
 {
@@ -126,12 +126,12 @@ public class H2AllExpression : SqlExpression, IEquatable<H2AllExpression>
 public enum H2AllOperatorType
 {
     /// <summary>
-    ///     Represents a PostgreSQL LIKE ALL operator.
+    ///     Represents an H2 LIKE ALL operator.
     /// </summary>
     Like,
 
     /// <summary>
-    ///     Represents a PostgreSQL ILIKE ALL operator.
+    ///     Represents an H2 ILIKE ALL operator.
     /// </summary>
     ILike,
 }

@@ -1,5 +1,7 @@
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
+using System.Text;
+
 /// <summary>
 ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
 ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -54,5 +56,5 @@ public class H2BoolTypeMapping : BoolTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => (bool)value ? "TRUE" : "FALSE";
+        => Dialect.AppendBoolean(new StringBuilder(), (bool)value).ToString();
 }

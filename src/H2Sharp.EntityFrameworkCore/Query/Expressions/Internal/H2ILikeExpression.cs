@@ -1,7 +1,7 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     Represents a PostgreSQL ILIKE expression.
+///     Represents an H2 ILIKE expression.
 /// </summary>
 // ReSharper disable once InconsistentNaming
 public class H2ILikeExpression : SqlExpression, IEquatable<H2ILikeExpression>

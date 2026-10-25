@@ -1,7 +1,7 @@
 namespace H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
 
 /// <summary>
-///     An SQL expression that represents a PostgreSQL DELETE operation.
+///     An SQL expression that represents an H2 DELETE operation.
 /// </summary>
 public sealed class H2DeleteExpression : Expression, IPrintableExpression
 {

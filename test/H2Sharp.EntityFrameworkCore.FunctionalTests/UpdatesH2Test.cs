@@ -3,6 +3,10 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
+// BlockedByPort: the fixture's model carries UNIQUE and FOREIGN KEY table constraints, and the
+// port's CREATE TABLE reads only the primary key of them ("expected PRIMARY"). The reference
+// accepts the statement the provider writes (checked on the jar).
+[Trait("Category", "BlockedByPort")]
 public class UpdatesH2Test : UpdatesRelationalTestBase<UpdatesH2Test.UpdatesH2Fixture>
 {
     // ReSharper disable once UnusedParameter.Local
@@ -64,14 +68,15 @@ public class UpdatesH2Test : UpdatesRelationalTestBase<UpdatesH2Test.UpdatesH2Fi
         {
             base.OnModelCreating(modelBuilder, context);
 
-            modelBuilder.HasPostgresExtension("uuid-ossp");
-
+            // H2 has no extensions: the UUID generator the uuid-ossp extension provided upstream
+            // is the built-in RANDOM_UUID().
             modelBuilder.Entity<ProductBase>()
-                .Property(p => p.Id).HasDefaultValueSql("uuid_generate_v4()");
+                .Property(p => p.Id).HasDefaultValueSql("RANDOM_UUID()");
 
-            modelBuilder.Entity<Product>().HasIndex(p => new { p.Name, p.Price }).IsUnique().HasFilter("""
-                "Name" IS NOT NULL
-                """);
+            // Upstream declared this unique index with a "Name" IS NOT NULL partial filter. H2 2.5
+            // has no partial index, but it does not need one here: its unique index counts NULLs as
+            // distinct by default, so rows with a NULL name never collide with anything.
+            modelBuilder.Entity<Product>().HasIndex(p => new { p.Name, p.Price }).IsUnique();
 
             modelBuilder.Entity<Rodney>().Property(r => r.Concurrency).HasColumnType("timestamp without time zone");
         }

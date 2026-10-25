@@ -63,26 +63,11 @@ public class H2GeometryTypeMapping<TGeometry> : RelationalGeometryTypeMapping<TG
     protected override string GenerateNonNullSqlLiteral(object value)
     {
         var geometry = (Geometry)value;
-        var builder = new StringBuilder();
 
         // H2 accepts EWKT, including an optional SRID prefix. Preserve the reference system
         // instead of silently turning a geometry with an SRID into one with SRID zero.
-        builder
-            .Append("GEOMETRY")
-            .Append(" '");
-
-        if (geometry.SRID != 0)
-        {
-            builder.Append("SRID=")
-                .Append(geometry.SRID.ToString(System.Globalization.CultureInfo.InvariantCulture))
-                .Append(';');
-        }
-
-        builder
-            .Append(geometry.AsText())
-            .Append('\'');
-
-        return builder.ToString();
+        return Dialect.AppendGeometry(
+            new StringBuilder(), geometry.AsText(), geometry.SRID == 0 ? null : geometry.SRID).ToString();
     }
 
     /// <summary>

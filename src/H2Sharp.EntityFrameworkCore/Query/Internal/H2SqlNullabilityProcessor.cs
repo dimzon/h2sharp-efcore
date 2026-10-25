@@ -56,7 +56,7 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
             // still don't use indexes.
             // Note that we don't do compensation for comparisons (e.g. greater than) since these are expressed via EF.Functions, which
             // correspond directly to SQL constructs.
-            // The PG docs around this are in https://www.postgresql.org/docs/current/functions-comparisons.html#ROW-WISE-COMPARISON
+            // The PG docs around this are in https://www.h2database.com/html/functions.html
 
             Check.DebugAssert(leftRowValue.Values.Count == rightRowValue.Values.Count, "left.Values.Count == right.Values.Count");
             var count = leftRowValue.Values.Count;

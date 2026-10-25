@@ -4,10 +4,10 @@ using ExpressionExtensions = Microsoft.EntityFrameworkCore.Query.ExpressionExten
 namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 
 /// <summary>
-///     Translates Regex.IsMatch calls into PostgreSQL regex expressions for database-side processing.
+///     Translates Regex.IsMatch calls into H2 regex expressions for database-side processing.
 /// </summary>
 /// <remarks>
-///     http://www.postgresql.org/docs/current/static/functions-matching.html
+///     https://www.h2database.com/html/functions.html
 /// </remarks>
 public class H2RegexIsMatchTranslator : IMethodCallTranslator
 {

@@ -1,7 +1,7 @@
 namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 
 /// <summary>
-///     Translates methods defined on <see cref="T:System.Convert" /> into PostgreSQL CAST expressions.
+///     Translates methods defined on <see cref="T:System.Convert" /> into H2 CAST expressions.
 /// </summary>
 public class H2ConvertTranslator : IMethodCallTranslator
 {

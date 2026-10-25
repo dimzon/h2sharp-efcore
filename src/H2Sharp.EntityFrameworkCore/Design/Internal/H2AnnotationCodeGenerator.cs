@@ -151,14 +151,12 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
         Check.NotNull(property, nameof(property));
         Check.NotNull(annotation, nameof(annotation));
 
-        // The default by-convention value generation strategy is serial in pre-10 PostgreSQL,
-        // and IdentityByDefault otherwise.
+        // The default by-convention value generation strategy is IdentityByDefault; the legacy
+        // SerialColumn name writes the same identity column.
         if (annotation.Name == H2AnnotationNames.ValueGenerationStrategy)
         {
-            // Note: both serial and identity-by-default columns are considered by-convention - we don't want
-            // to assume that the PostgreSQL version of the scaffolded database necessarily determines the
-            // version of the database that the scaffolded model will target. This makes life difficult for
-            // models with mixed strategies but that's an edge case.
+            // Note: both serial and identity-by-default columns are considered by-convention: they produce
+            // the same DDL, so scaffolding either one back without an annotation round-trips the model.
             return (H2ValueGenerationStrategy?)annotation.Value switch
             {
                 H2ValueGenerationStrategy.SerialColumn => true,

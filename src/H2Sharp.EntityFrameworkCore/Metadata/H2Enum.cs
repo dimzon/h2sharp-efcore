@@ -3,7 +3,7 @@ using H2Sharp.EntityFrameworkCore.Metadata.Internal;
 namespace H2Sharp.EntityFrameworkCore.Metadata;
 
 /// <summary>
-///     Represents the metadata for a PostgreSQL enum.
+///     Represents the metadata for an H2 enum.
 /// </summary>
 public class H2Enum
 {

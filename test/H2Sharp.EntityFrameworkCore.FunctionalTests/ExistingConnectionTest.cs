@@ -20,9 +20,21 @@ public class ExistingConnectionTest
             .AddEntityFrameworkH2()
             .BuildServiceProvider();
 
-        await using (var store = await H2TestStore.GetNorthwindStoreAsync())
+        await using (var store = H2TestStore.Create("ExistingConnection"))
         {
-            store.CloseConnection();
+            // The in-memory database lives as long as the store's own connection, which is
+            // opened here and stays open; the connection under test is a separate one.
+            store.OpenConnection();
+
+            await using (var seed = new CustomerContext(new DbContextOptionsBuilder<CustomerContext>().UseH2(store.ConnectionString).Options))
+            {
+                await seed.Database.EnsureCreatedAsync();
+                seed.Customers.AddRange(
+                    new Customer { CustomerId = "ALFKI", CompanyName = "Alfreds" },
+                    new Customer { CustomerId = "ANATR", CompanyName = "Ana Trujillo" },
+                    new Customer { CustomerId = "ANTON", CompanyName = "Antonio Moreno" });
+                await seed.SaveChangesAsync();
+            }
 
             var openCount = 0;
             var closeCount = 0;
@@ -46,9 +58,9 @@ public class ExistingConnectionTest
                     }
                 };
 
-                await using (var context = new NorthwindContext(serviceProvider, connection))
+                await using (var context = new CustomerContext(serviceProvider, connection))
                 {
-                    Assert.Equal(91, await context.Customers.CountAsync());
+                    Assert.Equal(3, await context.Customers.CountAsync());
                 }
 
                 if (openConnection)
@@ -67,18 +79,18 @@ public class ExistingConnectionTest
         }
     }
 
-    private class NorthwindContext(IServiceProvider serviceProvider, H2Connection connection) : DbContext
+    private class CustomerContext(DbContextOptions<CustomerContext> options) : DbContext(options)
     {
-        private readonly IServiceProvider _serviceProvider = serviceProvider;
-        private readonly H2Connection _connection = connection;
+        public CustomerContext(IServiceProvider serviceProvider, H2Connection connection)
+            : this(new DbContextOptionsBuilder<CustomerContext>()
+                .UseH2(connection)
+                .UseInternalServiceProvider(serviceProvider)
+                .Options)
+        {
+        }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
         public DbSet<Customer> Customers { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder
-                .UseH2(_connection)
-                .UseInternalServiceProvider(_serviceProvider);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
             => modelBuilder.Entity<Customer>(

@@ -9,7 +9,7 @@ namespace H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 ///     Provides translation services for <see cref="DateTime" /> members.
 /// </summary>
 /// <remarks>
-///     See: https://www.postgresql.org/docs/current/static/functions-datetime.html
+///     See: https://www.h2database.com/html/functions.html
 /// </remarks>
 public class H2DateTimeMemberTranslator : IMemberTranslator
 {
