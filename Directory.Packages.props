@@ -32,6 +32,6 @@
       msbuild package of coverlet, which could hold the threshold in the build itself, is not
       in the package cache.
     -->
-    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
   </ItemGroup>
 </Project>
