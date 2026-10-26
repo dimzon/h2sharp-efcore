@@ -2,13 +2,24 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// BlockedByPort: the fixture's model carries UNIQUE and FOREIGN KEY table constraints, and the
-// port's CREATE TABLE reads only the primary key of them ("expected PRIMARY"). The reference
-// accepts the statement the provider writes (checked on the jar).
-[Trait("Category", "BlockedByPort")]
+// BlockedByPort: three of the suite's 119 tests save an overlapping graph, which reaches the
+// update pipeline, and the port stops it with "Not ported yet: Prepared.update".
 public class StoreGeneratedFixupH2Test(StoreGeneratedFixupH2Test.StoreGeneratedFixupH2Fixture fixture)
     : StoreGeneratedFixupRelationalTestBase<StoreGeneratedFixupH2Test.StoreGeneratedFixupH2Fixture>(fixture)
 {
+    // inherited from StoreGeneratedFixupTestBase
+    [Trait("Category", "BlockedByPort")]
+    public override Task Add_overlapping_graph_from_game()
+        => base.Add_overlapping_graph_from_game();
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Add_overlapping_graph_from_item()
+        => base.Add_overlapping_graph_from_item();
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Add_overlapping_graph_from_level()
+        => base.Add_overlapping_graph_from_level();
+
     [Fact]
     public Task Temp_values_are_replaced_on_save()
         => ExecuteWithStrategyInTransactionAsync(
@@ -90,103 +101,103 @@ public class StoreGeneratedFixupH2Test(StoreGeneratedFixupH2Test.StoreGeneratedF
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<ChildPN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<ParentDN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<ChildDN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<ParentNN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<ChildNN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<CategoryDN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<ProductDN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<CategoryPN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<ProductPN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<CategoryNN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<ProductNN>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<Category>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<Product>(
                 b =>
                 {
                     b.Property(e => e.Id1).ValueGeneratedOnAdd();
-                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()");
+                    b.Property(e => e.Id2).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()");
                 });
 
             modelBuilder.Entity<Item>(b => { b.Property(e => e.Id).ValueGeneratedOnAdd(); });
 
-            modelBuilder.Entity<Game>(b => { b.Property(e => e.Id).ValueGeneratedOnAdd().HasDefaultValueSql("uuid_generate_v4()"); });
+            modelBuilder.Entity<Game>(b => { b.Property(e => e.Id).ValueGeneratedOnAdd().HasDefaultValueSql("RANDOM_UUID()"); });
         }
     }
 }

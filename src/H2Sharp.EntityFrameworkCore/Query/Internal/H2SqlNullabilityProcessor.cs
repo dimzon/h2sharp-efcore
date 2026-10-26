@@ -261,8 +261,8 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
 
         // non_nullable = ANY(array) -> non_nullable = ANY(array) (optimized)
         // non_nullable = ANY(array) -> non_nullable = ANY(array) AND (non_nullable = ANY(array) IS NOT NULL) (full)
-        // nullable = ANY(array) -> nullable = ANY(array) OR (nullable IS NULL AND array_position(array, NULL) IS NOT NULL) (optimized)
-        // nullable = ANY(array) -> (nullable = ANY(array) AND (nullable = ANY(array) IS NOT NULL)) OR (nullable IS NULL AND array_position(array, NULL) IS NOT NULL) (full)
+        // nullable = ANY(array) -> nullable = ANY(array) OR (nullable IS NULL AND array_contains(array, NULL)) (optimized)
+        // nullable = ANY(array) -> (nullable = ANY(array) AND (nullable = ANY(array) IS NOT NULL)) OR (nullable IS NULL AND array_contains(array, NULL)) (full)
 
         nullable = false;
 
@@ -279,19 +279,23 @@ public class H2SqlNullabilityProcessor : SqlNullabilityProcessor
         }
 
         // If the item is nullable, add an OR to check for the item being null and the array containing null.
-        // The latter check is done with array_position, which returns null when a value was not found, and
-        // a position if the item (including null!) was found (IS NOT DISTINCT FROM semantics)
+        // The latter check is array_contains, which answers TRUE when the array holds a NULL element and
+        // FALSE when it does not -- the same question PostgreSQL's array_position(array, NULL) IS NOT NULL
+        // answers, and ARRAY_POSITION does not exist in H2. The COALESCE keeps the expression non-nullable
+        // for a NULL array, exactly as the array_position form was: array_contains(NULL, NULL) is NULL.
+        // The answers of array_contains are pinned by H2ArrayContainsContractTest.
         return _sqlExpressionFactory.OrElse(
             updated,
             _sqlExpressionFactory.AndAlso(
                 _sqlExpressionFactory.IsNull(item),
-                _sqlExpressionFactory.IsNotNull(
+                _sqlExpressionFactory.Coalesce(
                     _sqlExpressionFactory.Function(
-                        "array_position",
+                        "array_contains",
                         [array, _sqlExpressionFactory.Constant(null, item.Type, item.TypeMapping)],
                         nullable: true,
-                        argumentsPropagateNullability: FalseArrays[2],
-                        typeof(int)))));
+                        argumentsPropagateNullability: [true, false],
+                        typeof(bool)),
+                    _sqlExpressionFactory.Constant(false))));
     }
 
     /// <summary>

@@ -115,7 +115,7 @@ public class H2TimestampTypeMapping : H2TypeMapping
             }
         }
 
-        return H2TypeMappingSource.LegacyTimestampBehavior || dateTime.Kind != DateTimeKind.Utc
+        return dateTime.Kind != DateTimeKind.Utc
             ? dateTime.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture)
             : throw new ArgumentException("'timestamp without time zone' literal cannot be generated for a UTC DateTime");
     }

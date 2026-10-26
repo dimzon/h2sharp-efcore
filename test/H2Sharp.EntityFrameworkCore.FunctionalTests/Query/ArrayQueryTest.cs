@@ -318,8 +318,8 @@ public abstract class ArrayQueryTest<TFixture> : QueryTestBase<TFixture>
     public async Task New_array_with_heterogeneous_columns_throws(bool async)
     {
         // Note that arrays of objects are treated specially by EF Core, so they're fine.
-        // The below checks Bytea and ByteArray, which are the same CLR type (byte[]) but mapped to different PG types
-        // (bytea and smallint[])
+        // The below checks Bytea and ByteArray, which are the same CLR type (byte[]) but mapped to different H2 types
+        // (varbinary and smallint[]) -- bytea is PostgreSQL's spelling, H2 has no such type.
         await using var context = CreateContext();
 
         var exception = async
@@ -328,7 +328,7 @@ public abstract class ArrayQueryTest<TFixture> : QueryTestBase<TFixture>
             : Assert.Throws<InvalidOperationException>(
                 () => context.Set<ArrayEntity>().Select(e => new[] { e.Bytea, e.ByteArray }).ToList());
 
-        Assert.Equal(H2Strings.HeterogeneousTypesInNewArray("bytea", "smallint[]"), exception.Message);
+        Assert.Equal(H2Strings.HeterogeneousTypesInNewArray("varbinary", "smallint[]"), exception.Message);
     }
 
     [Theory]
@@ -343,8 +343,8 @@ public abstract class ArrayQueryTest<TFixture> : QueryTestBase<TFixture>
 
         AssertSql(
             """
-SELECT ARRAY[s."Varchar10",s."Varchar15"]
-FROM "SomeEntities" AS s
+SELECT ARRAY["s"."Varchar10","s"."Varchar15"]
+FROM "SomeEntities" "s"
 """);
     }
 
@@ -360,8 +360,8 @@ FROM "SomeEntities" AS s
 
         AssertSql(
             """
-SELECT ARRAY[s."NonNullableText",s."Varchar15"]
-FROM "SomeEntities" AS s
+SELECT ARRAY["s"."NonNullableText","s"."Varchar15"]
+FROM "SomeEntities" "s"
 """);
     }
 
@@ -377,8 +377,8 @@ FROM "SomeEntities" AS s
 
         AssertSql(
             """
-SELECT ARRAY[CAST(s."Id" AS varchar),s."Varchar15"]
-FROM "SomeEntities" AS s
+SELECT ARRAY[CAST("s"."Id" AS text),"s"."Varchar15"]
+FROM "SomeEntities" "s"
 """);
     }
 
@@ -394,8 +394,8 @@ FROM "SomeEntities" AS s
 
         AssertSql(
             """
-SELECT ARRAY[s."NonNullableText",COALESCE(s."NullableText", '')]
-FROM "SomeEntities" AS s
+SELECT ARRAY["s"."NonNullableText",COALESCE("s"."NullableText", '')]
+FROM "SomeEntities" "s"
 """);
     }
 

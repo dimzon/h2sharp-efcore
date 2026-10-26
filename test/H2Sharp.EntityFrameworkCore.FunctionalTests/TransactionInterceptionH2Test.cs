@@ -7,6 +7,8 @@ namespace H2Sharp.EntityFrameworkCore;
 // included, not the level the session really took), and its suppress-and-begin flow starts a
 // second transaction on a connection that already has one, which the port's H2Connection
 // refuses. Both live in the ADO layer of the engine, not in the SQL this provider writes.
+// The trait stays on the class: only 6 of the 66 tests pass, and marking the other 60 would mean
+// 32 override stubs of (bool async) theories across the two nested classes below.
 [Trait("Category", "BlockedByPort")]
 public abstract class TransactionInterceptionH2TestBase(TransactionInterceptionH2TestBase.InterceptionH2FixtureBase fixture)
     : TransactionInterceptionTestBase(fixture)

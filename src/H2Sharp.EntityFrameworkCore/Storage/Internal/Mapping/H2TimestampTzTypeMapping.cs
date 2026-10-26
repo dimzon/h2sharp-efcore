@@ -129,15 +129,13 @@ public class H2TimestampTzTypeMapping : H2TypeMapping
         {
             DateTimeKind.Utc => dateTime.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture) + 'Z',
 
-            DateTimeKind.Unspecified => H2TypeMappingSource.LegacyTimestampBehavior || dateTime == default
+            DateTimeKind.Unspecified => dateTime == default
                 ? dateTime.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture) + 'Z'
                 : throw new ArgumentException(
                     $"'timestamp with time zone' literal cannot be generated for {dateTime.Kind} DateTime: a UTC DateTime is required"),
 
-            DateTimeKind.Local => H2TypeMappingSource.LegacyTimestampBehavior
-                ? dateTime.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFFzzz", CultureInfo.InvariantCulture)
-                : throw new ArgumentException(
-                    $"'timestamp with time zone' literal cannot be generated for {dateTime.Kind} DateTime: a UTC DateTime is required"),
+            DateTimeKind.Local => throw new ArgumentException(
+                $"'timestamp with time zone' literal cannot be generated for {dateTime.Kind} DateTime: a UTC DateTime is required"),
 
             _ => throw new UnreachableException()
         };

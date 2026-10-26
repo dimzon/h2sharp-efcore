@@ -34,7 +34,7 @@
 | dimzon/h2sharp#21 (выражения в `ORDER BY`) | закрыт (коммит движка «Read complete expressions in ORDER BY» `be3d11b`) | — |
 | dimzon/h2sharp#22 (операторы `~`, `~*`) | закрыт (коммит движка «Read regex operators» `29e8e10`) | — |
 | dimzon/h2sharp#27 (`EXISTS`) | закрыт (коммит движка «Ask subqueries whether a row exists» `d86b2e1`): `It_is_asked_whether_there_is_a_row`, `It_is_asked_whether_every_row_holds_a_condition`, `It_is_asked_whether_there_is_a_row_without_waiting` разблокированы | — |
-| dimzon/h2sharp#13 (`FINAL TABLE`, identity, `ALTER TABLE`) | заблокированные тесты | разблокировать |
+| dimzon/h2sharp#13 (`FINAL TABLE`, identity, `ALTER TABLE`) | `FINAL TABLE` и identity портированы (`f197e34`, `3c4e993`): `H2IdentityTests` (2/2) и вставки форума идут в зелёном прогоне, identity-значение возвращается. Осталась одна форма: `FINAL TABLE (INSERT … DEFAULT VALUES)` не получает identity — девять тестов `StoreGeneratedH2Test` (пробел 22) | issue открыт не из-за них, а из-за `COMMENT ON`, `CREATE ALIAS` и остальных действий `ALTER TABLE` (пробелы 7 и 21); при его закрытии пересмотреть только тесты, упавшие на этих формах |
 | dimzon/h2sharp#33 (`INTERSECT`, `EXCEPT`) | закрыт (коммит движка «Port set operations» `69d522a`): `The_rows_of_two_queries_are_met`, `The_rows_of_two_queries_are_set_apart` живут | — |
 | dimzon/h2sharp#34 (`SAVEPOINT`) | закрыт (коммит движка `69d522a`): `The_change_is_kept_when_the_transaction_is_committed`, `The_change_is_thrown_away_when_the_transaction_is_rolled_back` живут | — |
 | dimzon/h2sharp#35 (`WITHIN GROUP`, `FILTER`) | закрыт (коммит движка `69d522a`): `Two_gatherings_in_one_query_take_their_own_order_and_filter` живёт | — |
@@ -54,57 +54,85 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 1187 | 0 | 1187 |
-   | `H2Sharp.EntityFrameworkCore.Tests` | 122 | 0 | 122 |
-   | `H2Sharp.EntityFrameworkCore.ModelTests` | 316 | 0 | 316 |
-   | **Итого** | **1625** | **0** | **1625** |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 2019 | 0 | 2019 |
+   | `H2Sharp.EntityFrameworkCore.Tests` | 129 | 0 | 129 |
+   | `H2Sharp.EntityFrameworkCore.ModelTests` | 317 | 0 | 317 |
+   | **Итого** | **2465** | **0** | **2465** |
 
-   Зелёный гейт: 1625 тестов на `net9.0` и `net10.0` против порта `db48d70`
-   (25 октября 2026).
+   Зелёный гейт: 2465 тестов на `net9.0` и `net10.0` против порта `f56ca4c`
+   (26 октября 2026). Функциональных было 1193: трейт `BlockedByPort` переехал с классов на
+   методы и отдал гейту 826 тестов, которые проходили и раньше (см. `docs/BACKLOG.md`,
+   «Инфраструктура»).
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
 сбор строк в один текст, сырые запросы и транзакции. Он зелёный целиком, кроме
-семи тестов, помеченных `BlockedByPort` по пробелам ниже. Разблокированы: row-value
+шести тестов, помеченных `BlockedByPort` по пробелам ниже. Разблокированы: row-value
 сравнения (#18), `UPDATE` с выражением (#17), параметр-массив и `CONCAT_WS` (#14),
 живой `UNNEST` (#23), обрезка пробелов (#12), `EXISTS` (#27), `SAVEPOINT` (#34),
-`WITHIN GROUP`/`FILTER` (#35), E-строки (#36) и `CAST(агрегат)` в скалярном подзапросе
-(#37). Порог покрытия держит `tools/CheckCoverage.ps1`: 60 % при текущем замере 60,69 %.
+`WITHIN GROUP`/`FILTER` (#35), E-строки (#36), `CAST(агрегат)` в скалярном подзапросе
+(#37) и массив из столбцов строки (`ARRAY["s"."Id", "s"."Id" * 10]`). Порог покрытия
+держит `tools/CheckCoverage.ps1`: 61 % при текущем замере 61,76 %.
 
-   Разделение по трейту:
+   Разделение по трейту (функциональные тесты):
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 1625 | 0 | 1625 |
-   | `Category=BlockedByPort` | 375 | 4948 | 5337 |
+   | `Category!=BlockedByPort` | 2005 | 0 | 2019 (14 пропущено) |
+   | `Category=BlockedByPort` | 275 | 4229 | 4504 |
 
-   Четырнадцать тестов пропущены в прогоне с трейтом. Числа выше — на `net10.0`, порт `db48d70`.
-   Красный список держат `LoadH2Test` (3133: `CREATE TABLE` с `UNIQUE`-ограничениями),
-   `LazyLoadProxyH2Test` (315), `PropertyValuesH2Test` (173), `FieldMappingH2Test` (167),
-   `FindH2Test` (411 тремя контекстами), `StoreGeneratedFixupH2Test` (119), `MigrationsH2Test`
-   (119 из 183), `ArrayArrayQueryTest`/`ArrayListQueryTest` (192 из 204: чтение массива как
-   `List<T>`), `StoreGeneratedH2Test` (85 из 211), `DataBindingH2Test` (56),
-   `H2DatabaseModelFactoryTest` (53 из 56), `UpdatesH2Test` (36),
+   Пропущенных в прогоне с трейтом нет: четырнадцать скипов переехали в гейт вместе со своими
+   классами. Числа — на `net10.0`, движок `f56ca4c` (26 октября 2026), после пяти правок
+   провайдера: массив читается в `List<T>` (было
+   `Unable to cast object of type 'System.Int32[]' to …List\`1[System.Int32]'`), тест-модель
+   писал `uuid_generate_v4()` там, где H2 зовёт функцию `RANDOM_UUID()`, снят перевод
+   `string.Join` над массивом-столбцом в несуществующий `array_to_string`, `array_position(a, NULL)`
+   в компенсации `NULL` заменён на `COALESCE(ARRAY_CONTAINS(a, NULL), FALSE)` (плюс контрактный
+   тест на ответы движка в юнит-проекте), и тест `New_array_with_heterogeneous_columns_throws`
+   больше не ждёт постгресовое имя `bytea` вместо `varbinary`. От движка `f56ca4c` это 288
+   переходов красное→зелёное и ни одного обратного. Восемнадцать тестов пары `ConcurrencyDetector*`
+   гуляют от прогона к прогону (`Table "Products" not found`), так что прошедших бывает на
+   восемнадцать больше или меньше.
+
+   Двести семьдесят пять проходящих в прогоне с трейтом — не шум: трейт стоит на методе, а
+   у `[ConditionalTheory]` один метод на все строки `[InlineData]`, и десять классов держат
+   трейт на классе там, где красный метод нельзя пометить отдельно (`StoreGeneratedH2Test`,
+   `UpdatesH2Test`, пара `ConcurrencyDetector*`, перехват транзакций) или где зелёных нет вовсе
+   (`LoadH2Test`, `FindH2Test`, `PropertyValuesH2Test`, `FieldMappingH2Test`, `DataBinding`,
+   `Serialization`, `DefaultValuesTest`). Разбор — в `docs/BACKLOG.md`.
+
+   История этих чисел: на движке `17c9f68` было 434 и 4888, коммит `f56ca4c` («Port UNIQUE/CHECK
+   constraints, TOP and explicit DUAL») дал 350 переходов красное→зелёное и ни одного обратного —
+   `LazyLoadProxyH2Test` 314, `UpdatesH2Test` 19, `StoreGeneratedH2Test` 8, `MigrationsH2Test` 6,
+   `H2DatabaseModelFactoryTest` 3. Правки провайдера добавили ещё 288.
+
+   Красный список держат `LoadH2Test` (3133: `Prepared.update` — «the statement is not run yet»),
+   `PropertyValuesH2Test` (173), `FieldMappingH2Test` (167),
+   `FindH2Test` (411 тремя контекстами), `MigrationsH2Test` (113 из 183),
+   `ArrayArrayQueryTest`/`ArrayListQueryTest` (20 из 204: перезапись выражений с
+   `MemoryExtensions` на `List<T>` в самих тестах, `byte[]`-параметр и `ReadOnlySpan` в дереве
+   выражений),
+   `DataBindingH2Test` (56) и `Serialization` (6) — сидирование модели F1 идёт через
+   `SaveChanges`, то есть в `Prepared.update`; сама модель строится и таблицы создаются,
+   `H2DatabaseModelFactoryTest` (50 из 56), `UpdatesH2Test` (17 из 36),
    `TransactionInterceptionH2Test` (66 из 72 на ADO-уровень изоляции и повторный старт
-   транзакции) и `ConvertToProviderTypesH2Test` (8 из 32); остальное — `Serialization`,
-   `H2Compliance` и `DefaultValues`.
+   транзакции) и `ConvertToProviderTypesH2Test` (8 из 32); остальное —
+   `StoreGeneratedFixupH2Test` (3: `Prepared.update`), `ConcurrencyDetectorEnabledH2Test` (2, тот
+   же флейк), `LazyLoadProxyH2Test` (1), `StoreGeneratedH2Test` (1), `H2Compliance` и
+   `DefaultValues`.
 
-   Прогон без трейта на `net9.0` даёт те же числа: 1187 функциональных, 122 модульных и
-   316 модельных тестов. Коллизия одинаково названных методов в `ModelTests` устранена
+   Прогон без трейта на `net9.0` даёт те же числа: 2019 функциональных, 129 модульных и
+   317 модельных тестов. Коллизия одинаково названных методов в `ModelTests` устранена
    уникальным суффиксом имени базы, а не изменением SQL или проверки.
 
    **Прогон с трейтом больше не обрывается.** Раньше тестовое оборудование скаффолдинга
    выполняло блок `DO … IF NOT EXISTS (SELECT …)`, движок его не читал, и тестовый хост падал
    вместе с ним — оставшиеся тесты не доходили. Блок `DO` заменён на H2'овскую форму, и
    прогон идёт целиком, поэтому числа ниже измерены одним прогоном: миграционный набор
-   (183 теста: 62 прошло, 119 упало, 2 пропущено), набор скаффолдинга (56 тестов: 3 прошло,
-   53 упало), `DefaultValuesTest` и `H2ComplianceTest` (3 теста: 1 прошёл, 2 упали).
+   (183 теста: 62 прошло в гейте, 113 помечены по методам, 2 пропущено), набор скаффолдинга
+   (56 тестов: 6 в гейте, 50 помечены), `DefaultValuesTest` и `H2ComplianceTest` (3 теста).
 
-   Два теста в `H2Sharp.EntityFrameworkCore.Tests` красные и не связаны с портом: они
-   проверяют `LegacyTimestampBehavior`, и их результат зависит от порядка, в котором
-   отработали тесты функционального набора. В Release их нет вовсе (см. выше).
-
-Оставшиеся два — не сбой провайдера.
+Два теста красные по замыслу и помечены трейтом, а не спрятаны.
 
 | Тест | Причина | Кто чинит |
 |---|---|---|
@@ -177,7 +205,7 @@ EF их не отдаёт генератору, как в апстриме).
 | Семейство | Тестов | Симптом порта |
 |---|---:|---|
 | `FieldMappingH2Test`, `PropertyValuesH2Test` | 340 | «Not ported yet: Prepared.update: the statement is not run yet» — путь обновления движка не перенесён, и любой батч-сохранённый save падает в движке |
-| `ConvertToProviderTypesH2Test` | 8 из 32 | `ALTER SEQUENCE ... RESTART WITH` падает с `NullReferenceException` внутри `Select.Run` движка (чтение значения перезапуска); 21 тест семейства уже зелёный |
+| `ConvertToProviderTypesH2Test` | 8 из 32 | `ALTER SEQUENCE ... RESTART WITH` падает при чтении значения перезапуска — `Sequence contains no elements` внутри движка; 21 тест семейства уже зелёный |
 
 `ValueConvertersEndToEndH2Test` и `CustomConvertersH2Test` остаются вне компиляции: их модели
 назначают свойствам типа `string` store-тип `date`/`time`, а наш `H2TypeMappingSource` для CLR
@@ -318,7 +346,7 @@ GROUP BY "p"."TopicId"
 | «содержит» | `strpos(x, y) > 0` | `locate(y, x) > 0` | `strpos` у H2 нет, а у `LOCATE` аргументы в обратном порядке |
 | текст | `text` | `clob` | `TEXT` у H2 2.5 есть, и это синоним `CHARACTER VARYING` (`DataType.java`: `TINYTEXT`, `TEXT`, `MEDIUMTEXT`, `LONGTEXT`, `NTEXT` — в списке псевдонимов `VARCHAR`), а `CLOB` — отдельный тип `CHARACTER LARGE OBJECT`. Провайдер пишет `clob` намеренно: это тип H2 для текста без границы |
 | перечисление | `CREATE TYPE "Mood" AS ENUM ('Happy', 'Sad')` | то же | перечисления у H2 2.5 есть, и форма именно такая: `ENUM` со списком значений (`Parser.parseEnumType`), и `CREATE TYPE` — это домен типа (`CREATE DOMAIN`), который потом берут как тип столбца. Эталон берёт и `CREATE TYPE "Mood" AS ENUM ('Happy','Sad')`, и `CREATE TABLE t (a "Mood")` |
-| метка перечисления | `ALTER TYPE "Mood" ADD VALUE 'Angry'` | **нет такой формы** | `ALTER DOMAIN` у H2 2.5 берёт только `CONSTRAINT` или `CHECK`, и эталон отвергает `ALTER DOMAIN m ADD VALUE 'c'`. Провайдер отказывается менять метки перечисления |
+| метка перечисления | `ALTER TYPE "Mood" ADD VALUE 'Angry'` | `ALTER TYPE "Mood" ADD VALUE 'Angry'` | эталон принимает эту форму, и метка начинает работать в `CAST` — в том числе когда тип уже занят столбцом с данными. Отвергает он всё остальное: `DROP VALUE`, `RENAME VALUE`, `RENAME TO`, `BEFORE`/`AFTER` (`expected "., ADD"`). `ALTER DOMAIN m ADD VALUE 'c'` тоже отвергается — домен и перечисление не одно и то же. Провайдер дописывает добавленную метку в конец и отказывает на удаление и переименование |
 | склейка строк | `a \|\| b` | `CONCAT(a, b)` | обе формы есть, но `CONCAT` части `NULL` игнорирует: `CONCAT('a', NULL)` — это `a`, а `'a' \|\| NULL` — это `NULL` |
 | склейка массивов | `a \|\| b` | `ARRAY_CAT(a, b)` | эталон принимает и оператор, и функцию; провайдер использует функцию |
 | исключающее или | `a # b` | `BITXOR(a, b)` | решётки у H2 2.5 нет |
@@ -343,6 +371,14 @@ GROUP BY "p"."TopicId"
 `extract('epoch', x)` эталон отвергает («expected "FROM"»). Поэтому генератор запросов
 провайдера пишет `EXTRACT` синтаксисом, а полем может быть и слово, и строка в кавычках —
 эталон берёт оба.
+
+**Метка перечисления дописывается в конец.** У `ALTER TYPE … ADD VALUE` нет `BEFORE`/`AFTER` —
+эталон их отвергает, — поэтому метка, вставленная в середину модели, окажется в конце: модель
+говорит `Happy, Angry, Sad`, а база — `Happy, Sad, Angry`. Порядок меток в H2 значим для
+сравнения, так что это расхождение, а не косметика: провайдер пишет документированную форму,
+а порядок остаётся за базой (`Alter_enum_add_label_in_middle`; то же на уровне генератора —
+`H2MigrationsSqlGeneratorTest.Alter_enum_add_label_in_middle_is_appended_at_end`, и он
+зелёный, потому что движок для проверки текста команд не нужен).
 
 **Что из этого провайдер может, а что ждёт движок.** Порт читает и тип `ARRAY`, и литерал
 массива (коммит движка «Arrays end to end» `f24e67e`): таблица с массивом создаётся, а
@@ -369,8 +405,14 @@ GROUP BY "p"."TopicId"
 | элементы независимого массива строками | `unnest(arr)` | `UNNEST(arr) u(value)` | принимает литерал и параметр массива; имя элемента по умолчанию — `C1`. Порядок строк сохраняется, и `Independent_array_is_unnested_into_rows_on_the_port` живёт (коммит движка `f24e67e`, issue #23 закрыт) |
 | номер элемента | `WITH ORDINALITY` | `WITH ORDINALITY` | нумерация с 1, дополнительный столбец `NORD` типа `INTEGER`; провайдер задаёт алиасы `"value", "ordinality"`. Порт это читает вместе с `UNNEST` |
 
-**Чего у H2 2.5 нет, и потому перевода нет:**
+Строка «содержит null» — это то, чем `H2SqlNullabilityProcessor` компенсирует
+`item = ANY(array)`: он пишет `COALESCE(array_contains(arr, NULL), FALSE)`, потому что на
+`NULL`-массиве функция отвечает `NULL`, а результат компенсации должен остаться non-nullable —
+раньше это обеспечивало `array_position(arr, NULL) IS NOT NULL`. Ответы движка зафиксированы
+тестом `H2ArrayContainsContractTest` в юнит-проекте: он прогоняет семь форм через порт и, если
+доступен эталонный jar, через него тоже.
 
+**Чего у H2 2.5 нет, и потому перевода нет:**
 | Поведение | Форма PostgreSQL | Почему её нет у H2 |
 |---|---|---|
 | место элемента в массиве | `array_position(arr, item)` | `Function "ARRAY_POSITION" not found`; `ARRAY_CONTAINS` отвечает, есть ли элемент, а не где он |
@@ -436,13 +478,12 @@ Identity не откатывается назад. Legacy-аннотация `Se
 разделяет SQL командами H2 `ScriptReader`, а не строковым `split(";")`, которое разрывало
 литерал `SRID=4326;POINT (...)` внутри кавычек.
 
-**Что осталось в наборе.** 204 теста: 192 красных, 8 зелёных и 4 пропущенных. Красные
-падают одной причиной: `H2DataReader.GetFieldValue<List<T>>` получает `int[]` и отвечает
-`InvalidCastException: Unable to cast object of type 'System.Int32[]' to type
-'System.Collections.Generic.List\`1[System.Int32]'`. Сам тип `ARRAY` порт читает (issue #14
-закрыт), и `ForumCollectionExamples` проходит через конвертер провайдера; не хватает
-приведения в ADO-слое. Набор помечен трейтом `BlockedByPort` — это пробел движка, а не
-провайдера.
+**Что осталось в наборе.** 204 теста: 180 зелёных, 20 красных и 4 пропущенных. Приведение
+`List<T>` починено (конвертер в `H2ArrayTypeMapping`), поэтому `H2DataReader.GetFieldValue<List<T>>`
+больше не получает `int[]`. Красные — не SQL провайдера, а перезапись выражений в самих тестах:
+`List<T>` нельзя подставить в `MemoryExtensions.Contains(ReadOnlySpan<T>, T)` (16), `SequenceEqual`
+с параметром кладёт в дерево `ReadOnlySpan` или `op_Implicit` (4). Провайдер тут ни при чём;
+трейт `BlockedByPort` стоит на этих методах, остальные 180 идут в гейте.
 
 ## Проверено против эталона
 
@@ -453,6 +494,7 @@ Identity не откатывается назад. Legacy-аннотация `Se
 | EF-форма `SELECT` | `SELECT "e"."Id", … FROM "Entries" AS "e" LIMIT 2` | принимает | принимает — с того момента, как порт перенёс `AS` у псевдонима и кавыченную ссылку на столбец |
 | identity-колонка | `"Id" integer GENERATED BY DEFAULT AS IDENTITY` | принимает | принимает — с того момента, как порт перенёс identity-колонки |
 | `INSERT`, который возвращает сгенерированный ключ | `SELECT "Id" FROM FINAL TABLE (INSERT INTO "Items" ("Name") VALUES (?))` | принимает | принимает — с того момента, как порт перенёс `FINAL TABLE` |
+| `INSERT` без значений, который возвращает ключ | `SELECT "Id", … FROM FINAL TABLE (INSERT INTO "WithNullableBackingFields" DEFAULT VALUES)` | принимает, отвечает `Id = 1` и значениями по умолчанию | **падает**: `NULL not allowed for column "Id"` — пробел 22 |
 | `UPDATE` по соединению | `UPDATE "Books" "b" SET "Shelf" = 'top' WHERE EXISTS (SELECT 1 FROM (…) AS "b0" WHERE "b"."Id" = "b0"."Id")` | принимает | принимает |
 | `UPDATE … FROM` | не пишется | `Syntax error … [*]FROM` | — |
 | `TIME WITH TIME ZONE` | `"Moment" timestamp with time zone NOT NULL` | принимает | **падает** |
@@ -483,6 +525,7 @@ Identity не откатывается назад. Legacy-аннотация `Se
    | 19 | **Пространственный индекс** | `Not ported yet: Parser.parseCreate: HASH and SPATIAL indexes are not ported` | `CREATE SPATIAL INDEX`: H2 2.5 его читает, и провайдер его пишет |
    | 20 | **Пункт `INCLUDE` у индекса** | `Not ported yet: Parser.parseCreate: CREATE INDEX INCLUDE is not ported` | `INCLUDE (…)` у уникального индекса: H2 2.5 его читает, и провайдер его пишет |
    | 21 | **`UNIQUE` через `ALTER TABLE`** | `ALTER TABLE "Forums" ADD CONSTRAINT "UQ_Forums_Name" [*]UNIQUE ("Name")` → `expected "PRIMARY"` | `ADD CONSTRAINT … UNIQUE`: эталон принимает, и провайдер пишет эту форму из миграций (`A_unique_constraint_is_added_to_an_existing_table`) |
+   | 22 | **`FINAL TABLE` над `INSERT … DEFAULT VALUES`** | `SELECT "Id", … FROM FINAL TABLE (INSERT INTO "WithNullableBackingFields" DEFAULT VALUES)` → `NULL not allowed for column "Id"` (23502); прямой `INSERT … DEFAULT VALUES` порт принимает и identity генерирует | эталон эту форму принимает и отвечает `Id = 1`. Дельта-таблица строит строку вставки через `Parser.PrepareInsert` (`Command/Parser.cs:1816`, `:6585`), а тот даёт по ячейке на столбец: у identity `Column.GetEffectiveDefaultExpression()` — `null`, и в ячейку кладётся `ValueExpression.Null`; обычная вставка идёт через `Parser.ParseInsert` (`Command/Parser.Columns.cs:438`) и кладёт пустую строку (`new Expression[0]`), после чего `Column.ValidateConvertUpdateSequence` видит `null` и берёт следующее значение identity. В дельта-таблице `ValueNull` — не `null`, и NOT NULL отвечает 23502. Дельта-таблице нужен тот же путь. Issue: dimzon/h2sharp#66 |
 
    Закрытые пробелы: DDL identity-столбца, значение identity обратно (`FINAL TABLE`),
    последовательности (`CREATE SEQUENCE`, `NEXT VALUE FOR`), типизированный литерал в
@@ -681,7 +724,9 @@ Identity не откатывается назад. Legacy-аннотация `Se
 EF-овым (полнотекстовый поиск `tsvector`, `CREATE COLLATION`, `CREATE EXTENSION`, версионно-зависимые
 опции), и он даёт **183 теста**.
 
-Из них 119 падают, 62 проходят и 2 пропущены; разбор по тексту ошибки даёт такую картину:
+Из них 113 падают, 68 проходят и 2 пропущены. Разбор по тексту ошибки ниже снят 25 октября;
+перемерены только строки, которые затронула правка перечислений, — суммы по строкам поэтому
+не дают 113:
 
 | Причина | Тестов | Чей |
 |---|---:|---|
@@ -690,8 +735,8 @@ EF-овым (полнотекстовый поиск `tsvector`, `CREATE COLLATI
 | модель каталога не совпала с моделью EF | 22 | движок: каталог не говорит, что сказано для индекса |
 | identity: стратегия в каталоге, параметры identity | 9 | движок |
 | перезапуск identity после наполнения | 6 | прежний `SETVAL` был дефектом провайдера: эта функция PostgreSQL отсутствует и в эталоне. Теперь пишется `ALTER TABLE ... ALTER COLUMN ... RESTART WITH` с `IDENTITY_BASE`/`IDENTITY_INCREMENT` из каталога H2; порт пока не читает эту форму `ALTER TABLE`, тесты сохранены |
-| `CREATE TYPE … AS ENUM` не разбирается | 5 | движок |
-| `CHECK` ограничение в `CREATE TABLE` | 2 | движок: «Not ported yet: Parser.readCreateTable: table constraints other than the primary key are not ported» |
+| `CREATE TYPE … AS ENUM` не разбирается | 9 | движок; два из них — `Alter_enum_*_not_supported`, которые теперь упираются в `CREATE TYPE` первой миграции раньше, чем доходят до генератора |
+| `CHECK` ограничение в `CREATE TABLE` | 0 | закрыто: с коммита движка `f56ca4c` табличные `UNIQUE` и `CHECK` читаются |
 | `INCLUDE` у уникального индекса | 1 | движок: «Not ported yet: Parser.parseCreate: CREATE INDEX INCLUDE is not ported» |
 | `COMMENT ON` не разбирается | 2 | движок |
 | последовательные операции данных (INSERT, UPDATE, DELETE) | 2 | движок |
@@ -700,8 +745,10 @@ EF-овым (полнотекстовый поиск `tsvector`, `CREATE COLLATI
 | фильтр индекса, `INCLUDE` у неуникального индекса | 0 | снято: частичного индекса у H2 2.5 нет, провайдер отказывает |
 
 Внешний ключ через `ALTER TABLE … ADD CONSTRAINT … FOREIGN KEY` из списка ушёл: порт его читает
-(`The_foreign_keys_of_a_table_are_read_back`). `UNIQUE`-ограничение через `ALTER TABLE` — нет:
-порт отвечает `expected "PRIMARY"` (`A_unique_constraint_is_added_to_an_existing_table`).
+(`The_foreign_keys_of_a_table_are_read_back`). `UNIQUE`- и `CHECK`-ограничение через
+`ALTER TABLE` тоже ушли: с коммита движка `f56ca4c` порт читает и
+`ADD CONSTRAINT … UNIQUE (…)`, и `ADD CONSTRAINT … CHECK (…)` — тесты `Add_unique_constraint`,
+`Add_check_constraint_with_name`, `Drop_*` и `Alter_check_constraint` проходят.
 
 `CREATE SCHEMA` из списка ушла: схемы порт с тех пор читает. `UNLOGGED TABLE` из списка ушла
 тоже: слова `UNLOGGED` в H2 2.5 нет, и провайдер его больше не пишет — ни в DDL, ни в своём API
@@ -712,8 +759,20 @@ H2 2.5 **есть** (тип `ENUM('a','b')` и домен `CREATE TYPE x AS ENUM
 `GENERATED BY DEFAULT AS IDENTITY` и `CREATE SEQUENCE` в этом списке больше нет: движок перенёс
 identity-колонки и последовательности, и DDL, который провайдер пишет, теперь принимается.
 Блока `DO $EF$` в списке тоже нет: он был PostgreSQL'овским, и провайдер пишет H2'овскую
-`CREATE SCHEMA IF NOT EXISTS` вместо него. Шестьдесят два теста миграционного набора проходят,
-119 ждут движок и 2 пропущены.
+`CREATE SCHEMA IF NOT EXISTS` вместо него. Шестьдесят восемь тестов миграционного набора
+проходят, 113 ждут движок и 2 пропущены.
+
+Добавление метки перечисления из этого списка тоже ушло: `ALTER TYPE … ADD VALUE` H2 2.5
+принимает, провайдер его пишет, и два теста `Alter_enum_add_label_*` теперь проверяют эту
+форму, а не отказ. Падают они на том же `CREATE TYPE` первой миграции — то есть ровно на
+пробеле движка, который и держит весь перечисленческий раздел.
+
+Сама форма закрыта на уровне генератора, где движок не нужен: шесть тестов
+`H2MigrationsSqlGeneratorTest.Alter_enum_*` собирают `AlterDatabaseOperation` с метками
+перечисления и проверяют текст команд — `ALTER TYPE "Mood" ADD VALUE 'Angry';`, две такие
+команды на две метки, дописывание метки из середины в конец, пустой текст при перестановке
+меток и `NotSupportedException` при удалении и переименовании. Они зелёные на `net9.0` и
+`net10.0`, так что расхождение с эталоном зафиксировано тестом, а не только абзацем ниже.
 
 **Ни одного падения, которое было бы дефектом провайдера.** Три теста на код ошибки JSON были
 поправлены: PostgreSQL сообщает `42804`, движок — `42001`.

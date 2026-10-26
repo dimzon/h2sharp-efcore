@@ -389,7 +389,6 @@ public class ForumMeasurementExamples
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void An_array_is_built_from_the_columns_of_a_row()
     {
         using var connection = Open(nameof(An_array_is_built_from_the_columns_of_a_row));
@@ -401,8 +400,6 @@ public class ForumMeasurementExamples
             new Shelf { Id = 2, Forums = [2] });
         context.SaveChanges();
 
-        // The reference reads ARRAY["s"."Id", "s"."Id" * 10]; the engine of this port expects
-        // the closing bracket after an element and refuses an expression between the brackets.
         Assert.Equal(
             [[1, 10], [2, 20]],
             context.Shelves.OrderBy(s => s.Id).Select(s => new[] { s.Id, s.Id * 10 }).ToList());

@@ -24,19 +24,15 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 public class H2TypeMappingSource : RelationalTypeMappingSource
 {
 #if DEBUG
-    internal static bool LegacyTimestampBehavior;
-
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     internal static bool DisableDateTimeInfinityConversions;
 #else
-    internal static readonly bool LegacyTimestampBehavior;
     internal static readonly bool DisableDateTimeInfinityConversions;
 #endif
 
     static H2TypeMappingSource()
     {
-        LegacyTimestampBehavior = AppContext.TryGetSwitch("H2.EnableLegacyTimestampBehavior", out var enabled) && enabled;
-        DisableDateTimeInfinityConversions = AppContext.TryGetSwitch("H2.DisableDateTimeInfinityConversions", out enabled) && enabled;
+        DisableDateTimeInfinityConversions = AppContext.TryGetSwitch("H2.DisableDateTimeInfinityConversions", out var enabled) && enabled;
     }
 
     private readonly ISqlGenerationHelper _sqlGenerationHelper;
@@ -216,7 +212,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             { typeof(JsonDocument), _jsonDocument },
             { typeof(JsonElement), _jsonElement },
             { typeof(char), _singleChar },
-            { typeof(DateTime), LegacyTimestampBehavior ? _timestamptz : _timestamp },
+            { typeof(DateTime), _timestamp },
             { typeof(DateOnly), _dateDateOnly },
             { typeof(TimeOnly), _timeTimeOnly },
             { typeof(TimeSpan), _interval },

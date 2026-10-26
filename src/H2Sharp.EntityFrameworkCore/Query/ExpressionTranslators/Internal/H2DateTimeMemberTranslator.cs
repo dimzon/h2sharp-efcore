@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using H2Sharp.EntityFrameworkCore.Storage.Internal;
 using H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 using static H2Sharp.EntityFrameworkCore.Utilities.Statics;
 
@@ -73,7 +72,6 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
             switch (instance)
             {
                 case { TypeMapping: H2TimestampTypeMapping }:
-                case { } when H2TypeMappingSource.LegacyTimestampBehavior:
                     return _sqlExpressionFactory.Function(
                         "date_trunc",
                         [_sqlExpressionFactory.Constant("day"), instance],
@@ -97,12 +95,6 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
 
         return member.Name switch
         {
-            // Legacy behavior
-            nameof(DateTime.Now) when H2TypeMappingSource.LegacyTimestampBehavior
-                => UtcNow(),
-            nameof(DateTime.UtcNow) when H2TypeMappingSource.LegacyTimestampBehavior
-                => _sqlExpressionFactory.AtUtc(UtcNow()), // Return a UTC timestamp, but as timestamp without time zone
-
             // We support getting a local DateTime via DateTime.Now (based on PG TimeZone), but there's no way to get a non-UTC
             // DateTimeOffset.
             nameof(DateTime.Now) => declaringType == typeof(DateTimeOffset)

@@ -2,9 +2,11 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// BlockedByPort: the fixture's model carries UNIQUE table constraints, and the port's
-// CREATE TABLE reads only the primary key of them ("expected PRIMARY"). The reference accepts
-// the statement the provider writes (checked on the jar).
+// BlockedByPort: this class and ConcurrencyDetectorEnabledH2Test share one store
+// ("ConcurrencyDetector"), and one of the two always finds it empty -- "Table \"Products\" not
+// found (this database is empty)" -- so the pair passes or fails depending on the order the two
+// classes happen to run in. The fix belongs in the fixture; until then the trait keeps both out of
+// the green run, because either of them can be the empty one.
 [Trait("Category", "BlockedByPort")]
 public class ConcurrencyDetectorDisabledH2Test : ConcurrencyDetectorDisabledRelationalTestBase<
     ConcurrencyDetectorDisabledH2Test.ConcurrencyDetectorH2Fixture>

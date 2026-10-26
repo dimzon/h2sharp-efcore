@@ -168,7 +168,15 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
                     typeof(TCollection), typeof(TConcreteCollection), providerElementType.MakeArrayType()),
                 elementConverter)!;
         }
-        else if (typeof(TCollection) != typeof(TConcreteCollection))
+        // The ADO layer hands back an array for an array column, so a model collection that is a
+        // list -- List<T> or IList<T> -- needs a converter to become one. Without it the shaper
+        // asks the reader for the model type and the reader casts: "Unable to cast object of type
+        // 'System.Int32[]' to type 'System.Collections.Generic.List`1[System.Int32]'".
+        // A model type that is neither an array nor a list -- a key struct that happens to be
+        // enumerable and carries a converter of its own -- keeps no converter, as before: the
+        // converter below only knows arrays and IList<T>.
+        else if (typeof(TCollection) != typeof(TConcreteCollection)
+                 || typeof(TCollection).IsArrayOrGenericList() && !typeof(TCollection).IsArray)
         {
             converter = (ValueConverter)Activator.CreateInstance(
                 typeof(H2ArrayConverter<,,>).MakeGenericType(

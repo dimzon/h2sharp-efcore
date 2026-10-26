@@ -91,11 +91,18 @@ new CreateTableStatement
 Провайдер генерирует H2-корректный SQL; пока движок не догонит, часть DDL не выполнится.
 Каждый пункт — в `docs/DIVERGENCES.md` с пометкой «пробел движка», а не обходится.
 
-* парсер не умеет `CREATE SEQUENCE`, `NEXT VALUE FOR`; `GENERATED … AS IDENTITY` он теперь
-  умеет — identity-колонки перенесены;
-* парсер не умеет `FOREIGN KEY` в `CREATE TABLE`;
-* парсер не умеет `FINAL TABLE` — без него значение identity не вернуться к вызывающему;
-* парсер не умеет `INFORMATION_SCHEMA` (нет вообще);
-* парсер читает только однословные имена типов плюс `DOUBLE PRECISION` и
-  `TIMESTAMP WITH TIME ZONE`;
-* `TIME WITH TIME ZONE` не создаётся как тип столбца.
+* `ALTER TABLE` читает `ADD`/`DROP CONSTRAINT`, но не `RENAME TO`, `ALTER COLUMN`,
+  `DROP COLUMN`, `DROP DEFAULT` и не `ADD CONSTRAINT … UNIQUE` (пробелы 7 и 21);
+* интервальные типы (`INTERVAL DAY TO SECOND`) не создаются (пробел 4);
+* `TIME WITH TIME ZONE` не создаётся как тип столбца;
+* в каталоге у колонки пуст `collation` (пробел 8);
+* параметр-число в `TIMESTAMPADD` (пробел 16) и `= ANY (массив-параметр)` (пробел 10)
+  движок не читает;
+* `SPATIAL`/`HASH`-индексы (пробел 19) и `INCLUDE` у уникального индекса (пробел 20) не
+  читаются.
+
+Портированы и потому пробелами не являются: identity-колонки и `FINAL TABLE` (значение
+identity возвращается к вызывающему), `CREATE SEQUENCE`/`NEXT VALUE FOR`, `FOREIGN KEY` в
+`CREATE TABLE`, `INFORMATION_SCHEMA`, `CREATE SCHEMA`, `JOIN`, производные таблицы,
+`EXISTS`, `IN` с подзапросом, `INTERSECT`/`EXCEPT`, `WITHIN GROUP`/`FILTER`, `SAVEPOINT`,
+`UNNEST`, тип `ARRAY` и row-value. Актуальный перечень — в `docs/DIVERGENCES.md`.

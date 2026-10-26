@@ -518,6 +518,83 @@ CREATE SCHEMA IF NOT EXISTS "some_schema";
 
 """);    }
 
+    #region Enum management
+
+    [Fact]
+    public void Alter_enum_add_label()
+    {
+        Generate(AlterEnum("Mood", ["Happy", "Sad"], ["Happy", "Sad", "Angry"]));
+
+        AssertSql(
+            """
+ALTER TYPE "Mood" ADD VALUE 'Angry';
+
+""");
+    }
+
+    [Fact]
+    public void Alter_enum_add_two_labels()
+    {
+        Generate(AlterEnum("Mood", ["Happy", "Sad"], ["Happy", "Sad", "Angry", "Calm"]));
+
+        AssertSql(
+            """
+ALTER TYPE "Mood" ADD VALUE 'Angry';
+ALTER TYPE "Mood" ADD VALUE 'Calm';
+
+""");
+    }
+
+    [Fact]
+    public void Alter_enum_add_label_in_middle_is_appended_at_end()
+    {
+        // H2 2.5 has no BEFORE or AFTER -- the reference answers "expected \"., ADD\"" to both --
+        // so a label the model puts in the middle is appended. The type keeps the order the
+        // database gives it, which docs/DIVERGENCES.md records.
+        Generate(AlterEnum("Mood", ["Happy", "Sad"], ["Happy", "Angry", "Sad"]));
+
+        AssertSql(
+            """
+ALTER TYPE "Mood" ADD VALUE 'Angry';
+
+""");
+    }
+
+    [Fact]
+    public void Alter_enum_reorder_labels_does_nothing()
+    {
+        Generate(AlterEnum("Mood", ["Happy", "Sad"], ["Sad", "Happy"]));
+
+        AssertSql("");
+    }
+
+    [Fact]
+    public void Alter_enum_drop_label_not_supported()
+        => Assert.Equal(
+            "Can't remove enum label 'Sad' from enum type 'Mood'. "
+            + "H2 2.5 has no DROP VALUE and no RENAME VALUE, so the labels of an enum cannot be removed.",
+            Assert.Throws<NotSupportedException>(
+                () => Generate(AlterEnum("Mood", ["Happy", "Sad"], ["Happy"]))).Message);
+
+    [Fact]
+    public void Alter_enum_rename_label_not_supported()
+        // A rename is a removal plus an addition, and the removal is what the reference refuses
+        // ("expected \"., ADD\""), so the rename is reported as a removal.
+        => Assert.Throws<NotSupportedException>(
+            () => Generate(AlterEnum("Mood", ["Happy", "Sad"], ["Happy", "Angry"])));
+
+    private static AlterDatabaseOperation AlterEnum(string name, string[] oldLabels, string[] newLabels)
+    {
+        // AlterDatabaseOperation is itself the annotatable that carries the new state; the old
+        // one hangs off OldDatabase.
+        var operation = new AlterDatabaseOperation();
+        H2Enum.GetOrAddH2Enum(operation, name, newLabels);
+        H2Enum.GetOrAddH2Enum(operation.OldDatabase, name, oldLabels);
+        return operation;
+    }
+
+    #endregion
+
 #pragma warning disable 618
     [Fact]
     public virtual void AddColumnOperation_serial_old_annotation_throws()

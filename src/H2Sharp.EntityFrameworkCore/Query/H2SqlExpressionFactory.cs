@@ -408,9 +408,8 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             };
         }
 
-        if (!H2TypeMappingSource.LegacyTimestampBehavior
-            && (typeMapping is H2TimestampTypeMapping && sqlExpression?.TypeMapping is H2TimestampTzTypeMapping
-                || typeMapping is H2TimestampTzTypeMapping && sqlExpression?.TypeMapping is H2TimestampTypeMapping))
+        if (typeMapping is H2TimestampTypeMapping && sqlExpression?.TypeMapping is H2TimestampTzTypeMapping
+            || typeMapping is H2TimestampTzTypeMapping && sqlExpression?.TypeMapping is H2TimestampTypeMapping)
         {
             throw new NotSupportedException(
                 "Cannot apply binary operation on types 'timestamp with time zone' and 'timestamp without time zone', convert one of the operands first.");

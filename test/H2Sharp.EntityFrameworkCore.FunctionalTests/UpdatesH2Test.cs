@@ -3,9 +3,14 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// BlockedByPort: the fixture's model carries UNIQUE and FOREIGN KEY table constraints, and the
-// port's CREATE TABLE reads only the primary key of them ("expected PRIMARY"). The reference
-// accepts the statement the provider writes (checked on the jar).
+// BlockedByPort: seventeen of the suite's 36 tests are red. Seven stop at the port's
+// "Not ported yet: Prepared.update", six expect a DbUpdateConcurrencyException that is not thrown
+// (the port does not report the affected row count back), and four read back values that differ.
+// The trait stays on the class because two of the failing methods, SaveChanges_processes_all_
+// tracked_entities and its _false_ twin, are not virtual in the base: a `new` method shadowing
+// them is not a separate test case -- xunit deduplicates it against the inherited one and keeps
+// the inherited one, which has no trait. Marking the other twelve and leaving those two in the
+// green run would put four red tests there.
 [Trait("Category", "BlockedByPort")]
 public class UpdatesH2Test : UpdatesRelationalTestBase<UpdatesH2Test.UpdatesH2Fixture>
 {

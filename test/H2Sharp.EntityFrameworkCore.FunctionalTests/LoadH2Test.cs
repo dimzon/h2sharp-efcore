@@ -2,9 +2,9 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// BlockedByPort: the fixture's model carries UNIQUE and FOREIGN KEY table constraints, and the
-// port's CREATE TABLE reads only the primary key of them ("expected PRIMARY"). The reference
-// accepts the statement the provider writes (checked on the jar).
+// BlockedByPort: every save goes through SaveChanges and the port stops the update path with
+// "Not ported yet: Prepared.update". All 3133 tests fail there, so the trait sits on the class
+// rather than on the methods.
 [Trait("Category", "BlockedByPort")]
 // ReSharper disable once UnusedMember.Global
 public class LoadH2Test : LoadTestBase<LoadH2Test.LoadH2Fixture>

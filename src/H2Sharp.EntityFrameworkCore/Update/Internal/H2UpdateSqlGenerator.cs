@@ -165,6 +165,50 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
         return readOperations.Count > 0 ? ResultSetMapping.LastInResultSet : ResultSetMapping.NoResults;
     }
 
+    /// <summary>
+    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+    ///     any release. You should only use it directly in your code with extreme caution and knowing that
+    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+    /// </summary>
+    protected override void AppendUpdateCommand(
+        StringBuilder commandStringBuilder,
+        string name,
+        string? schema,
+        IReadOnlyList<IColumnModification> writeOperations,
+        IReadOnlyList<IColumnModification> readOperations,
+        IReadOnlyList<IColumnModification> conditionOperations,
+        bool appendReturningOneClause = false)
+    {
+        if (readOperations.Count == 0)
+        {
+            // The count of the affected rows is read from the batch step, so no RETURNING 1 is needed.
+            AppendUpdateCommandHeader(commandStringBuilder, name, schema, writeOperations);
+            AppendWhereClause(commandStringBuilder, conditionOperations);
+            commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
+            return;
+        }
+
+        // H2 2.5 has no RETURNING: the row an update leaves is read through FINAL TABLE, the same
+        // form the insert uses (the grammar has { OLD | NEW | FINAL } TABLE for both).
+        commandStringBuilder.Append("SELECT ");
+        for (var i = 0; i < readOperations.Count; i++)
+        {
+            if (i > 0)
+            {
+                commandStringBuilder.Append(", ");
+            }
+
+            commandStringBuilder.Append(SqlGenerationHelper.DelimitIdentifier(readOperations[i].ColumnName));
+        }
+
+        commandStringBuilder.Append(" FROM FINAL TABLE (");
+        AppendUpdateCommandHeader(commandStringBuilder, name, schema, writeOperations);
+        AppendWhereClause(commandStringBuilder, conditionOperations);
+        commandStringBuilder.Append(')');
+        commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
+    }
+
     /// <inheritdoc />
     protected override void AppendUpdateColumnValue(
         ISqlGenerationHelper updateSqlGeneratorHelper,

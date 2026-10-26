@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
+﻿using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 using H2Sharp.EntityFrameworkCore.Diagnostics.Internal;
 using H2Sharp.EntityFrameworkCore.Internal;
@@ -12,10 +12,12 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 // ReSharper disable StringLiteralTypo
 namespace H2Sharp.EntityFrameworkCore.Scaffolding;
 
-// The scaffolding reads the catalogue of the database, and the catalogue is in the port now.
-// What the test needs from it and does not have is the schemas: CREATE SCHEMA is not ported, and
-// the test makes a schema of its own before it asks about the tables in it.
-[Trait("Category", "BlockedByPort")]
+// The scaffolding reads the catalogue of the database, and the catalogue is in the port now: six
+// of the 56 tests pass and are in the green run. The other fifty carry the BlockedByPort trait,
+// and they fail on the DDL they feed in, which is PostgreSQL's: the port stops at SERIAL, MONEY,
+// TIMETZ, CREATE DOMAIN, CREATE TYPE ... AS ENUM and the materialized view, and the assertions
+// compare PostgreSQL names ("public") with H2's ("PUBLIC"). These are tests to rewrite for H2, not
+// a defect of the port. See docs/BACKLOG.md, item 5.
 public class H2DatabaseModelFactoryTest : IClassFixture<H2DatabaseModelFactoryTest.H2DatabaseModelFixture>
 {
     // ReSharper disable once MemberCanBePrivate.Global
@@ -30,6 +32,7 @@ public class H2DatabaseModelFactoryTest : IClassFixture<H2DatabaseModelFactoryTe
     #region Sequences
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_sequences_with_facets()
     {
         var supportsDataType = TestEnvironment.PostgresVersion >= new Version(10, 0);
@@ -105,6 +108,7 @@ DROP SEQUENCE "BigIntSequence";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Filter_sequences_based_on_schema()
         => Test(
             """
@@ -131,6 +135,7 @@ DROP SEQUENCE db2."Sequence";
     #region Model
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Set_default_schema()
         => Test(
             "SELECT 1",
@@ -143,6 +148,7 @@ DROP SEQUENCE db2."Sequence";
             null);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_tables()
         => Test(
             """
@@ -176,6 +182,7 @@ DROP TABLE "Denali";
     #region FilteringSchemaTable
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Filter_schemas()
         => Test(
             """
@@ -222,6 +229,7 @@ DROP TABLE "K2";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Filter_tables_with_qualified_name()
         => Test(
             """
@@ -272,6 +280,7 @@ DROP TABLE db2."K2";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Filter_tables_with_schema_qualified_name2()
         => Test(
             """
@@ -326,6 +335,7 @@ DROP TABLE db2."K.2";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Filter_tables_with_schema_qualified_name4()
         => Test(
             """
@@ -353,6 +363,7 @@ DROP TABLE "db.2"."K2";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Complex_filtering_validation()
         => Test(
             """
@@ -468,6 +479,7 @@ DROP TABLE db2."PrincipalTable";
     #region Table
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_columns()
         => Test(
             """
@@ -498,6 +510,7 @@ CREATE TABLE "Blogs" (
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_view_columns()
         => Test(
             """
@@ -524,6 +537,7 @@ CREATE VIEW "BlogsView" AS SELECT 100::int AS "Id", ''::text AS "Name";
             """DROP VIEW "BlogsView";""");
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_materialized_view_columns()
         => Test(
             """
@@ -550,6 +564,7 @@ CREATE MATERIALIZED VIEW "BlogsView" AS SELECT 100::int AS "Id", ''::text AS "Na
             """DROP MATERIALIZED VIEW "BlogsView";""");
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_primary_key()
         => Test(
             """
@@ -571,6 +586,7 @@ CREATE TABLE "PrimaryKeyTable" ("Id" int PRIMARY KEY);
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_unique_constraints()
         => Test(
             """
@@ -608,6 +624,7 @@ CREATE INDEX "IX_INDEX" on "UniqueConstraint" ("IndexProperty");
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_indexes()
         => Test(
             """
@@ -645,6 +662,7 @@ CREATE INDEX "IX_INDEX" on "IndexTable" ("IndexProperty");
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_foreign_keys()
         => Test(
             """
@@ -700,6 +718,7 @@ DROP TABLE "PrincipalTable";
     #region ColumnFacets
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Column_with_domain_assigns_underlying_store_type()
     {
         Fixture.TestStore.ExecuteNonQuery(
@@ -740,6 +759,7 @@ DROP DOMAIN db2.text_domain;
 
     // Note: in PostgreSQL decimal is simply an alias for numeric
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Decimal_numeric_types_have_precision_scale()
         => Test(
             """
@@ -765,6 +785,7 @@ CREATE TABLE "NumericColumns" (
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Specific_max_length_are_add_to_store_type()
         => Test(
             """
@@ -796,6 +817,7 @@ CREATE TABLE "LengthColumns" (
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Datetime_types_have_precision_if_non_null_scale()
         => Test(
             """
@@ -825,6 +847,7 @@ CREATE TABLE "LengthColumns" (
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Store_types_without_any_facets()
         => Test(
             """
@@ -889,6 +912,7 @@ CREATE TABLE "NoFacetTypes" (
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Default_values_are_stored()
         => Test(
             """
@@ -940,6 +964,7 @@ CREATE TABLE "ComputedValues" (
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Default_value_matching_clr_default_is_not_stored()
         => Test(
             """
@@ -984,6 +1009,7 @@ DROP DOMAIN "decimalDomain";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void ValueGenerated_is_set_for_default_and_serial_column()
         => Test(
             """
@@ -1078,6 +1104,7 @@ CREATE TABLE "NullableColumns" (
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Column_nullability_is_set_with_domain()
         => Test(
             """
@@ -1124,6 +1151,7 @@ CREATE TABLE "SystemColumnsTable"
     #region PrimaryKeyFacets
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_composite_primary_key()
         => Test(
             """
@@ -1148,6 +1176,7 @@ CREATE TABLE "CompositePrimaryKeyTable" (
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Set_primary_key_name_from_index()
         => Test(
             """
@@ -1177,6 +1206,7 @@ CREATE TABLE "PrimaryKeyName" (
     #region UniqueConstraintFacets
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_composite_unique_constraint()
         => Test(
             """
@@ -1203,6 +1233,7 @@ CREATE TABLE "CompositeUniqueConstraintTable" (
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Set_unique_constraint_name_from_index()
         => Test(
             """
@@ -1235,6 +1266,7 @@ CREATE TABLE "UniqueConstraintName" (
     #region IndexFacets
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_composite_index()
         => Test(
             """
@@ -1262,6 +1294,7 @@ CREATE INDEX "IX_COMPOSITE" ON "CompositeIndexTable" ( "Id2", "Id1" );
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Set_unique_true_for_unique_index()
         => Test(
             """
@@ -1291,6 +1324,7 @@ CREATE UNIQUE INDEX "IX_UNIQUE" ON "UniqueIndexTable" ( "Id2" );
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Set_filter_for_filtered_index()
         => Test(
             """
@@ -1323,6 +1357,7 @@ CREATE UNIQUE INDEX "IX_UNIQUE" ON "FilteredIndexTable" ( "Id2" ) WHERE "Id2" > 
     #region ForeignKeyFacets
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_composite_foreign_key()
         => Test(
             """
@@ -1360,6 +1395,7 @@ DROP TABLE "PrincipalTable";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_multiple_foreign_key_in_same_table()
         => Test(
             """
@@ -1416,6 +1452,7 @@ DROP TABLE "PrincipalTable";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Create_foreign_key_referencing_unique_constraint()
         => Test(
             """
@@ -1451,6 +1488,7 @@ DROP TABLE "PrincipalTable";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Set_name_for_foreign_key()
         => Test(
             """
@@ -1487,6 +1525,7 @@ DROP TABLE "PrincipalTable";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Set_referential_action_for_foreign_key()
         => Test(
             """
@@ -1547,6 +1586,7 @@ DROP TABLE "PrincipalTable";
     #region Warnings
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Warn_missing_schema()
         => Test(
             """
@@ -1569,6 +1609,7 @@ CREATE TABLE "Blank" ("Id" int)
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Warn_missing_table()
         => Test(
             """
@@ -1591,6 +1632,7 @@ CREATE TABLE "Blank" ("Id" int)
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Warn_missing_principal_table_for_foreign_key()
         => Test(
             """
@@ -1625,6 +1667,7 @@ DROP TABLE "PrincipalTable";
     #region PostgreSQL-specific
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void SequenceSerial()
         => Test(
             """
@@ -1658,6 +1701,7 @@ DROP SCHEMA my_schema CASCADE
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void SequenceNonSerial()
         => Test(
             """
@@ -1784,6 +1828,7 @@ CREATE TABLE identity (
             @"");
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Index_method()
         => Test(
             """
@@ -1811,6 +1856,7 @@ CREATE INDEX ix_b ON "IndexMethod" (b);
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Index_IsDescending()
         => Test(
             """
@@ -1835,6 +1881,7 @@ CREATE INDEX ix_without ON "IndexSortOrder" (a, b);
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Index_null_sort_order()
         => Test(
             """
@@ -1916,6 +1963,7 @@ CREATE INDEX "IX_NullsNotDistinct" ON "IndexNullsDistinct" (a) NULLS NOT DISTINC
                 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Comments()
         => Test(
             """
@@ -1960,6 +2008,7 @@ DROP SEQUENCE "BigIntSequence";
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Dropped_columns()
         => Test(
             """
@@ -1976,6 +2025,7 @@ ALTER TABLE foo ADD COLUMN id2 int PRIMARY KEY;
             "DROP TABLE foo");
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Enums()
         => Test(
             """
@@ -2014,6 +2064,7 @@ DROP TYPE db2.mood;
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Bug453()
         => Test(
             """
@@ -2032,6 +2083,7 @@ DROP TYPE mood;
 """);
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Column_default_type_names_are_scaffolded()
         => Test(
             """

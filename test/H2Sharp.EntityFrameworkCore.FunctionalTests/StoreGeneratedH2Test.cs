@@ -2,10 +2,14 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// BlockedByPort: the tables of this suite are made, and its inserts with no values go as
-// INSERT ... DEFAULT VALUES, which the port does not read ("expected VALUES"). The reference
-// accepts the statement the provider writes (checked on the jar). The tests that do not hit
-// that form pass and will come back to the green run together with the rest.
+// BlockedByPort: 210 of the suite's 211 tests pass; the one that does not is the Deleted row of
+// Change_state_of_entity_with_temp_non_key_does_not_throw, which saves through the update pipeline
+// and stops at "Not ported yet: Prepared.update". That row cannot be marked on its own: the base
+// method is not virtual, so there is no override to put the trait on, and a `new` method shadowing
+// it is not a second test case -- xunit keys the case by class, method name and arguments, drops
+// one of the two and keeps the inherited one, which carries no trait (checked: the discovered case
+// has no traits and the row is still in the green run). The class keeps the trait until the engine
+// ports the update path.
 [Trait("Category", "BlockedByPort")]
 public class StoreGeneratedH2Test(StoreGeneratedH2Test.StoreGeneratedH2Fixture fixture)
     : StoreGeneratedTestBase<StoreGeneratedH2Test.StoreGeneratedH2Fixture>(fixture)

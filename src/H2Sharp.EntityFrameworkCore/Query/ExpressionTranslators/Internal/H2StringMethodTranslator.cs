@@ -352,7 +352,7 @@ public class H2StringMethodTranslator : IMethodCallTranslator
             && arguments[1].TypeMapping is H2ArrayTypeMapping)
         {
             // If the array of strings to be joined is a constant (NewArrayExpression), we translate to concat_ws.
-            // Otherwise we translate to array_to_string, which also supports array columns and parameters.
+            // A non-constant array (a column or a parameter) stays untranslated, see the note below.
             if (arguments[1] is H2NewArrayExpression newArrayExpression)
             {
                 var rewrittenArguments = new SqlExpression[newArrayExpression.Expressions.Count + 1];
@@ -385,12 +385,14 @@ public class H2StringMethodTranslator : IMethodCallTranslator
                     typeof(string));
             }
 
-            return _sqlExpressionFactory.Function(
-                "array_to_string",
-                [arguments[1], arguments[0], _sqlExpressionFactory.Constant("")],
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[3],
-                typeof(string));
+            // A non-constant array stays untranslated. H2 has no array_to_string -- it is absent from
+            // the 2.5 function list and the reference jar answers 'Function "ARRAY_TO_STRING" not
+            // found' -- and there is no exact substitute: LISTAGG needs a row source, UNNEST cannot
+            // see the outer query's column (the reference jar says 'Column "T.A" not found' too), and
+            // CAST(array AS VARCHAR) is ambiguous -- ARRAY['a, b'] and ARRAY['a', 'b'] both render as
+            // '[a, b]'. Emitting the function produced a raw engine error instead of a translation
+            // failure. See docs/BACKLOG.md, item 5.
+            return null;
         }
 
         return null;

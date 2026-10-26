@@ -448,6 +448,8 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             Visit(initializer);
         }
 
+        Sql.Append("]");
+
         // No cast after the brackets: H2 2.5 says what the array holds without one
         // ("ARRAY[1,2]" is enough), and it has no such cast: the type of the array
         // follows from the elements and from the place the array stands in.

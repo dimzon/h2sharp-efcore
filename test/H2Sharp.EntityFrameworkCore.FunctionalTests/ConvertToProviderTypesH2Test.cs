@@ -2,10 +2,10 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// BlockedByPort: the fixture creates a sequence, and the engine's ALTER SEQUENCE RESTART WITH
-// path throws a NullReferenceException inside its Select.Run while reading the restart value.
-// The reference accepts the DDL this provider writes.
-[Trait("Category", "BlockedByPort")]
+// BlockedByPort: eight of the suite's 29 tests are red, and the fixture is the first thing to
+// blame -- it creates a sequence and the engine's ALTER SEQUENCE RESTART WITH path throws
+// "Sequence contains no elements" while reading the restart value (5 tests). Two more read back a
+// different value, and one asks for DateTimeFormatFunction, which the port has not written.
 public class ConvertToProviderTypesH2Test : ConvertToProviderTypesTestBase<
     ConvertToProviderTypesH2Test.ConvertToProviderTypesH2Fixture>
 {
@@ -15,6 +15,39 @@ public class ConvertToProviderTypesH2Test : ConvertToProviderTypesTestBase<
     {
         Fixture.TestSqlLoggerFactory.Clear();
     }
+
+    // inherited from BuiltInDataTypesTestBase
+    [Trait("Category", "BlockedByPort")]
+    public override Task Can_insert_and_read_back_all_non_nullable_data_types()
+        => base.Can_insert_and_read_back_all_non_nullable_data_types();
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Can_insert_and_read_back_all_nullable_data_types_with_values_set_to_non_null()
+        => base.Can_insert_and_read_back_all_nullable_data_types_with_values_set_to_non_null();
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Can_query_using_any_data_type()
+        => base.Can_query_using_any_data_type();
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Can_query_using_any_data_type_nullable_shadow()
+        => base.Can_query_using_any_data_type_nullable_shadow();
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Can_query_using_any_data_type_shadow()
+        => base.Can_query_using_any_data_type_shadow();
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Can_query_using_any_nullable_data_type()
+        => base.Can_query_using_any_nullable_data_type();
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Can_query_using_any_nullable_data_type_as_literal()
+        => base.Can_query_using_any_nullable_data_type_as_literal();
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Optional_datetime_reading_null_from_database()
+        => base.Optional_datetime_reading_null_from_database();
 
     // [Fact]
     // public override void Can_insert_and_read_with_max_length_set()

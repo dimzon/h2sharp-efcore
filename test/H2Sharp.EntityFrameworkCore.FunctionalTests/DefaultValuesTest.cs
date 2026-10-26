@@ -4,12 +4,12 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 // ReSharper disable StringLiteralTypo
 namespace H2Sharp.EntityFrameworkCore;
 
+// BlockedByPort: the engine reads the default with a typed literal now, and the table is made;
+// what fails is the in-memory database: it goes when the last connection closes, and the test
+// store opens a new one for every step, so the second step answers "Table \"Chips\" not found
+// (this database is empty)". The failure is the port's, not the provider's: see
+// docs/DIVERGENCES.md.
 [Trait("Category", "BlockedByPort")]
-    // The engine reads the default with a typed literal now, and the table is made; what
-    // fails is the in-memory database: it goes when the last connection closes, and the
-    // test store opens a new one for every step. The failure is the port's, not the
-    // provider's: see docs/DIVERGENCES.md.
-    // The test run without this trait is the green one; the run with it is the list of defects.
 public class DefaultValuesTest : IDisposable
 {
     private readonly IServiceProvider _serviceProvider = new ServiceCollection()

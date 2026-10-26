@@ -945,22 +945,29 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
         {
             var (oldLabels, newLabels) = (oldEnum.Labels, newEnum.Labels);
 
-            // H2 2.5 has no way of adding a label to an enum: ALTER DOMAIN takes only a
-            // constraint or a check, and the reference refuses "ALTER DOMAIN m ADD VALUE 'c'".
-            // The type of H2 is written whole, and a type whose labels changed cannot be
-            // written that way.
+            // H2 2.5 can only append a label: "ALTER TYPE ... ADD VALUE 'x'" is the whole of what
+            // it accepts. There is no DROP VALUE, no RENAME VALUE, no RENAME TO and no BEFORE or
+            // AFTER -- the reference answers "expected \"., ADD\"" to every one of them -- so a
+            // removal and a rename are refused, and a label added in the middle is appended at
+            // the end. The order a type keeps is therefore the database's, not the model's; see
+            // docs/DIVERGENCES.md.
             if (oldLabels.Except(newLabels).FirstOrDefault() is { } removedLabel)
             {
+                var typeName = newEnum.Schema is null ? newEnum.Name : $"{newEnum.Schema}.{newEnum.Name}";
+
                 throw new NotSupportedException(
-                    $"Can't remove enum label '{removedLabel}' from enum type '{newEnum}'. "
-                    + "H2 2.5 has no way of changing the labels of an enum.");
+                    $"Can't remove enum label '{removedLabel}' from enum type '{typeName}'. "
+                    + "H2 2.5 has no DROP VALUE and no RENAME VALUE, so the labels of an enum cannot be removed.");
             }
 
-            if (newLabels.Except(oldLabels).FirstOrDefault() is { } addedLabel)
+            foreach (var addedLabel in newLabels.Except(oldLabels))
             {
-                throw new NotSupportedException(
-                    $"Can't add enum label '{addedLabel}' to enum type '{newEnum}'. "
-                    + "H2 2.5 has no way of changing the labels of an enum.");
+                builder
+                    .Append("ALTER TYPE ")
+                    .Append(DelimitIdentifier(newEnum.Name, newEnum.Schema ?? model?.GetDefaultSchema()))
+                    .Append(" ADD VALUE ")
+                    .Append(_stringTypeMapping.GenerateSqlLiteral(addedLabel))
+                    .AppendLine(";");
             }
         }
     }
