@@ -104,7 +104,7 @@ customer='CONSH' (Nullable = false)
 
 SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
 FROM (
-    SELECT * FROM "Customers" WHERE "CustomerID" = @customer
+    SELECT * FROM "Customers" WHERE "CustomerID" = $customer
 ) AS m
 WHERE m."ContactName" LIKE '%z%'
 """);
@@ -120,7 +120,7 @@ p0='CONSH' (Nullable = false)
 
 SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
 FROM (
-    SELECT * FROM "Customers" WHERE "CustomerID" = @p0
+    SELECT * FROM "Customers" WHERE "CustomerID" = $p0
 ) AS m
 WHERE m."ContactName" LIKE '%z%'
 """);
@@ -220,7 +220,7 @@ WHERE m."City" = 'London'
 p0='London'
 p1='Sales Representative'
 
-SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @p1
+SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $p1
 """);
     }
 
@@ -233,7 +233,7 @@ SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @p1
 p0='London'
 p1='Sales Representative'
 
-SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @p1
+SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $p1
 """);
     }
 
@@ -246,7 +246,7 @@ SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @p1
 p0='London'
 p1='Sales Representative'
 
-SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @p1
+SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $p1
 """);
     }
 
@@ -259,7 +259,7 @@ SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @p1
 p0='London'
 p1='Sales Representative'
 
-SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @p1
+SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $p1
 """);
     }
 
@@ -275,7 +275,7 @@ SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @p1
             """
 p0=NULL (Nullable = false) (DbType = Object)
 
-SELECT * FROM "Employees" WHERE "ReportsTo" = @p0 OR ("ReportsTo" IS NULL AND @p0 IS NULL)
+SELECT * FROM "Employees" WHERE "ReportsTo" = $p0 OR ("ReportsTo" IS NULL AND $p0 IS NULL)
 """);
     }
 
@@ -286,13 +286,13 @@ SELECT * FROM "Employees" WHERE "ReportsTo" = @p0 OR ("ReportsTo" IS NULL AND @p
         AssertSql(
             """
 p0='London'
-@__contactTitle_1='Sales Representative'
+$__contactTitle_1='Sales Representative'
 
 SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
 FROM (
-    SELECT * FROM "Customers" WHERE "City" = @p0
+    SELECT * FROM "Customers" WHERE "City" = $p0
 ) AS m
-WHERE m."ContactTitle" = @__contactTitle_1
+WHERE m."ContactTitle" = $__contactTitle_1
 """);
 
         return null;
@@ -321,14 +321,14 @@ SELECT * FROM "Customers" WHERE "City" = 'Seattle'
 p0='London'
 p1='Sales Representative'
 
-SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @p1
+SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $p1
 """,
             //
             """
 p0='Madrid'
 p1='Accounting Manager'
 
-SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @p1
+SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $p1
 """);
     }
 
@@ -379,9 +379,9 @@ SELECT * FROM "Customers"
 
         AssertSql(
             """
-@city='London' (Nullable = false)
+$city='London' (Nullable = false)
 
-SELECT * FROM "Customers" WHERE "City" = @city
+SELECT * FROM "Customers" WHERE "City" = $city
 """);
     }
 
@@ -392,7 +392,7 @@ SELECT * FROM "Customers" WHERE "City" = @city
             """
 city='London' (Nullable = false)
 
-SELECT * FROM "Customers" WHERE "City" = @city
+SELECT * FROM "Customers" WHERE "City" = $city
 """);
     }
 
@@ -403,16 +403,16 @@ SELECT * FROM "Customers" WHERE "City" = @city
         AssertSql(
             """
 p0='London'
-@title='Sales Representative' (Nullable = false)
+$title='Sales Representative' (Nullable = false)
 
-SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @title
+SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $title
 """,
             //
             """
-@city='London' (Nullable = false)
+$city='London' (Nullable = false)
 p1='Sales Representative'
 
-SELECT * FROM "Customers" WHERE "City" = @city AND "ContactTitle" = @p1
+SELECT * FROM "Customers" WHERE "City" = $city AND "ContactTitle" = $p1
 """);
     }
 
@@ -422,15 +422,15 @@ SELECT * FROM "Customers" WHERE "City" = @city AND "ContactTitle" = @p1
 
         AssertSql(
             """
-@id='ALFKI' (Nullable = false)
+$id='ALFKI' (Nullable = false)
 
-SELECT * FROM "Customers" WHERE "CustomerID" = @id
+SELECT * FROM "Customers" WHERE "CustomerID" = $id
 """,
             //
             """
-@id='ALFKI' (Nullable = false)
+$id='ALFKI' (Nullable = false)
 
-SELECT * FROM "Customers" WHERE "CustomerID" = @id
+SELECT * FROM "Customers" WHERE "CustomerID" = $id
 """);
     }
 
@@ -440,9 +440,9 @@ SELECT * FROM "Customers" WHERE "CustomerID" = @id
 
         AssertSql(
             """
-@somename='ALFKI' (Nullable = false)
+$somename='ALFKI' (Nullable = false)
 
-SELECT * FROM "Customers" WHERE "CustomerID" = @somename
+SELECT * FROM "Customers" WHERE "CustomerID" = $somename
 """);
     }
 
@@ -454,7 +454,7 @@ SELECT * FROM "Customers" WHERE "CustomerID" = @somename
             """
 somename='ALFKI' (Nullable = false)
 
-SELECT * FROM "Customers" WHERE "CustomerID" = @somename
+SELECT * FROM "Customers" WHERE "CustomerID" = $somename
 """);
     }
 
@@ -469,38 +469,38 @@ p0='10300'
 
 SELECT m."OrderID"
 FROM (
-    SELECT * FROM "Orders" WHERE "OrderID" >= @p0
+    SELECT * FROM "Orders" WHERE "OrderID" >= $p0
 ) AS m
 """,
             //
             """
-@__max_1='10400'
+$__max_1='10400'
 p0='10300'
 
 SELECT m."OrderID"
 FROM (
     SELECT * FROM "Orders"
 ) AS m
-WHERE m."OrderID" <= @__max_1 AND EXISTS (
+WHERE m."OrderID" <= $__max_1 AND EXISTS (
     SELECT 1
     FROM (
-        SELECT * FROM "Orders" WHERE "OrderID" >= @p0
+        SELECT * FROM "Orders" WHERE "OrderID" >= $p0
     ) AS m0
     WHERE m0."OrderID" = m."OrderID")
 """,
             //
             """
-@__max_1='10400'
+$__max_1='10400'
 p0='10300'
 
 SELECT m."OrderID"
 FROM (
     SELECT * FROM "Orders"
 ) AS m
-WHERE m."OrderID" <= @__max_1 AND EXISTS (
+WHERE m."OrderID" <= $__max_1 AND EXISTS (
     SELECT 1
     FROM (
-        SELECT * FROM "Orders" WHERE "OrderID" >= @p0
+        SELECT * FROM "Orders" WHERE "OrderID" >= $p0
     ) AS m0
     WHERE m0."OrderID" = m."OrderID")
 """);
@@ -514,7 +514,7 @@ WHERE m."OrderID" <= @__max_1 AND EXISTS (
             """
 p0='10250'
 
-SELECT * FROM "Orders" WHERE "OrderID" < @p0
+SELECT * FROM "Orders" WHERE "OrderID" < $p0
 """);
     }
 
@@ -557,7 +557,7 @@ WHERE m."City" = 'Seattle'
 
         AssertSql(
             """
-@city='London' (Nullable = false)
+$city='London' (Nullable = false)
 
 SELECT m."CustomerID", m."EmployeeID", m."Freight", m."OrderDate", m."OrderID", m."RequiredDate", m."ShipAddress", m."ShipCity", m."ShipCountry", m."ShipName", m."ShipPostalCode", m."ShipRegion", m."ShipVia", m."ShippedDate"
 FROM (
@@ -566,7 +566,7 @@ FROM (
 WHERE m."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
-        SELECT * FROM "Customers" WHERE "City" = @city
+        SELECT * FROM "Customers" WHERE "City" = $city
     ) AS m0
 )
 """);
@@ -587,7 +587,7 @@ FROM (
 WHERE m."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
-        SELECT * FROM "Customers" WHERE "City" = @p0
+        SELECT * FROM "Customers" WHERE "City" = $p0
     ) AS m0
 )
 """);
@@ -599,7 +599,7 @@ WHERE m."CustomerID" IN (
 
         AssertSql(
             """
-@city='London' (Nullable = false)
+$city='London' (Nullable = false)
 
 SELECT m."CustomerID", m."EmployeeID", m."Freight", m."OrderDate", m."OrderID", m."RequiredDate", m."ShipAddress", m."ShipCity", m."ShipCountry", m."ShipName", m."ShipPostalCode", m."ShipRegion", m."ShipVia", m."ShippedDate"
 FROM (
@@ -608,7 +608,7 @@ FROM (
 WHERE m."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
-        SELECT * FROM "Customers" WHERE "City" = @city
+        SELECT * FROM "Customers" WHERE "City" = $city
     ) AS m0
 )
 """);
@@ -621,7 +621,7 @@ WHERE m."CustomerID" IN (
         AssertSql(
             """
 p0='London'
-@title='Sales Representative' (Nullable = false)
+$title='Sales Representative' (Nullable = false)
 
 SELECT m."CustomerID", m."EmployeeID", m."Freight", m."OrderDate", m."OrderID", m."RequiredDate", m."ShipAddress", m."ShipCity", m."ShipCountry", m."ShipName", m."ShipPostalCode", m."ShipRegion", m."ShipVia", m."ShippedDate"
 FROM (
@@ -630,13 +630,13 @@ FROM (
 WHERE m."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
-        SELECT * FROM "Customers" WHERE "City" = @p0 AND "ContactTitle" = @title
+        SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $title
     ) AS m0
 )
 """,
             //
             """
-@city='London' (Nullable = false)
+$city='London' (Nullable = false)
 p1='Sales Representative'
 
 SELECT m."CustomerID", m."EmployeeID", m."Freight", m."OrderDate", m."OrderID", m."RequiredDate", m."ShipAddress", m."ShipCity", m."ShipCountry", m."ShipName", m."ShipPostalCode", m."ShipRegion", m."ShipVia", m."ShippedDate"
@@ -646,7 +646,7 @@ FROM (
 WHERE m."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
-        SELECT * FROM "Customers" WHERE "City" = @city AND "ContactTitle" = @p1
+        SELECT * FROM "Customers" WHERE "City" = $city AND "ContactTitle" = $p1
     ) AS m0
 )
 """);
@@ -662,12 +662,12 @@ city='Seattle' (Nullable = false)
 
 SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
 FROM (
-    SELECT * FROM "Customers" WHERE "City" = @city
+    SELECT * FROM "Customers" WHERE "City" = $city
 ) AS m
 INTERSECT
 SELECT m0."Address", m0."City", m0."CompanyName", m0."ContactName", m0."ContactTitle", m0."Country", m0."CustomerID", m0."Fax", m0."Phone", m0."Region", m0."PostalCode"
 FROM (
-    SELECT * FROM "Customers" WHERE "City" = @city
+    SELECT * FROM "Customers" WHERE "City" = $city
 ) AS m0
 """);
     }

@@ -327,7 +327,7 @@ keyless type is the one that works.
 | Types | H2's own: `varchar`, `char`, `numeric`, `varbinary`, `uuid`, `json`, `clob`, `blob`, `timestamp`, `time`, `boolean`, `smallint`, `integer`, `bigint`, `real`, `double` |
 | Paging | `LIMIT n` / `OFFSET n` |
 | Concatenation | `CONCAT` for .NET string `+` (ignores null parts), `ARRAY_CAT` for arrays; H2 also accepts `\|\|` |
-| Parameters | named `@name`, which the engine rewrites into `?` before the statement is parsed |
+| Parameters | named `$name`, which the ADO layer rewrites into `$N` before the statement is parsed |
 | Table alias | without the `AS`: `FROM "Blogs" "b"` — the grammar allows both spellings ("[ [ AS ] newTableAlias ]"), and this is the one the engine reads |
 | Type cast | `CAST(x AS y)` — H2 also accepts the shorter `x::y` |
 

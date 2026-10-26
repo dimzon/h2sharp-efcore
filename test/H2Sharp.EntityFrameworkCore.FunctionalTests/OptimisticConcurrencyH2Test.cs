@@ -124,15 +124,15 @@ LIMIT 1
 """,
             //
             """
-@p1='1'
-@p2='Mercedes'
-@p0='FO 108X'
-@p3='ChangedEngine'
-@p4='47.64491' (Nullable = true)
-@p5='-122.128101' (Nullable = true)
+$p1='1'
+$p2='Mercedes'
+$p0='FO 108X'
+$p3='ChangedEngine'
+$p4='47.64491' (Nullable = true)
+$p5='-122.128101' (Nullable = true)
 
-UPDATE "Engines" SET "Name" = @p0
-WHERE "Id" = @p1 AND "EngineSupplierId" = @p2 AND "Name" = @p3 AND "StorageLocation_Latitude" = @p4 AND "StorageLocation_Longitude" = @p5;
+UPDATE "Engines" SET "Name" = $p0
+WHERE "Id" = $p1 AND "EngineSupplierId" = $p2 AND "Name" = $p3 AND "StorageLocation_Latitude" = $p4 AND "StorageLocation_Longitude" = $p5;
 """);
     }
 

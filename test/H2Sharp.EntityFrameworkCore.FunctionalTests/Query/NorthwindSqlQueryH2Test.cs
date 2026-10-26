@@ -59,7 +59,7 @@ INNER JOIN (
             """
 p0='10'
 
-SELECT "ProductID" FROM "Products" WHERE "ProductID" = @p0
+SELECT "ProductID" FROM "Products" WHERE "ProductID" = $p0
 """);
     }
 

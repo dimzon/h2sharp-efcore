@@ -38,10 +38,10 @@ public class StoreValueGenerationH2Test : StoreValueGenerationTestBase<
 
         AssertSql(
             """
-@p0='1000'
+$p0='1000'
 
 INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
-VALUES (@p0)
+VALUES ($p0)
 RETURNING "Id", "Data1";
 """);
     }
@@ -52,12 +52,12 @@ RETURNING "Id", "Data1";
 
         AssertSql(
             """
-@p0='100'
-@p1='1000'
-@p2='1000'
+$p0='100'
+$p1='1000'
+$p2='1000'
 
 INSERT INTO "WithNoDatabaseGenerated" ("Id", "Data1", "Data2")
-VALUES (@p0, @p1, @p2);
+VALUES ($p0, $p1, $p2);
 """);
     }
 
@@ -79,11 +79,11 @@ RETURNING "Id", "Data1", "Data2";
 
         AssertSql(
             """
-@p1='1'
-@p0='1000'
+$p1='1'
+$p0='1000'
 
-UPDATE "WithSomeDatabaseGenerated" SET "Data2" = @p0
-WHERE "Id" = @p1
+UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p0
+WHERE "Id" = $p1
 RETURNING "Data1";
 """);
     }
@@ -94,12 +94,12 @@ RETURNING "Data1";
 
         AssertSql(
             """
-@p2='1'
-@p0='1000'
-@p1='1000'
+$p2='1'
+$p0='1000'
+$p1='1000'
 
-UPDATE "WithNoDatabaseGenerated" SET "Data1" = @p0, "Data2" = @p1
-WHERE "Id" = @p2;
+UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p0, "Data2" = $p1
+WHERE "Id" = $p2;
 """);
     }
 
@@ -109,10 +109,10 @@ WHERE "Id" = @p2;
 
         AssertSql(
             """
-@p0='1'
+$p0='1'
 
 DELETE FROM "WithSomeDatabaseGenerated"
-WHERE "Id" = @p0;
+WHERE "Id" = $p0;
 """);
     }
 
@@ -126,14 +126,14 @@ WHERE "Id" = @p0;
 
         AssertSql(
             """
-@p0='1000'
-@p1='1001'
+$p0='1000'
+$p1='1001'
 
 INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
-VALUES (@p0)
+VALUES ($p0)
 RETURNING "Id", "Data1";
 INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
-VALUES (@p1)
+VALUES ($p1)
 RETURNING "Id", "Data1";
 """);
     }
@@ -144,17 +144,17 @@ RETURNING "Id", "Data1";
 
         AssertSql(
             """
-@p0='100'
-@p1='1000'
-@p2='1000'
-@p3='101'
-@p4='1001'
-@p5='1001'
+$p0='100'
+$p1='1000'
+$p2='1000'
+$p3='101'
+$p4='1001'
+$p5='1001'
 
 INSERT INTO "WithNoDatabaseGenerated" ("Id", "Data1", "Data2")
-VALUES (@p0, @p1, @p2);
+VALUES ($p0, $p1, $p2);
 INSERT INTO "WithNoDatabaseGenerated" ("Id", "Data1", "Data2")
-VALUES (@p3, @p4, @p5);
+VALUES ($p3, $p4, $p5);
 """);
     }
 
@@ -179,16 +179,16 @@ RETURNING "Id", "Data1", "Data2";
 
         AssertSql(
             """
-@p1='1'
-@p0='1000'
-@p3='2'
-@p2='1001'
+$p1='1'
+$p0='1000'
+$p3='2'
+$p2='1001'
 
-UPDATE "WithSomeDatabaseGenerated" SET "Data2" = @p0
-WHERE "Id" = @p1
+UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p0
+WHERE "Id" = $p1
 RETURNING "Data1";
-UPDATE "WithSomeDatabaseGenerated" SET "Data2" = @p2
-WHERE "Id" = @p3
+UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p2
+WHERE "Id" = $p3
 RETURNING "Data1";
 """);
     }
@@ -199,17 +199,17 @@ RETURNING "Data1";
 
         AssertSql(
             """
-@p2='1'
-@p0='1000'
-@p1='1000'
-@p5='2'
-@p3='1001'
-@p4='1001'
+$p2='1'
+$p0='1000'
+$p1='1000'
+$p5='2'
+$p3='1001'
+$p4='1001'
 
-UPDATE "WithNoDatabaseGenerated" SET "Data1" = @p0, "Data2" = @p1
-WHERE "Id" = @p2;
-UPDATE "WithNoDatabaseGenerated" SET "Data1" = @p3, "Data2" = @p4
-WHERE "Id" = @p5;
+UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p0, "Data2" = $p1
+WHERE "Id" = $p2;
+UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p3, "Data2" = $p4
+WHERE "Id" = $p5;
 """);
     }
 
@@ -219,13 +219,13 @@ WHERE "Id" = @p5;
 
         AssertSql(
             """
-@p0='1'
-@p1='2'
+$p0='1'
+$p1='2'
 
 DELETE FROM "WithSomeDatabaseGenerated"
-WHERE "Id" = @p0;
+WHERE "Id" = $p0;
 DELETE FROM "WithSomeDatabaseGenerated"
-WHERE "Id" = @p1;
+WHERE "Id" = $p1;
 """);
     }
 
@@ -239,14 +239,14 @@ WHERE "Id" = @p1;
 
         AssertSql(
             """
-@p0='1000'
-@p1='1001'
+$p0='1000'
+$p1='1001'
 
 INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
-VALUES (@p0)
+VALUES ($p0)
 RETURNING "Id", "Data1";
 INSERT INTO "WithSomeDatabaseGenerated2" ("Data2")
-VALUES (@p1)
+VALUES ($p1)
 RETURNING "Id", "Data1";
 """);
     }
@@ -257,17 +257,17 @@ RETURNING "Id", "Data1";
 
         AssertSql(
             """
-@p0='100'
-@p1='1000'
-@p2='1000'
-@p3='101'
-@p4='1001'
-@p5='1001'
+$p0='100'
+$p1='1000'
+$p2='1000'
+$p3='101'
+$p4='1001'
+$p5='1001'
 
 INSERT INTO "WithNoDatabaseGenerated" ("Id", "Data1", "Data2")
-VALUES (@p0, @p1, @p2);
+VALUES ($p0, $p1, $p2);
 INSERT INTO "WithNoDatabaseGenerated2" ("Id", "Data1", "Data2")
-VALUES (@p3, @p4, @p5);
+VALUES ($p3, $p4, $p5);
 """);
     }
 
@@ -292,16 +292,16 @@ RETURNING "Id", "Data1", "Data2";
 
         AssertSql(
             """
-@p1='1'
-@p0='1000'
-@p3='2'
-@p2='1001'
+$p1='1'
+$p0='1000'
+$p3='2'
+$p2='1001'
 
-UPDATE "WithSomeDatabaseGenerated" SET "Data2" = @p0
-WHERE "Id" = @p1
+UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p0
+WHERE "Id" = $p1
 RETURNING "Data1";
-UPDATE "WithSomeDatabaseGenerated2" SET "Data2" = @p2
-WHERE "Id" = @p3
+UPDATE "WithSomeDatabaseGenerated2" SET "Data2" = $p2
+WHERE "Id" = $p3
 RETURNING "Data1";
 """);
     }
@@ -312,17 +312,17 @@ RETURNING "Data1";
 
         AssertSql(
             """
-@p2='1'
-@p0='1000'
-@p1='1000'
-@p5='2'
-@p3='1001'
-@p4='1001'
+$p2='1'
+$p0='1000'
+$p1='1000'
+$p5='2'
+$p3='1001'
+$p4='1001'
 
-UPDATE "WithNoDatabaseGenerated" SET "Data1" = @p0, "Data2" = @p1
-WHERE "Id" = @p2;
-UPDATE "WithNoDatabaseGenerated2" SET "Data1" = @p3, "Data2" = @p4
-WHERE "Id" = @p5;
+UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p0, "Data2" = $p1
+WHERE "Id" = $p2;
+UPDATE "WithNoDatabaseGenerated2" SET "Data1" = $p3, "Data2" = $p4
+WHERE "Id" = $p5;
 """);
     }
 
@@ -332,13 +332,13 @@ WHERE "Id" = @p5;
 
         AssertSql(
             """
-@p0='1'
-@p1='2'
+$p0='1'
+$p1='2'
 
 DELETE FROM "WithSomeDatabaseGenerated"
-WHERE "Id" = @p0;
+WHERE "Id" = $p0;
 DELETE FROM "WithSomeDatabaseGenerated2"
-WHERE "Id" = @p1;
+WHERE "Id" = $p1;
 """);
     }
 

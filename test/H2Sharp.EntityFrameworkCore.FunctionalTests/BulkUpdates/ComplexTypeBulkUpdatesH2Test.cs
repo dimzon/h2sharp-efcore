@@ -100,20 +100,20 @@ SET "BillingAddress_ZipCode" = 54321,
 
         AssertExecuteUpdateSql(
             """
-@__complex_type_newAddress_0_AddressLine1='New AddressLine1'
-@__complex_type_newAddress_0_AddressLine2='New AddressLine2'
-@__complex_type_newAddress_0_Tags={ 'new_tag1', 'new_tag2' } (DbType = Object)
-@__complex_type_newAddress_0_ZipCode='99999' (Nullable = true)
-@__complex_type_newAddress_0_Code='FR'
-@__complex_type_newAddress_0_FullName='France'
+$__complex_type_newAddress_0_AddressLine1='New AddressLine1'
+$__complex_type_newAddress_0_AddressLine2='New AddressLine2'
+$__complex_type_newAddress_0_Tags={ 'new_tag1', 'new_tag2' } (DbType = Object)
+$__complex_type_newAddress_0_ZipCode='99999' (Nullable = true)
+$__complex_type_newAddress_0_Code='FR'
+$__complex_type_newAddress_0_FullName='France'
 
 UPDATE "Customer" AS c
-SET "ShippingAddress_AddressLine1" = @__complex_type_newAddress_0_AddressLine1,
-    "ShippingAddress_AddressLine2" = @__complex_type_newAddress_0_AddressLine2,
-    "ShippingAddress_Tags" = @__complex_type_newAddress_0_Tags,
-    "ShippingAddress_ZipCode" = @__complex_type_newAddress_0_ZipCode,
-    "ShippingAddress_Country_Code" = @__complex_type_newAddress_0_Code,
-    "ShippingAddress_Country_FullName" = @__complex_type_newAddress_0_FullName
+SET "ShippingAddress_AddressLine1" = $__complex_type_newAddress_0_AddressLine1,
+    "ShippingAddress_AddressLine2" = $__complex_type_newAddress_0_AddressLine2,
+    "ShippingAddress_Tags" = $__complex_type_newAddress_0_Tags,
+    "ShippingAddress_ZipCode" = $__complex_type_newAddress_0_ZipCode,
+    "ShippingAddress_Country_Code" = $__complex_type_newAddress_0_Code,
+    "ShippingAddress_Country_FullName" = $__complex_type_newAddress_0_FullName
 """);
     }
 
@@ -123,12 +123,12 @@ SET "ShippingAddress_AddressLine1" = @__complex_type_newAddress_0_AddressLine1,
 
         AssertExecuteUpdateSql(
             """
-@__complex_type_newCountry_0_Code='FR'
-@__complex_type_newCountry_0_FullName='France'
+$__complex_type_newCountry_0_Code='FR'
+$__complex_type_newCountry_0_FullName='France'
 
 UPDATE "Customer" AS c
-SET "ShippingAddress_Country_Code" = @__complex_type_newCountry_0_Code,
-    "ShippingAddress_Country_FullName" = @__complex_type_newCountry_0_FullName
+SET "ShippingAddress_Country_Code" = $__complex_type_newCountry_0_Code,
+    "ShippingAddress_Country_FullName" = $__complex_type_newCountry_0_FullName
 """);
     }
 
@@ -186,7 +186,7 @@ SET "ShippingAddress_AddressLine1" = 'New AddressLine1',
 
         AssertExecuteUpdateSql(
             """
-@__p_0='1'
+$__p_0='1'
 
 UPDATE "Customer" AS c0
 SET "ShippingAddress_AddressLine1" = c1."BillingAddress_AddressLine1",
@@ -199,7 +199,7 @@ FROM (
     SELECT c."Id", c."BillingAddress_AddressLine1", c."BillingAddress_AddressLine2", c."BillingAddress_Tags", c."BillingAddress_ZipCode", c."ShippingAddress_Country_Code", c."ShippingAddress_Country_FullName"
     FROM "Customer" AS c
     ORDER BY c."Id" NULLS FIRST
-    OFFSET @__p_0
+    OFFSET $__p_0
 ) AS c1
 WHERE c0."Id" = c1."Id"
 """);

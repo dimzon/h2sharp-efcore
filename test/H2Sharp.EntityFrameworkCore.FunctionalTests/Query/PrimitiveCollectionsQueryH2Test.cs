@@ -154,12 +154,12 @@ WHERE p."Id" IN (2, 999, 1000)
 
         AssertSql(
             """
-@__i_0='2'
-@__j_1='999'
+$__i_0='2'
+$__j_1='999'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" IN (@__i_0, @__j_1)
+WHERE p."Id" IN ($__i_0, $__j_1)
 """);
     }
 
@@ -169,11 +169,11 @@ WHERE p."Id" IN (@__i_0, @__j_1)
 
         AssertSql(
             """
-@__j_0='999'
+$__j_0='999'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" IN (2, @__j_0)
+WHERE p."Id" IN (2, $__j_0)
 """);
     }
 
@@ -183,11 +183,11 @@ WHERE p."Id" IN (2, @__j_0)
 
         AssertSql(
             """
-@__i_0='11'
+$__i_0='11'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" IN (999, @__i_0, p."Id", p."Id" + p."Int")
+WHERE p."Int" IN (999, $__i_0, p."Id", p."Id" + p."Int")
 """);
     }
 
@@ -197,11 +197,11 @@ WHERE p."Int" IN (999, @__i_0, p."Id", p."Id" + p."Int")
 
         AssertSql(
             """
-@__i_0='11'
+$__i_0='11'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" IN (999, @__i_0, p."Id", p."Id" + p."Int")
+WHERE p."Int" IN (999, $__i_0, p."Id", p."Id" + p."Int")
 """);
     }
 
@@ -283,11 +283,11 @@ WHERE GREATEST(30, p."Int") = 30
 
         AssertSql(
             """
-@__i_0='25'
+$__i_0='25'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE LEAST(30, p."Int", @__i_0) = 25
+WHERE LEAST(30, p."Int", $__i_0) = 25
 """);
     }
 
@@ -297,11 +297,11 @@ WHERE LEAST(30, p."Int", @__i_0) = 25
 
         AssertSql(
             """
-@__i_0='25'
+$__i_0='25'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE LEAST(30, p."Int", @__i_0) = 25
+WHERE LEAST(30, p."Int", $__i_0) = 25
 """);
     }
 
@@ -311,11 +311,11 @@ WHERE LEAST(30, p."Int", @__i_0) = 25
 
         AssertSql(
             """
-@__i_0='35'
+$__i_0='35'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE GREATEST(30, p."Int", @__i_0) = 35
+WHERE GREATEST(30, p."Int", $__i_0) = 35
 """);
     }
 
@@ -325,11 +325,11 @@ WHERE GREATEST(30, p."Int", @__i_0) = 35
 
         AssertSql(
             """
-@__i_0='35'
+$__i_0='35'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE GREATEST(30, p."Int", @__i_0) = 35
+WHERE GREATEST(30, p."Int", $__i_0) = 35
 """);
     }
 
@@ -339,11 +339,11 @@ WHERE GREATEST(30, p."Int", @__i_0) = 35
 
         AssertSql(
             """
-@__i_0='25' (Nullable = true)
+$__i_0='25' (Nullable = true)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE LEAST(30, p."Int", @__i_0) = 25
+WHERE LEAST(30, p."Int", $__i_0) = 25
 """);
     }
 
@@ -353,11 +353,11 @@ WHERE LEAST(30, p."Int", @__i_0) = 25
 
         AssertSql(
             """
-@__i_0='35' (Nullable = true)
+$__i_0='35' (Nullable = true)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE GREATEST(30, p."Int", @__i_0) = 35
+WHERE GREATEST(30, p."Int", $__i_0) = 35
 """);
     }
 
@@ -391,11 +391,11 @@ WHERE GREATEST(30, p."NullableInt", NULL) = 30
 
         AssertSql(
             """
-@__i_0='2'
+$__i_0='2'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" = @__i_0
+WHERE p."Id" = $__i_0
 """);
     }
 
@@ -405,13 +405,13 @@ WHERE p."Id" = @__i_0
 
         AssertSql(
             """
-@__i_0='2'
+$__i_0='2'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
 WHERE (
     SELECT count(*)::int
-    FROM (VALUES (@__i_0::int)) AS v("Value")
+    FROM (VALUES ($__i_0::int)) AS v("Value")
     WHERE v."Value" > p."Id") = 1
 """);
     }
@@ -422,11 +422,11 @@ WHERE (
 
         AssertSql(
             """
-@__p_0={ '2', '999', '1000' } (DbType = Object)
+$__p_0={ '2', '999', '1000' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" = ANY (@__p_0)
+WHERE p."Id" = ANY ($__p_0)
 """);
     }
 
@@ -436,13 +436,13 @@ WHERE p."Id" = ANY (@__p_0)
 
         AssertSql(
             """
-@__p_0={ '2', '999', '1000' } (DbType = Object)
+$__p_0={ '2', '999', '1000' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
 WHERE (
     SELECT count(*)::int
-    FROM unnest(@__p_0) AS p0(value)
+    FROM unnest($__p_0) AS p0(value)
     WHERE p0.value > p."Id") = 2
 """);
     }
@@ -453,13 +453,13 @@ WHERE (
 
         AssertSql(
             """
-@__ids_0={ '2', '999' } (DbType = Object)
+$__ids_0={ '2', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
 WHERE (
     SELECT count(*)::int
-    FROM unnest(@__ids_0) AS i(value)
+    FROM unnest($__ids_0) AS i(value)
     WHERE i.value > p."Id") = 1
 """);
     }
@@ -470,19 +470,19 @@ WHERE (
 
         AssertSql(
             """
-@__ints_0={ '10', '999' } (DbType = Object)
+$__ints_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" = ANY (@__ints_0)
+WHERE p."Int" = ANY ($__ints_0)
 """,
             //
             """
-@__ints_0={ '10', '999' } (DbType = Object)
+$__ints_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."Int" = ANY (@__ints_0) AND p."Int" = ANY (@__ints_0) IS NOT NULL)
+WHERE NOT (p."Int" = ANY ($__ints_0) AND p."Int" = ANY ($__ints_0) IS NOT NULL)
 """);
     }
 
@@ -492,19 +492,19 @@ WHERE NOT (p."Int" = ANY (@__ints_0) AND p."Int" = ANY (@__ints_0) IS NOT NULL)
 
         AssertSql(
             """
-@__ints_0={ '10', '999' } (DbType = Object)
+$__ints_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" = ANY (@__ints_0)
+WHERE p."Int" = ANY ($__ints_0)
 """,
             //
             """
-@__ints_0={ '10', '999' } (DbType = Object)
+$__ints_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."Int" = ANY (@__ints_0) AND p."Int" = ANY (@__ints_0) IS NOT NULL)
+WHERE NOT (p."Int" = ANY ($__ints_0) AND p."Int" = ANY ($__ints_0) IS NOT NULL)
 """);
     }
 
@@ -520,11 +520,11 @@ WHERE NOT (p."Int" = ANY (@__ints_0) AND p."Int" = ANY (@__ints_0) IS NOT NULL)
 
         AssertSql(
             """
-@__enums_0={ '0', '3' } (DbType = Object)
+$__enums_0={ '0', '3' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Enum" = ANY (@__enums_0)
+WHERE p."Enum" = ANY ($__enums_0)
 """);
     }
 
@@ -534,19 +534,19 @@ WHERE p."Enum" = ANY (@__enums_0)
 
         AssertSql(
             """
-@__ints_0={ '10', '999' } (Nullable = false) (DbType = Object)
+$__ints_0={ '10', '999' } (Nullable = false) (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" = ANY (@__ints_0)
+WHERE p."Int" = ANY ($__ints_0)
 """,
             //
             """
-@__ints_0={ '10', '999' } (Nullable = false) (DbType = Object)
+$__ints_0={ '10', '999' } (Nullable = false) (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."Int" = ANY (@__ints_0) AND p."Int" = ANY (@__ints_0) IS NOT NULL)
+WHERE NOT (p."Int" = ANY ($__ints_0) AND p."Int" = ANY ($__ints_0) IS NOT NULL)
 """);
     }
 
@@ -556,19 +556,19 @@ WHERE NOT (p."Int" = ANY (@__ints_0) AND p."Int" = ANY (@__ints_0) IS NOT NULL)
 
         AssertSql(
             """
-@__ints_0={ '10', '999' } (DbType = Object)
+$__ints_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableInt" = ANY (@__ints_0) OR (p."NullableInt" IS NULL AND array_position(@__ints_0, NULL) IS NOT NULL)
+WHERE p."NullableInt" = ANY ($__ints_0) OR (p."NullableInt" IS NULL AND array_position($__ints_0, NULL) IS NOT NULL)
 """,
             //
             """
-@__ints_0={ '10', '999' } (DbType = Object)
+$__ints_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."NullableInt" = ANY (@__ints_0) AND p."NullableInt" = ANY (@__ints_0) IS NOT NULL) AND (p."NullableInt" IS NOT NULL OR array_position(@__ints_0, NULL) IS NULL)
+WHERE NOT (p."NullableInt" = ANY ($__ints_0) AND p."NullableInt" = ANY ($__ints_0) IS NOT NULL) AND (p."NullableInt" IS NOT NULL OR array_position($__ints_0, NULL) IS NULL)
 """);
     }
 
@@ -578,19 +578,19 @@ WHERE NOT (p."NullableInt" = ANY (@__ints_0) AND p."NullableInt" = ANY (@__ints_
 
         AssertSql(
             """
-@__nullableInts_0={ '10', '999' } (DbType = Object)
+$__nullableInts_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" = ANY (@__nullableInts_0)
+WHERE p."Int" = ANY ($__nullableInts_0)
 """,
             //
             """
-@__nullableInts_0={ '10', '999' } (DbType = Object)
+$__nullableInts_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."Int" = ANY (@__nullableInts_0) AND p."Int" = ANY (@__nullableInts_0) IS NOT NULL)
+WHERE NOT (p."Int" = ANY ($__nullableInts_0) AND p."Int" = ANY ($__nullableInts_0) IS NOT NULL)
 """);
     }
 
@@ -600,19 +600,19 @@ WHERE NOT (p."Int" = ANY (@__nullableInts_0) AND p."Int" = ANY (@__nullableInts_
 
         AssertSql(
             """
-@__nullableInts_0={ NULL, '999' } (DbType = Object)
+$__nullableInts_0={ NULL, '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableInt" = ANY (@__nullableInts_0) OR (p."NullableInt" IS NULL AND array_position(@__nullableInts_0, NULL) IS NOT NULL)
+WHERE p."NullableInt" = ANY ($__nullableInts_0) OR (p."NullableInt" IS NULL AND array_position($__nullableInts_0, NULL) IS NOT NULL)
 """,
             //
             """
-@__nullableInts_0={ NULL, '999' } (DbType = Object)
+$__nullableInts_0={ NULL, '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."NullableInt" = ANY (@__nullableInts_0) AND p."NullableInt" = ANY (@__nullableInts_0) IS NOT NULL) AND (p."NullableInt" IS NOT NULL OR array_position(@__nullableInts_0, NULL) IS NULL)
+WHERE NOT (p."NullableInt" = ANY ($__nullableInts_0) AND p."NullableInt" = ANY ($__nullableInts_0) IS NOT NULL) AND (p."NullableInt" IS NOT NULL OR array_position($__nullableInts_0, NULL) IS NULL)
 """);
     }
 
@@ -622,19 +622,19 @@ WHERE NOT (p."NullableInt" = ANY (@__nullableInts_0) AND p."NullableInt" = ANY (
 
         AssertSql(
             """
-@__strings_0={ '10', '999' } (DbType = Object)
+$__strings_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."String" = ANY (@__strings_0)
+WHERE p."String" = ANY ($__strings_0)
 """,
             //
             """
-@__strings_0={ '10', '999' } (DbType = Object)
+$__strings_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."String" = ANY (@__strings_0) AND p."String" = ANY (@__strings_0) IS NOT NULL)
+WHERE NOT (p."String" = ANY ($__strings_0) AND p."String" = ANY ($__strings_0) IS NOT NULL)
 """);
     }
 
@@ -644,19 +644,19 @@ WHERE NOT (p."String" = ANY (@__strings_0) AND p."String" = ANY (@__strings_0) I
 
         AssertSql(
             """
-@__strings_0={ '10', '999' } (DbType = Object)
+$__strings_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableString" = ANY (@__strings_0) OR (p."NullableString" IS NULL AND array_position(@__strings_0, NULL) IS NOT NULL)
+WHERE p."NullableString" = ANY ($__strings_0) OR (p."NullableString" IS NULL AND array_position($__strings_0, NULL) IS NOT NULL)
 """,
             //
             """
-@__strings_0={ '10', '999' } (DbType = Object)
+$__strings_0={ '10', '999' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."NullableString" = ANY (@__strings_0) AND p."NullableString" = ANY (@__strings_0) IS NOT NULL) AND (p."NullableString" IS NOT NULL OR array_position(@__strings_0, NULL) IS NULL)
+WHERE NOT (p."NullableString" = ANY ($__strings_0) AND p."NullableString" = ANY ($__strings_0) IS NOT NULL) AND (p."NullableString" IS NOT NULL OR array_position($__strings_0, NULL) IS NULL)
 """);
     }
 
@@ -666,19 +666,19 @@ WHERE NOT (p."NullableString" = ANY (@__strings_0) AND p."NullableString" = ANY 
 
         AssertSql(
             """
-@__strings_0={ '10', NULL } (DbType = Object)
+$__strings_0={ '10', NULL } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."String" = ANY (@__strings_0)
+WHERE p."String" = ANY ($__strings_0)
 """,
             //
             """
-@__strings_0={ '10', NULL } (DbType = Object)
+$__strings_0={ '10', NULL } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."String" = ANY (@__strings_0) AND p."String" = ANY (@__strings_0) IS NOT NULL)
+WHERE NOT (p."String" = ANY ($__strings_0) AND p."String" = ANY ($__strings_0) IS NOT NULL)
 """);
     }
 
@@ -688,19 +688,19 @@ WHERE NOT (p."String" = ANY (@__strings_0) AND p."String" = ANY (@__strings_0) I
 
         AssertSql(
             """
-@__strings_0={ '999', NULL } (DbType = Object)
+$__strings_0={ '999', NULL } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableString" = ANY (@__strings_0) OR (p."NullableString" IS NULL AND array_position(@__strings_0, NULL) IS NOT NULL)
+WHERE p."NullableString" = ANY ($__strings_0) OR (p."NullableString" IS NULL AND array_position($__strings_0, NULL) IS NOT NULL)
 """,
             //
             """
-@__strings_0={ '999', NULL } (DbType = Object)
+$__strings_0={ '999', NULL } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."NullableString" = ANY (@__strings_0) AND p."NullableString" = ANY (@__strings_0) IS NOT NULL) AND (p."NullableString" IS NOT NULL OR array_position(@__strings_0, NULL) IS NULL)
+WHERE NOT (p."NullableString" = ANY ($__strings_0) AND p."NullableString" = ANY ($__strings_0) IS NOT NULL) AND (p."NullableString" IS NOT NULL OR array_position($__strings_0, NULL) IS NULL)
 """);
     }
 
@@ -710,11 +710,11 @@ WHERE NOT (p."NullableString" = ANY (@__strings_0) AND p."NullableString" = ANY 
 
         AssertSql(
             """
-@__dateTimes_0={ '2020-01-10T12:30:00.0000000Z', '9999-01-01T00:00:00.0000000Z' } (DbType = Object)
+$__dateTimes_0={ '2020-01-10T12:30:00.0000000Z', '9999-01-01T00:00:00.0000000Z' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."DateTime" = ANY (@__dateTimes_0)
+WHERE p."DateTime" = ANY ($__dateTimes_0)
 """);
     }
 
@@ -724,11 +724,11 @@ WHERE p."DateTime" = ANY (@__dateTimes_0)
 
         AssertSql(
             """
-@__bools_0={ 'True' } (DbType = Object)
+$__bools_0={ 'True' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Bool" = ANY (@__bools_0)
+WHERE p."Bool" = ANY ($__bools_0)
 """);
     }
 
@@ -738,11 +738,11 @@ WHERE p."Bool" = ANY (@__bools_0)
 
         AssertSql(
             """
-@__enums_0={ '0', '3' } (DbType = Object)
+$__enums_0={ '0', '3' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Enum" = ANY (@__enums_0)
+WHERE p."Enum" = ANY ($__enums_0)
 """);
     }
 
@@ -1042,11 +1042,11 @@ WHERE (
 
         AssertSql(
             """
-@__ints_0={ '0', '2', '3' } (DbType = Object)
+$__ints_0={ '0', '2', '3' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE @__ints_0[p."Int" + 1] = p."Int"
+WHERE $__ints_0[p."Int" + 1] = p."Int"
 """);
     }
 
@@ -1056,11 +1056,11 @@ WHERE @__ints_0[p."Int" + 1] = p."Int"
 
         AssertSql(
             """
-@__ints_0={ '1', '2', '3' } (DbType = Object)
+$__ints_0={ '1', '2', '3' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE @__ints_0[p."Int" + 1] = 1
+WHERE $__ints_0[p."Int" + 1] = 1
 """);
     }
 
@@ -1364,14 +1364,14 @@ ORDER BY p."Id" NULLS FIRST
 
         AssertSql(
             """
-@__ints_0={ '11', '111' } (DbType = Object)
+$__ints_0={ '11', '111' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
 WHERE (
     SELECT count(*)::int
     FROM unnest(p."Ints") AS i(value)
-    INNER JOIN unnest(@__ints_0) AS i0(value) ON i.value = i0.value) = 2
+    INNER JOIN unnest($__ints_0) AS i0(value) ON i.value = i0.value) = 2
 """);
     }
 
@@ -1396,11 +1396,11 @@ WHERE (
 
         AssertSql(
             """
-@__ints_0={ '11', '111' } (DbType = Object)
+$__ints_0={ '11', '111' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE cardinality(@__ints_0 || p."Ints") = 2
+WHERE cardinality($__ints_0 || p."Ints") = 2
 """);
     }
 
@@ -1410,10 +1410,10 @@ WHERE cardinality(@__ints_0 || p."Ints") = 2
 
         AssertSql(
             """
-@__values_0={ 'one', 'two' } (DbType = Object)
+$__values_0={ 'one', 'two' } (DbType = Object)
 
 SELECT CASE
-    WHEN p."Id" <> 0 THEN @__values_0[p."Int" % 2 + 1]
+    WHEN p."Id" <> 0 THEN $__values_0[p."Int" % 2 + 1]
     ELSE 'foo'
 END
 FROM "PrimitiveCollectionsEntity" AS p
@@ -1426,7 +1426,7 @@ FROM "PrimitiveCollectionsEntity" AS p
 
         AssertSql(
             """
-@__ints_0={ '11', '111' } (DbType = Object)
+$__ints_0={ '11', '111' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
@@ -1437,7 +1437,7 @@ WHERE (
         FROM unnest(p."Ints") AS i(value)
         UNION
         SELECT i0.value
-        FROM unnest(@__ints_0) AS i0(value)
+        FROM unnest($__ints_0) AS i0(value)
     ) AS u) = 2
 """);
     }
@@ -1473,11 +1473,11 @@ WHERE (
 
         AssertSql(
             """
-@__ints_0={ '11', '12' } (DbType = Object)
+$__ints_0={ '11', '12' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints" && @__ints_0
+WHERE p."Ints" && $__ints_0
 """);
     }
 
@@ -1535,12 +1535,12 @@ WHERE (
 
         AssertSql(
             """
-@__ints1_0={ '11' } (DbType = Object)
-@__ints2_1={ '12' } (DbType = Object)
+$__ints1_0={ '11' } (DbType = Object)
+$__ints2_1={ '12' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE cardinality(@__ints1_0 || p."Ints" || @__ints2_1) = 4
+WHERE cardinality($__ints1_0 || p."Ints" || $__ints2_1) = 4
 """);
     }
 
@@ -1557,11 +1557,11 @@ WHERE cardinality(@__ints1_0 || p."Ints" || @__ints2_1) = 4
 
         AssertSql(
             """
-@__ints_0={ '1', '10' } (DbType = Object)
+$__ints_0={ '1', '10' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints" = @__ints_0
+WHERE p."Ints" = $__ints_0
 """);
     }
 
@@ -1588,12 +1588,12 @@ WHERE p."Ints" = ARRAY[1,10]::integer[]
 
         AssertSql(
             """
-@__i_0='1'
-@__j_1='10'
+$__i_0='1'
+$__j_1='10'
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints" = ARRAY[@__i_0,@__j_1]::integer[]
+WHERE p."Ints" = ARRAY[$__i_0,$__j_1]::integer[]
 """);
     }
 
@@ -1610,7 +1610,7 @@ WHERE p."Ints" = ARRAY[@__i_0,@__j_1]::integer[]
 
         AssertSql(
             """
-@__ints={ '10', '111' } (DbType = Object)
+$__ints={ '10', '111' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
@@ -1618,7 +1618,7 @@ WHERE (
     SELECT count(*)::int
     FROM (
         SELECT i.value
-        FROM unnest(@__ints[2:]) AS i(value)
+        FROM unnest($__ints[2:]) AS i(value)
         UNION
         SELECT i0.value
         FROM unnest(p."Ints") AS i0(value)
@@ -1632,7 +1632,7 @@ WHERE (
 
         AssertSql(
             """
-@__Skip_0={ '111' } (DbType = Object)
+$__Skip_0={ '111' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
@@ -1640,7 +1640,7 @@ WHERE (
     SELECT count(*)::int
     FROM (
         SELECT s.value
-        FROM unnest(@__Skip_0) AS s(value)
+        FROM unnest($__Skip_0) AS s(value)
         UNION
         SELECT i.value
         FROM unnest(p."Ints") AS i(value)
@@ -1654,7 +1654,7 @@ WHERE (
 
         AssertSql(
             """
-@__Skip_0={ '111' } (DbType = Object)
+$__Skip_0={ '111' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
@@ -1662,7 +1662,7 @@ WHERE (
     SELECT count(*)::int
     FROM (
         SELECT s.value
-        FROM unnest(@__Skip_0) AS s(value)
+        FROM unnest($__Skip_0) AS s(value)
         UNION
         SELECT i2.value
         FROM (
@@ -1703,13 +1703,13 @@ WHERE (
 
         AssertSql(
             """
-@__ints={ '10', '111' } (DbType = Object)
+$__ints={ '10', '111' } (DbType = Object)
 
 SELECT count(*)::int
 FROM "PrimitiveCollectionsEntity" AS p
 WHERE (
     SELECT count(*)::int
-    FROM unnest(@__ints[2:]) AS i(value)
+    FROM unnest($__ints[2:]) AS i(value)
     WHERE i.value > p."Id") = 1
 """);
     }
@@ -1720,7 +1720,7 @@ WHERE (
 
         AssertSql(
             """
-@__ints_0={ '10', '111' } (DbType = Object)
+$__ints_0={ '10', '111' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
@@ -1731,7 +1731,7 @@ WHERE (
         FROM unnest(p."Ints"[2:]) AS i(value)
         UNION
         SELECT i0.value
-        FROM unnest(@__ints_0) AS i0(value)
+        FROM unnest($__ints_0) AS i0(value)
     ) AS u) = 3
 """);
     }
@@ -1983,15 +1983,15 @@ ORDER BY p."Id" NULLS FIRST
 
         AssertSql(
             """
-@__ints_0={ '1', '2', '3' } (DbType = Object)
-@__strings_1={ 'one', 'two', 'three' } (DbType = Object)
+$__ints_0={ '1', '2', '3' } (DbType = Object)
+$__strings_1={ 'one', 'two', 'three' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
 WHERE CASE
-    WHEN p."Int" = ANY (@__ints_0) THEN 'one'
+    WHEN p."Int" = ANY ($__ints_0) THEN 'one'
     ELSE 'two'
-END = ANY (@__strings_1)
+END = ANY ($__strings_1)
 """);
     }
 
@@ -2001,15 +2001,15 @@ END = ANY (@__strings_1)
 
         AssertSql(
             """
-@__ints_0={ '1', '2', '3' } (DbType = Object)
-@__strings_1={ 'one', 'two', 'three' } (DbType = Object)
+$__ints_0={ '1', '2', '3' } (DbType = Object)
+$__strings_1={ 'one', 'two', 'three' } (DbType = Object)
 
 SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
 FROM "PrimitiveCollectionsEntity" AS p
 WHERE CASE
-    WHEN p."Int" = ANY (@__ints_0) THEN 'one'
+    WHEN p."Int" = ANY ($__ints_0) THEN 'one'
     ELSE 'two'
-END = ANY (@__strings_1)
+END = ANY ($__strings_1)
 """);
     }
 

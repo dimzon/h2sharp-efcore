@@ -498,7 +498,7 @@ public class H2QueryableMethodTranslatingExpressionVisitor : RelationalQueryable
                             H2AnyOperatorType.Equal));
 
                 // For ParameterExpression, and for all other cases - e.g. array returned from some function -
-                // translate to e.SomeText = ANY (@p). This is superior to the general solution which will expand
+                // translate to e.SomeText = ANY ($p). This is superior to the general solution which will expand
                 // parameters to constants, since non-PG SQL does not support arrays.
                 // Note that this will allow indexes on the item to be used.
                 default:

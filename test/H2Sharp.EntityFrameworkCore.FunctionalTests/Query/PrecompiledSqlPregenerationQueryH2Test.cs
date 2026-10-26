@@ -33,11 +33,11 @@ WHERE b."Name" = 'foo'
 
         AssertSql(
             """
-@__id_0='8'
+$__id_0='8'
 
 SELECT b."Id", b."Name"
 FROM "Blogs" AS b
-WHERE b."Id" = @__id_0
+WHERE b."Id" = $__id_0
 """);
     }
 
@@ -47,11 +47,11 @@ WHERE b."Id" = @__id_0
 
         AssertSql(
             """
-@__id_0='8' (Nullable = true)
+$__id_0='8' (Nullable = true)
 
 SELECT b."Id", b."Name"
 FROM "Blogs" AS b
-WHERE b."Id" = @__id_0
+WHERE b."Id" = $__id_0
 """);
     }
 
@@ -61,11 +61,11 @@ WHERE b."Id" = @__id_0
 
         AssertSql(
             """
-@__name_0='bar'
+$__name_0='bar'
 
 SELECT b."Id", b."Name"
 FROM "Blogs" AS b
-WHERE b."Name" = @__name_0
+WHERE b."Name" = $__name_0
 """);
     }
 
@@ -75,11 +75,11 @@ WHERE b."Name" = @__name_0
 
         AssertSql(
             """
-@__name_0='bar' (Nullable = false)
+$__name_0='bar' (Nullable = false)
 
 SELECT b."Id", b."Name"
 FROM "Blogs" AS b
-WHERE b."Name" = @__name_0
+WHERE b."Name" = $__name_0
 """);
     }
 
@@ -89,12 +89,12 @@ WHERE b."Name" = @__name_0
 
         AssertSql(
             """
-@__id1_0='8' (Nullable = true)
-@__id2_1='9'
+$__id1_0='8' (Nullable = true)
+$__id2_1='9'
 
 SELECT b."Id", b."Name"
 FROM "Blogs" AS b
-WHERE b."Id" = @__id1_0 OR b."Id" = @__id2_1
+WHERE b."Id" = $__id1_0 OR b."Id" = $__id2_1
 """);
     }
 
@@ -104,12 +104,12 @@ WHERE b."Id" = @__id1_0 OR b."Id" = @__id2_1
 
         AssertSql(
             """
-@__name1_0='foo'
-@__name2_1='bar'
+$__name1_0='foo'
+$__name2_1='bar'
 
 SELECT b."Id", b."Name"
 FROM "Blogs" AS b
-WHERE b."Name" = @__name1_0 OR b."Name" = @__name2_1
+WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1
 """);
     }
 
@@ -119,12 +119,12 @@ WHERE b."Name" = @__name1_0 OR b."Name" = @__name2_1
 
         AssertSql(
             """
-@__name1_0='foo' (Nullable = false)
-@__name2_1='bar' (Nullable = false)
+$__name1_0='foo' (Nullable = false)
+$__name2_1='bar' (Nullable = false)
 
 SELECT b."Id", b."Name"
 FROM "Blogs" AS b
-WHERE b."Name" = @__name1_0 OR b."Name" = @__name2_1
+WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1
 """);
     }
 
@@ -134,12 +134,12 @@ WHERE b."Name" = @__name1_0 OR b."Name" = @__name2_1
 
         AssertSql(
             """
-@__name1_0='foo'
-@__name2_1='bar' (Nullable = false)
+$__name1_0='foo'
+$__name2_1='bar' (Nullable = false)
 
 SELECT b."Id", b."Name"
 FROM "Blogs" AS b
-WHERE b."Name" = @__name1_0 OR b."Name" = @__name2_1
+WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1
 """);
     }
 
@@ -149,14 +149,14 @@ WHERE b."Name" = @__name1_0 OR b."Name" = @__name2_1
 
         AssertSql(
             """
-@__name1_0='foo'
-@__name2_1='bar'
-@__name3_2='baz'
-@__name4_3='baq'
+$__name1_0='foo'
+$__name2_1='bar'
+$__name3_2='baz'
+$__name4_3='baq'
 
 SELECT b."Id", b."Name"
 FROM "Blogs" AS b
-WHERE b."Name" = @__name1_0 OR b."Name" = @__name2_1 OR b."Name" = @__name3_2 OR b."Name" = @__name4_3
+WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1 OR b."Name" = $__name3_2 OR b."Name" = $__name4_3
 """);
     }
 
@@ -166,14 +166,14 @@ WHERE b."Name" = @__name1_0 OR b."Name" = @__name2_1 OR b."Name" = @__name3_2 OR
 
         AssertSql(
             """
-@__name1_0='foo' (Nullable = false)
-@__name2_1='bar' (Nullable = false)
-@__name3_2='baz' (Nullable = false)
-@__name4_3='baq' (Nullable = false)
+$__name1_0='foo' (Nullable = false)
+$__name2_1='bar' (Nullable = false)
+$__name3_2='baz' (Nullable = false)
+$__name4_3='baq' (Nullable = false)
 
 SELECT b."Id", b."Name"
 FROM "Blogs" AS b
-WHERE b."Name" = @__name1_0 OR b."Name" = @__name2_1 OR b."Name" = @__name3_2 OR b."Name" = @__name4_3
+WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1 OR b."Name" = $__name3_2 OR b."Name" = $__name4_3
 """);
     }
 

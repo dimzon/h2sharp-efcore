@@ -173,7 +173,7 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
         using var connection = OpenConnection();
         using var command = connection.CreateCommand();
         command.CommandText =
-            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @p";
+            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = $p";
 
         var parameter = command.CreateParameter();
         parameter.ParameterName = "p";
@@ -191,7 +191,7 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
     {
         using var connection = OpenConnection();
         using var command = connection.CreateCommand();
-        command.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = @p";
+        command.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = $p";
         var parameter = command.CreateParameter();
         parameter.ParameterName = "p";
         parameter.Value = schema;

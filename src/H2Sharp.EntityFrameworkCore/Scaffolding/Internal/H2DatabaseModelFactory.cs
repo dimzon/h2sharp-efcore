@@ -140,7 +140,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                        COLUMN_DEFAULT,
                        DECLARED_DATA_TYPE
                 FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_SCHEMA = @p_schema
+                WHERE TABLE_SCHEMA = $p_schema
                 ORDER BY TABLE_NAME, ORDINAL_POSITION
                 """;
 
@@ -237,7 +237,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu
                        ON kcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
                       AND kcu.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
-                WHERE tc.TABLE_SCHEMA = @p_schema
+                WHERE tc.TABLE_SCHEMA = $p_schema
                   AND tc.CONSTRAINT_TYPE IN ('PRIMARY KEY', 'UNIQUE')
                 ORDER BY tc.TABLE_NAME, tc.CONSTRAINT_NAME, kcu.ORDINAL_POSITION
                 """;
@@ -312,7 +312,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 JOIN INFORMATION_SCHEMA.INDEX_COLUMNS c
                      ON c.INDEX_SCHEMA = i.INDEX_SCHEMA
                     AND c.INDEX_NAME = i.INDEX_NAME
-                WHERE i.INDEX_SCHEMA = @p_schema
+                WHERE i.INDEX_SCHEMA = $p_schema
                   AND i.IS_GENERATED = FALSE
                 ORDER BY i.INDEX_NAME, c.ORDINAL_POSITION
                 """;
@@ -369,7 +369,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
             command.CommandText = """
                 SELECT SEQUENCE_NAME, DATA_TYPE, START_VALUE, INCREMENT, MINIMUM_VALUE, MAXIMUM_VALUE, CYCLE_OPTION
                 FROM INFORMATION_SCHEMA.SEQUENCES
-                WHERE SEQUENCE_SCHEMA = @p_schema
+                WHERE SEQUENCE_SCHEMA = $p_schema
                 ORDER BY SEQUENCE_NAME
                 """;
 
@@ -475,7 +475,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         using var command = connection.CreateCommand();
         command.CommandText = """
             SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-            WHERE CONSTRAINT_NAME = @p_name AND CONSTRAINT_SCHEMA = @p_schema
+            WHERE CONSTRAINT_NAME = $p_name AND CONSTRAINT_SCHEMA = $p_schema
             """;
 
         command.Parameters.Add(Parameter(command, "p_name", constraintName));

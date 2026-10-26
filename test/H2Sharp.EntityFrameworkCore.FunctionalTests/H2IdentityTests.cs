@@ -58,7 +58,7 @@ public class H2IdentityTests
         // engine could run it or not. The parameter is named: the engine rewrites the
         // named parameters of a statement into the positional ones it reads.
         Assert.Equal(
-            "SELECT \"Id\" FROM FINAL TABLE (INSERT INTO \"Items\" (\"Name\")\nVALUES (@p0));\n",
+            "SELECT \"Id\" FROM FINAL TABLE (INSERT INTO \"Items\" (\"Name\")\nVALUES ($p0));\n",
             recorder.Commands.Last().ReplaceLineEndings("\n"));
     }
 

@@ -28,8 +28,8 @@ internal static class ReferenceForum
     public static string Sql(DbCommand command)
     {
         var values = command.Parameters.Cast<DbParameter>().ToDictionary(
-            p => p.ParameterName.TrimStart('@'), p => Literal(p.Value));
-        return Regex.Replace(command.CommandText, @"@([A-Za-z_][A-Za-z_0-9]*)", match => values[match.Groups[1].Value]);
+            p => p.ParameterName.TrimStart('$'), p => Literal(p.Value));
+        return Regex.Replace(command.CommandText, @"\$([A-Za-z_][A-Za-z_0-9]*)", match => values[match.Groups[1].Value]);
     }
 
     public static string Setup(ForumContext context)

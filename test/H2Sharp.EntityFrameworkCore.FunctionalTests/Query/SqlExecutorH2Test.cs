@@ -18,7 +18,7 @@ public class SqlExecutorH2Test : SqlExecutorTestBase<NorthwindQueryH2Fixture<Sql
         => """SELECT * FROM "Ten Most Expensive Products"()""";
 
     protected override string CustomerOrderHistorySproc
-        => """SELECT * FROM "CustOrderHist"(@CustomerID)""";
+        => """SELECT * FROM "CustOrderHist"($CustomerID)""";
 
     protected override string CustomerOrderHistoryWithGeneratedParameterSproc
         => """SELECT * FROM "CustOrderHist"({0})""";

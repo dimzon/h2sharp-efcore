@@ -55,9 +55,9 @@ WHERE o."OrderDate" IS NOT NULL
 
         AssertSql(
             """
-@__years_0='2'
+$__years_0='2'
 
-SELECT o."OrderDate" + CAST(@__years_0::text || ' years' AS interval) AS "OrderDate"
+SELECT o."OrderDate" + CAST($__years_0::text || ' years' AS interval) AS "OrderDate"
 FROM "Orders" AS o
 WHERE o."OrderDate" IS NOT NULL
 """);
@@ -251,11 +251,11 @@ WHERE c."CustomerID" IN ('ALFKI', 'ANATR')
         // (see https://github.com/aspnet/EntityFrameworkCore/issues/17598).
         AssertSql(
             """
-@__regions_0={ 'UK', 'SP' } (DbType = Object)
+$__regions_0={ 'UK', 'SP' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."Region" = ANY (@__regions_0) OR (c."Region" IS NULL AND array_position(@__regions_0, NULL) IS NOT NULL)
+WHERE c."Region" = ANY ($__regions_0) OR (c."Region" IS NULL AND array_position($__regions_0, NULL) IS NOT NULL)
 """);
     }
 
@@ -275,11 +275,11 @@ WHERE c."Region" = ANY (@__regions_0) OR (c."Region" IS NULL AND array_position(
         // (see https://github.com/aspnet/EntityFrameworkCore/issues/17598).
         AssertSql(
             """
-@__regions_0={ 'UK', 'SP', NULL } (DbType = Object)
+$__regions_0={ 'UK', 'SP', NULL } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."Region" = ANY (@__regions_0) OR (c."Region" IS NULL AND array_position(@__regions_0, NULL) IS NOT NULL)
+WHERE c."Region" = ANY ($__regions_0) OR (c."Region" IS NULL AND array_position($__regions_0, NULL) IS NOT NULL)
 """);
     }
 
@@ -325,11 +325,11 @@ WHERE c."Region" = ANY (@__regions_0) OR (c."Region" IS NULL AND array_position(
 
         AssertSql(
             """
-@__collection_1={ 'A%', 'B%', 'C%' } (DbType = Object)
+$__collection_1={ 'A%', 'B%', 'C%' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."Address" LIKE ANY (@__collection_1)
+WHERE c."Address" LIKE ANY ($__collection_1)
 """);
     }
 
@@ -347,11 +347,11 @@ WHERE c."Address" LIKE ANY (@__collection_1)
 
         AssertSql(
             """
-@__collection_1={ 'A%', 'B%', 'C%' } (DbType = Object)
+$__collection_1={ 'A%', 'B%', 'C%' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."Address" LIKE ALL (@__collection_1)
+WHERE c."Address" LIKE ALL ($__collection_1)
 """);
     }
 
@@ -369,11 +369,11 @@ WHERE c."Address" LIKE ALL (@__collection_1)
 
         AssertSql(
             """
-@__collection_1={ 'A%', 'B%', 'C%' } (DbType = Object)
+$__collection_1={ 'A%', 'B%', 'C%' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE NOT (c."Address" LIKE ALL (@__collection_1))
+WHERE NOT (c."Address" LIKE ALL ($__collection_1))
 """);
     }
 
@@ -415,11 +415,11 @@ WHERE NOT (c."Address" LIKE ALL (@__collection_1))
 
         AssertSql(
             """
-@__collection_1={ 'a%', 'b%', 'c%' } (DbType = Object)
+$__collection_1={ 'a%', 'b%', 'c%' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."Address" ILIKE ANY (@__collection_1)
+WHERE c."Address" ILIKE ANY ($__collection_1)
 """);
     }
 
@@ -444,11 +444,11 @@ WHERE c."Address" ILIKE ANY (@__collection_1)
 
         AssertSql(
             """
-@__collection_1={ 'a%', 'b%', 'c%' } (DbType = Object)
+$__collection_1={ 'a%', 'b%', 'c%' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE NOT (c."Address" ILIKE ANY (@__collection_1))
+WHERE NOT (c."Address" ILIKE ANY ($__collection_1))
 """);
     }
 
@@ -466,11 +466,11 @@ WHERE NOT (c."Address" ILIKE ANY (@__collection_1))
 
         AssertSql(
             """
-@__collection_1={ 'a%', 'b%', 'c%' } (DbType = Object)
+$__collection_1={ 'a%', 'b%', 'c%' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."Address" ILIKE ALL (@__collection_1)
+WHERE c."Address" ILIKE ALL ($__collection_1)
 """);
     }
 

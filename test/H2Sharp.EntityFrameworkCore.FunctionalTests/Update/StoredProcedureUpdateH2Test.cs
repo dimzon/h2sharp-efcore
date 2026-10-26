@@ -21,9 +21,9 @@ END $$
 
         AssertSql(
             """
-@p0='New'
+$p0='New'
 
-CALL "Entity_Insert"(@p0, NULL);
+CALL "Entity_Insert"($p0, NULL);
 """);
     }
 
@@ -40,11 +40,11 @@ END $$
 
         AssertSql(
             """
-@p0='New1'
-@p1='New2'
+$p0='New1'
+$p1='New2'
 
-CALL "Entity_Insert"(@p0, NULL);
-CALL "Entity_Insert"(@p1, NULL);
+CALL "Entity_Insert"($p0, NULL);
+CALL "Entity_Insert"($p1, NULL);
 """);
     }
 
@@ -90,10 +90,10 @@ END $$
 
         AssertSql(
             """
-@p0='1'
-@p1='Updated'
+$p0='1'
+$p1='Updated'
 
-CALL "Entity_Update"(@p0, @p1);
+CALL "Entity_Update"($p0, $p1);
 """);
     }
 
@@ -110,11 +110,11 @@ END $$
 
         AssertSql(
             """
-@p0='1'
-@p1='Updated'
-@p2='8'
+$p0='1'
+$p1='Updated'
+$p2='8'
 
-CALL "EntityWithAdditionalProperty_Update"(@p0, @p1, @p2);
+CALL "EntityWithAdditionalProperty_Update"($p0, $p1, $p2);
 """);
     }
 
@@ -153,9 +153,9 @@ END $$
 
         AssertSql(
             """
-@p0='1'
+$p0='1'
 
-CALL "Entity_Delete"(@p0);
+CALL "Entity_Delete"($p0);
 """);
     }
 
@@ -177,11 +177,11 @@ END $$;
 
         AssertSql(
             """
-@p0='1'
-@p1='Entity2'
+$p0='1'
+$p1='Entity2'
 
-CALL "Entity_Delete"(@p0);
-CALL "Entity_Insert"(@p1, NULL);
+CALL "Entity_Delete"($p0);
+CALL "Entity_Insert"($p1, NULL);
 """);
     }
 
@@ -199,10 +199,10 @@ END $$
 
         AssertSql(
             """
-@p0='1'
-@p1='Updated'
+$p0='1'
+$p1='Updated'
 
-CALL "Entity_Update"(@p0, @p1, NULL);
+CALL "Entity_Update"($p0, $p1, NULL);
 """);
     }
 
@@ -220,10 +220,10 @@ END $$
 
         AssertSql(
             """
-@p0='1'
-@p1='Updated'
+$p0='1'
+$p1='Updated'
 
-CALL "Entity_Update"(@p0, @p1, NULL);
+CALL "Entity_Update"($p0, $p1, NULL);
 """);
     }
 
@@ -283,10 +283,10 @@ END $$
 
         AssertSql(
             """
-@p0='1'
-@p1='Updated'
+$p0='1'
+$p1='Updated'
 
-CALL "EntityWithAdditionalProperty_Update"(@p0, NULL, NULL, @p1);
+CALL "EntityWithAdditionalProperty_Update"($p0, NULL, NULL, $p1);
 """);
     }
 
@@ -340,11 +340,11 @@ END $$
 
         AssertSql(
             """
-@p0='1'
-@p1=NULL (Direction = InputOutput) (DbType = Object)
-@p2='Updated'
+$p0='1'
+$p1=NULL (Direction = InputOutput) (DbType = Object)
+$p2='Updated'
 
-CALL "Entity_Update"(@p0, @p1, @p2, NULL);
+CALL "Entity_Update"($p0, $p1, $p2, NULL);
 """);
     }
 
@@ -363,11 +363,11 @@ END $$
         // Can't assert SQL baseline as usual because the concurrency token changes
         Assert.Equal(
             """
-@p2='Updated'
+$p2='Updated'
 
-CALL "Entity_Update"(@p0, @p1, @p2, NULL, NULL);
+CALL "Entity_Update"($p0, $p1, $p2, NULL, NULL);
 """,
-            TestSqlLoggerFactory.Sql.Substring(TestSqlLoggerFactory.Sql.IndexOf("@p2", StringComparison.Ordinal)),
+            TestSqlLoggerFactory.Sql.Substring(TestSqlLoggerFactory.Sql.IndexOf("$p2", StringComparison.Ordinal)),
             ignoreLineEndingDifferences: true);
     }
 
@@ -385,12 +385,12 @@ END $$
 
         AssertSql(
             """
-@p0='1'
-@p1='8'
-@p2='Updated'
-@p3='9'
+$p0='1'
+$p1='8'
+$p2='Updated'
+$p3='9'
 
-CALL "EntityWithAdditionalProperty_Update"(@p0, @p1, @p2, @p3, NULL);
+CALL "EntityWithAdditionalProperty_Update"($p0, $p1, $p2, $p3, NULL);
 """);
     }
 
@@ -409,11 +409,11 @@ END $$
 
         AssertSql(
             """
-@p0='1'
-@p1='Updated'
-@p2='Initial'
+$p0='1'
+$p1='Updated'
+$p2='Initial'
 
-CALL "Entity_Update"(@p0, @p1, @p2);
+CALL "Entity_Update"($p0, $p1, $p2);
 """);
     }
 
@@ -435,9 +435,9 @@ END $$
 
         AssertSql(
             """
-@p0='1' (Direction = InputOutput) (DbType = String)
+$p0='1' (Direction = InputOutput) (DbType = String)
 
-CALL "Entity_Insert"(NULL, @p0);
+CALL "Entity_Insert"(NULL, $p0);
 """);
     }
 
@@ -459,9 +459,9 @@ END $$
 
         AssertSql(
             """
-@p0='1' (Direction = InputOutput) (DbType = String)
+$p0='1' (Direction = InputOutput) (DbType = String)
 
-CALL "Entity_Insert"(NULL, @p0);
+CALL "Entity_Insert"(NULL, $p0);
 """);
     }
 
@@ -496,17 +496,17 @@ END $$
 
         AssertSql(
             """
-@p0='Child'
+$p0='Child'
 
-CALL "Parent_Insert"(NULL, @p0);
+CALL "Parent_Insert"(NULL, $p0);
 """,
             //
             """
-@p1='1'
-@p2='8'
+$p1='1'
+$p2='8'
 
 INSERT INTO "Child1" ("Id", "Child1Property")
-VALUES (@p1, @p2);
+VALUES ($p1, $p2);
 """);
     }
 
@@ -523,10 +523,10 @@ END $$
 
         AssertSql(
             """
-@p0='Child'
-@p1='8'
+$p0='Child'
+$p1='8'
 
-CALL "Child1_Insert"(NULL, @p0, @p1);
+CALL "Child1_Insert"(NULL, $p0, $p1);
 """);
     }
 
@@ -543,16 +543,16 @@ END $$
 
         AssertSql(
             """
-@p2='1'
-@p0='2'
-@p3='1'
-@p1='Entity1_Modified'
-@p4='Entity2'
-@p5='0'
+$p2='1'
+$p0='2'
+$p3='1'
+$p1='Entity1_Modified'
+$p4='Entity2'
+$p5='0'
 
-UPDATE "EntityWithAdditionalProperty" SET "AdditionalProperty" = @p0, "Name" = @p1
-WHERE "Id" = @p2 AND "AdditionalProperty" = @p3;
-CALL "EntityWithAdditionalProperty_Insert"(@p4, NULL, @p5);
+UPDATE "EntityWithAdditionalProperty" SET "AdditionalProperty" = $p0, "Name" = $p1
+WHERE "Id" = $p2 AND "AdditionalProperty" = $p3;
+CALL "EntityWithAdditionalProperty_Insert"($p4, NULL, $p5);
 """);
     }
 

@@ -513,7 +513,7 @@ Identity не откатывается назад. Legacy-аннотация `Se
    | 7 | **`ALTER TABLE`** | читаются `ADD`/`DROP CONSTRAINT`, включая `FOREIGN KEY`; `ADD CONSTRAINT … UNIQUE` отвечает `expected "PRIMARY"`; `RENAME TO`, `ALTER COLUMN`, `DROP COLUMN`, `DROP DEFAULT` — `Not ported yet` | остальные действия `ALTER TABLE` и `UNIQUE`-ограничение |
    | 8 | **Колонка каталога без коллации** | `collation` колонки пуст, а у H2 2.5 там коллация базы | коллация в каталоге; имя каталога теперь имя базы (коммит движка `87a218a`) |
    | 9 | **`EXISTS` и `NOT EXISTS`** | **читается** (коммит движка `d86b2e1` «Ask subqueries whether a row exists») | — |
-   | 10 | **Квантованное сравнение с массивом-параметром** | `= ANY (@__ids_0)` → `Not ported yet: Parser.parseQuerySelect: aggregate calls outside the select list are not ported` | `x = ANY (массив)`: эталон берёт эту форму (`SELECT 1 = ANY(ARRAY[1,2,3])` → TRUE), а порт читает `ANY` только как вызов агрегата |
+   | 10 | **Квантованное сравнение с массивом-параметром** | `= ANY ($__ids_0)` → `Not ported yet: Parser.parseQuerySelect: aggregate calls outside the select list are not ported` | `x = ANY (массив)`: эталон берёт эту форму (`SELECT 1 = ANY(ARRAY[1,2,3])` → TRUE), а порт читает `ANY` только как вызов агрегата |
    | 11 | **`SAVEPOINT` внутри транзакции** | **читается** (коммит движка `69d522a`): `SAVEPOINT`, `ROLLBACK TO SAVEPOINT` и `RELEASE SAVEPOINT` принимаются | — |
    | 12 | **`BTRIM` с набором символов** | ~~`Syntax error in SQL statement "SELECT btrim(""t"".""Title"", E'…')"; expected ")"`~~ | **закрыто**: порт читает второй аргумент; падала не функция, а литерал — провайдер писал `EU&'…'`, которого в H2 нет. Набор теперь `U&'…'`, его читают и эталон, и порт; `BTRIM` с таким набором режет и таб, и неразрывный пробел |
    | 13 | **Оператор склейки строк** | ~~`Syntax error in SQL statement "SELECT ""t"".""Title"" \|\| ' (a topic)'"; expected "statement"``~~ | **закрыто**: провайдер пишет `CONCAT(a, b)`, и порт её читает |
@@ -699,7 +699,7 @@ Identity не откатывается назад. Legacy-аннотация `Se
 | `EXISTS` | **читается** (коммит движка `d86b2e1`) | — |
 | `x = ANY (массив)` | `Parser.parseQuerySelect: aggregate calls outside the select list are not ported` — эталон берёт `SELECT 1 = ANY(ARRAY[1,2,3])` → TRUE | дефект порта |
 | `SAVEPOINT` | **читается** (коммит движка `69d522a`) | — |
-| переменные в тексте SQL | `Parser.readTerm: variables (@name) are not ported` — но слой ADO переписывает `@имя` в `?` до разбора, так что через провайдер это не мешает | — |
+| переменные в тексте SQL | `Parser.readTerm: variables (@name) are not ported` — но слой ADO переписывает `$имя` в `$N` до разбора, так что через провайдер это не мешает | — |
 | файловая база | `Engine.openSession: persistent databases need the file store` — хранилище в порте есть и формат его совместим с H2 2.5, но сессия не открывает файловую базу | дефект порта |
 | `H2SharpException` с публичным конструктором | конструктор `internal`, тестовый набор не может сфабриковать отказ соединения | дефект порта |
 
@@ -886,7 +886,7 @@ SELECT a."Id" FROM "Rows" AS a     -- OK
 отдаёт сгенерированный провайдером запрос эталонной H2 и требует, чтобы она его приняла.
 
 **Побочный эффект: EF-запросы теперь выполняются.** Первый запрос EF против порта прошёл:
-`SELECT "r"."Name", "r"."Price" FROM "Rows" "r" WHERE "r"."Price" > @p0` — с фильтром,
+`SELECT "r"."Name", "r"."Price" FROM "Rows" "r" WHERE "r"."Price" > $p0` — с фильтром,
 проекцией и вызовом `EF.Functions.LeftPad`. До этого ни один запрос EF не мог выполниться.
 
 ### Что ещё вскрылось при этом

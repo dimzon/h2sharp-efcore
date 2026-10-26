@@ -27,11 +27,11 @@ WHERE j."IntList"[j."Id" + 1] = 2
 
         AssertSql(
             """
-@__id_0='1'
+$__id_0='1'
 
 SELECT j."Id", j."IntList", j."JsonThing"
 FROM "JsonEntities" AS j
-WHERE j."IntList"[@__id_0 + 1] = 2
+WHERE j."IntList"[$__id_0 + 1] = 2
 """);
     }
 
@@ -53,12 +53,12 @@ WHERE (j."JsonThing" ->> 'StringProperty') = 'foo'
 
         AssertSql(
             """
-@p0='10' (Nullable = true)
-@p1='9' (Nullable = true)
-@p2='8' (Nullable = true)
+$p0='10' (Nullable = true)
+$p1='9' (Nullable = true)
+$p2='8' (Nullable = true)
 
 INSERT INTO "NonPublicEntities" ("PrivateAutoProperty", "PrivateProperty", "_privateField")
-VALUES (@p0, @p1, @p2)
+VALUES ($p0, $p1, $p2)
 RETURNING "Id";
 """,
             //

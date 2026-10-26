@@ -53,11 +53,11 @@ WHERE c."Region" IS NULL OR btrim(c."Region", E' \t\n\r') = ''
 
         AssertSql(
             """
-@__foo_0='foo'
+$__foo_0='foo'
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE concat_ws('|', c."CompanyName", @__foo_0, '', 'bar') = 'Around the Horn|foo||bar'
+WHERE concat_ws('|', c."CompanyName", $__foo_0, '', 'bar') = 'Around the Horn|foo||bar'
 """);
     }
 
@@ -140,11 +140,11 @@ WHERE c."CompanyName" ~ '(?p)^A'';foo'
 
         AssertSql(
             """
-@__pattern_0='^A'
+$__pattern_0='^A'
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."CompanyName" ~ ('(?p)' || @__pattern_0)
+WHERE c."CompanyName" ~ ('(?p)' || $__pattern_0)
 """);
     }
 

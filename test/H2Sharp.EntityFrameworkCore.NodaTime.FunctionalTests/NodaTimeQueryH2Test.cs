@@ -122,11 +122,11 @@ WHERE make_interval(days => n."LocalDate2" - n."LocalDate") = INTERVAL 'P1D'
 
         AssertSql(
             """
-@__date_0='Friday, 20 April 2018' (DbType = Date)
+$__date_0='Friday, 20 April 2018' (DbType = Date)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE make_interval(days => n."LocalDate2" - @__date_0) = INTERVAL 'P1D'
+WHERE make_interval(days => n."LocalDate2" - $__date_0) = INTERVAL 'P1D'
 """);
     }
 
@@ -341,11 +341,11 @@ END = 5
 
         AssertSql(
             """
-@__ToInstant_0='2018-04-20T08:31:33Z' (DbType = DateTime)
+$__ToInstant_0='2018-04-20T08:31:33Z' (DbType = DateTime)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE n."LocalDateTime" AT TIME ZONE 'Europe/Berlin' = @__ToInstant_0
+WHERE n."LocalDateTime" AT TIME ZONE 'Europe/Berlin' = $__ToInstant_0
 """);
     }
 
@@ -362,11 +362,11 @@ WHERE n."LocalDateTime" AT TIME ZONE 'Europe/Berlin' = @__ToInstant_0
 
         AssertSql(
             """
-@__ToInstant_0='2018-04-20T08:31:33Z' (DbType = DateTime)
+$__ToInstant_0='2018-04-20T08:31:33Z' (DbType = DateTime)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE n."LocalDateTime" AT TIME ZONE n."TimeZoneId" = @__ToInstant_0
+WHERE n."LocalDateTime" AT TIME ZONE n."TimeZoneId" = $__ToInstant_0
 """);
     }
 
@@ -1185,11 +1185,11 @@ WHERE upper(n."Interval") - lower(n."Interval") = INTERVAL '5 00:00:00'
 
         AssertSql(
             """
-@__interval_0='2018-01-01T00:00:00Z/2020-12-25T00:00:00Z' (DbType = Object)
+$__interval_0='2018-01-01T00:00:00Z/2020-12-25T00:00:00Z' (DbType = Object)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE @__interval_0 @> n."Instant"
+WHERE $__interval_0 @> n."Instant"
 """);
     }
 
@@ -1332,11 +1332,11 @@ FROM "NodaTimeTypes" AS n
 
         AssertSql(
             """
-@__dateInterval_0='[2018-01-01, 2020-12-25]' (DbType = Object)
+$__dateInterval_0='[2018-01-01, 2020-12-25]' (DbType = Object)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE @__dateInterval_0 @> n."LocalDate"
+WHERE $__dateInterval_0 @> n."LocalDate"
 """);
     }
 
@@ -1352,11 +1352,11 @@ WHERE @__dateInterval_0 @> n."LocalDate"
 
         AssertSql(
             """
-@__dateInterval_0='[2018-04-22, 2018-04-24]' (DbType = Object)
+$__dateInterval_0='[2018-04-22, 2018-04-24]' (DbType = Object)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE n."DateInterval" @> @__dateInterval_0
+WHERE n."DateInterval" @> $__dateInterval_0
 """);
     }
 
@@ -1373,11 +1373,11 @@ WHERE n."DateInterval" @> @__dateInterval_0
 
         AssertSql(
             """
-@__dateInterval_0='[2018-04-22, 2018-04-26]' (DbType = Object)
+$__dateInterval_0='[2018-04-22, 2018-04-26]' (DbType = Object)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE n."DateInterval" * @__dateInterval_0 = '[2018-04-22,2018-04-24]'::daterange
+WHERE n."DateInterval" * $__dateInterval_0 = '[2018-04-22,2018-04-24]'::daterange
 """);
     }
 
@@ -1394,11 +1394,11 @@ WHERE n."DateInterval" * @__dateInterval_0 = '[2018-04-22,2018-04-24]'::daterang
 
         AssertSql(
             """
-@__dateInterval_0='[2018-04-22, 2018-04-26]' (DbType = Object)
+$__dateInterval_0='[2018-04-22, 2018-04-26]' (DbType = Object)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE n."DateInterval" + @__dateInterval_0 = '[2018-04-20,2018-04-26]'::daterange
+WHERE n."DateInterval" + $__dateInterval_0 = '[2018-04-20,2018-04-26]'::daterange
 """);
     }
 
@@ -1476,11 +1476,11 @@ LIMIT 2
 
         AssertSql(
             """
-@__dateRange_0='[2018-01-01, 2020-12-26]' (DbType = Object)
+$__dateRange_0='[2018-01-01, 2020-12-26]' (DbType = Object)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE @__dateRange_0 @> n."LocalDate"
+WHERE $__dateRange_0 @> n."LocalDate"
 """);
     }
 
@@ -1500,11 +1500,11 @@ WHERE @__dateRange_0 @> n."LocalDate"
 
         AssertSql(
             """
-@__p_0='2018-04-20T10:31:33 UTC (+00)' (DbType = DateTime)
+$__p_0='2018-04-20T10:31:33 UTC (+00)' (DbType = DateTime)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE n."Instant" = @__p_0
+WHERE n."Instant" = $__p_0
 """);
     }
 
@@ -1558,11 +1558,11 @@ WHERE CAST(n."Instant" AT TIME ZONE 'Europe/Berlin' AS date) = DATE '2018-04-20'
 
         AssertSql(
             """
-@__timeZone_0='Europe/Berlin'
+$__timeZone_0='Europe/Berlin'
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE n."Instant" AT TIME ZONE @__timeZone_0 = TIMESTAMP '2018-04-20T12:31:33.666'
+WHERE n."Instant" AT TIME ZONE $__timeZone_0 = TIMESTAMP '2018-04-20T12:31:33.666'
 """);
     }
 
@@ -1806,11 +1806,11 @@ WHERE n."Instant" AT TIME ZONE 'UTC' = TIMESTAMP '2018-04-20T10:31:33.666'
 
         AssertSql(
             """
-@__ToInstant_0='2018-04-20T10:31:33Z' (DbType = DateTime)
+$__ToInstant_0='2018-04-20T10:31:33Z' (DbType = DateTime)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-WHERE n."ZonedDateTime" = @__ToInstant_0
+WHERE n."ZonedDateTime" = $__ToInstant_0
 """);
     }
 
@@ -1828,11 +1828,11 @@ WHERE n."ZonedDateTime" = @__ToInstant_0
 
         AssertSql(
             """
-@__p_1='2018-04-01T00:00:00 UTC (+00)' (DbType = DateTime)
+$__p_1='2018-04-01T00:00:00 UTC (+00)' (DbType = DateTime)
 
 SELECT n."Id", n."DateInterval", n."Duration", n."Instant", n."InstantRange", n."Interval", n."LocalDate", n."LocalDate2", n."LocalDateRange", n."LocalDateTime", n."LocalTime", n."Long", n."OffsetTime", n."Period", n."TimeZoneId", n."ZonedDateTime"
 FROM "NodaTimeTypes" AS n
-ORDER BY n."ZonedDateTime" <-> @__p_1 NULLS FIRST
+ORDER BY n."ZonedDateTime" <-> $__p_1 NULLS FIRST
 LIMIT 1
 """);
     }

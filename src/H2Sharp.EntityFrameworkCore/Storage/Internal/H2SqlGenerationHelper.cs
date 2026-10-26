@@ -23,6 +23,41 @@ public class H2SqlGenerationHelper : RelationalSqlGenerationHelper
     }
 
     /// <summary>
+    ///     The named-parameter prefix of the H2Sharp ADO.NET provider: "$name".
+    /// </summary>
+    /// <remarks>
+    ///     EF Core calls this again on a name it has already generated, so the prefix is added
+    ///     only when it is not there; otherwise the placeholder would become "$$name".
+    /// </remarks>
+    public override string GenerateParameterName(string name)
+        => name.StartsWith('$') ? name : "$" + name;
+
+    /// <summary>
+    ///     Writes the named-parameter prefix of the H2Sharp ADO.NET provider: "$name".
+    /// </summary>
+    public override void GenerateParameterName(StringBuilder builder, string name)
+    {
+        if (!name.StartsWith('$'))
+        {
+            _ = builder.Append('$');
+        }
+
+        _ = builder.Append(name);
+    }
+
+    /// <summary>
+    ///     The parameter placeholder of the H2Sharp ADO.NET provider: "$name".
+    /// </summary>
+    public override string GenerateParameterNamePlaceholder(string name)
+        => GenerateParameterName(name);
+
+    /// <summary>
+    ///     Writes the parameter placeholder of the H2Sharp ADO.NET provider: "$name".
+    /// </summary>
+    public override void GenerateParameterNamePlaceholder(StringBuilder builder, string name)
+        => GenerateParameterName(builder, name);
+
+    /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
     ///     any release. You should only use it directly in your code with extreme caution and knowing that

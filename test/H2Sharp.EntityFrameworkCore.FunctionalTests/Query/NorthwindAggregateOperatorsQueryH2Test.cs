@@ -26,7 +26,7 @@ public class NorthwindAggregateOperatorsQueryH2Test : NorthwindAggregateOperator
 
         AssertSql(
             """
-@__p_0='3'
+$__p_0='3'
 
 SELECT avg((
     SELECT avg(CAST(5 + (
@@ -39,7 +39,7 @@ FROM (
     SELECT c."CustomerID"
     FROM "Customers" AS c
     ORDER BY c."CustomerID" NULLS FIRST
-    LIMIT @__p_0
+    LIMIT $__p_0
 ) AS c0
 """);
     }
@@ -51,19 +51,19 @@ FROM (
         // Note: PostgreSQL doesn't support uint, but value converters make this into bigint
         AssertSql(
             """
-@__ids_0={ '0', '1' } (DbType = Object)
+$__ids_0={ '0', '1' } (DbType = Object)
 
 SELECT e."EmployeeID", e."City", e."Country", e."FirstName", e."ReportsTo", e."Title"
 FROM "Employees" AS e
-WHERE e."EmployeeID" = ANY (@__ids_0)
+WHERE e."EmployeeID" = ANY ($__ids_0)
 """,
             //
             """
-@__ids_0={ '0' } (DbType = Object)
+$__ids_0={ '0' } (DbType = Object)
 
 SELECT e."EmployeeID", e."City", e."Country", e."FirstName", e."ReportsTo", e."Title"
 FROM "Employees" AS e
-WHERE e."EmployeeID" = ANY (@__ids_0)
+WHERE e."EmployeeID" = ANY ($__ids_0)
 """);
     }
 
@@ -75,19 +75,19 @@ WHERE e."EmployeeID" = ANY (@__ids_0)
 
         AssertSql(
             """
-@__ids_0={ '0', '1' } (DbType = Object)
+$__ids_0={ '0', '1' } (DbType = Object)
 
 SELECT e."EmployeeID", e."City", e."Country", e."FirstName", e."ReportsTo", e."Title"
 FROM "Employees" AS e
-WHERE e."EmployeeID" = ANY (@__ids_0)
+WHERE e."EmployeeID" = ANY ($__ids_0)
 """,
             //
             """
-@__ids_0={ '0' } (DbType = Object)
+$__ids_0={ '0' } (DbType = Object)
 
 SELECT e."EmployeeID", e."City", e."Country", e."FirstName", e."ReportsTo", e."Title"
 FROM "Employees" AS e
-WHERE e."EmployeeID" = ANY (@__ids_0)
+WHERE e."EmployeeID" = ANY ($__ids_0)
 """);
     }
 
@@ -114,19 +114,19 @@ WHERE e."EmployeeID" = ANY (@__ids_0)
 
         AssertSql(
             """
-@__p_0={ 'ABCDE', 'ALFKI' } (DbType = Object)
+$__p_0={ 'ABCDE', 'ALFKI' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."CustomerID" = ANY (array_remove(@__p_0, NULL))
+WHERE c."CustomerID" = ANY (array_remove($__p_0, NULL))
 """,
             //
             """
-@__p_0={ 'ABCDE', 'ANATR' } (DbType = Object)
+$__p_0={ 'ABCDE', 'ANATR' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."CustomerID" = ANY (array_remove(@__p_0, NULL))
+WHERE c."CustomerID" = ANY (array_remove($__p_0, NULL))
 """);
     }
 
@@ -136,11 +136,11 @@ WHERE c."CustomerID" = ANY (array_remove(@__p_0, NULL))
 
         AssertSql(
             """
-@__Select_0={ 'ABCDE', 'ALFKI' } (DbType = Object)
+$__Select_0={ 'ABCDE', 'ALFKI' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."CustomerID" = ANY (@__Select_0)
+WHERE c."CustomerID" = ANY ($__Select_0)
 """);
     }
 
@@ -150,19 +150,19 @@ WHERE c."CustomerID" = ANY (@__Select_0)
 
         AssertSql(
             """
-@__Select_0={ 'ABCDE', 'ALFKI' } (DbType = Object)
+$__Select_0={ 'ABCDE', 'ALFKI' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."CustomerID" = ANY (@__Select_0)
+WHERE c."CustomerID" = ANY ($__Select_0)
 """,
             //
             """
-@__Select_0={ 'ABCDE', 'ANATR' } (DbType = Object)
+$__Select_0={ 'ABCDE', 'ANATR' } (DbType = Object)
 
 SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
 FROM "Customers" AS c
-WHERE c."CustomerID" = ANY (@__Select_0)
+WHERE c."CustomerID" = ANY ($__Select_0)
 """);
     }
 
