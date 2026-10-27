@@ -20,7 +20,7 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.14" />
     <PackageVersion Include="NetTopologySuite" Version="2.6.0" />
     <PackageVersion Include="Npgsql.DependencyInjection" Version="$(NpgsqlVersion)" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.200" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.403" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.assert" Version="2.9.3" />
