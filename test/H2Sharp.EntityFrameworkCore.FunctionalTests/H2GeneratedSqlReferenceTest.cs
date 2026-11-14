@@ -62,7 +62,7 @@ public class H2GeneratedSqlReferenceTest
         public DbSet<Post> Posts => Set<Post>();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseH2(connectionString ?? "jdbc:h2:mem:reference");
+            => optionsBuilder.UseH2(connectionString ?? "Data Source=reference;Storage=Memory");
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -76,7 +76,7 @@ public class H2GeneratedSqlReferenceTest
         public DbSet<Entry> Entries => Set<Entry>();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseH2("jdbc:h2:mem:reference", o => o.UseNodaTime());
+            => optionsBuilder.UseH2("Data Source=reference;Storage=Memory", o => o.UseNodaTime());
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
             => modelBuilder.Entity<Entry>().ToTable("Entries");

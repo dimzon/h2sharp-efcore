@@ -27,7 +27,7 @@ public class H2IdentityTests
     [Fact]
     public void An_identity_value_comes_back_from_the_insert()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:IdentityValue");
+        using var connection = new H2Connection("Data Source=IdentityValue;Storage=Memory");
         connection.Open();
 
         using var context = new ItemContext(_serviceProvider, connection);
@@ -43,7 +43,7 @@ public class H2IdentityTests
     [Fact]
     public void The_insert_of_an_identity_row_is_written_the_way_H2_writes_it()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:IdentityStatement");
+        using var connection = new H2Connection("Data Source=IdentityStatement;Storage=Memory");
         connection.Open();
 
         SqlRecorder recorder = new();
@@ -64,7 +64,7 @@ public class H2IdentityTests
 
     public void Dispose()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:IdentityValue");
+        using var connection = new H2Connection("Data Source=IdentityValue;Storage=Memory");
         connection.Open();
         using var context = new ItemContext(_serviceProvider, connection);
         context.Database.EnsureDeleted();

@@ -84,7 +84,7 @@ public class ForumNodaTimeExamples
 
     private static H2Connection Open()
     {
-        var connection = new H2Connection("jdbc:h2:mem:noda_" + Guid.NewGuid().ToString("N"));
+        var connection = new H2Connection("Data Source=" + "noda_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
 
         using (var context = new ScheduleContext(connection))

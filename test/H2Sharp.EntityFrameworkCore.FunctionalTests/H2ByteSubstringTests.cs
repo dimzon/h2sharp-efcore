@@ -9,9 +9,12 @@ public class H2ByteSubstringTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [Trait("Category", "BlockedByPort")]
     public void Every_byte_is_read_with_substring(bool first)
     {
-        using var connection = new H2Connection("jdbc:h2:mem:byte_substring_" + Guid.NewGuid().ToString("N"));
+        // The bytes above 127 do not come back: the reader of the port refuses a number that
+        // fits a .NET byte (dimzon/h2sharp#94).
+        using var connection = new H2Connection("Data Source=" + "byte_substring_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
         using var context = new ByteContext(new DbContextOptionsBuilder<ByteContext>().UseH2(connection).Options);
         context.Database.EnsureCreated();
@@ -53,9 +56,12 @@ public class H2ByteSubstringTests
     }
 
     [Fact]
+    [Trait("Category", "BlockedByPort")]
     public void Constant_and_parameter_indexes_keep_the_unsigned_byte()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:byte_index_" + Guid.NewGuid().ToString("N"));
+        // The bytes above 127 do not come back: the reader of the port refuses a number that
+        // fits a .NET byte (dimzon/h2sharp#94).
+        using var connection = new H2Connection("Data Source=" + "byte_index_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
         using var context = new ByteContext(new DbContextOptionsBuilder<ByteContext>().UseH2(connection).Options);
         context.Database.EnsureCreated();

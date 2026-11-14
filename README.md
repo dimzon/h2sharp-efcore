@@ -57,14 +57,26 @@ public class BlogContext : DbContext
     public DbSet<Blog> Blogs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseH2("Data Source=mem:mydatabase");
+        => optionsBuilder.UseH2("Data Source=mydatabase;Storage=Memory");
 }
 ```
 
-The connection string is the ADO.NET spelling. H2Sharp's ADO layer takes a JDBC URL, so
-`Data Source=mem:mydatabase` is translated to `jdbc:h2:mem:mydatabase`; a URL is accepted as
-it is. The settings a URL carries — `MODE=PostgreSQL` and the like — are the connection
-string's other keys.
+An H2 database belongs to a **data source**: the data source creates it, keeps it alive and
+hands out the connections to it. The connection string names the database, and the provider
+keeps **one data source per database** — every context with that connection string works with
+the same one. An application that wants to own the database itself hands its own data source
+over, and the provider takes the connections from it:
+
+```csharp
+using H2DataSource dataSource = new H2DataSourceBuilder("Data Source=mydatabase;Storage=Memory")
+    .Build();
+
+optionsBuilder.UseH2(dataSource);
+```
+
+The connection string is the classic `key=value` spelling the engine's ADO layer takes:
+`Data Source` names the database, `Storage` says whether it is `Memory` or `File`, and the
+other keys are the settings of the engine. A JDBC URL is not a connection string here.
 
 **[docs/USAGE.md](docs/USAGE.md) is the guide**: connecting, the context, mapping, value
 generation, migrations, scaffolding, the functions of H2, window functions, the catalogue, the

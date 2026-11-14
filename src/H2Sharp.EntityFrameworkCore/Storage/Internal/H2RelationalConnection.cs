@@ -1,7 +1,7 @@
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
-using System.Transactions;
-using H2Sharp.Data;
+using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
+using H2Sharp.EntityFrameworkCore.Storage;
 
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 
@@ -14,11 +14,10 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 ///
 /// <remarks>
 ///     <para>
-///         The upstream H2 provider builds its connections through <c>H2DataSource</c>, a
-///         pooling and multiplexing layer that also carries the plugin, enum-mapping and TLS
-///         configuration. H2Sharp has no equivalent: <see cref="H2Connection" /> opens the database
-///         directly and there is no separate configuration surface to hang those features on. The
-///         data source, its manager and the plugin interface are therefore gone rather than emulated.
+///         An H2 database is embedded in the process and is owned by an <see cref="H2DataSource" />: the
+///         data source creates it, keeps it alive and hands out connections to it. Every connection of
+///         this store therefore comes from a data source, and two contexts with the same connection string
+///         share one database.
 ///     </para>
 /// </remarks>
 public class H2RelationalConnection : RelationalConnection, IH2RelationalConnection
@@ -35,19 +34,57 @@ public class H2RelationalConnection : RelationalConnection, IH2RelationalConnect
     }
 
     /// <summary>
+    ///     The data source that owns the database this store talks to.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         A caller that supplied a data source owns the database; a caller that supplied a connection
+    ///         string gets the data source of that connection string, and that database lives as long as
+    ///         the process does. A caller that supplied a single connection has no data source to ask:
+    ///         the connection is the only way to that database.
+    ///     </para>
+    /// </remarks>
+    public virtual DbDataSource? DataSource
+        => ResolveDataSource();
+
+    private DbDataSource? ResolveDataSource()
+    {
+        var options = Dependencies.ContextOptions.FindExtension<H2OptionsExtension>();
+
+        if (options?.DataSource is { } supplied)
+        {
+            return supplied;
+        }
+
+        if (options?.Connection is not null)
+        {
+            // The caller gave a connection and owns the database behind it. Its connection string
+            // names that database, but a data source built from the string would open a database of
+            // its own: the connection is the only way to the one the caller means.
+            return null;
+        }
+
+        var connectionString = ConnectionString;
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            return null;
+        }
+
+        return H2DataSources.GetOrCreate(connectionString);
+    }
+
+    /// <summary>
     ///     Indicates whether the store connection supports ambient transactions.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         False, unlike upstream. An H2 database is embedded in the process and its transaction is
-    ///         owned by <see cref="H2Connection" />; there is no enlistment path from an ambient
-    ///         <see cref="System.Transactions.Transaction" /> into the engine. Reporting true would let EF
-    ///         Core suppress its own transaction when an ambient one happens to be in scope, and the work
-    ///         would then run outside any transaction H2Sharp knows about.
+    ///         True. The engine's connection enlists itself in an ambient
+    ///         <see cref="System.Transactions.Transaction" /> when one is in scope, and EF Core then leaves
+    ///         the transaction to that ambient one instead of starting a transaction of its own.
     ///     </para>
     /// </remarks>
     protected override bool SupportsAmbientTransactions
-        => false;
+        => true;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -56,58 +93,46 @@ public class H2RelationalConnection : RelationalConnection, IH2RelationalConnect
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override DbConnection CreateDbConnection()
-        // H2Connection takes an H2 URL, not an ADO.NET connection string. "Data Source=mem:x" is the
-        // spelling the rest of .NET uses and the one an application will hand to UseH2, so it is
-        // translated here; passing it through unchanged makes the engine's URL parser fail on the
-        // "Data Source=" prefix rather than on anything the caller wrote wrong.
-        => new H2Connection(H2Url(ConnectionString));
+        => DataSource?.CreateConnection()
+           ?? throw new InvalidOperationException(
+               "An H2 context needs a connection string or a data source: the database is owned by a data source.");
 
     /// <summary>
-    ///     The H2 URL for an ADO.NET connection string.
+    ///     The connection string of the store.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         H2Connection takes an H2 URL, not an ADO.NET connection string. "Data Source=mem:x" is the
-    ///         spelling the rest of .NET uses and the one an application hands to UseH2, so it is
-    ///         translated here; passing it through unchanged makes the engine's URL parser fail on the
-    ///         "Data Source=" prefix rather than on anything the caller wrote wrong.
+    ///         A connection that comes from a data source belongs to the database of that data
+    ///         source, and the engine does not let the connection string of such a connection
+    ///         change under it. The connection is therefore given up when the string changes, and
+    ///         the next use takes a connection from the data source of the new string.
     ///     </para>
     ///     <para>
-    ///         An H2 URL also carries settings -- MODE=PostgreSQL, DATABASE_TO_LOWER, DB_CLOSE_DELAY and
-    ///         so on. Those arrive as further keys of the connection string, so the translation cannot
-    ///         only swap the prefix: whatever is not the database name is put back as the ";Key=Value"
-    ///         tail H2 expects on a URL, which is where those settings belong.
+    ///         A connection the caller gave is the caller's own: its connection string is set the
+    ///         way the engine allows, and the caller keeps the connection.
     ///     </para>
     /// </remarks>
-    public static string H2Url(string? connectionString)
+    public override string? ConnectionString
     {
-        if (string.IsNullOrWhiteSpace(connectionString))
+        get => base.ConnectionString;
+        set
         {
-            return string.Empty;
-        }
-
-        // A JDBC URL is already what the engine wants: its own parser reads the database name and
-        // the settings off it. The key=value spelling is what the rest of .NET uses, and that is
-        // what gets translated.
-        if (connectionString.StartsWith("jdbc:h2:", StringComparison.OrdinalIgnoreCase))
-        {
-            return connectionString;
-        }
-
-        var builder = new H2ConnectionStringBuilder(connectionString);
-        var url = builder.ToH2ConnectionString();
-
-        var settings = new List<string>();
-        foreach (string key in builder.Keys)
-        {
-            if (!string.Equals(key, "Data Source", StringComparison.OrdinalIgnoreCase))
+            if (CallerSuppliedConnection)
             {
-                settings.Add($"{key}={builder[key]}");
+                base.ConnectionString = value;
+                return;
             }
-        }
 
-        return settings.Count == 0 ? url : url + ";" + string.Join(";", settings);
+            SetDbConnection(null, contextOwnsConnection: false);
+            base.ConnectionString = value;
+        }
     }
+
+    /// <summary>
+    ///     Whether the caller gave a connection of its own, which the provider must not replace.
+    /// </summary>
+    private bool CallerSuppliedConnection
+        => Dependencies.ContextOptions.FindExtension<H2OptionsExtension>()?.Connection is not null;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -128,22 +153,12 @@ public class H2RelationalConnection : RelationalConnection, IH2RelationalConnect
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public override Transaction? CurrentAmbientTransaction
-        => null;
-
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
     public virtual IH2RelationalConnection CloneWith(string connectionString)
     {
         var optionsBuilder = new DbContextOptionsBuilder();
         ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(
-            RelationalOptionsExtension.Extract(Dependencies.ContextOptions)
-                .WithConnectionString(null)
-                .WithConnection(new H2Connection(connectionString)));
+            ((H2OptionsExtension)RelationalOptionsExtension.Extract(Dependencies.ContextOptions))
+                .WithConnectionString(connectionString));
 
         return new H2RelationalConnection(Dependencies with { ContextOptions = optionsBuilder.Options });
     }

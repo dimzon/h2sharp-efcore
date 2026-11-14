@@ -36,7 +36,7 @@ public class BlogContext : DbContext
     public DbSet<Blog> Blogs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseH2("Data Source=mem:mydatabase");
+        => optionsBuilder.UseH2("Data Source=mydatabase;Storage=Memory");
 }
 
 public class Blog
@@ -47,9 +47,9 @@ public class Blog
 ```
 
 The key of a new row is drawn by the database, and H2 draws it with an identity column. The
-port reads that DDL and gives the value back, so the quick start as written stands green —
-as long as the connection stays open: an in-memory database goes when the last connection
-closes, and the engine has no `DB_CLOSE_DELAY` yet.
+port reads that DDL and gives the value back, so the quick start as written stands green: the
+database belongs to the data source of the connection string, and the data source keeps it
+alive while the process lives.
 
 ## Getting the provider
 
@@ -71,29 +71,58 @@ as a package. The path to it is overridden with the `H2SharpProject` property:
 `UseH2` takes the connection string:
 
 ```csharp
-optionsBuilder.UseH2("Data Source=mem:mydatabase");
+optionsBuilder.UseH2("Data Source=mydatabase;Storage=Memory");
 ```
 
-The engine's ADO layer takes a JDBC URL, and the .NET world spells the same thing
-`Data Source=mem:mydatabase`, so both are accepted:
+The connection string is the classic `key=value` spelling that the engine's ADO layer takes.
+`Data Source` names the database — the key of an in-memory database or the path of a file — and
+`Storage` says which of the two it is. The engine asks for a file when nothing says otherwise,
+so the kind of the database is best written out:
 
 | What is written | What the engine opens |
 |---|---|
-| `jdbc:h2:mem:mydatabase` | `jdbc:h2:mem:mydatabase` |
-| `Data Source=mem:mydatabase` | `jdbc:h2:mem:mydatabase` |
-| `Data Source=mem:mydatabase;MODE=PostgreSQL` | `jdbc:h2:mem:mydatabase;MODE=PostgreSQL` |
+| `Data Source=mydatabase;Storage=Memory` | the in-memory database `mydatabase` |
+| `Data Source=mydatabase;Storage=File` | the file `mydatabase.mv.db` |
+| `Data Source=./data/app;Storage=File;MODE=Regular` | the file `./data/app.mv.db` in the regular mode |
 
-The settings a URL carries are the connection string's other keys. The translation is the
-provider's, and the engine's own builder does the same thing — see
-[docs/DIALECT.md](DIALECT.md).
+A JDBC URL is not a connection string here: the engine's ADO layer takes `key=value` and
+nothing else. The other keys are the settings of the engine — `INIT`, `IFEXISTS`,
+`FORBID_CREATION`, `PAGE_SIZE`, `LOCK_MODE` and the rest; the engine's own list is in its
+ADO.NET guide.
 
-A database in memory is gone when the last connection to it is closed, and the engine has no
-file database yet, so `EnsureCreated` and friends work in memory and nowhere else for now. A
-context that opens and closes its connection between commands loses the database with it, so
-hold a connection open while the context works:
+### The data source owns the database
+
+An H2 database belongs to a **data source**: the data source creates it, keeps it alive and
+hands out the connections to it. Two connections that come from two data sources are two
+databases, even when they carry the same name.
+
+The provider keeps **one data source per database**: a connection string names a database, and
+every context with that connection string takes its connections from the one data source that
+owns it. The database of a file lives as long as the process does, and two owners of one file
+would collide on the file lock — which is why there is only one.
+
+An application that wants to own the database itself makes the data source and hands it over:
 
 ```csharp
-using var connection = new H2Connection("jdbc:h2:mem:mydatabase");
+using H2DataSource dataSource = new H2DataSourceBuilder("Data Source=mydatabase;Storage=Memory")
+    .Build();
+
+optionsBuilder.UseH2(dataSource);
+```
+
+The data source is then the application's, and a connection to that database is a connection
+from it:
+
+```csharp
+using var connection = (H2Connection)dataSource.CreateConnection();
+connection.Open();
+```
+
+A connection made on its own is a database of its own — the engine's way of saying that one
+connection owns one database:
+
+```csharp
+using var connection = new H2Connection("Data Source=mydatabase;Storage=Memory");
 connection.Open();
 
 await using var ctx = new BlogContext(connection);
@@ -103,6 +132,10 @@ await using var ctx = new BlogContext(connection);
 protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     => optionsBuilder.UseH2(connection);
 ```
+
+A context that was given a connection works with that connection alone: the provider issues
+its catalogue statements on it as well, because a second connection would be a second
+database.
 
 ## The context
 
@@ -233,7 +266,7 @@ an empty model would be indistinguishable from an empty database, and every migr
 it would try to recreate tables that are there.
 
 ```bash
-dotnet ef dbcontext scaffold "Data Source=mem:mydatabase" H2Sharp
+dotnet ef dbcontext scaffold "Data Source=mydatabase;Storage=Memory" H2Sharp
 ```
 
 What is still missing is `CREATE SCHEMA`: the test of the scaffolding makes a schema of its own
@@ -285,10 +318,10 @@ in `INFORMATION_SCHEMA.TABLE_CONSTRAINTS` and `INFORMATION_SCHEMA.KEY_COLUMN_USA
 references in `INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS`.
 
 The port has the catalogue now, and the scaffolding reads it. Two things in the catalogue of the
-port are not what H2 2.5 has: the name of the catalog is the path of the database in the URL,
-where H2 2.5 gives the name of the database, and the collation of a column is empty, where H2
-2.5 gives the collation of the database. The port's own test of the catalogue compares every
-column of it with the reference and names both.
+port are not what H2 2.5 has: the name of the catalog is the name of the database, where H2 2.5
+gives the path of the file it is in, and the collation of a column is empty, where H2 2.5 gives
+the collation of the database. The port's own test of the catalogue compares every column of it
+with the reference and names both.
 
 The provider's part is written and checked against the reference; see
 [docs/DIALECT.md](DIALECT.md).
@@ -327,7 +360,7 @@ keyless type is the one that works.
 | Types | H2's own: `varchar`, `char`, `numeric`, `varbinary`, `uuid`, `json`, `clob`, `blob`, `timestamp`, `time`, `boolean`, `smallint`, `integer`, `bigint`, `real`, `double` |
 | Paging | `LIMIT n` / `OFFSET n` |
 | Concatenation | `CONCAT` for .NET string `+` (ignores null parts), `ARRAY_CAT` for arrays; H2 also accepts `\|\|` |
-| Parameters | named `$name`, which the ADO layer rewrites into `$N` before the statement is parsed |
+| Parameters | named `$name` (case-sensitive), which the ADO layer rewrites into `$N` before the statement is parsed; `@name` and `:name` are not parameters |
 | Table alias | without the `AS`: `FROM "Blogs" "b"` — the grammar allows both spellings ("[ [ AS ] newTableAlias ]"), and this is the one the engine reads |
 | Type cast | `CAST(x AS y)` — H2 also accepts the shorter `x::y` |
 

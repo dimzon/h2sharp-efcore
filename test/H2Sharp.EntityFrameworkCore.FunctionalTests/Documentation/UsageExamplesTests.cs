@@ -67,7 +67,7 @@ public class UsageExamplesTests
     [Fact]
     public async Task The_quick_start_works()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:documentation");
+        using var connection = new H2Connection("Data Source=documentation;Storage=Memory");
         connection.Open();
 
         await using var ctx = new BlogContext(connection);
@@ -89,7 +89,7 @@ public class UsageExamplesTests
     [Fact]
     public async Task A_context_whose_key_the_application_gives_works()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:documentation-explicitkey");
+        using var connection = new H2Connection("Data Source=documentation-explicitkey;Storage=Memory");
         connection.Open();
 
         await using var ctx = new ArticleContext(connection);
@@ -108,7 +108,7 @@ public class UsageExamplesTests
     [Fact]
     public async Task A_function_of_H2_is_called_in_the_database()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:documentation-functions");
+        using var connection = new H2Connection("Data Source=documentation-functions;Storage=Memory");
         connection.Open();
 
         await using var ctx = new ArticleContext(connection);

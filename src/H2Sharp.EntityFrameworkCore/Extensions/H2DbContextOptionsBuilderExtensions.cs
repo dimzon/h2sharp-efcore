@@ -127,7 +127,12 @@ public static class H2DbContextOptionsBuilderExtensions
     ///     Configures the context to connect to an H2 database.
     /// </summary>
     /// <param name="optionsBuilder">A builder for setting options on the context.</param>
-    /// <param name="dataSource">A <see cref="DbDataSource" /> which will be used to get database connections.</param>
+    /// <param name="dataSource">
+    ///     A <see cref="DbDataSource" /> which will be used to get database connections. An H2 database
+    ///     belongs to a data source: it creates it, keeps it alive and hands out connections to it, so
+    ///     the caller that owns the data source owns the database. The connections of the data source
+    ///     must be H2Sharp connections — the provider talks to the engine through them.
+    /// </param>
     /// <param name="h2OptionsAction">An optional action to allow additional H2-specific configuration.</param>
     /// <returns>
     ///     The options builder so that further configuration can be chained.
@@ -140,6 +145,9 @@ public static class H2DbContextOptionsBuilderExtensions
         Check.NotNull(optionsBuilder, nameof(optionsBuilder));
         Check.NotNull(dataSource, nameof(dataSource));
 
+        var extension = (H2OptionsExtension)GetOrCreateExtension(optionsBuilder).WithDataSource(dataSource);
+
+        ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
         ConfigureWarnings(optionsBuilder);
 
@@ -151,14 +159,14 @@ public static class H2DbContextOptionsBuilderExtensions
     /// <summary>
     ///     <para>
     ///         Configures the context to connect to an H2 database, but without initially setting any
-    ///         <see cref="DbConnection" /> or connection string.
+    ///         <see cref="DbConnection" />, <see cref="DbDataSource" /> or connection string.
     ///     </para>
     ///     <para>
-    ///         The connection or connection string must be set explicitly or registered in the DI
+    ///         The connection, data source or connection string must be set explicitly or registered in the DI
     ///         before the <see cref="DbContext" /> is used to connect to a database.
-    ///         Set a connection using <see cref="RelationalDatabaseFacadeExtensions.SetDbConnection" />, or a
-    ///         connection string using <see cref="RelationalDatabaseFacadeExtensions.SetConnectionString" />.
-    ///         There is no data source overload: an H2 database is embedded and is addressed by its URL.
+    ///         Set a connection using <see cref="RelationalDatabaseFacadeExtensions.SetDbConnection" />, a data source using
+    ///         <see cref="UseH2(DbContextOptionsBuilder, DbDataSource, Action{H2DbContextOptionsBuilder})" />, or a connection
+    ///         string using <see cref="RelationalDatabaseFacadeExtensions.SetConnectionString" />.
     ///     </para>
     /// </summary>
     /// <param name="optionsBuilder">The builder being used to configure the context.</param>

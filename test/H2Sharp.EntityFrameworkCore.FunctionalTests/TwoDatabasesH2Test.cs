@@ -20,5 +20,5 @@ public class TwoDatabasesH2Test(H2Fixture fixture) : TwoDatabasesTestBase(fixtur
     protected override TwoDatabasesWithDataContext CreateBackingContext(string databaseName)
         => new(Fixture.CreateOptions(H2TestStore.Create(databaseName)));
 
-    protected override string DummyConnectionString { get; } = "jdbc:h2:mem:does_not_exist";
+    protected override string DummyConnectionString { get; } = "Data Source=does_not_exist;Storage=Memory";
 }

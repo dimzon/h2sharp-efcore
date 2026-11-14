@@ -98,7 +98,7 @@ public class H2TypeFormTests
     [Fact]
     public void The_array_column_is_declared_the_way_H2_declares_it()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:type_form_array");
+        using var connection = new H2Connection("Data Source=type_form_array;Storage=Memory");
         connection.Open();
 
         using var context = new ItemContext(_serviceProvider, connection);
@@ -114,7 +114,7 @@ public class H2TypeFormTests
     [Fact]
     public void The_array_literal_is_written_the_way_H2_writes_it()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:type_form_array_literal");
+        using var connection = new H2Connection("Data Source=type_form_array_literal;Storage=Memory");
         connection.Open();
 
         using var context = new ItemContext(_serviceProvider, connection);
@@ -133,7 +133,7 @@ public class H2TypeFormTests
     [Fact]
     public void The_timestamp_with_time_zone_literal_is_written_the_way_H2_writes_it()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:type_form_timestamptz");
+        using var connection = new H2Connection("Data Source=type_form_timestamptz;Storage=Memory");
         connection.Open();
 
         using var context = new ItemContext(_serviceProvider, connection);
@@ -154,7 +154,7 @@ public class H2TypeFormTests
     [Fact]
     public void The_interval_literal_is_written_the_way_H2_writes_it()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:type_form_interval");
+        using var connection = new H2Connection("Data Source=type_form_interval;Storage=Memory");
         connection.Open();
 
         using var context = new ItemContext(_serviceProvider, connection);
@@ -176,7 +176,7 @@ public class H2TypeFormTests
     [Fact]
     public void Contains_is_translated_with_the_function_of_H2()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:type_form_contains");
+        using var connection = new H2Connection("Data Source=type_form_contains;Storage=Memory");
         connection.Open();
 
         SqlRecorder recorder = new();
@@ -199,7 +199,7 @@ public class H2TypeFormTests
     [Fact]
     public void The_parts_of_a_date_are_taken_by_the_functions_of_H2()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:type_form_date_parts");
+        using var connection = new H2Connection("Data Source=type_form_date_parts;Storage=Memory");
         connection.Open();
 
         SqlRecorder recorder = new();

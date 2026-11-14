@@ -9,7 +9,7 @@ public class ConnectionSpecificationTest
     private const string StoreName = "connectionspec";
 
     private static string ConnectionString
-        => $"jdbc:h2:mem:{StoreName}";
+        => $"Data Source={StoreName};Storage=Memory";
 
     // The spec suites use the Northwind sample database; H2 has no Northwind script yet, so
     // the connection tests here use a small store of their own -- the point under test is the
@@ -73,11 +73,11 @@ public class ConnectionSpecificationTest
     [Fact]
     public async Task Can_specify_connection_in_OnConfiguring()
     {
-        var serviceProvider = new ServiceCollection()
-            .AddScoped(_ => new H2Connection(ConnectionString))
-            .AddDbContext<ConnectionInOnConfiguringContext>().BuildServiceProvider();
+        await using var store = await CreateSeededStoreAsync();
 
-        await using var _ = await CreateSeededStoreAsync();
+        var serviceProvider = new ServiceCollection()
+            .AddScoped(_ => (H2Connection)store.DataSource.CreateConnection())
+            .AddDbContext<ConnectionInOnConfiguringContext>().BuildServiceProvider();
         await using var context = serviceProvider.GetRequiredService<ConnectionInOnConfiguringContext>();
 
         Assert.True(await context.Customers.AnyAsync());
@@ -86,8 +86,8 @@ public class ConnectionSpecificationTest
     [Fact]
     public async Task Can_specify_connection_in_OnConfiguring_with_default_service_provider()
     {
-        await using var _ = await CreateSeededStoreAsync();
-        await using var context = new ConnectionInOnConfiguringContext(new H2Connection(ConnectionString));
+        await using var store = await CreateSeededStoreAsync();
+        await using var context = new ConnectionInOnConfiguringContext((H2Connection)store.DataSource.CreateConnection());
 
         Assert.True(await context.Customers.AnyAsync());
     }
@@ -142,12 +142,12 @@ public class ConnectionSpecificationTest
     [Fact]
     public async Task Can_depend_on_DbContextOptions()
     {
+        await using var store = await CreateSeededStoreAsync();
+
         var serviceProvider = new ServiceCollection()
-            .AddScoped(_ => new H2Connection(ConnectionString))
+            .AddScoped(_ => (H2Connection)store.DataSource.CreateConnection())
             .AddDbContext<OptionsContext>()
             .BuildServiceProvider();
-
-        await using var _ = await CreateSeededStoreAsync();
         await using var context = serviceProvider.GetRequiredService<OptionsContext>();
 
         Assert.True(await context.Customers.AnyAsync());
@@ -156,10 +156,10 @@ public class ConnectionSpecificationTest
     [Fact]
     public async Task Can_depend_on_DbContextOptions_with_default_service_provider()
     {
-        await using var _ = await CreateSeededStoreAsync();
+        await using var store = await CreateSeededStoreAsync();
         await using var context = new OptionsContext(
             new DbContextOptions<OptionsContext>(),
-            new H2Connection(ConnectionString));
+            (H2Connection)store.DataSource.CreateConnection());
 
         Assert.True(await context.Customers.AnyAsync());
     }

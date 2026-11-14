@@ -170,8 +170,8 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
         // is the one H2 makes for the database when the model does not name one: PUBLIC.
         var schema = Schema ?? "PUBLIC";
 
-        using var connection = OpenConnection();
-        using var command = connection.CreateCommand();
+        using var scope = OpenConnection();
+        using var command = scope.Connection.CreateCommand();
         command.CommandText =
             "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = $p";
 
@@ -189,8 +189,8 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
 
     private bool SchemaExists(string schema)
     {
-        using var connection = OpenConnection();
-        using var command = connection.CreateCommand();
+        using var scope = OpenConnection();
+        using var command = scope.Connection.CreateCommand();
         command.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = $p";
         var parameter = command.CreateParameter();
         parameter.ParameterName = "p";
@@ -202,27 +202,54 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
 
     private void Execute(string sql)
     {
-        using var connection = OpenConnection();
-        using var command = connection.CreateCommand();
+        using var scope = OpenConnection();
+        using var command = scope.Connection.CreateCommand();
         command.CommandText = sql;
         command.ExecuteNonQuery();
     }
 
-    private H2Connection OpenConnection()
+    private ConnectionScope OpenConnection()
     {
         // Opening is the creation: H2Sharp creates the database file or registers the in-memory
         // database on first open, so there is no separate "connect to a maintenance instance" step
         // the way PostgreSQL needs one before CREATE DATABASE can be issued.
         //
-        // A fresh connection is made from the connection string rather than reusing the one EF holds.
+        // A fresh connection is made from the data source rather than reusing the one EF holds.
         // This class issues DDL against the catalog and the running DbConnection may be mid-reader.
-        var connectionString = _connection.ConnectionString
-            ?? throw new InvalidOperationException(
-                $"{nameof(H2DatabaseCreator)} needs a connection string: an H2 database is addressed by " +
-                "URL, and a context configured with a bare DbConnection instance cannot be duplicated here.");
+        // The data source is what owns the database, so a connection from it is a connection to the
+        // same database the context talks to.
+        if (_connection.DataSource is { } dataSource)
+        {
+            var connection = (H2Connection)dataSource.CreateConnection();
+            connection.Open();
+            return new ConnectionScope(connection, owned: true);
+        }
 
-        var connection = new H2Connection(H2RelationalConnection.H2Url(connectionString));
-        connection.Open();
-        return connection;
+        // The context was given a single connection and nothing else. That connection is the only
+        // way to the database, so the statements run on it. The caller owns it, and it is not
+        // disposed here.
+        var own = (H2Connection)_connection.DbConnection;
+        if (own.State == ConnectionState.Closed)
+        {
+            own.Open();
+        }
+
+        return new ConnectionScope(own, owned: false);
+    }
+
+    /// <summary>
+    ///     A connection to the database and the answer to whether this class may close it.
+    /// </summary>
+    private readonly struct ConnectionScope(H2Connection connection, bool owned) : IDisposable
+    {
+        public H2Connection Connection { get; } = connection;
+
+        public void Dispose()
+        {
+            if (owned)
+            {
+                Connection.Dispose();
+            }
+        }
     }
 }

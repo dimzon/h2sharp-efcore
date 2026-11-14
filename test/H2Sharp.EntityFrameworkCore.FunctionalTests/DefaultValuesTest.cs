@@ -60,7 +60,7 @@ public class DefaultValuesTest : IDisposable
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseH2($"jdbc:h2:mem:{_databaseName}")
+                .UseH2($"Data Source={_databaseName};Storage=Memory")
                 .UseInternalServiceProvider(_serviceProvider);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

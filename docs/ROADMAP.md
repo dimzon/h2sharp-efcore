@@ -5,7 +5,9 @@
 * Форк EFCore.PG v9.0.5: пространство имён, сборка, пакет и точка входа переименованы
   (`UseH2`, `AddH2`, `H2:`-аннотации). `UPSTREAM.md` фиксирует точку отсчёта.
 * ADO-слой заменён на `H2Sharp.Data`: `H2Connection`, `H2Command`, `H2Parameter`,
-  `H2DataReader`, `H2Transaction`, `H2ProviderFactory`, `H2ConnectionStringBuilder`.
+  `H2DataReader`, `H2Transaction`, `H2ProviderFactory`, `H2ConnectionStringBuilder`,
+  `H2DataSource` и `H2DataSourceBuilder`. База принадлежит data source, и провайдер держит
+  один на базу: `H2DataSources.GetOrCreate`.
 * Удалена поверхность PostgreSQL, которой у H2 нет: ranges и multiranges, inet/cidr/macaddr,
   tsvector/tsquery и полнотекстовый поиск, hstore, ltree, reg\*, tid, pg_lsn, money, varbit,
   семь геометрических типов, unsigned-типы. Перечисление — в истории коммитов.
@@ -20,8 +22,10 @@
   `TableOrViewAlreadyExists1` (42101), `LockTimeout1` (50200), `Deadlock1` (40001).
 * Идентификаторы кавычатся всегда: H2 сворачивает некавыченное в UPPER, и `title` доехал бы
   как `TITLE` — модель перестала бы описывать свою же схему.
-* Строка подключения переводится в H2-URL; всё, что не имя базы, уходит в хвост URL как
-  настройки H2 (`MODE`, `DATABASE_TO_LOWER`, `DB_CLOSE_DELAY`).
+* Строка подключения — классическая `key=value` (`Data Source=…;Storage=…;Mode=…`), как её
+  берёт слой ADO.NET движка; JDBC-URL не принимается.
+* База принадлежит `H2DataSource`: он её создаёт, держит и выдаёт соединения. Провайдер держит
+  один data source на базу, так что контексты с одной строкой подключения работают с одной базой.
 
 Проверено: сгенерированный DDL принимает эталонная H2 2.5 (прогон против пиннованного jar).
 

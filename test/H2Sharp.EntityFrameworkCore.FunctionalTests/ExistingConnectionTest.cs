@@ -20,7 +20,10 @@ public class ExistingConnectionTest
             .AddEntityFrameworkH2()
             .BuildServiceProvider();
 
-        await using (var store = H2TestStore.Create("ExistingConnection"))
+        // The database of the store is the one of the connection string, and the database lives
+        // as long as the data source that owns it: the two variants of the test fill their own
+        // database with the same rows, so they must not share one.
+        await using (var store = H2TestStore.Create(openConnection ? "ExistingConnectionOpen" : "ExistingConnectionClosed"))
         {
             // The in-memory database lives as long as the store's own connection, which is
             // opened here and stays open; the connection under test is a separate one.
@@ -39,7 +42,7 @@ public class ExistingConnectionTest
             var openCount = 0;
             var closeCount = 0;
 
-            await using (var connection = new H2Connection(store.ConnectionString))
+            await using (var connection = (H2Connection)store.DataSource.CreateConnection())
             {
                 if (openConnection)
                 {

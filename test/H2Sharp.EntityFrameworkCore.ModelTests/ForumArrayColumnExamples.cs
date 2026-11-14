@@ -100,7 +100,7 @@ public class ForumArrayColumnExamples
     public void Independent_array_is_unnested_into_rows_on_the_port()
     {
         // A memory database dies with its last connection, so the connection stays open.
-        using var connection = new H2Sharp.Data.H2Connection("jdbc:h2:mem:shelves_live_" + Guid.NewGuid().ToString("N"));
+        using var connection = new H2Sharp.Data.H2Connection("Data Source=" + "shelves_live_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
         using var context = new ShelfContext(new DbContextOptionsBuilder<ShelfContext>().UseH2(connection).Options);
         Assert.True(context.Database.EnsureCreated());
@@ -219,7 +219,7 @@ public class ForumArrayColumnExamples
         """;
 
     private static ListShelfContext ListContext()
-        => new(new DbContextOptionsBuilder<ListShelfContext>().UseH2("jdbc:h2:mem:listshelves_" + Guid.NewGuid().ToString("N")).Options);
+        => new(new DbContextOptionsBuilder<ListShelfContext>().UseH2("Data Source=" + "listshelves_" + Guid.NewGuid().ToString("N") + ";Storage=Memory").Options);
 
     private static void VerifyList(ListShelfContext context, Expression<Func<ListShelf, bool>> predicate, int[] expected)
     {
@@ -248,7 +248,7 @@ public class ForumArrayColumnExamples
     }
 
     private static ShelfContext Context()
-        => new(new DbContextOptionsBuilder<ShelfContext>().UseH2("jdbc:h2:mem:shelves_" + Guid.NewGuid().ToString("N")).Options);
+        => new(new DbContextOptionsBuilder<ShelfContext>().UseH2("Data Source=" + "shelves_" + Guid.NewGuid().ToString("N") + ";Storage=Memory").Options);
 
     private static void Verify(ShelfContext context, Expression<Func<Shelf, bool>> predicate, int[] expected)
     {

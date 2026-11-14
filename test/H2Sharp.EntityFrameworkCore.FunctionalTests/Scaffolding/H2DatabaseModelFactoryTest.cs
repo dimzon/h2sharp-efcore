@@ -331,7 +331,7 @@ CREATE TABLE "Kilimanjaro" (Id int, B varchar, UNIQUE (B));
             """
 DROP TABLE "Kilimanjaro";
 DROP TABLE "K.2";
-DROP TABLE db2."K.2";
+DROP TABLE "db2"."K.2";
 """);
 
     [Fact]
@@ -2208,6 +2208,11 @@ CREATE EXTENSION postgis;
         {
             await base.InitializeAsync();
             await TestStore.ExecuteNonQueryAsync("CREATE SCHEMA IF NOT EXISTS db2");
+            // The quoted name is a schema of its own: an unquoted name is upper-cased, and
+            // "db2" and "DB2" are two schemas the way "a" and "A" are two file names.
+            await TestStore.ExecuteNonQueryAsync("""
+                CREATE SCHEMA IF NOT EXISTS "db2"
+                """);
             await TestStore.ExecuteNonQueryAsync("""
                 CREATE SCHEMA IF NOT EXISTS "db.2"
                 """);

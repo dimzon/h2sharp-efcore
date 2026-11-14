@@ -47,7 +47,7 @@ public class H2ArrayContainsContractTest
 
     private static string? Scalar(string sql)
     {
-        using var connection = new H2Connection("jdbc:h2:mem:array_contains_" + Guid.NewGuid().ToString("N"));
+        using var connection = new H2Connection("Data Source=" + "array_contains_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
         using var command = connection.CreateCommand();
         command.CommandText = sql;

@@ -443,7 +443,7 @@ public class ForumMeasurementExamples
 
     private static H2Connection Open(string name)
     {
-        var connection = new H2Connection("jdbc:h2:mem:" + name + "_" + Guid.NewGuid().ToString("N"));
+        var connection = new H2Connection("Data Source=" + name + "_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
         return connection;
     }

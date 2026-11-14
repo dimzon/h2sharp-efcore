@@ -18,7 +18,7 @@ public class H2JoinedDeleteTests
 
     private static void VerifyJoinedDelete(bool checkPort)
     {
-        using var connection = new H2Connection("jdbc:h2:mem:joined_delete_" + Guid.NewGuid().ToString("N"));
+        using var connection = new H2Connection("Data Source=" + "joined_delete_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
         var recorder = new Recorder();
         using var context = new DeleteContext(new DbContextOptionsBuilder<DeleteContext>()

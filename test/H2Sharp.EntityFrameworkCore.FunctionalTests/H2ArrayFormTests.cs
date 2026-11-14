@@ -60,7 +60,7 @@ public class H2ArrayFormTests
     [Fact]
     public void The_contains_of_an_array_is_written_the_way_H2_writes_it()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:array_contains");
+        using var connection = new H2Connection("Data Source=array_contains;Storage=Memory");
         connection.Open();
 
         SqlRecorder recorder = new();
@@ -80,7 +80,7 @@ public class H2ArrayFormTests
     [Fact]
     public void The_place_of_an_element_in_an_array_is_not_translated()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:array_indexof");
+        using var connection = new H2Connection("Data Source=array_indexof;Storage=Memory");
         connection.Open();
 
         SqlRecorder recorder = new();
@@ -99,7 +99,7 @@ public class H2ArrayFormTests
     [Fact]
     public void The_byte_of_a_binary_is_taken_with_substring()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:array_byte");
+        using var connection = new H2Connection("Data Source=array_byte;Storage=Memory");
         connection.Open();
 
         SqlRecorder recorder = new();

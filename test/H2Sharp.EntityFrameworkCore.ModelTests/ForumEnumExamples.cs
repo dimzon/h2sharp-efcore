@@ -51,7 +51,7 @@ public class ForumEnumExamples
 
     private static RankContext Context()
         => new(new DbContextOptionsBuilder<RankContext>()
-            .UseH2("jdbc:h2:mem:moods_" + Guid.NewGuid().ToString("N"), options => options.MapEnum<Mood>())
+            .UseH2("Data Source=" + "moods_" + Guid.NewGuid().ToString("N") + ";Storage=Memory", options => options.MapEnum<Mood>())
             .Options);
 
     private sealed class Rank

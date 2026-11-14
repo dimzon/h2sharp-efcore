@@ -39,7 +39,7 @@ public class H2DbFunctionsTest
 
     private static FunctionsContext CreateContext(string databaseName)
         => new(new DbContextOptionsBuilder<FunctionsContext>()
-            .UseH2($"Data Source=mem:{databaseName}")
+            .UseH2($"Data Source={databaseName};Storage=Memory")
             .UseInternalServiceProvider(ServiceProvider)
             .Options);
 

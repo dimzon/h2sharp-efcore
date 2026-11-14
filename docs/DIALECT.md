@@ -66,8 +66,12 @@ provider is ahead of the port rather than behind it.
 
 ## Connection strings
 
-`H2Connection` takes a JDBC-style URL (`jdbc:h2:mem:probe`), not `Data Source=…`. A connection string
-handed to `UseH2` must go through `H2ConnectionStringBuilder.ToH2ConnectionString()` first; passing
-`Data Source=…` straight to `H2Connection` fails with a syntax error inside the URL parser.
+`H2Connection` takes the classic `key=value` connection string (`Data Source=probe;Storage=Memory`),
+the same spelling the rest of .NET uses. A JDBC URL is not a connection string: the engine's ADO
+layer parses `Data Source`, `Storage`, `Mode` and the other settings, and nothing else.
+
+The database belongs to a data source: `H2DataSource` creates it, keeps it alive and hands out
+the connections to it. The provider keeps one data source per database, so every context with
+the same connection string works with the same one.
 
 `SELECT *` is likewise rejected by the current parameter rewriter (`[*]url`). Enumerate columns.

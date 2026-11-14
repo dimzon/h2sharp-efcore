@@ -42,7 +42,9 @@
 | dimzon/h2sharp#37 (`CAST(агрегат)` в скалярном подзапросе) | закрыт (коммит движка `69d522a`): `The_rows_are_asked_for_with_a_table_joined_from_the_left` живёт | — |
 | dimzon/h2sharp#38 (`FILTER` молча игнорировался) | закрыт (коммит движка `69d522a`): `Two_gatherings` проверяет фильтр | — |
 | `ARRAY_REMOVE` (dimzon/h2sharp#24) | провайдер пишет `array_remove` в `TranslateWhere`; не читает ни порт, ни эталон. Код оставлен как есть: если порт реализует функцию, код провайдера заработает без изменений | при закрытии проверить оба движка; если эталон не добавит функцию — решать отдельно (фильтр только через `UNNEST`, колонки отклонять явно) |
-| ambient-транзакции (`EnlistTransaction` в ADO-слое порта) | `TransactionH2Test` объявляет `AmbientTransactionsSupported = false` и вручную скипает четырнадцать ambient/enlisted-тестов, у которых в спеке 9.0.14 нет гейта по этому флагу | вернуть флаг в `true`, удалить скипы |
+| ambient-транзакции (`EnlistTransaction` в ADO-слое порта) | **закрыто**: ADO-слой порта зачисляет соединение в ambient-транзакцию, провайдер объявляет `AmbientTransactionsSupported => true`, ручные скипы убраны, ambient/enlisted-тесты спеки живут. Осталось десять тестов: закрытое соединение нельзя открыть снова, пока держит зачисление (dimzon/h2sharp#96) | при закрытии #96 снять трейт с десяти тестов `TransactionH2Test` |
+| байт, который вмещает .NET (`GetByte` в ADO-слое порта) | три теста `H2ByteSubstringTests` и `Preferences_are_stored_by_ef_without_losing_json_or_binary_content` помечены `BlockedByPort`: `Numeric value out of range: "255"` | починить `H2DataReader.GetByte` (dimzon/h2sharp#94) |
+| каталог схем в сессии (`INFORMATION_SCHEMA.SCHEMATA` с параметром) | `A_schema_of_its_own_is_made_and_found` помечен `BlockedByPort`: сессия помнит ответ параметризованного запроса и не видят схему, созданную позже | починить чтение каталога (dimzon/h2sharp#95) |
 | перехват транзакций (`H2Transaction.IsolationLevel` отвечает запрошенное, а не фактическое; `H2Connection` отказывает во второй транзакции на соединении) | набор `TransactionInterceptionH2Test` помечен трейтом `BlockedByPort` и красный в прогоне с трейтом | научить ADO-слой отчёту фактического уровня изоляции и подавляемого старта; снять трейт |
 
 Постоянное, не требующее пересмотра: квантованный `LIKE`/`ILIKE` через `OR`/`AND`
@@ -54,74 +56,79 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 2019 | 0 | 2019 |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 1991 | 0 | 2005 (14 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 129 | 0 | 129 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 317 | 0 | 317 |
-   | **Итого** | **2465** | **0** | **2465** |
+   | **Итого** | **2437** | **0** | **2451** |
 
-   Зелёный гейт: 2465 тестов на `net9.0` и `net10.0` против порта `f56ca4c`
-   (26 октября 2026). Функциональных было 1193: трейт `BlockedByPort` переехал с классов на
-   методы и отдал гейту 826 тестов, которые проходили и раньше (см. `docs/BACKLOG.md`,
-   «Инфраструктура»).
+   Зелёный гейт: 2451 тестов на `net9.0` и `net10.0` против порта `03c0397` движка
+   (13 ноября 2026), на провайдере, который взял слой ADO.NET движка (data source, classic
+   connection string, ambient-транзакции).
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
 сбор строк в один текст, сырые запросы и транзакции. Он зелёный целиком, кроме
-шести тестов, помеченных `BlockedByPort` по пробелам ниже. Разблокированы: row-value
+восьми тестов, помеченных `BlockedByPort` по пробелам ниже. Разблокированы: row-value
 сравнения (#18), `UPDATE` с выражением (#17), параметр-массив и `CONCAT_WS` (#14),
 живой `UNNEST` (#23), обрезка пробелов (#12), `EXISTS` (#27), `SAVEPOINT` (#34),
 `WITHIN GROUP`/`FILTER` (#35), E-строки (#36), `CAST(агрегат)` в скалярном подзапросе
 (#37) и массив из столбцов строки (`ARRAY["s"."Id", "s"."Id" * 10]`). Порог покрытия
-держит `tools/CheckCoverage.ps1`: 61 % при текущем замере 61,76 %.
+держит `tools/CheckCoverage.ps1`: 62 % при текущем замере 62,14 %.
 
    Разделение по трейту (функциональные тесты):
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 2005 | 0 | 2019 (14 пропущено) |
-   | `Category=BlockedByPort` | 275 | 4229 | 4504 |
+   | `Category!=BlockedByPort` | 1991 | 0 | 2005 (14 пропущено) |
+   | `Category=BlockedByPort` | 4140 | 378 | 4518 |
 
    Пропущенных в прогоне с трейтом нет: четырнадцать скипов переехали в гейт вместе со своими
-   классами. Числа — на `net10.0`, движок `f56ca4c` (26 октября 2026), после пяти правок
+   классами. Числа — на `net10.0`, движок `03c0397` (13 ноября 2026), после шести правок
    провайдера: массив читается в `List<T>` (было
    `Unable to cast object of type 'System.Int32[]' to …List\`1[System.Int32]'`), тест-модель
    писал `uuid_generate_v4()` там, где H2 зовёт функцию `RANDOM_UUID()`, снят перевод
    `string.Join` над массивом-столбцом в несуществующий `array_to_string`, `array_position(a, NULL)`
    в компенсации `NULL` заменён на `COALESCE(ARRAY_CONTAINS(a, NULL), FALSE)` (плюс контрактный
-   тест на ответы движка в юнит-проекте), и тест `New_array_with_heterogeneous_columns_throws`
-   больше не ждёт постгресовое имя `bytea` вместо `varbinary`. От движка `f56ca4c` это 288
+   тест на ответы движка в юнит-проекте), тест `New_array_with_heterogeneous_columns_throws`
+   больше не ждёт постгресовое имя `bytea` вместо `varbinary`, и пакет больше не смешивает
+   операторы разных видов — см. `Prepared.update` ниже. От движка `f56ca4c` это 288
    переходов красное→зелёное и ни одного обратного. Восемнадцать тестов пары `ConcurrencyDetector*`
    гуляют от прогона к прогону (`Table "Products" not found`), так что прошедших бывает на
    восемнадцать больше или меньше.
 
-   Двести семьдесят пять проходящих в прогоне с трейтом — не шум: трейт стоит на методе, а
-   у `[ConditionalTheory]` один метод на все строки `[InlineData]`, и десять классов держат
-   трейт на классе там, где красный метод нельзя пометить отдельно (`StoreGeneratedH2Test`,
-   `UpdatesH2Test`, пара `ConcurrencyDetector*`, перехват транзакций) или где зелёных нет вовсе
-   (`LoadH2Test`, `FindH2Test`, `PropertyValuesH2Test`, `FieldMappingH2Test`, `DataBinding`,
-   `Serialization`, `DefaultValuesTest`). Разбор — в `docs/BACKLOG.md`.
+   Триста пятьдесят пять проходящих в прогоне с трейтом — не шум: трейт стоит на методе, а
+   у `[ConditionalTheory]` один метод на все строки `[InlineData]`, и шесть классов держат
+   трейт на классе там, где красный метод нельзя пометить отдельно (`UpdatesH2Test`, пара
+   `ConcurrencyDetector*`, перехват транзакций) или где тест проходит в одиночку, а в общем
+   прогоне видит пустую базу (`Serialization`, `DefaultValuesTest`). Разбор — в `docs/BACKLOG.md`.
 
    История этих чисел: на движке `17c9f68` было 434 и 4888, коммит `f56ca4c` («Port UNIQUE/CHECK
    constraints, TOP and explicit DUAL») дал 350 переходов красное→зелёное и ни одного обратного —
    `LazyLoadProxyH2Test` 314, `UpdatesH2Test` 19, `StoreGeneratedH2Test` 8, `MigrationsH2Test` 6,
-   `H2DatabaseModelFactoryTest` 3. Правки провайдера добавили ещё 288.
+   `H2DatabaseModelFactoryTest` 3. Правки провайдера добавили ещё 288, перенос трейта на методы —
+   826, обход `Prepared.update` — 3799.
 
-   Красный список держат `LoadH2Test` (3133: `Prepared.update` — «the statement is not run yet»),
-   `PropertyValuesH2Test` (173), `FieldMappingH2Test` (167),
-   `FindH2Test` (411 тремя контекстами), `MigrationsH2Test` (113 из 183),
-   `ArrayArrayQueryTest`/`ArrayListQueryTest` (20 из 204: перезапись выражений с
-   `MemoryExtensions` на `List<T>` в самих тестах, `byte[]`-параметр и `ReadOnlySpan` в дереве
-   выражений),
-   `DataBindingH2Test` (56) и `Serialization` (6) — сидирование модели F1 идёт через
-   `SaveChanges`, то есть в `Prepared.update`; сама модель строится и таблицы создаются,
-   `H2DatabaseModelFactoryTest` (50 из 56), `UpdatesH2Test` (17 из 36),
-   `TransactionInterceptionH2Test` (66 из 72 на ADO-уровень изоляции и повторный старт
-   транзакции) и `ConvertToProviderTypesH2Test` (8 из 32); остальное —
-   `StoreGeneratedFixupH2Test` (3: `Prepared.update`), `ConcurrencyDetectorEnabledH2Test` (2, тот
-   же флейк), `LazyLoadProxyH2Test` (1), `StoreGeneratedH2Test` (1), `H2Compliance` и
-   `DefaultValues`.
+   Красный список держат `MigrationsH2Test` (113 из 183: `ALTER TABLE`, `CREATE TYPE … AS ENUM`,
+   `COMMENT ON`, вычисляемые столбцы), `FindH2Test` (136 из 411 в общем прогоне, но 411 из 411
+   в одиночку — база умирает вместе с последним соединением), `H2DatabaseModelFactoryTest`
+   (50 из 56: скаффолдинг читает постгресовый DDL), `TransactionInterceptionH2Test` (66 из 72 на
+   ADO-уровень изоляции и повторный старт транзакции), `ArrayArrayQueryTest`/`ArrayListQueryTest`
+   (20 из 204: перезапись выражений с `MemoryExtensions` на `List<T>` в самих тестах,
+   `byte[]`-параметр и `ReadOnlySpan` в дереве выражений), `UpdatesH2Test` (10 из 36),
+   `ConvertToProviderTypesH2Test` (8 из 32), `LazyLoadProxyH2Test` (1), `H2Compliance` (1) и
+   `DefaultValues` (1).
 
-   Прогон без трейта на `net9.0` даёт те же числа: 2019 функциональных, 129 модульных и
+   `Prepared.update` из этого списка ушёл: провайдер больше не собирает пакет, смешивающий
+   операторы разных видов. `H2ModificationCommandBatch.TryAddCommand` не принимает в пакет
+   команду, у которой признак «есть колонка на чтение» отличается от первой, — это тот же
+   признак, по которому `H2UpdateSqlGenerator` решает, оборачивать ли оператор в `FINAL TABLE`.
+   Сам дефект движка остаётся: `H2Command.ExecuteDbDataReader` (`Data/H2Command.cs:262`)
+   выполняет хвост пакета через `ExecuteUpdate` без проверки `IsQuery()`, тогда как
+   `RunRemaining` (`:357`) её делает; одиночные `INSERT`/`UPDATE`/`DELETE` и полный цикл
+   `SaveChanges` на одной сущности при этом проходят. Разбор, ADO.NET-репро и поведение
+   эталона — [h2sharp#67](https://github.com/dimzon/h2sharp/issues/67).
+
+   Прогон без трейта на `net9.0` даёт те же числа: 5762 функциональных, 129 модульных и
    317 модельных тестов. Коллизия одинаково названных методов в `ModelTests` устранена
    уникальным суффиксом имени базы, а не изменением SQL или проверки.
 
@@ -153,7 +160,7 @@ EF их не отдаёт генератору, как в апстриме).
 | `H2MigrationsSqlGenerator`, `H2HistoryRepository` | 6 | блок `DO $EF$` — анонимный блок PL/pgSQL — заменён на H2'овское `CREATE SCHEMA IF NOT EXISTS` и на условие внутри самой вставки: `INSERT … SELECT … WHERE NOT EXISTS (…)` |
 | `H2IntervalTypeMapping` | — | литерал интервала без дней (`CAST('10:09:08.007' AS INTERVAL DAY TO SECOND)`) эталон отвергает: «невозможно преобразовать строку "10:09:08.007" в тип "INTERVAL"». Провайдер перешёл на фасад `Dialect.AppendInterval`: `INTERVAL '0 10:09:08.007' DAY TO SECOND` — типизированный литерал с числом дней (ноль включительно). Проверено на эталоне: формы с днями принимаются, включая `-0`, `-1`, `11 23:59:59.999999` |
 | `TransactionH2Test.SaveChanges_can_be_used_with_no_savepoint` | 1 | тест ждал PostgreSQL: там неудачный оператор переводит транзакцию в aborted и COMMIT выбрасывает всё. H2 следует стандарту — оператор неудачен, транзакция нет, — проверено на эталонном jar: `COMMIT` проходит, `MAX(ID)` — 77. Ожидание переписано под это |
-| `TransactionH2Test` (семейство ambient/enlisted) | 14 | тесты требуют enlistment в System.Transactions; ADO-слой порта его не имеет. Флаг `AmbientTransactionsSupported` переведён в `false`, тесты без гейта в спеке скипнуты с причиной |
+| `TransactionH2Test` (семейство ambient/enlisted) | 14 | тесты требовали enlistment в System.Transactions; ADO-слой порта его не имел, флаг `AmbientTransactionsSupported` был `false`, тесты без гейта в спеке скипались руками. Теперь ADO-слой зачисляет соединение, флаг `true`, ручные скипы убраны; десять тестов помечены `BlockedByPort` по dimzon/h2sharp#96 |
 
 ## Плагин NodaTime: переводы членов даты и времени
 
@@ -197,14 +204,15 @@ EF их не отдаёт генератору, как в апстриме).
 | `WithConstructorsH2Test` | 41 | — |
 | `KeysWithConvertersH2Test` | 47 | — |
 | `BatchingTest` | 12 | `xid`/`xmin` (колонки PostgreSQL) убраны из модели; `Owner.Id` получил `ValueGeneratedOnAdd`; частичный индекс убран (в H2 его нет, а уникальность и так даёт NULL-distinct) |
-| `TwoDatabasesH2Test` | 4 | `DummyConnectionString` — H2-URL вместо `Host=...;Database=...` |
-| `ConnectionSpecificationTest`, `ExistingConnectionTest` | 12 | северный ветер в этих тестах был только полигоном для проверки подключений; H2-скрипта Northwind всё ещё нет, поэтому тесты переведены на собственную заводскую базу с двумя клиентами (стор держит своё соединение открытым, иначе in-memory база умирает) |
+| `TwoDatabasesH2Test` | 4 | `DummyConnectionString` — строка подключения H2 (`Data Source=...;Storage=Memory`) вместо `Host=...;Database=...` |
+| `ConnectionSpecificationTest`, `ExistingConnectionTest` | 12 | северный ветер в этих тестах был только полигоном для проверки подключений; H2-скрипта Northwind всё ещё нет, поэтому тесты переведены на собственную заводскую базу с двумя клиентами. Соединения под тестом берутся из data source стора: отдельное соединение — отдельная база |
 
-Красное из этой партии не спрятано, а переведено в трейт `BlockedByPort` — два дефекта порта:
+Красное из этой партии не спрятано, а переведено в трейт `BlockedByPort`. Из двух дефектов
+первый закрыт обходом в провайдере, второй остался:
 
 | Семейство | Тестов | Симптом порта |
 |---|---:|---|
-| `FieldMappingH2Test`, `PropertyValuesH2Test` | 340 | «Not ported yet: Prepared.update: the statement is not run yet» — путь обновления движка не перенесён, и любой батч-сохранённый save падает в движке |
+| `FieldMappingH2Test`, `PropertyValuesH2Test` | 340 | ~~«Not ported yet: Prepared.update»~~ — обойдено: пакет больше не смешивает виды операторов, оба набора зелёные. Сам дефект движка описан в `H2Command.ExecuteDbDataReader` (`Data/H2Command.cs:262`) и заведён как [h2sharp#67](https://github.com/dimzon/h2sharp/issues/67) |
 | `ConvertToProviderTypesH2Test` | 8 из 32 | `ALTER SEQUENCE ... RESTART WITH` падает при чтении значения перезапуска — `Sequence contains no elements` внутри движка; 21 тест семейства уже зелёный |
 
 `ValueConvertersEndToEndH2Test` и `CustomConvertersH2Test` остаются вне компиляции: их модели
@@ -227,9 +235,11 @@ EF их не отдаёт генератору, как в апстриме).
   `ReseedAsync` спеки чистит и сеет одним вдохом, и посев падал на «Table not found (this
   database is empty)». Теперь `CleanAsync` пересоздаёт схему через `EnsureCreated` после
   очистки.
-* **Ambient-транзакции.** ADO-слой порта не умеет `EnlistTransaction`, EF отвечает
-  `AmbientTransactionWarning`; наследованный от Npgsql флаг `AmbientTransactionsSupported =
-  true` переведён в `false`.
+* **Ambient-транзакции.** ADO-слой порта теперь зачисляет соединение в ambient-транзакцию
+  (`H2Connection.EnlistTransaction`), и провайдер объявляет `AmbientTransactionsSupported =>
+  true`, как у SQL Server: EF Core при ambient-транзакции не заводит свою, а работа идёт в той,
+  что завели снаружи. Десять тестов `TransactionH2Test` остались красными по dimzon/h2sharp#96:
+  закрытое соединение нельзя открыть снова, пока держит зачисление.
 * **Перехват транзакций** остался красным по двум дефектам ADO-слоя порта (см. реестр
   пересмотра выше) и помечен `BlockedByPort`.
 
@@ -526,6 +536,9 @@ Identity не откатывается назад. Legacy-аннотация `Se
    | 20 | **Пункт `INCLUDE` у индекса** | `Not ported yet: Parser.parseCreate: CREATE INDEX INCLUDE is not ported` | `INCLUDE (…)` у уникального индекса: H2 2.5 его читает, и провайдер его пишет |
    | 21 | **`UNIQUE` через `ALTER TABLE`** | `ALTER TABLE "Forums" ADD CONSTRAINT "UQ_Forums_Name" [*]UNIQUE ("Name")` → `expected "PRIMARY"` | `ADD CONSTRAINT … UNIQUE`: эталон принимает, и провайдер пишет эту форму из миграций (`A_unique_constraint_is_added_to_an_existing_table`) |
    | 22 | **`FINAL TABLE` над `INSERT … DEFAULT VALUES`** | `SELECT "Id", … FROM FINAL TABLE (INSERT INTO "WithNullableBackingFields" DEFAULT VALUES)` → `NULL not allowed for column "Id"` (23502); прямой `INSERT … DEFAULT VALUES` порт принимает и identity генерирует | эталон эту форму принимает и отвечает `Id = 1`. Дельта-таблица строит строку вставки через `Parser.PrepareInsert` (`Command/Parser.cs:1816`, `:6585`), а тот даёт по ячейке на столбец: у identity `Column.GetEffectiveDefaultExpression()` — `null`, и в ячейку кладётся `ValueExpression.Null`; обычная вставка идёт через `Parser.ParseInsert` (`Command/Parser.Columns.cs:438`) и кладёт пустую строку (`new Expression[0]`), после чего `Column.ValidateConvertUpdateSequence` видит `null` и берёт следующее значение identity. В дельта-таблице `ValueNull` — не `null`, и NOT NULL отвечает 23502. Дельта-таблице нужен тот же путь. Issue: dimzon/h2sharp#66 |
+   | 23 | **Байт, который вмещает .NET** | `H2DataReader.GetByte` отказывает числу, которое вмещает байт .NET: `Numeric value out of range: "255"` (знаковая проверка диапазона вместо обрезания) | байт .NET без знака: `GetByte` отдаёт 255 для числа 255. Три теста `H2ByteSubstringTests` и один тест форума помечены `BlockedByPort`. Issue: dimzon/h2sharp#94 |
+   | 24 | **Каталог схем в сессии** | параметризованный запрос `INFORMATION_SCHEMA.SCHEMATA` отвечает тем, что было при первом вызове: схема, созданная позже в той же сессии, в ответе не появляется | сессия отвечает по текущему состоянию базы. Один тест форума помечен `BlockedByPort`. Issue: dimzon/h2sharp#95 |
+   | 25 | **Открытие зачисленного соединения** | соединение, закрытое во время ambient-транзакции, открыть снова нельзя: `The connection is already open` | `Open()` после `Close()` снова открывает соединение. Десять тестов `TransactionH2Test` помечены `BlockedByPort`. Issue: dimzon/h2sharp#96 |
 
    Закрытые пробелы: DDL identity-столбца, значение identity обратно (`FINAL TABLE`),
    последовательности (`CREATE SEQUENCE`, `NEXT VALUE FOR`), типизированный литерал в
@@ -699,19 +712,20 @@ Identity не откатывается назад. Legacy-аннотация `Se
 | `EXISTS` | **читается** (коммит движка `d86b2e1`) | — |
 | `x = ANY (массив)` | `Parser.parseQuerySelect: aggregate calls outside the select list are not ported` — эталон берёт `SELECT 1 = ANY(ARRAY[1,2,3])` → TRUE | дефект порта |
 | `SAVEPOINT` | **читается** (коммит движка `69d522a`) | — |
-| переменные в тексте SQL | `Parser.readTerm: variables (@name) are not ported` — но слой ADO переписывает `$имя` в `$N` до разбора, так что через провайдер это не мешает | — |
+| переменные в тексте SQL | `Parser.readTerm: variables (@name) are not ported` — но слой ADO переписывает `$name` в `$N` до разбора, так что через провайдер это не мешает | — |
 | файловая база | `Engine.openSession: persistent databases need the file store` — хранилище в порте есть и формат его совместим с H2 2.5, но сессия не открывает файловую базу | дефект порта |
 | `H2SharpException` с публичным конструктором | конструктор `internal`, тестовый набор не может сфабриковать отказ соединения | дефект порта |
 
 ### Следствия для тестового оборудования
 
-- **База живёт ровно столько, сколько живёт соединение.** `mem:`-база исчезает, когда закрывается
-  последнее соединение, а `DB_CLOSE_DELAY` в порте нет и сессия не открывает файловую базу. Тест-стор
-  поэтому **держит одно соединение открытым** всё время жизни стора: `H2TestStore` не закрывает своё
-  соединение после команды, и база живёт вместе с стором.
-- **Чистка базы идёт через `DROP ALL OBJECTS`.** `INFORMATION_SCHEMA` нет, поэтому перечислить таблицы
-  нечем, а `DROP ALL OBJECTS` движок теперь читает: база пустеет, а главная схема и схема каталога
-  остаются. Тест-стор чистит базу этой командой, и провайдер знать имён таблиц не должен.
+- **База живёт ровно столько, сколько живёт её владелец.** База принадлежит data source: он её
+  создаёт и держит (`SetCloseDelay(-1)`), а соединение — только способ до неё добраться. Тест-стор
+  поэтому берёт своё соединение из data source и **не закрывает его** после команды, а база живёт
+  вместе со стором.
+- **Чистка базы идёт через `DROP ALL OBJECTS`.** `DROP ALL OBJECTS` движок читает: база пустеет,
+  а главная схема и схема каталога остаются. Тест-стор чистит базу этой командой, и провайдер знать
+  имён таблиц не должен. Стор, к тому же, emptying базу при своём создании: база стора — его
+  собственная.
 - **Northwind для EF-набора нужен свой.** Скрипт `Northwind.sql` из форка — PostgreSQL-овский:
   `serial`, `::`-касты, `SET`, ICU-колляция, `CREATE COLLATION`. Движок это не разбирает. Нужен
   H2-скрипт с тем же содержимым.

@@ -44,7 +44,7 @@ public class H2QueryTests
     [Fact]
     public void The_rows_of_a_table_come_back()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:query_rows");
+        using var connection = new H2Connection("Data Source=query_rows;Storage=Memory");
         connection.Open();
 
         using var context = new ItemContext(_serviceProvider, connection);
@@ -63,7 +63,7 @@ public class H2QueryTests
     [Fact]
     public void A_row_is_changed_and_removed()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:query_change");
+        using var connection = new H2Connection("Data Source=query_change;Storage=Memory");
         connection.Open();
 
         using var context = new ItemContext(_serviceProvider, connection);
@@ -85,7 +85,7 @@ public class H2QueryTests
     [Fact]
     public void A_row_is_asked_for()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:query_where");
+        using var connection = new H2Connection("Data Source=query_where;Storage=Memory");
         connection.Open();
 
         using var context = new ItemContext(_serviceProvider, connection);

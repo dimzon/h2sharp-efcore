@@ -46,7 +46,7 @@ public class H2RangeTests
     [Fact]
     public void The_range_table_gives_a_row_per_number()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:range_ef");
+        using var connection = new H2Connection("Data Source=range_ef;Storage=Memory");
         connection.Open();
 
         using var context = new RangeContext(_serviceProvider, connection);
@@ -61,7 +61,7 @@ public class H2RangeTests
     [Fact]
     public void The_range_table_can_be_asked_for_a_step()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:range_ef_step");
+        using var connection = new H2Connection("Data Source=range_ef_step;Storage=Memory");
         connection.Open();
 
         using var context = new RangeContext(_serviceProvider, connection);

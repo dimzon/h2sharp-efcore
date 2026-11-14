@@ -21,7 +21,7 @@ public static class TestEnvironment
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
     }
 
-    private const string DefaultConnectionString = "jdbc:h2:mem:efcore_tests";
+    private const string DefaultConnectionString = "Data Source=efcore_tests;Storage=Memory";
 
     public static string DefaultConnection
         => Config["DefaultConnection"] ?? DefaultConnectionString;

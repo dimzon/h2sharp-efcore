@@ -12,7 +12,7 @@ public class ForumKeyGenerationExamples
     [InlineData(true)]
     public async Task Draft_keys_are_allocated_before_save_and_survive_reload(bool async)
     {
-        using var connection = new H2Connection("jdbc:h2:mem:draft_keys_" + Guid.NewGuid().ToString("N"));
+        using var connection = new H2Connection("Data Source=" + "draft_keys_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
         var options = new DbContextOptionsBuilder<DraftContext>().UseH2(connection).Options;
         using var context = new DraftContext(options);

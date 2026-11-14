@@ -11,7 +11,7 @@ public class H2GeometrySridTests
     [Fact]
     public void Geometry_envelope_uses_the_h2_aggregate_on_the_reference()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:geometry_envelope");
+        using var connection = new H2Connection("Data Source=geometry_envelope;Storage=Memory");
         using var context = new GeometryContext(new DbContextOptionsBuilder<GeometryContext>()
             .UseH2(connection, h2 => h2.UseNetTopologySuite()).Options);
         var query = context.Geometries.GroupBy(g => g.Group).Select(g => new

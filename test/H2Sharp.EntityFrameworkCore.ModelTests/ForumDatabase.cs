@@ -19,12 +19,11 @@ namespace H2Sharp.EntityFrameworkCore.ModelTests;
 /// </remarks>
 public sealed class ForumDatabase : IDisposable
 {
-    private readonly H2Connection _connection;
     private readonly DbContextOptions<ForumContext> _options;
 
-    private ForumDatabase(H2Connection connection, DbContextOptions<ForumContext> options)
+    private ForumDatabase(string connectionString, DbContextOptions<ForumContext> options)
     {
-        _connection = connection;
+        ConnectionString = connectionString;
         _options = options;
     }
 
@@ -51,15 +50,22 @@ public sealed class ForumDatabase : IDisposable
     /// <returns>The database.</returns>
     public static ForumDatabase Empty(string name)
     {
-        var connection = new H2Connection("jdbc:h2:mem:" + name + "_" + Guid.NewGuid().ToString("N"));
-        connection.Open();
+        // The database belongs to a data source: it creates it, keeps it alive and hands out the
+        // connections to it. The connection string names that data source, so the context and
+        // every other context of the same connection string work with one and the same database.
+        var connectionString = $"Data Source={name}_{Guid.NewGuid():N};Storage=Memory";
 
         var options = new DbContextOptionsBuilder<ForumContext>()
-            .UseH2(connection)
+            .UseH2(connectionString)
             .Options;
 
-        return new ForumDatabase(connection, options);
+        return new ForumDatabase(connectionString, options);
     }
+
+    /// <summary>
+    ///     The connection string of the database.
+    /// </summary>
+    public string ConnectionString { get; }
 
     /// <summary>
     ///     A context over the database.
@@ -70,5 +76,6 @@ public sealed class ForumDatabase : IDisposable
 
     /// <inheritdoc />
     public void Dispose()
-        => _connection.Dispose();
+    {
+    }
 }

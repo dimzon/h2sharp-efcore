@@ -1,6 +1,7 @@
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using H2Sharp.EntityFrameworkCore.Storage;
 using H2Sharp.EntityFrameworkCore.Storage.Internal;
 
 namespace H2Sharp.EntityFrameworkCore.Scaffolding.Internal;
@@ -47,7 +48,11 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         Check.NotEmpty(connectionString, nameof(connectionString));
         Check.NotNull(options, nameof(options));
 
-        using var connection = new H2Sharp.Data.H2Connection(H2RelationalConnection.H2Url(connectionString));
+        // The database belongs to a data source, and the connection string names the data source
+        // the provider keeps for it: the scaffolding then reads the same database the contexts of
+        // that connection string talk to.
+        var dataSource = H2DataSources.GetOrCreate(connectionString);
+        using var connection = dataSource.CreateConnection();
         return Create(connection, options);
     }
 

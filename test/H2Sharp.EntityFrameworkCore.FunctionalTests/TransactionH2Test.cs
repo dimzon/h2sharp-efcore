@@ -19,68 +19,6 @@ public class TransactionH2Test(TransactionH2Test.TransactionH2Fixture fixture)
         => Task.CompletedTask;
 #pragma warning restore CS0618
 
-    // The ADO layer of the port has no EnlistTransaction, so an ambient System.Transactions
-    // transaction reaches EF and EF refuses it with AmbientTransactionWarning. The
-    // specification suite of 9.0.14 gates most of its ambient tests on
-    // AmbientTransactionsSupported, which this class declares false; the tests below carry no
-    // such gate, so they are skipped here by hand. When the port grows enlistment, these
-    // overrides and the false declaration all go away.
-    public override Task SaveChanges_uses_ambient_transaction(bool async, AutoTransactionBehavior autoTransactionBehavior)
-        => Task.CompletedTask;
-
-    public override Task SaveChanges_uses_enlisted_transaction(bool async, AutoTransactionBehavior autoTransactionBehavior)
-        => Task.CompletedTask;
-
-    public override Task SaveChanges_uses_enlisted_transaction_after_connection_closed(
-        bool async,
-        AutoTransactionBehavior autoTransactionBehavior)
-        => Task.CompletedTask;
-
-    public override Task SaveChanges_uses_enlisted_transaction_connectionString(
-        bool async,
-        AutoTransactionBehavior autoTransactionBehavior)
-        => Task.CompletedTask;
-
-    public override void SaveChanges_throws_for_suppressed_ambient_transactions(bool connectionString)
-    {
-    }
-
-    public override void SaveChanges_allows_nested_ambient_transactions()
-    {
-    }
-
-    public override void SaveChanges_allows_independent_ambient_transaction_commits()
-    {
-    }
-
-    public override void SaveChanges_uses_enlisted_transaction_after_ambient_transaction()
-    {
-    }
-
-    public override void UseTransaction_throws_if_ambient_transaction_started()
-    {
-    }
-
-    public override void UseTransaction_throws_if_enlisted_in_transaction()
-    {
-    }
-
-    public override void BeginTransaction_throws_if_ambient_transaction_started()
-    {
-    }
-
-    public override void BeginTransaction_throws_if_enlisted_in_transaction()
-    {
-    }
-
-    public override void BeginTransaction_can_be_used_after_enlisted_transaction_ended()
-    {
-    }
-
-    public override void BeginTransaction_can_be_used_after_enlisted_transaction_if_connection_closed()
-    {
-    }
-
     protected override DbContext CreateContextWithConnectionString()
     {
         var options = Fixture.AddOptions(
@@ -150,13 +88,36 @@ public class TransactionH2Test(TransactionH2Test.TransactionH2Fixture fixture)
     public override Task Savepoint_can_be_released(bool async)
         => Task.CompletedTask;
 
-    // The ADO layer of the port has no EnlistTransaction: an ambient System.Transactions
-    // transaction reaches EF, and EF refuses it with AmbientTransactionWarning. Declaring that
-    // here makes the ambient tests of the specification skip themselves, the way the base
-    // suite intends for providers without ambient support. When the port grows enlistment,
-    // this flips back to true and the tests come alive.
+    // The ADO layer of the port enlists the connection in an ambient System.Transactions
+    // transaction, so the ambient tests of the specification run.
     protected override bool AmbientTransactionsSupported
-        => false;
+        => true;
+
+    // The engine refuses to open a connection that was closed while it was enlisted: the
+    // enlistment keeps the session, and Open() answers "The connection is already open"
+    // (dimzon/h2sharp#96). EF Core closes the connection after every operation and opens it
+    // again for the next one, so the second operation of an ambient transaction fails.
+    [Trait("Category", "BlockedByPort")]
+    public override Task SaveChanges_uses_ambient_transaction_with_connectionString(
+        bool async,
+        AutoTransactionBehavior autoTransactionBehavior)
+        => base.SaveChanges_uses_ambient_transaction_with_connectionString(async, autoTransactionBehavior);
+
+    [Trait("Category", "BlockedByPort")]
+    public override void SaveChanges_throws_for_suppressed_ambient_transactions(bool connectionString)
+        => base.SaveChanges_throws_for_suppressed_ambient_transactions(connectionString);
+
+    [Trait("Category", "BlockedByPort")]
+    public override void SaveChanges_allows_nested_ambient_transactions()
+        => base.SaveChanges_allows_nested_ambient_transactions();
+
+    [Trait("Category", "BlockedByPort")]
+    public override void SaveChanges_allows_independent_ambient_transaction_commits()
+        => base.SaveChanges_allows_independent_ambient_transaction_commits();
+
+    [Trait("Category", "BlockedByPort")]
+    public override void BeginTransaction_can_be_used_after_enlisted_transaction_if_connection_closed()
+        => base.BeginTransaction_can_be_used_after_enlisted_transaction_if_connection_closed();
 
     protected override bool SnapshotSupported
         => true;

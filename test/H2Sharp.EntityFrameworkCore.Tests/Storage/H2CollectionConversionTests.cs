@@ -46,7 +46,7 @@ public class H2CollectionConversionTests
     [Fact]
     public void Collection_mapping_snapshots_are_independent_and_parameters_are_converted()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:collection_mappings");
+        using var connection = new H2Connection("Data Source=collection_mappings;Storage=Memory");
         using var context = new DbContext(new DbContextOptionsBuilder().UseH2(connection).Options);
         var source = context.GetService<IRelationalTypeMappingSource>();
         var intMapping = source.FindMapping(typeof(int))!;

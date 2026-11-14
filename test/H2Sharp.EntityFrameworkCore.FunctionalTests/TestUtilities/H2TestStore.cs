@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using H2Sharp.EntityFrameworkCore.Infrastructure;
+using H2Sharp.EntityFrameworkCore.Storage;
 
 namespace H2Sharp.EntityFrameworkCore.TestUtilities;
 
@@ -12,6 +13,7 @@ public class H2TestStore : RelationalTestStore
     private readonly string? _scriptPath;
     private readonly string? _additionalSql;
     private readonly string? _connectionString;
+    private readonly H2DataSource _dataSource;
 
     private const string Northwind = "Northwind";
 
@@ -47,14 +49,34 @@ public class H2TestStore : RelationalTestStore
         string? connectionStringOptions = null,
         bool shared = true,
         bool useConnectionString = false)
-        : base(name, shared, CreateConnection(name, connectionStringOptions))
+        : this(
+            name, scriptPath, additionalSql, shared, useConnectionString,
+            CreateConnectionString(name, connectionStringOptions))
     {
+    }
+
+    private H2TestStore(
+        string name,
+        string? scriptPath,
+        string? additionalSql,
+        bool shared,
+        bool useConnectionString,
+        string connectionString)
+        : base(name, shared, (H2Connection)H2DataSources.GetOrCreate(connectionString).CreateConnection())
+    {
+        _dataSource = H2DataSources.GetOrCreate(connectionString);
+
         if (useConnectionString)
         {
-            _connectionString = CreateConnectionString(name, connectionStringOptions);
+            _connectionString = connectionString;
         }
 
         Name = name;
+
+        // The database of the store is empty when the store is made. A store of its own is a
+        // database of its own, and the data source keeps the database alive for the whole run:
+        // the objects of a store that came before are of no use to this one.
+        Empty();
 
         if (scriptPath is not null)
         {
@@ -66,14 +88,38 @@ public class H2TestStore : RelationalTestStore
     }
 
     /// <summary>
+    ///     Takes the objects out of the database of the store.
+    /// </summary>
+    private void Empty()
+    {
+        using var connection = (H2Connection)_dataSource.CreateConnection();
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "DROP ALL OBJECTS";
+        command.ExecuteNonQuery();
+    }
+
+    /// <summary>
+    ///     The data source that owns the database of the store.
+    /// </summary>
+    /// <remarks>
+    ///     A connection to that database comes from the data source: a connection made on its own
+    ///     is a database of its own.
+    /// </remarks>
+    public H2DataSource DataSource
+        => _dataSource;
+
+    /// <summary>
     ///     The connection string for a test database.
     /// </summary>
     /// <remarks>
-    ///     H2Sharp takes a JDBC URL, not a key=value connection string. The database is in memory:
-    ///     the engine's file store is not ported yet, so there is nowhere else to put it.
+    ///     The database is in memory: the connection string names the key of the in-memory database
+    ///     and says so, because a file database is what the engine asks for when nothing says
+    ///     otherwise, and a file of the tests would outlive them.
     /// </remarks>
     public static string CreateConnectionString(string name, string? connectionStringOptions = null)
-        => $"jdbc:h2:mem:{name}{(connectionStringOptions is null ? string.Empty : ";" + connectionStringOptions)}";
+        => $"Data Source={name};Storage=Memory{(connectionStringOptions is null ? string.Empty : ";" + connectionStringOptions)}";
 
     private static DbCommand CreateCommand(DbConnection connection, string sql, IReadOnlyList<object>? parameters)
     {
@@ -100,8 +146,6 @@ public class H2TestStore : RelationalTestStore
 
         Execute(Connection, command => command.ExecuteNonQuery(), sql, false, null);
     }
-    private static H2Connection CreateConnection(string name, string? connectionStringOptions)
-        => new(CreateConnectionString(name, connectionStringOptions));
     // ReSharper disable once MemberCanBePrivate.Global
     public async Task<H2TestStore> InitializeH2Async(
         IServiceProvider? serviceProvider,
@@ -154,9 +198,9 @@ public class H2TestStore : RelationalTestStore
             // sorts NULLs last by default. This configures the provider to emit NULLS FIRST.
             .ReverseNullOrdering();
 
-        // The default mode in the EF tests is to use a DbConnection, but in H2 we have certain test suites which require that
-        // we use a connection string instead, because an H2DataSource is required internally (e.g. enums or plugins
-        // are used).
+        // The context takes the connection of the store, and that connection comes from the data
+        // source that owns the database: the store, the context and the provider's own catalogue
+        // reads all work with one and the same database.
         return _connectionString is null
             ? builder.UseH2(Connection, npgsqlOptionsBuilder)
             : builder.UseH2(_connectionString, npgsqlOptionsBuilder);
@@ -250,9 +294,8 @@ public class H2TestStore : RelationalTestStore
         bool useTransaction,
         object[]? parameters)
     {
-        // The connection is not closed when the command is done: an in-memory database of the port
-        // dies with the last connection (the gap with DB_CLOSE_DELAY), so the store keeps it open
-        // for the whole life of the store.
+        // The connection is not closed when the command is done: the store keeps it open for the
+        // whole life of the store, and the data source keeps the database itself alive.
         if (connection.State == ConnectionState.Closed)
         {
             connection.Open();
@@ -287,9 +330,8 @@ public class H2TestStore : RelationalTestStore
         bool useTransaction,
         IReadOnlyList<object>? parameters)
     {
-        // The connection is not closed when the command is done: an in-memory database of the port
-        // dies with the last connection (the gap with DB_CLOSE_DELAY), so the store keeps it open
-        // for the whole life of the store.
+        // The connection is not closed when the command is done: the store keeps it open for the
+        // whole life of the store, and the data source keeps the database itself alive.
         if (connection.State == ConnectionState.Closed)
         {
             await connection.OpenAsync();

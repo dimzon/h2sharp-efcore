@@ -161,7 +161,7 @@ public class ForumScaffoldingTests
     [Fact]
     public void The_sequences_of_the_database_are_read_back()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:scaffold_sequences_" + Guid.NewGuid().ToString("N"));
+        using var connection = new H2Connection("Data Source=" + "scaffold_sequences_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
 
         var options = new DbContextOptionsBuilder<DraftContext>().UseH2(connection).Options;
@@ -218,7 +218,7 @@ public class ForumScaffoldingTests
     [Fact]
     public void The_foreign_keys_of_a_table_are_read_back()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:scaffold_keys_" + Guid.NewGuid().ToString("N"));
+        using var connection = new H2Connection("Data Source=" + "scaffold_keys_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
 
         Execute(connection, "CREATE TABLE \"Parent\" (\"Id\" INTEGER PRIMARY KEY)");
@@ -241,7 +241,7 @@ public class ForumScaffoldingTests
     [Fact]
     public void A_computed_column_is_read_back()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:scaffold_computed_" + Guid.NewGuid().ToString("N"));
+        using var connection = new H2Connection("Data Source=" + "scaffold_computed_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
 
         Execute(

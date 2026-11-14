@@ -39,6 +39,19 @@ public class H2OptionsExtension : RelationalOptionsExtension
     public virtual bool ReverseNullOrdering { get; private set; }
 
     /// <summary>
+    ///     The data source that owns the database, when the caller supplied one.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         An H2 database belongs to a data source: it creates it, keeps it alive and hands out
+    ///         connections to it. A caller that hands one over owns the database and decides when it
+    ///         goes away; a caller that gives only a connection string gets the data source of that
+    ///         connection string.
+    ///     </para>
+    /// </remarks>
+    public virtual DbDataSource? DataSource { get; private set; }
+
+    /// <summary>
     ///     Initializes an instance of <see cref="H2OptionsExtension" /> with the default settings.
     /// </summary>
     public H2OptionsExtension()
@@ -53,6 +66,7 @@ public class H2OptionsExtension : RelationalOptionsExtension
     {
         _enumDefinitions = [..copyFrom._enumDefinitions];
         ReverseNullOrdering = copyFrom.ReverseNullOrdering;
+        DataSource = copyFrom.DataSource;
     }
 
     /// <summary>
@@ -63,11 +77,37 @@ public class H2OptionsExtension : RelationalOptionsExtension
 
     /// <inheritdoc />
     public override RelationalOptionsExtension WithConnectionString(string? connectionString)
-        => (RelationalOptionsExtension)base.WithConnectionString(connectionString);
+    {
+        var clone = (H2OptionsExtension)base.WithConnectionString(connectionString);
+        clone.DataSource = null;
+        return clone;
+    }
 
     /// <inheritdoc />
     public override RelationalOptionsExtension WithConnection(DbConnection? connection)
-        => (RelationalOptionsExtension)base.WithConnection(connection);
+    {
+        var clone = (H2OptionsExtension)base.WithConnection(connection);
+        clone.DataSource = null;
+        return clone;
+    }
+
+    /// <summary>
+    ///     Returns a copy of the current instance configured with the specified data source.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         The data source replaces the connection string and the connection: the database it owns
+    ///         is the one the context talks to, and its connection string is the one that names it.
+    ///     </para>
+    /// </remarks>
+    /// <param name="dataSource">The data source that owns the database.</param>
+    /// <returns>A new instance configured with the specified data source.</returns>
+    public virtual H2OptionsExtension WithDataSource(DbDataSource? dataSource)
+    {
+        var clone = (H2OptionsExtension)base.WithConnectionString(null).WithConnection(null);
+        clone.DataSource = dataSource;
+        return clone;
+    }
 
     /// <summary>
     ///     Returns a copy of the current instance configured with the specified enum mapping.

@@ -18,4 +18,10 @@ public interface IH2RelationalConnection : IRelationalConnection
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     IH2RelationalConnection CloneWith(string connectionString);
+
+    /// <summary>
+    ///     The data source that owns the database, or null when the context was given a single
+    ///     connection that cannot be duplicated.
+    /// </summary>
+    DbDataSource? DataSource { get; }
 }

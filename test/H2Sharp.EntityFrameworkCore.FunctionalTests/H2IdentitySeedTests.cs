@@ -12,7 +12,7 @@ public class H2IdentitySeedTests
     [Fact]
     public void Legacy_serial_creates_h2_identity_and_changes_generation_mode()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:legacy_identity");
+        using var connection = new H2Connection("Data Source=legacy_identity;Storage=Memory");
         using var context = new AscendingContext(new DbContextOptionsBuilder<AscendingContext>().UseH2(connection).Options);
         var generator = context.GetService<IMigrationsSqlGenerator>();
         var create = new CreateTableOperation { Name = "Legacy" };
@@ -54,7 +54,7 @@ public class H2IdentitySeedTests
     [InlineData(true, true)]
     public void Seeded_identity_is_restarted_with_h2_ddl(bool descending, bool idempotent)
     {
-        using var connection = new H2Connection("jdbc:h2:mem:identity_seed_" + Guid.NewGuid().ToString("N"));
+        using var connection = new H2Connection("Data Source=" + "identity_seed_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         using var context = descending
             ? new DescendingContext(new DbContextOptionsBuilder<DescendingContext>().UseH2(connection).Options)
             : (DbContext)new AscendingContext(new DbContextOptionsBuilder<AscendingContext>().UseH2(connection).Options);
@@ -98,7 +98,7 @@ public class H2IdentitySeedTests
     [Fact]
     public void Adding_identity_to_a_column_keeps_its_options()
     {
-        using var connection = new H2Connection("jdbc:h2:mem:add_identity_options");
+        using var connection = new H2Connection("Data Source=add_identity_options;Storage=Memory");
         using var context = new AscendingContext(new DbContextOptionsBuilder<AscendingContext>().UseH2(connection).Options);
         var change = new AlterColumnOperation
         {
