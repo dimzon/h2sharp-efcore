@@ -57,15 +57,17 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 2075 | 0 | 2089 (14 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 5923 | 0 | 5937 (14 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 129 | 0 | 129 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 317 | 0 | 317 |
-   | **Итого** | **2521** | **0** | **2535** |
+   | **Итого** | **6369** | **0** | **6383** |
 
-   Зелёный гейт: 2521 тест на `net9.0` и `net10.0` против опубликованного пакета
-   `H2Sharp 0.1.41-alpha.1` (23 ноября 2026). Провайдер больше не зависит от соседнего
-   чек-аута движка: он берёт пакет с nuget.org, ADO.NET-слой которого даёт data source,
-   classic connection string и ambient-транзакции.
+   Зелёный гейт: 6369 тестов на `net9.0` и `net10.0` против опубликованного пакета
+   `H2Sharp 0.1.43-alpha.1` (23 ноября 2026). Провайдер не зависит от соседнего чек-аута
+   движка: он берёт пакет с nuget.org. Исправление `ExecuteReader` смешанного пакета в
+   движке вернуло в гейт 3848 тестов (`LoadH2Test`, `StoreGeneratedH2Test`,
+   `PropertyValuesH2Test`, `FieldMappingH2Test`, `FindH2TestSet`, `SerializationH2Test`,
+   `ConcurrencyDetectorDisabledH2Test`, `StoreGeneratedFixupH2Test`).
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
@@ -81,11 +83,11 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 2075 | 0 | 2089 (14 пропущено) |
-   | `Category=BlockedByPort` | 4147 | 287 | 4434 |
+   | `Category!=BlockedByPort` | 5923 | 0 | 5937 (14 пропущено) |
+   | `Category=BlockedByPort` | 256 | 330 | 586 |
 
    Пропущенных в прогоне с трейтом нет: четырнадцать скипов переехали в гейт вместе со своими
-   классами. Числа — на `net10.0`, пакет `H2Sharp 0.1.41-alpha.1` (23 ноября 2026), после правок
+   классами. Числа — на `net10.0`, пакет `H2Sharp 0.1.43-alpha.1` (23 ноября 2026), после правок
    провайдера: массив читается в `List<T>` (было
    `Unable to cast object of type 'System.Int32[]' to …List\`1[System.Int32]'`), тест-модель
    писал `uuid_generate_v4()` там, где H2 зовёт функцию `RANDOM_UUID()`, снят перевод

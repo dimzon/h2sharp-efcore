@@ -2,9 +2,7 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// BlockedByPort: the suite saves through the batch, and the port's Prepared update path is a
-// stub ("Not ported yet: Prepared.update"), so every save fails at the engine.
-[Trait("Category", "BlockedByPort")]
+// Batch saves work against the published engine; the suite is back in the green run.
 public class PropertyValuesH2Test(PropertyValuesH2Test.PropertyValuesH2Fixture fixture)
     : PropertyValuesTestBase<PropertyValuesH2Test.PropertyValuesH2Fixture>(fixture)
 {

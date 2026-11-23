@@ -2,10 +2,8 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// BlockedByPort: every save goes through SaveChanges and the port stops the update path with
-// "Not ported yet: Prepared.update". All 3133 tests fail there, so the trait sits on the class
-// rather than on the methods.
-[Trait("Category", "BlockedByPort")]
+// The whole suite runs green against the published engine: batch saves position the reader at the
+// first result set, so generated values and affected counts reach EF Core.
 // ReSharper disable once UnusedMember.Global
 public class LoadH2Test : LoadTestBase<LoadH2Test.LoadH2Fixture>
 {

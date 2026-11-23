@@ -2,21 +2,18 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// BlockedByPort: three of the suite's 119 tests save an overlapping graph, which reaches the
-// update pipeline, and the port stops it with "Not ported yet: Prepared.update".
+// The three overlapping-graph tests now pass against the published engine: the batch exposes
+// the generated values the update pipeline needs. They are back in the green run.
 public class StoreGeneratedFixupH2Test(StoreGeneratedFixupH2Test.StoreGeneratedFixupH2Fixture fixture)
     : StoreGeneratedFixupRelationalTestBase<StoreGeneratedFixupH2Test.StoreGeneratedFixupH2Fixture>(fixture)
 {
     // inherited from StoreGeneratedFixupTestBase
-    [Trait("Category", "BlockedByPort")]
     public override Task Add_overlapping_graph_from_game()
         => base.Add_overlapping_graph_from_game();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Add_overlapping_graph_from_item()
         => base.Add_overlapping_graph_from_item();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Add_overlapping_graph_from_level()
         => base.Add_overlapping_graph_from_level();
 
