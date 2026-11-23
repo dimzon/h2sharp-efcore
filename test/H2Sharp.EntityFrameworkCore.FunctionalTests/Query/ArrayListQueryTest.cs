@@ -116,9 +116,9 @@ WHERE FALSE
             """
 $__arr_0={ '3', '4' } (DbType = Object)
 
-SELECT s."Id", s."ArrayContainerEntityId", s."ArrayOfStringConvertedToDelimitedString", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IList", s."IntArray", s."IntList", s."ListOfStringConvertedToDelimitedString", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArrayOfEnum", s."ValueConvertedListOfEnum", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE s."IntList" = $__arr_0
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE "s"."IntList" = $__arr_0
 """);
     }
 
@@ -128,9 +128,9 @@ WHERE s."IntList" = $__arr_0
 
         AssertSql(
             """
-SELECT s."Id", s."ArrayContainerEntityId", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IntArray", s."IntList", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArray", s."ValueConvertedList", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE s."IntList" = ARRAY[3,4]
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IntArray", "s"."IntList", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArray", "s"."ValueConvertedList", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE "s"."IntList" = ARRAY[3,4]
 """);
     }
 
@@ -143,9 +143,9 @@ WHERE s."IntList" = ARRAY[3,4]
             """
 $__arr_0={ '3', '4', NULL } (DbType = Object)
 
-SELECT s."Id", s."ArrayContainerEntityId", s."ArrayOfStringConvertedToDelimitedString", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IList", s."IntArray", s."IntList", s."ListOfStringConvertedToDelimitedString", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArrayOfEnum", s."ValueConvertedListOfEnum", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE s."NullableIntList" = $__arr_0
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE "s"."NullableIntList" = $__arr_0
 """);
     }
 
@@ -182,11 +182,10 @@ WHERE array_contains("s"."StringList", '3')
     {
         await base.Array_column_Contains_literal_item(async);
 
-        AssertSql(
-            """
-SELECT s."Id", s."ArrayContainerEntityId", s."ArrayOfStringConvertedToDelimitedString", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IList", s."IntArray", s."IntList", s."ListOfStringConvertedToDelimitedString", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArrayOfEnum", s."ValueConvertedListOfEnum", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE array_contains($left, $elem)
+        AssertSql("""
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE array_contains("s"."IntList", 3)
 """);
     }
 
@@ -195,13 +194,12 @@ WHERE array_contains($left, $elem)
     {
         await base.Array_column_Contains_parameter_item(async);
 
-        AssertSql(
-            """
+        AssertSql("""
 $__p_0='3'
 
-SELECT s."Id", s."ArrayContainerEntityId", s."ArrayOfStringConvertedToDelimitedString", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IList", s."IntArray", s."IntList", s."ListOfStringConvertedToDelimitedString", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArrayOfEnum", s."ValueConvertedListOfEnum", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE array_contains($left, $elem)
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE array_contains("s"."IntList", $__p_0)
 """);
     }
 
@@ -210,11 +208,10 @@ WHERE array_contains($left, $elem)
     {
         await base.Array_column_Contains_column_item(async);
 
-        AssertSql(
-            """
-SELECT s."Id", s."ArrayContainerEntityId", s."ArrayOfStringConvertedToDelimitedString", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IList", s."IntArray", s."IntList", s."ListOfStringConvertedToDelimitedString", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArrayOfEnum", s."ValueConvertedListOfEnum", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE array_contains($left, $elem)
+        AssertSql("""
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE array_contains("s"."IntList", "s"."Id" + 2)
 """);
     }
 
@@ -225,8 +222,8 @@ WHERE array_contains($left, $elem)
 
         AssertSql(
             """
-SELECT s."Id", s."ArrayContainerEntityId", s."ArrayOfStringConvertedToDelimitedString", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IList", s."IntArray", s."IntList", s."ListOfStringConvertedToDelimitedString", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArrayOfEnum", s."ValueConvertedListOfEnum", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
 WHERE array_contains($left, NULL)
 """);
     }
@@ -256,11 +253,10 @@ WHERE array_contains("s"."StringList", NULL)
     {
         await base.Nullable_array_column_Contains_literal_item(async);
 
-        AssertSql(
-            """
-SELECT s."Id", s."ArrayContainerEntityId", s."ArrayOfStringConvertedToDelimitedString", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IList", s."IntArray", s."IntList", s."ListOfStringConvertedToDelimitedString", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArrayOfEnum", s."ValueConvertedListOfEnum", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE array_contains($left, $elem)
+        AssertSql("""
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE array_contains("s"."NullableIntList", 3)
 """);
     }
 
@@ -437,9 +433,9 @@ WHERE CAST("s"."Id" AS text) = ANY ($__values_0)
             """
 $__values_0={ '20' } (DbType = Object)
 
-SELECT s."Id", s."ArrayContainerEntityId", s."ArrayOfStringConvertedToDelimitedString", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IList", s."IntArray", s."IntList", s."ListOfStringConvertedToDelimitedString", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArrayOfEnum", s."ValueConvertedListOfEnum", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE s."Byte" = ANY ($__values_0)
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE "s"."Byte" = ANY ($__values_0)
 """);
     }
 
@@ -564,15 +560,14 @@ WHERE array_contains("s"."IList", 10)
     {
         await base.Array_column_Contains_in_scalar_subquery(async);
 
-        AssertSql(
-            """
-SELECT s."Id"
-FROM "SomeEntityContainers" AS s
+        AssertSql("""
+SELECT "s"."Id"
+FROM "SomeEntityContainers" "s"
 WHERE 3 = ANY (CAST((
-    SELECT s0."NullableIntList"
-    FROM "SomeEntities" AS s0
-    WHERE s."Id" = s0."ArrayContainerEntityId"
-    ORDER BY s0."Id" NULLS FIRST
+    SELECT "s0"."NullableIntList"
+    FROM "SomeEntities" "s0"
+    WHERE "s"."Id" = "s0"."ArrayContainerEntityId"
+    ORDER BY "s0"."Id" NULLS FIRST
     LIMIT 1) AS integer ARRAY))
 """);
     }
@@ -756,9 +751,9 @@ WHERE "s"."NullableText" ILIKE 'B%' AND "s"."NullableText" ILIKE 'ba%'
     //
     //         AssertSql(
     // """
-    // SELECT s."Id", s."ArrayContainerEntityId", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IntArray", s."IntList", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArray", s."ValueConvertedList", s."Varchar10", s."Varchar15"
-    // FROM "SomeEntities" AS s
-    // WHERE array_append(s."IntList", 5) = ARRAY[3,4,5]
+    // SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IntArray", "s"."IntList", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArray", "s"."ValueConvertedList", "s"."Varchar10", "s"."Varchar15"
+    // FROM "SomeEntities" "s"
+    // WHERE array_append("s"."IntList", 5) = ARRAY[3,4,5]
     // """);
     public override async Task Concat(bool async)
     {
@@ -766,9 +761,9 @@ WHERE "s"."NullableText" ILIKE 'B%' AND "s"."NullableText" ILIKE 'ba%'
 
         AssertSql(
             """
-SELECT s."Id", s."ArrayContainerEntityId", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IntArray", s."IntList", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArray", s."ValueConvertedList", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE array_cat(s."IntList", ARRAY[5,6]) = ARRAY[3,4,5,6]
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IntArray", "s"."IntList", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArray", "s"."ValueConvertedList", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE array_cat("s"."IntList", ARRAY[5,6]) = ARRAY[3,4,5,6]
 """);
     }
 
@@ -878,6 +873,85 @@ WHERE array_cat(s."IntList", ARRAY[5,6]) = ARRAY[3,4,5,6]
             }
 
             return node;
+        }
+
+        private static Expression AsEnumerable(Expression expression)
+        {
+            var type = expression.Type;
+            if (type.IsArray)
+            {
+                var toList = typeof(Enumerable)
+                    .GetMethods()
+                    .Single(m => m.Name == nameof(Enumerable.ToList)
+                        && m.GetParameters().Length == 1
+                        && m.GetParameters()[0].ParameterType.IsGenericType)
+                    .MakeGenericMethod(type.GetElementType()!);
+                return Expression.Call(toList, expression);
+            }
+
+            if (type.IsGenericList() || !type.IsGenericType)
+            {
+                return expression;
+            }
+
+            var definition = type.GetGenericTypeDefinition();
+            if (definition != typeof(ReadOnlySpan<>) && definition != typeof(Span<>))
+            {
+                return expression;
+            }
+
+            var toArray = type.GetMethod(nameof(ReadOnlySpan<int>.ToArray), Type.EmptyTypes)
+                ?? throw new InvalidOperationException($"No ToArray on {type}");
+            return Expression.Call(expression, toArray);
+        }
+
+        protected override Expression VisitUnary(UnaryExpression node)
+        {
+            var operand = Visit(node.Operand);
+            if ((node.NodeType == ExpressionType.Convert || node.NodeType == ExpressionType.ConvertChecked)
+                && node.Type.IsArray
+                && operand.Type.IsGenericList())
+            {
+                return operand;
+            }
+
+            return node.Update(operand);
+        }
+
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            // The test query is written against arrays, so C# binds Contains/SequenceEqual to
+            // the span overloads. Rebuilding such a call with a List argument would throw
+            // before a post-visit hook runs, so rebind before visiting the arguments.
+            // The span overload is reached through an implicit array-to-span conversion; once
+            // the array becomes a List that conversion no longer exists, so drop it.
+            if (node.Method.Name == "op_Implicit" && node.Arguments.Count == 1)
+            {
+                var argument = Visit(node.Arguments[0]);
+                if (argument.Type.IsGenericList() || argument.Type.IsArray)
+                {
+                    return argument;
+                }
+            }
+
+            if (node.Object is null && node.Arguments.Count >= 2
+                && (node.Method.Name == nameof(Enumerable.Contains)
+                    || node.Method.Name == nameof(Enumerable.SequenceEqual)))
+            {
+                var first = AsEnumerable(Visit(node.Arguments[0]));
+                if (first.Type.IsGenericList())
+                {
+                    var elementType = first.Type.GetGenericArguments()[0];
+                    var second = AsEnumerable(Visit(node.Arguments[1]));
+                    var method = typeof(Enumerable)
+                        .GetMethods()
+                        .Single(m => m.Name == node.Method.Name && m.GetParameters().Length == 2)
+                        .MakeGenericMethod(elementType);
+                    return Expression.Call(method, first, second);
+                }
+            }
+
+            return base.VisitMethodCall(node);
         }
 
         protected override Expression VisitBinary(BinaryExpression node)
