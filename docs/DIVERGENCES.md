@@ -57,17 +57,18 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 5923 | 0 | 5937 (14 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 6271 | 0 | 6285 (14 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 129 | 0 | 129 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 317 | 0 | 317 |
-   | **Итого** | **6369** | **0** | **6383** |
+   | **Итого** | **6717** | **0** | **6731** |
 
-   Зелёный гейт: 6369 тестов на `net9.0` и `net10.0` против опубликованного пакета
+   Зелёный гейт: 6717 тестов на `net9.0` и `net10.0` против опубликованного пакета
    `H2Sharp 0.1.43-alpha.1` (23 ноября 2026). Провайдер не зависит от соседнего чек-аута
    движка: он берёт пакет с nuget.org. Исправление `ExecuteReader` смешанного пакета в
-   движке вернуло в гейт 3848 тестов (`LoadH2Test`, `StoreGeneratedH2Test`,
-   `PropertyValuesH2Test`, `FieldMappingH2Test`, `FindH2TestSet`, `SerializationH2Test`,
-   `ConcurrencyDetectorDisabledH2Test`, `StoreGeneratedFixupH2Test`).
+   движке вернуло в гейт 3848 тестов. Ещё 348 вернулись после того, как
+   `H2TestStoreFactory.GetOrCreate` стал кешировать разделяемое хранилище по имени: ранее
+   каждый фикстур создавал новый store и `DROP ALL OBJECTS` стирал таблицы, посеянные другим
+   (`FindH2Test*`, `DataBindingH2Test`, `ConcurrencyDetectorEnabledH2Test`).
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
@@ -83,8 +84,8 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 5923 | 0 | 5937 (14 пропущено) |
-   | `Category=BlockedByPort` | 256 | 330 | 586 |
+   | `Category!=BlockedByPort` | 6271 | 0 | 6285 (14 пропущено) |
+   | `Category=BlockedByPort` | 188 | 50 | 238 |
 
    Пропущенных в прогоне с трейтом нет: четырнадцать скипов переехали в гейт вместе со своими
    классами. Числа — на `net10.0`, пакет `H2Sharp 0.1.43-alpha.1` (23 ноября 2026), после правок

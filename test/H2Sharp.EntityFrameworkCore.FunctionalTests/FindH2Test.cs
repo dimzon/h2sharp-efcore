@@ -2,8 +2,8 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// The FindViaSet suite runs green against the published engine; the other two suites still have
-// failing cases and keep the trait on their own classes below.
+// All three finder suites run green now: batch saves and the shared test-store cache keep the
+// seeded database intact between fixture and query.
 public abstract class FindH2Test : FindTestBase<FindH2Test.FindH2Fixture>
 {
     protected FindH2Test(FindH2Fixture fixture)
@@ -17,13 +17,11 @@ public abstract class FindH2Test : FindTestBase<FindH2Test.FindH2Fixture>
         protected override TestFinder Finder { get; } = new FindViaSetFinder();
     }
 
-    [Trait("Category", "BlockedByPort")]
     public class FindH2TestContext(FindH2Fixture fixture) : FindH2Test(fixture)
     {
         protected override TestFinder Finder { get; } = new FindViaContextFinder();
     }
 
-    [Trait("Category", "BlockedByPort")]
     public class FindH2TestNonGeneric(FindH2Fixture fixture) : FindH2Test(fixture)
     {
         protected override TestFinder Finder { get; } = new FindViaNonGenericContextFinder();

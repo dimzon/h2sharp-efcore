@@ -2,12 +2,8 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
 
-// BlockedByPort: this class and ConcurrencyDetectorDisabledH2Test share one store
-// ("ConcurrencyDetector"), and one of the two always finds it empty -- "Table \"Products\" not
-// found (this database is empty)" -- so the pair passes or fails depending on the order the two
-// classes happen to run in. The fix belongs in the fixture; until then the trait keeps both out of
-// the green run, because either of them can be the empty one.
-[Trait("Category", "BlockedByPort")]
+// Both concurrency-detector suites run green: the test store is now shared by name rather than
+// recreated (and emptied) for every fixture.
 public class ConcurrencyDetectorEnabledH2Test : ConcurrencyDetectorEnabledRelationalTestBase<
     ConcurrencyDetectorEnabledH2Test.ConcurrencyDetectorH2Fixture>
 {
