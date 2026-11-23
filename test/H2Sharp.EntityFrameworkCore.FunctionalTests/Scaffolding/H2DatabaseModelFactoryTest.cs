@@ -2160,6 +2160,34 @@ CREATE EXTENSION postgis;
 
     #endregion
 
+    private void ClearUserTables()
+    {
+        using var connection = H2Sharp.EntityFrameworkCore.Storage.H2DataSources
+            .GetOrCreate(Fixture.TestStore.ConnectionString).CreateConnection();
+        connection.Open();
+
+        List<(string Schema, string Name)> tables = [];
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = """
+                SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_SCHEMA <> 'INFORMATION_SCHEMA'
+                """;
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                tables.Add((reader.GetString(0), reader.GetString(1)));
+            }
+        }
+
+        foreach ((string schema, string name) in tables)
+        {
+            using var drop = connection.CreateCommand();
+            drop.CommandText = $"DROP TABLE IF EXISTS \"{schema.Replace("\"", "\"\"")}\".\"{name.Replace("\"", "\"\"")}\"";
+            drop.ExecuteNonQuery();
+        }
+    }
+
     private void Test(
         string createSql,
         IEnumerable<string> tables,
@@ -2167,10 +2195,16 @@ CREATE EXTENSION postgis;
         Action<DatabaseModel> asserter,
         string cleanupSql)
     {
-        Fixture.TestStore.ExecuteNonQuery(createSql);
+        // Every test starts from an empty set of user tables. A multi-statement create can fail
+        // halfway through (an H2-only DDL form the port does not read yet), and its cleanup SQL
+        // may not drop what the earlier statements made; without this, tables leak into the shared
+        // store and the next test's Single() sees more than one. Schemas made by the fixture stay.
+        ClearUserTables();
 
         try
         {
+            Fixture.TestStore.ExecuteNonQuery(createSql);
+
             var databaseModelFactory = new H2DatabaseModelFactory(
                 new DiagnosticsLogger<DbLoggerCategory.Scaffolding>(
                     Fixture.ListLoggerFactory,
