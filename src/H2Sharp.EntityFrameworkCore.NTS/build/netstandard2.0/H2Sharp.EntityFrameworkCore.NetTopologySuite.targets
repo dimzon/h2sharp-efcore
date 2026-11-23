@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <EFCoreNpgsqlNetTopologySuiteFile>$(IntermediateOutputPath)EFCoreNpgsqlNetTopologySuite$(DefaultLanguageSourceExtension)</EFCoreNpgsqlNetTopologySuiteFile>
+    <EFCoreH2NetTopologySuiteFile>$(IntermediateOutputPath)EFCoreH2NetTopologySuite$(DefaultLanguageSourceExtension)</EFCoreH2NetTopologySuiteFile>
   </PropertyGroup>
   <Choose>
     <When Condition="'$(Language)' == 'F#'">
@@ -24,21 +24,21 @@
       </PropertyGroup>
     </Otherwise>
   </Choose>
-  <Target Name="AddEFCoreNpgsqlNetTopologySuite"
+  <Target Name="AddEFCoreH2NetTopologySuite"
           BeforeTargets="CoreCompile"
           DependsOnTargets="PrepareForBuild"
           Condition="'$(DesignTimeBuild)' != 'True'"
           Inputs="$(MSBuildAllProjects)"
-          Outputs="$(EFCoreNpgsqlNetTopologySuiteFile)">
+          Outputs="$(EFCoreH2NetTopologySuiteFile)">
     <ItemGroup>
-      <EFCoreNpgsqlNetTopologySuiteServices Include="Microsoft.EntityFrameworkCore.Design.DesignTimeServicesReferenceAttribute">
+      <EFCoreH2NetTopologySuiteServices Include="Microsoft.EntityFrameworkCore.Design.DesignTimeServicesReferenceAttribute">
         <_Parameter1>H2Sharp.EntityFrameworkCore.Design.Internal.H2NetTopologySuiteDesignTimeServices, H2Sharp.EntityFrameworkCore.NetTopologySuite</_Parameter1>
         <_Parameter2>H2Sharp.EntityFrameworkCore</_Parameter2>
-      </EFCoreNpgsqlNetTopologySuiteServices>
+      </EFCoreH2NetTopologySuiteServices>
     </ItemGroup>
-    <WriteCodeFragment AssemblyAttributes="@(EFCoreNpgsqlNetTopologySuiteServices)"
+    <WriteCodeFragment AssemblyAttributes="@(EFCoreH2NetTopologySuiteServices)"
                        Language="$(Language)"
-                       OutputFile="$(EFCoreNpgsqlNetTopologySuiteFile)">
+                       OutputFile="$(EFCoreH2NetTopologySuiteFile)">
       <Output TaskParameter="OutputFile" ItemName="$(CodeFragmentItemGroup)" />
       <Output TaskParameter="OutputFile" ItemName="FileWrites" />
     </WriteCodeFragment>

@@ -26,9 +26,9 @@
   (вместе со всеми подпространствами);
 * `AssemblyName` / `RootNamespace` / `CustomToolNamespace` переписаны тем же правилом.
 
-Пакет `Npgsql` (ADO.NET) на этом шаге **ещё используется** как есть: сборка проходит и
-провайдер работает с PostgreSQL. Замена ADO.NET слоя на `H2Sharp.Data` — отдельный этап,
-см. `ROADMAP.md`.
+Изначально пакет `Npgsql` (ADO.NET) использовался как есть: на этом шаге форк ещё работал
+с PostgreSQL. Сейчас ADO.NET-слой заменён на `H2Sharp.Data`, пакет `Npgsql` удалён из зависимостей
+(как и объявленные для него версии), а подключение идёт через `H2DataSource`.
 
 Всё, что не переименовано, осталось именами upstream: имена типов внутри провайдера
 (`NpgsqlSqlGenerationHelper`, `NpgsqlMigrationsSqlGenerator`, …), идентификаторы аннотаций

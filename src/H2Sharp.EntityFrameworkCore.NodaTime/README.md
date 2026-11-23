@@ -1,17 +1,16 @@
-# H2 Entity Framework Core provider for PostgreSQL
+# H2Sharp.EntityFrameworkCore.NodaTime
 
-H2Sharp.EntityFrameworkCore is the open source EF Core provider for PostgreSQL. It allows you to interact with PostgreSQL via the most widely-used .NET O/RM from Microsoft, and use familiar LINQ syntax to express queries.
-
-This package is a plugin which allows you to use the [NodaTime](https://nodatime.org) date/time library when interacting with PostgreSQL; this provides a better and safer API for dealing with date and time data.
-
-To use the plugin, simply add `UseNodaTime` as below and use NodaTime types in your entity properties:
+A plugin for the H2Sharp Entity Framework Core provider that maps
+[NodaTime](https://nodatime.org) types to H2 date and time columns. It gives applications a safer
+API for instants, local dates and time zones than the BCL `DateTime` types.
 
 ```csharp
+using NodaTime;
+
 await using var ctx = new BlogContext();
 await ctx.Database.EnsureDeletedAsync();
 await ctx.Database.EnsureCreatedAsync();
 
-// Insert a Blog
 ctx.Blogs.Add(new()
 {
     Name = "FooBlog",
@@ -19,17 +18,16 @@ ctx.Blogs.Add(new()
 });
 await ctx.SaveChangesAsync();
 
-// Query all blogs created in 2020 or after
-var newBlogs = await ctx.Blogs.Where(b => b.CreationTime >= Instant.FromUtc(2020, 1, 1, 0, 0, 0)).ToListAsync();
+var newBlogs = await ctx.Blogs
+    .Where(b => b.CreationTime >= Instant.FromUtc(2020, 1, 1, 0, 0, 0))
+    .ToListAsync();
 
 public class BlogContext : DbContext
 {
     public DbSet<Blog> Blogs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseH2(
-            @"Host=myserver;Username=mylogin;Password=mypass;Database=mydatabase",
-            o => o.UseNodaTime());
+        => optionsBuilder.UseH2("Data Source=mydatabase;Storage=Memory", o => o.UseNodaTime());
 }
 
 public class Blog
@@ -40,4 +38,10 @@ public class Blog
 }
 ```
 
-The plugin also supports translating most NodaTime methods and properties into corresponding PostgreSQL date/time operations. For more information, see the [NodaTime plugin documentation page](https://www.npgsql.org/efcore/mapping/nodatime.html).
+NodaTime members translate into H2's date and time operations. The connection string is the
+classic ADO.NET form used by the engine (`Data Source`, `Storage`), not a JDBC URL or a
+PostgreSQL connection string.
+
+See the [usage guide](https://github.com/dimzon/h2sharp-efcore/blob/h2-provider/docs/USAGE.md)
+and [DIVERGENCES.md](https://github.com/dimzon/h2sharp-efcore/blob/h2-provider/docs/DIVERGENCES.md)
+for what the engine can and cannot run today.

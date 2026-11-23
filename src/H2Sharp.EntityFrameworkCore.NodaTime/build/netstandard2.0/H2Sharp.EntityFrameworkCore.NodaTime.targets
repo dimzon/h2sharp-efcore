@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <EFCoreNpgsqlNodaTimeFile>$(IntermediateOutputPath)EFCoreNpgsqlNodaTime$(DefaultLanguageSourceExtension)</EFCoreNpgsqlNodaTimeFile>
+    <EFCoreH2NodaTimeFile>$(IntermediateOutputPath)EFCoreH2NodaTime$(DefaultLanguageSourceExtension)</EFCoreH2NodaTimeFile>
   </PropertyGroup>
   <Choose>
     <When Condition="'$(Language)' == 'F#'">
@@ -24,21 +24,21 @@
       </PropertyGroup>
     </Otherwise>
   </Choose>
-  <Target Name="AddEFCoreNpgsqlNodaTime"
+  <Target Name="AddEFCoreH2NodaTime"
           BeforeTargets="CoreCompile"
           DependsOnTargets="PrepareForBuild"
           Condition="'$(DesignTimeBuild)' != 'True'"
           Inputs="$(MSBuildAllProjects)"
-          Outputs="$(EFCoreNpgsqlNodaTimeFile)">
+          Outputs="$(EFCoreH2NodaTimeFile)">
     <ItemGroup>
-      <EFCoreNpgsqlNodaTimeServices Include="Microsoft.EntityFrameworkCore.Design.DesignTimeServicesReferenceAttribute">
-        <_Parameter1>H2Sharp.EntityFrameworkCore.Design.Internal.NpgsqlNodaTimeDesignTimeServices, H2Sharp.EntityFrameworkCore.NodaTime</_Parameter1>
+      <EFCoreH2NodaTimeServices Include="Microsoft.EntityFrameworkCore.Design.DesignTimeServicesReferenceAttribute">
+        <_Parameter1>H2Sharp.EntityFrameworkCore.Design.Internal.H2NodaTimeDesignTimeServices, H2Sharp.EntityFrameworkCore.NodaTime</_Parameter1>
         <_Parameter2>H2Sharp.EntityFrameworkCore</_Parameter2>
-      </EFCoreNpgsqlNodaTimeServices>
+      </EFCoreH2NodaTimeServices>
     </ItemGroup>
-    <WriteCodeFragment AssemblyAttributes="@(EFCoreNpgsqlNodaTimeServices)"
+    <WriteCodeFragment AssemblyAttributes="@(EFCoreH2NodaTimeServices)"
                        Language="$(Language)"
-                       OutputFile="$(EFCoreNpgsqlNodaTimeFile)">
+                       OutputFile="$(EFCoreH2NodaTimeFile)">
       <Output TaskParameter="OutputFile" ItemName="$(CodeFragmentItemGroup)" />
       <Output TaskParameter="OutputFile" ItemName="FileWrites" />
     </WriteCodeFragment>

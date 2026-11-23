@@ -1,19 +1,18 @@
-# H2 Entity Framework Core provider for PostgreSQL
+# H2Sharp.EntityFrameworkCore
 
-H2Sharp.EntityFrameworkCore is the open source EF Core provider for PostgreSQL. It allows you to interact with PostgreSQL via the most widely-used .NET O/RM from Microsoft, and use familiar LINQ syntax to express queries. It's built on top of [H2](https://github.com/npgsql/npgsql).
-
-The provider looks and feels just like any other Entity Framework Core provider. Here's a quick sample to get you started:
+An Entity Framework Core provider for [H2Sharp](https://github.com/dimzon/h2sharp) — the C# port of
+H2 Database 2.5. It is a fork of EFCore.PG with PostgreSQL's surface replaced by H2's: the type
+mappings, migrations SQL, connection handling and DDL are H2's. The provider is built for
+.NET 8 and .NET 10.
 
 ```csharp
 await using var ctx = new BlogContext();
 await ctx.Database.EnsureDeletedAsync();
 await ctx.Database.EnsureCreatedAsync();
 
-// Insert a Blog
 ctx.Blogs.Add(new() { Name = "FooBlog" });
 await ctx.SaveChangesAsync();
 
-// Query all blogs who's name starts with F
 var fBlogs = await ctx.Blogs.Where(b => b.Name.StartsWith("F")).ToListAsync();
 
 public class BlogContext : DbContext
@@ -21,7 +20,7 @@ public class BlogContext : DbContext
     public DbSet<Blog> Blogs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseH2(@"Host=myserver;Username=mylogin;Password=mypass;Database=mydatabase");
+        => optionsBuilder.UseH2("Data Source=mydatabase;Storage=Memory");
 }
 
 public class Blog
@@ -31,5 +30,21 @@ public class Blog
 }
 ```
 
-Aside from providing general EF Core support for PostgreSQL, the provider also exposes some PostgreSQL-specific capabilities, allowing you to query JSON, array or range columns, as well as many other advanced features. For more information, see the [the H2 site](http://www.npgsql.org/efcore/index.html). For information about EF Core in general, see the [EF Core website](https://docs.microsoft.com/ef/core/).
+An H2 database belongs to a **data source**: the data source creates it, keeps it alive and hands
+out the connections. The connection string names the database and `Storage` says whether it is
+`Memory` or `File`. A JDBC URL is not a connection string here. To own the database yourself,
+pass an `H2DataSource` instance to `UseH2`.
 
+`EF.Functions` exposes the built-in functions of H2 that the engine can run: date and time,
+string, binary, number and bit functions. Arrays, JSON, window functions and `INFORMATION_SCHEMA`
+are mapped as H2 2.5 defines them.
+
+The provider is under active development. Tests that fail because the engine does not yet read a
+documented H2 construct are marked `BlockedByPort` and listed in
+[DIVERGENCES.md](https://github.com/dimzon/h2sharp-efcore/blob/h2-provider/docs/DIVERGENCES.md).
+
+Documentation: [usage guide](https://github.com/dimzon/h2sharp-efcore/blob/h2-provider/docs/USAGE.md),
+[SQL dialect](https://github.com/dimzon/h2sharp-efcore/blob/h2-provider/docs/DIALECT.md),
+[repository](https://github.com/dimzon/h2sharp-efcore).
+
+Licensed under the PostgreSQL License, inherited from EFCore.PG.

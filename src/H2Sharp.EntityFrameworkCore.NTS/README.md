@@ -7,7 +7,7 @@ literals, including `GEOMETRY 'SRID=4326;POINT (1 2)'`.
 Enable the mappings when configuring your context:
 
 ```csharp
-optionsBuilder.UseH2("jdbc:h2:mem:cities", h2 => h2.UseNetTopologySuite());
+optionsBuilder.UseH2("Data Source=cities;Storage=Memory", h2 => h2.UseNetTopologySuite());
 ```
 
 For a constrained point column:
@@ -27,4 +27,4 @@ materializing the geometries. Geometry equality, bounding-box overlap and topolo
 intersection have different semantics and are not substituted for one another.
 
 The provider targets H2 2.5. Port-specific implementation gaps are tracked in
-[`docs/DIVERGENCES.md`](../../docs/DIVERGENCES.md).
+[DIVERGENCES.md](https://github.com/dimzon/h2sharp-efcore/blob/h2-provider/docs/DIVERGENCES.md).
