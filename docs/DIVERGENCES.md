@@ -85,7 +85,7 @@ EF их не отдаёт генератору, как в апстриме).
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `Category!=BlockedByPort` | 6271 | 0 | 6285 (14 пропущено) |
-   | `Category=BlockedByPort` | 183 | 55 | 238 |
+   | `Category=BlockedByPort` | 187 | 51 | 238 |
 
    Пропущенных в прогоне с трейтом нет: четырнадцать скипов переехали в гейт вместе со своими
    классами. Числа — на `net10.0`, пакет `H2Sharp 0.1.44-alpha.1` (23 ноября 2026), после правок
@@ -988,6 +988,21 @@ SELECT a."Id" FROM "Rows" AS a     -- OK
   сообщениях, H2-литералы default-значений и `CONSTRAINT_*` имена автогенерируемых
   ограничений.
 
-Красный functional-прогон: 75 → 55 падений. Осталось 16 scaffolding-тестов, которые
+Красный functional-прогон: 75 → 51 падений. Осталось 16 scaffolding-тестов, которые
 упираются в неперенесённые DDL движка (`CREATE DOMAIN`, materialized view, enum-колонки,
 serial-последовательности, частичные индексы) и PG-типы (`money`, `jsonb`, `varbit`).
+
+### Проверка оставшихся «пробелов» на h2.jar (23 ноября 2026)
+
+Эталонный `h2-2.5.259-SNAPSHOT.jar` принимает: `CREATE DOMAIN` (включая `NOT NULL`),
+`CREATE VIEW`, `CREATE MATERIALIZED VIEW`, enum-колонки (`CREATE TYPE ... AS ENUM` +
+`CREATE TABLE(... mood mood)`), `serial`, `varchar(66) ARRAY`, `time(1)`, `timestamp(3)`,
+`bytea`, `int2/int4/int8`, `float4/float8`. Значит это не «нет в эталоне», а работа порта.
+
+Эталон **не** принимает: `varbit`, `timetz`, `timestamptz`, `interval(5)`, `money`, `jsonb`,
+`bit(111)`, `CREATE INDEX ... WHERE`; эти тесты остаются PG-специфичными или переписываются
+под H2.
+
+Провайдер уже читает домены, enum-колонки (пропускаются до enum-маппинга), views и
+materialized views (view + скрытая backing-таблица `NAME$1`), а также сериализует
+`RecordsAffected`; красный functional-прогон стал 51, scaffolding-кластер — 12 тестов.

@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Text;
+using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using H2Sharp.EntityFrameworkCore.Internal;
 using H2Sharp.EntityFrameworkCore.Metadata;
 using H2Sharp.EntityFrameworkCore.Metadata.Internal;
@@ -209,6 +210,20 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
     {
         foreach (var schema in schemas)
         {
+            var tableTypes = new Dictionary<string, string>(StringComparer.Ordinal);
+            using (var types = connection.CreateCommand())
+            {
+                types.CommandText =
+                    "SELECT TABLE_NAME, TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = $p_schema";
+                types.Parameters.Add(Parameter(types, "p_schema", schema));
+
+                using var typeReader = types.ExecuteReader();
+                while (typeReader.Read())
+                {
+                    tableTypes[typeReader.GetString(0)] = typeReader.IsDBNull(1) ? "" : typeReader.GetString(1);
+                }
+            }
+
             var tableComments = new Dictionary<string, string>(StringComparer.Ordinal);
             using (var comments = connection.CreateCommand())
             {
@@ -272,14 +287,33 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                     // An empty list of the wanted tables means every table of the schema, the way
                     // it means it in EF Core: a list that names a table asks for that table and
                     // only that one.
-                    current = wanted.Count == 0 || wanted.Any(t => Matches(t, schema, tableName))
-                        ? new DatabaseTable
-                    {
-                        Database = databaseModel,
-                        Schema = schema,
-                        Name = tableName,
-                        Comment = tableComments.GetValueOrDefault(tableName)
-                    }
+                    var wantedTable = wanted.Count == 0 || wanted.Any(t => Matches(t, schema, tableName));
+                    var isView = tableTypes.TryGetValue(tableName, out var tableType) && tableType == "VIEW";
+
+                    // A materialized view exposes its backing table as NAME$<n>; it is an
+                    // implementation detail and must not become a second scaffolded table.
+                    var backingOf = tableName.LastIndexOf('$');
+                    var isViewBacking = !isView && backingOf > 0
+                        && int.TryParse(tableName[(backingOf + 1)..], out _)
+                        && tableTypes.TryGetValue(tableName[..backingOf], out var ownerType)
+                        && ownerType == "VIEW";
+
+                    current = wantedTable && !isViewBacking
+                        ? isView
+                            ? new DatabaseView
+                            {
+                                Database = databaseModel,
+                                Schema = schema,
+                                Name = tableName,
+                                Comment = tableComments.GetValueOrDefault(tableName)
+                            }
+                            : new DatabaseTable
+                            {
+                                Database = databaseModel,
+                                Schema = schema,
+                                Name = tableName,
+                                Comment = tableComments.GetValueOrDefault(tableName)
+                            }
                         : null;
 
                     if (current is not null)
@@ -289,6 +323,13 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 }
 
                 if (current is null)
+                {
+                    continue;
+                }
+
+                // Enum columns do not have an EF Core store type yet; the enum itself is
+                // scaffolded into the model, and the column is left for the enum mapping work.
+                if (!reader.IsDBNull(3) && reader.GetString(3) == "ENUM")
                 {
                     continue;
                 }

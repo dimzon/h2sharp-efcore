@@ -740,13 +740,13 @@ CREATE TABLE domains (
             [],
             dbModel =>
             {
-                var textDomainColumn = Assert.Single(dbModel.Tables.Single().Columns.Where(c => c.Name == "text_domain"));
-                Assert.Equal("text", textDomainColumn?.StoreType);
+                var textDomainColumn = Assert.Single(dbModel.Tables.Single().Columns.Where(c => c.Name == "TEXT_DOMAIN"));
+                Assert.Equal("varchar", textDomainColumn?.StoreType);
 
-                var charDomainColumn = Assert.Single(dbModel.Tables.Single().Columns.Where(c => c.Name == "char_domain"));
-                Assert.Equal("character(3)", charDomainColumn?.StoreType);
+                var charDomainColumn = Assert.Single(dbModel.Tables.Single().Columns.Where(c => c.Name == "CHAR_DOMAIN"));
+                Assert.Equal("char(3)", charDomainColumn?.StoreType);
 
-                var nonDomainColumn = Assert.Single(dbModel.Tables.Single().Columns.Where(c => c.Name == "id"));
+                var nonDomainColumn = Assert.Single(dbModel.Tables.Single().Columns.Where(c => c.Name == "ID"));
                 Assert.Equal("integer", nonDomainColumn?.StoreType);
             },
             """
@@ -1690,7 +1690,7 @@ CREATE TABLE my_schema."SerialSequenceInSchema" ("Id" serial PRIMARY KEY);
                     Assert.Equal(ValueGenerated.OnAdd, column.ValueGenerated);
                     Assert.Null(column.DefaultValueSql);
                     Assert.Equal(
-                        H2ValueGenerationStrategy.SerialColumn,
+                        H2ValueGenerationStrategy.IdentityByDefaultColumn,
                         (H2ValueGenerationStrategy)column[H2AnnotationNames.ValueGenerationStrategy]);
                 }
             },
@@ -1741,7 +1741,7 @@ CREATE TABLE identity (
             [],
             dbModel =>
             {
-                var idIdentityAlways = dbModel.Tables.Single().Columns.Single(c => c.Name == "id");
+                var idIdentityAlways = dbModel.Tables.Single().Columns.Single(c => c.Name == "ID");
                 Assert.Equal(ValueGenerated.OnAdd, idIdentityAlways.ValueGenerated);
                 Assert.Null(idIdentityAlways.DefaultValueSql);
                 Assert.Equal(
@@ -2188,6 +2188,29 @@ CREATE EXTENSION postgis;
         {
             using var drop = connection.CreateCommand();
             drop.CommandText = $"DROP TABLE IF EXISTS \"{schema.Replace("\"", "\"\"")}\".\"{name.Replace("\"", "\"\"")}\"";
+            drop.ExecuteNonQuery();
+        }
+
+        // Sequences live beside the tables in the shared store, and a leftover sequence
+        // makes a later test that expects none see one (serial tests in particular).
+        List<(string Schema, string Name)> sequences = [];
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = """
+                SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME FROM INFORMATION_SCHEMA.SEQUENCES
+                WHERE SEQUENCE_SCHEMA <> 'INFORMATION_SCHEMA'
+                """;
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                sequences.Add((reader.GetString(0), reader.GetString(1)));
+            }
+        }
+
+        foreach ((string schema, string name) in sequences)
+        {
+            using var drop = connection.CreateCommand();
+            drop.CommandText = $"DROP SEQUENCE IF EXISTS \"{schema.Replace("\"", "\"\"")}\".\"{name.Replace("\"", "\"\"")}\"";
             drop.ExecuteNonQuery();
         }
     }
