@@ -836,7 +836,7 @@ CREATE TABLE "LengthColumns" (
                 DROP TABLE "LengthColumns"
                 """);
 
-    [Fact]
+    [Fact(Skip = "H2 2.5 has no PostgreSQL-only types (money/jsonb/inet/...); verified on h2.jar")]
     [Trait("Category", "BlockedByPort")]
     public void Store_types_without_any_facets()
         => Test(
@@ -953,7 +953,7 @@ CREATE TABLE "ComputedValues" (
                 DROP TABLE "ComputedValues"
                 """);
 
-    [Fact]
+    [Fact(Skip = "uses PostgreSQL-only types and CREATE DOMAIN; verified on h2.jar")]
     [Trait("Category", "BlockedByPort")]
     public void Default_value_matching_clr_default_is_not_stored()
         => Test(
@@ -2075,7 +2075,7 @@ DROP TABLE foo;
 DROP TYPE mood;
 """);
 
-    [Fact]
+    [Fact(Skip = "H2 2.5 has no money/jsonb/timetz/interval/macaddr types; verified on h2.jar")]
     [Trait("Category", "BlockedByPort")]
     public void Column_default_type_names_are_scaffolded()
         => Test(

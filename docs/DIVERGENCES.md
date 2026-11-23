@@ -85,7 +85,7 @@ EF их не отдаёт генератору, как в апстриме).
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `Category!=BlockedByPort` | 6271 | 0 | 6285 (14 пропущено) |
-   | `Category=BlockedByPort` | 190 | 45 | 238 (3 пропущено) |
+   | `Category=BlockedByPort` | 190 | 42 | 238 (6 пропущено) |
 
    Пропущенных в прогоне с трейтом нет: четырнадцать скипов переехали в гейт вместе со своими
    классами. Числа — на `net10.0`, пакет `H2Sharp 0.1.44-alpha.1` (23 ноября 2026), после правок
@@ -1005,7 +1005,7 @@ serial-последовательности, частичные индексы) 
 
 Провайдер уже читает домены, enum-колонки (пропускаются до enum-маппинга), views и
 materialized views (view + скрытая backing-таблица `NAME$1`), а также сериализует
-`RecordsAffected`; красный functional-прогон стал 45 (3 пропущено), scaffolding-кластер — 6 тестов.
+`RecordsAffected`; красный functional-прогон стал 42 (6 пропущено), scaffolding-кластер — 3 теста.
 
 ### Дальнейшая сверка scaffolding с h2.jar (23 ноября 2026)
 
@@ -1022,4 +1022,14 @@ materialized views (view + скрытая backing-таблица `NAME$1`), а �
 * PG-only типы (`money`, `jsonb`, `varbit`, `timetz`, `interval(5)`, `bit(111)`) остаются
   только в тестах, которые ещё не переписаны; эталон их не знает.
 
-Красный functional-прогон: 45 падений и 3 пропуска; scaffolding — 6 падений.
+Красный functional-прогон: 42 падения и 6 пропусков; scaffolding — 3 падения.
+
+### Политика для невозможного в H2 (23 ноября 2026)
+
+Тесты, которым нужна функциональность, отсутствующая в H2 2.5, не «воркэраундятся»
+постгресовыми конструкциями: они либо переписаны на H2-эквивалент, либо помечены
+`Skip` с точной причиной и ссылкой на проверку `h2.jar`. Это относится к
+`Column_default_type_names_are_scaffolded`, `Store_types_without_any_facets`,
+`Default_value_matching_clr_default_is_not_stored`, `Set_filter_for_filtered_index`,
+`SequenceNonSerial`, `Column_nullability_is_set_with_domain`. Тесты на то, что H2 умеет
+(enum-колонки, views, domains, serial), остаются в наборе и являются дефектами порта.
