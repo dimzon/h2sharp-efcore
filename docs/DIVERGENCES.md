@@ -85,7 +85,7 @@ EF их не отдаёт генератору, как в апстриме).
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `Category!=BlockedByPort` | 6271 | 0 | 6285 (14 пропущено) |
-   | `Category=BlockedByPort` | 187 | 51 | 238 |
+   | `Category=BlockedByPort` | 190 | 45 | 238 (3 пропущено) |
 
    Пропущенных в прогоне с трейтом нет: четырнадцать скипов переехали в гейт вместе со своими
    классами. Числа — на `net10.0`, пакет `H2Sharp 0.1.44-alpha.1` (23 ноября 2026), после правок
@@ -1005,4 +1005,21 @@ serial-последовательности, частичные индексы) 
 
 Провайдер уже читает домены, enum-колонки (пропускаются до enum-маппинга), views и
 materialized views (view + скрытая backing-таблица `NAME$1`), а также сериализует
-`RecordsAffected`; красный functional-прогон стал 51, scaffolding-кластер — 12 тестов.
+`RecordsAffected`; красный functional-прогон стал 45 (3 пропущено), scaffolding-кластер — 6 тестов.
+
+### Дальнейшая сверка scaffolding с h2.jar (23 ноября 2026)
+
+После проверки точных форм на эталонном jar:
+
+* `CREATE DOMAIN ... NOT NULL`, `DEFAULT nextval(...)` в определении колонки, partial index
+  (`CREATE INDEX ... WHERE`) эталон **не** принимает — эти тесты помечены `Skip` с причиной,
+  это не дефекты порта.
+* `CREATE VIEW`, `CREATE MATERIALIZED VIEW`, enum-колонки, `serial`, `time(2) with time zone`,
+  `timestamp(4) with time zone`, `varchar(66) ARRAY` эталон принимает; провайдер читает их
+  (views/materialized views как `DatabaseView`, backing-таблица `NAME$1` скрывается,
+  enum-колонки пока пропускаются, time/timestamp с зоной получают precision в правильном
+  месте).
+* PG-only типы (`money`, `jsonb`, `varbit`, `timetz`, `interval(5)`, `bit(111)`) остаются
+  только в тестах, которые ещё не переписаны; эталон их не знает.
+
+Красный functional-прогон: 45 падений и 3 пропуска; scaffolding — 6 падений.

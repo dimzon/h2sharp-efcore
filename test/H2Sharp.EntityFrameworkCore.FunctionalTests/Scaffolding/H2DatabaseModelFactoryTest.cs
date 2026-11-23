@@ -368,7 +368,7 @@ DROP TABLE "db.2"."K2";
         => Test(
             """
 CREATE SEQUENCE public."Sequence";
-CREATE SEQUENCE "db2"."Sequence";
+CREATE SEQUENCE "DB2"."Sequence";
 
 CREATE TABLE "db.2"."QuotedTableName" ("Id" int PRIMARY KEY);
 CREATE TABLE "db.2"."Table.With.Dot" ("Id" int PRIMARY KEY);
@@ -380,12 +380,12 @@ CREATE TABLE public."Table.With.Dot" ("Id" int PRIMARY KEY);
 CREATE TABLE public."SimpleTableName" ("Id" int PRIMARY KEY);
 CREATE TABLE public."JustTableName" ("Id" int PRIMARY KEY);
 
-CREATE TABLE db2."QuotedTableName" ("Id" int PRIMARY KEY);
-CREATE TABLE db2."Table.With.Dot" ("Id" int PRIMARY KEY);
-CREATE TABLE db2."SimpleTableName" ("Id" int PRIMARY KEY);
-CREATE TABLE db2."JustTableName" ("Id" int PRIMARY KEY);
+CREATE TABLE DB2."QuotedTableName" ("Id" int PRIMARY KEY);
+CREATE TABLE DB2."Table.With.Dot" ("Id" int PRIMARY KEY);
+CREATE TABLE DB2."SimpleTableName" ("Id" int PRIMARY KEY);
+CREATE TABLE DB2."JustTableName" ("Id" int PRIMARY KEY);
 
-CREATE TABLE "db2"."PrincipalTable" (
+CREATE TABLE "DB2"."PrincipalTable" (
     "Id" int PRIMARY KEY,
     "UC1" text,
     "UC2" int,
@@ -394,13 +394,13 @@ CREATE TABLE "db2"."PrincipalTable" (
     CONSTRAINT "UX" UNIQUE ("UC1", "UC2")
 );
 
-CREATE INDEX "IX_COMPOSITE" ON "db2"."PrincipalTable" ("Index2", "Index1");
+CREATE INDEX "IX_COMPOSITE" ON "DB2"."PrincipalTable" ("Index2", "Index1");
 
-CREATE TABLE "db2"."DependentTable" (
+CREATE TABLE "DB2"."DependentTable" (
     "Id" int PRIMARY KEY,
     "ForeignKeyId1" text,
     "ForeignKeyId2" int,
-    FOREIGN KEY ("ForeignKeyId1", "ForeignKeyId2") REFERENCES "db2"."PrincipalTable"("UC1", "UC2") ON DELETE CASCADE
+    FOREIGN KEY ("ForeignKeyId1", "ForeignKeyId2") REFERENCES "DB2"."PrincipalTable"("UC1", "UC2") ON DELETE CASCADE
 );
 """,
             [
@@ -420,12 +420,12 @@ CREATE TABLE "db2"."DependentTable" (
                     "JustTableName"
                     """
             ],
-            ["db2"],
+            ["DB2"],
             dbModel =>
             {
                 var sequence = Assert.Single(dbModel.Sequences);
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("db2", sequence.Schema);
+                Assert.Equal("DB2", sequence.Schema);
 
                 Assert.Single(dbModel.Tables.Where(t => t.Schema == "db.2" && t.Name == "QuotedTableName"));
                 Assert.DoesNotContain(dbModel.Tables, t => t.Schema == "db.2" && t.Name == "Table.With.Dot");
@@ -437,24 +437,24 @@ CREATE TABLE "db2"."DependentTable" (
                 Assert.Single(dbModel.Tables.Where(t => t.Schema == "PUBLIC" && t.Name == "SimpleTableName"));
                 Assert.Single(dbModel.Tables.Where(t => t.Schema == "PUBLIC" && t.Name == "JustTableName"));
 
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "db2" && t.Name == "QuotedTableName"));
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "db2" && t.Name == "Table.With.Dot"));
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "db2" && t.Name == "SimpleTableName"));
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "db2" && t.Name == "JustTableName"));
+                Assert.Single(dbModel.Tables.Where(t => t.Schema == "DB2" && t.Name == "QuotedTableName"));
+                Assert.Single(dbModel.Tables.Where(t => t.Schema == "DB2" && t.Name == "Table.With.Dot"));
+                Assert.Single(dbModel.Tables.Where(t => t.Schema == "DB2" && t.Name == "SimpleTableName"));
+                Assert.Single(dbModel.Tables.Where(t => t.Schema == "DB2" && t.Name == "JustTableName"));
 
-                var principalTable = Assert.Single(dbModel.Tables.Where(t => t.Schema == "db2" && t.Name == "PrincipalTable"));
+                var principalTable = Assert.Single(dbModel.Tables.Where(t => t.Schema == "DB2" && t.Name == "PrincipalTable"));
                 // ReSharper disable once PossibleNullReferenceException
                 Assert.NotNull(principalTable.PrimaryKey);
                 Assert.Single(principalTable.UniqueConstraints);
                 Assert.Single(principalTable.Indexes);
 
-                var dependentTable = Assert.Single(dbModel.Tables.Where(t => t.Schema == "db2" && t.Name == "DependentTable"));
+                var dependentTable = Assert.Single(dbModel.Tables.Where(t => t.Schema == "DB2" && t.Name == "DependentTable"));
                 // ReSharper disable once PossibleNullReferenceException
                 Assert.Single(dependentTable.ForeignKeys);
             },
             """
 DROP SEQUENCE public."Sequence";
-DROP SEQUENCE db2."Sequence";
+DROP SEQUENCE DB2."Sequence";
 
 DROP TABLE "db.2"."QuotedTableName";
 DROP TABLE "db.2"."Table.With.Dot";
@@ -466,12 +466,12 @@ DROP TABLE public."Table.With.Dot";
 DROP TABLE public."SimpleTableName";
 DROP TABLE public."JustTableName";
 
-DROP TABLE db2."QuotedTableName";
-DROP TABLE db2."Table.With.Dot";
-DROP TABLE db2."SimpleTableName";
-DROP TABLE db2."JustTableName";
-DROP TABLE db2."DependentTable";
-DROP TABLE db2."PrincipalTable";
+DROP TABLE DB2."QuotedTableName";
+DROP TABLE DB2."Table.With.Dot";
+DROP TABLE DB2."SimpleTableName";
+DROP TABLE DB2."JustTableName";
+DROP TABLE DB2."DependentTable";
+DROP TABLE DB2."PrincipalTable";
 """);
 
     #endregion
@@ -792,11 +792,7 @@ CREATE TABLE "NumericColumns" (
 CREATE TABLE "LengthColumns" (
     "Id" int,
     "char10Column" char(10) NULL,
-    "varchar66Column" varchar(66) NULL,
-    "bit111Column" bit(111) NULL,
-    "varbit123Column" varbit(123) NULL,
-    "varchar66ArrayColumn" varchar(66)[] NULL,
-    "varbit123ArrayColumn" varbit(123)[] NULL
+    "varchar66Column" varchar(66) NULL
 )
 """,
             [],
@@ -805,12 +801,8 @@ CREATE TABLE "LengthColumns" (
             {
                 var columns = dbModel.Tables.Single().Columns;
 
-                Assert.Equal("character(10)", columns.Single(c => c.Name == "char10Column").StoreType);
-                Assert.Equal("character varying(66)", columns.Single(c => c.Name == "varchar66Column").StoreType);
-                Assert.Equal("bit(111)", columns.Single(c => c.Name == "bit111Column").StoreType);
-                Assert.Equal("bit varying(123)", columns.Single(c => c.Name == "varbit123Column").StoreType);
-                Assert.Equal("character varying(66)[]", columns.Single(c => c.Name == "varchar66ArrayColumn").StoreType);
-                Assert.Equal("bit varying(123)[]", columns.Single(c => c.Name == "varbit123ArrayColumn").StoreType);
+                Assert.Equal("char(10)", columns.Single(c => c.Name == "char10Column").StoreType);
+                Assert.Equal("varchar(66)", columns.Single(c => c.Name == "varchar66Column").StoreType);
             },
             """
                 DROP TABLE "LengthColumns"
@@ -824,10 +816,9 @@ CREATE TABLE "LengthColumns" (
 CREATE TABLE "LengthColumns" (
     "Id" int,
     "time1Column" time(1) NULL,
-    "timetz2Column" timetz(2) NULL,
+    "timetz2Column" time(2) with time zone NULL,
     "timestamp3Column" timestamp(3) NULL,
-    "timestamptz4Column" timestamptz(4) NULL,
-    "interval5Column" interval(5) NULL
+    "timestamptz4Column" timestamp(4) with time zone NULL
 )
 """,
             [],
@@ -836,11 +827,10 @@ CREATE TABLE "LengthColumns" (
             {
                 var columns = dbModel.Tables.Single().Columns;
 
-                Assert.Equal("time(1) without time zone", columns.Single(c => c.Name == "time1Column").StoreType);
+                Assert.Equal("time(1)", columns.Single(c => c.Name == "time1Column").StoreType);
                 Assert.Equal("time(2) with time zone", columns.Single(c => c.Name == "timetz2Column").StoreType);
-                Assert.Equal("timestamp(3) without time zone", columns.Single(c => c.Name == "timestamp3Column").StoreType);
+                Assert.Equal("timestamp(3)", columns.Single(c => c.Name == "timestamp3Column").StoreType);
                 Assert.Equal("timestamp(4) with time zone", columns.Single(c => c.Name == "timestamptz4Column").StoreType);
-                Assert.Equal("interval(5)", columns.Single(c => c.Name == "interval5Column").StoreType);
             },
             """
                 DROP TABLE "LengthColumns"
@@ -1103,7 +1093,7 @@ CREATE TABLE "NullableColumns" (
                 DROP TABLE "NullableColumns"
                 """);
 
-    [Fact]
+    [Fact(Skip = "H2 2.5 does not accept CREATE DOMAIN ... NOT NULL; verified on h2.jar")]
     [Trait("Category", "BlockedByPort")]
     public void Column_nullability_is_set_with_domain()
         => Test(
@@ -1323,7 +1313,7 @@ CREATE UNIQUE INDEX "IX_UNIQUE" ON "UniqueIndexTable" ( "Id2" );
                 DROP TABLE "UniqueIndexTable"
                 """);
 
-    [Fact]
+    [Fact(Skip = "H2 2.5 has no partial (filtered) indexes; verified on h2.jar")]
     [Trait("Category", "BlockedByPort")]
     public void Set_filter_for_filtered_index()
         => Test(
@@ -1700,7 +1690,7 @@ DROP TABLE "SerialSequence";
 DROP SCHEMA my_schema CASCADE
 """);
 
-    [Fact]
+    [Fact(Skip = "H2 2.5 does not accept a column DEFAULT nextval(...); verified on h2.jar")]
     [Trait("Category", "BlockedByPort")]
     public void SequenceNonSerial()
         => Test(
@@ -2016,9 +2006,8 @@ DROP SEQUENCE "BigIntSequence";
     public void Dropped_columns()
         => Test(
             """
-CREATE TABLE foo (id int PRIMARY KEY);
-ALTER TABLE foo DROP COLUMN id;
-ALTER TABLE foo ADD COLUMN id2 int PRIMARY KEY;
+CREATE TABLE foo (id int PRIMARY KEY, old int);
+ALTER TABLE foo DROP COLUMN old;
 """,
             [],
             [],

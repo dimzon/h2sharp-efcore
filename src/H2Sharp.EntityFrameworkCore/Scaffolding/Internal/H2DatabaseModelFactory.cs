@@ -456,7 +456,12 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
 
         if (!reader.IsDBNull(15))
         {
-            return Normalize($"{type}({reader.GetInt32(15).ToString(CultureInfo.InvariantCulture)})");
+            var precision = reader.GetInt32(15).ToString(CultureInfo.InvariantCulture);
+            const string withZone = " WITH TIME ZONE";
+
+            return Normalize(type.EndsWith(withZone, StringComparison.Ordinal)
+                ? $"{type[..^withZone.Length]}({precision}){withZone}"
+                : $"{type}({precision})");
         }
 
         if (!reader.IsDBNull(13))
