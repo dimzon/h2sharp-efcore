@@ -61,6 +61,10 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     private readonly H2FloatTypeMapping _float4 = H2FloatTypeMapping.Default;
     private readonly H2DoubleTypeMapping _float8 = H2DoubleTypeMapping.Default;
     private readonly H2DecimalTypeMapping _numeric = H2DecimalTypeMapping.Default;
+
+    // H2's bare NUMERIC has scale 0 and silently truncates 1.99 to 2. CLR decimal has no
+    // scale in its type, so the default mapping must carry one that keeps fractional values.
+    private readonly H2DecimalTypeMapping _decimalDefault = new(storeType: "numeric(18,2)");
     private readonly H2BigIntegerTypeMapping _bigInteger = H2BigIntegerTypeMapping.Default;
     private readonly H2DecimalTypeMapping _numericAsFloat = new(typeof(float));
     private readonly H2DecimalTypeMapping _numericAsDouble = new(typeof(double));
@@ -206,7 +210,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             { typeof(long), _int8 },
             { typeof(float), _float4 },
             { typeof(double), _float8 },
-            { typeof(decimal), _numeric },
+            { typeof(decimal), _decimalDefault },
             { typeof(BigInteger), _bigInteger },
             { typeof(string), _text },
             { typeof(JsonDocument), _jsonDocument },

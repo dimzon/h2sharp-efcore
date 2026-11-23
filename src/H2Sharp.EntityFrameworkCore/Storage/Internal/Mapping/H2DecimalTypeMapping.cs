@@ -26,7 +26,7 @@ public class H2DecimalTypeMapping : H2TypeMapping
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public H2DecimalTypeMapping(Type? clrType = null)
+    public H2DecimalTypeMapping(Type? clrType = null, string? storeType = null)
         : this(
             new RelationalTypeMappingParameters(
                 new CoreTypeMappingParameters(
@@ -39,7 +39,7 @@ public class H2DecimalTypeMapping : H2TypeMapping
                                 ? JsonFloatReaderWriter.Instance
                                 : throw new ArgumentException("clrType must be decimal, double or float", nameof(clrType))
                 ),
-                "numeric"))
+                storeType ?? "numeric"))
     {
     }
 

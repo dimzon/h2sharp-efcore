@@ -64,15 +64,15 @@ public class ForumScaffoldingTests
         var table = model.Tables.Single(t => t.Name == "Users");
         var columns = table.Columns.ToDictionary(c => c.Name, c => c.StoreType);
 
-        // The catalogue of H2 names the types in upper case, the way it folds an unquoted name.
-        Assert.Equal("INTEGER", columns["Id"]);
-        Assert.Equal("TIMESTAMP", columns["JoinedAt"]);
+        // The provider reports the spellings it writes into DDL, not the catalogue's upper-case
+        // aliases; H2 accepts both forms.
+        Assert.Equal("integer", columns["Id"]);
+        Assert.Equal("timestamp(6)", columns["JoinedAt"]);
 
-        // The length of the string and the precision of the number are lost: the catalogue of
-        // the engine leaves DECLARED_DATA_TYPE empty, and that column is where both are
-        // written down.
-        Assert.Equal("CHARACTER VARYING", columns["UserName"]);
-        Assert.Equal("NUMERIC", columns["Balance"]);
+        // H2 leaves DECLARED_DATA_TYPE empty for these columns; the length and precision come
+        // from CHARACTER_MAXIMUM_LENGTH / NUMERIC_PRECISION instead.
+        Assert.Equal("varchar(50)", columns["UserName"]);
+        Assert.Equal("numeric", columns["Balance"]);
     }
 
     [Fact]
