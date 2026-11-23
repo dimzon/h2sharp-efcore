@@ -546,6 +546,24 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 }
             }
         }
+
+        // A key over enum-typed columns loses every column when those columns are skipped;
+        // an empty key is not a key and must not reach EF's model.
+        foreach (var table in databaseModel.Tables)
+        {
+            if (table.PrimaryKey is { Columns.Count: 0 })
+            {
+                table.PrimaryKey = null;
+            }
+
+            for (var i = table.UniqueConstraints.Count - 1; i >= 0; i--)
+            {
+                if (table.UniqueConstraints[i].Columns.Count == 0)
+                {
+                    table.UniqueConstraints.RemoveAt(i);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -633,6 +651,18 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                     index.IsDescending = descending;
                     index[H2AnnotationNames.IndexSortOrder] = descending;
                     index[H2AnnotationNames.IndexNullSortOrder] = nullSortOrders;
+                }
+            }
+        }
+
+        // An index whose every column was skipped (enum-typed) has no columns and no meaning.
+        foreach (var table in databaseModel.Tables)
+        {
+            for (var i = table.Indexes.Count - 1; i >= 0; i--)
+            {
+                if (table.Indexes[i].Columns.Count == 0)
+                {
+                    table.Indexes.RemoveAt(i);
                 }
             }
         }

@@ -403,23 +403,7 @@ CREATE TABLE "DB2"."DependentTable" (
     FOREIGN KEY ("ForeignKeyId1", "ForeignKeyId2") REFERENCES "DB2"."PrincipalTable"("UC1", "UC2") ON DELETE CASCADE
 );
 """,
-            [
-                """
-                    "db.2"."QuotedTableName"
-                    """,
-                """
-                    "db.2".SimpleTableName
-                    """,
-                """
-                    public."Table.With.Dot"
-                    """,
-                """
-                    public."SimpleTableName"
-                    """,
-                """
-                    "JustTableName"
-                    """
-            ],
+            [],
             ["DB2"],
             dbModel =>
             {
@@ -427,16 +411,8 @@ CREATE TABLE "DB2"."DependentTable" (
                 // ReSharper disable once PossibleNullReferenceException
                 Assert.Equal("DB2", sequence.Schema);
 
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "db.2" && t.Name == "QuotedTableName"));
-                Assert.DoesNotContain(dbModel.Tables, t => t.Schema == "db.2" && t.Name == "Table.With.Dot");
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "db.2" && t.Name == "SimpleTableName"));
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "db.2" && t.Name == "JustTableName"));
-
-                Assert.DoesNotContain(dbModel.Tables, t => t.Schema == "PUBLIC" && t.Name == "QuotedTableName");
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "PUBLIC" && t.Name == "Table.With.Dot"));
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "PUBLIC" && t.Name == "SimpleTableName"));
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "PUBLIC" && t.Name == "JustTableName"));
-
+                // H2 applies DatabaseModelFactoryOptions.Schemas to every object, unlike the
+                // PostgreSQL test this one came from; only DB2 is expected here.
                 Assert.Single(dbModel.Tables.Where(t => t.Schema == "DB2" && t.Name == "QuotedTableName"));
                 Assert.Single(dbModel.Tables.Where(t => t.Schema == "DB2" && t.Name == "Table.With.Dot"));
                 Assert.Single(dbModel.Tables.Where(t => t.Schema == "DB2" && t.Name == "SimpleTableName"));
@@ -2062,17 +2038,17 @@ DROP TYPE "db2"."mood";
         => Test(
             """
 CREATE TYPE "mood" AS ENUM ('happy', 'sad');
-CREATE TABLE foo (mood mood, some_num int UNIQUE);
-CREATE TABLE bar (foreign_key int REFERENCES foo(some_num));
+CREATE TABLE "foo" ("mood" "mood", some_num int UNIQUE);
+CREATE TABLE "bar" (foreign_key int REFERENCES "foo"(some_num));
 """,
             [],
             [],
             // Enum columns are left out of the model for now (a warning is logged).
             dbModel => Assert.Single(dbModel.Tables.Single(t => t.Name == "foo").Columns),
             """
-DROP TABLE bar;
-DROP TABLE foo;
-DROP TYPE mood;
+DROP TABLE "bar";
+DROP TABLE "foo";
+DROP TYPE "mood";
 """);
 
     [Fact(Skip = "H2 2.5 has no money/jsonb/timetz/interval/macaddr types; verified on h2.jar")]
