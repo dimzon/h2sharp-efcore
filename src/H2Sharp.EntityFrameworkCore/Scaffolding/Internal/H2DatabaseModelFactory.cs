@@ -1,6 +1,8 @@
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using H2Sharp.EntityFrameworkCore.Metadata;
+using H2Sharp.EntityFrameworkCore.Metadata.Internal;
 using H2Sharp.EntityFrameworkCore.Storage;
 using H2Sharp.EntityFrameworkCore.Storage.Internal;
 
@@ -206,9 +208,17 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         // is made in the ordinary way, and the reference leaves them empty too.
         if (reader.GetString(5) == "YES")
         {
-            column.ValueGenerated = Text(reader, 6) == "ALWAYS"
+            var generation = Text(reader, 6);
+            column.ValueGenerated = generation == "ALWAYS"
                 ? ValueGenerated.OnAddOrUpdate
                 : ValueGenerated.OnAdd;
+
+            // Keep the H2-specific strategy on the scaffolded column: migrations compare it with
+            // the model's UseIdentityByDefaultColumn/UseIdentityAlwaysColumn setting, and a plain
+            // ValueGenerated flag loses the difference between BY DEFAULT and ALWAYS.
+            column[H2AnnotationNames.ValueGenerationStrategy] = generation == "ALWAYS"
+                ? H2ValueGenerationStrategy.IdentityAlwaysColumn
+                : H2ValueGenerationStrategy.IdentityByDefaultColumn;
         }
         else if (reader.GetString(7) == "ALWAYS")
         {

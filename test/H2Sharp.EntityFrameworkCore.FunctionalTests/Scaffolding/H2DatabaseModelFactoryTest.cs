@@ -16,8 +16,8 @@ namespace H2Sharp.EntityFrameworkCore.Scaffolding;
 // of the 56 tests pass and are in the green run. The other fifty carry the BlockedByPort trait,
 // and they fail on the DDL they feed in, which is PostgreSQL's: the port stops at SERIAL, MONEY,
 // TIMETZ, CREATE DOMAIN, CREATE TYPE ... AS ENUM and the materialized view, and the assertions
-// compare PostgreSQL names ("public") with H2's ("PUBLIC"). These are tests to rewrite for H2, not
-// a defect of the port. See docs/BACKLOG.md, item 5.
+// compared PostgreSQL's schema name ("public") with H2's ("PUBLIC"); those assertions are now
+// rewritten for H2. The remaining gaps are DDL forms and catalogue details listed in docs/BACKLOG.md.
 public class H2DatabaseModelFactoryTest : IClassFixture<H2DatabaseModelFactoryTest.H2DatabaseModelFixture>
 {
     // ReSharper disable once MemberCanBePrivate.Global
@@ -54,7 +54,7 @@ CREATE SEQUENCE db2."CustomFacetsSequence"
             dbModel =>
             {
                 var defaultSequence = dbModel.Sequences.First(ds => ds.Name == "DefaultFacetsSequence");
-                Assert.Equal("public", defaultSequence.Schema);
+                Assert.Equal("PUBLIC", defaultSequence.Schema);
                 Assert.Equal("DefaultFacetsSequence", defaultSequence.Name);
                 Assert.Equal("bigint", defaultSequence.StoreType);
                 Assert.Null(defaultSequence.IsCyclic);
@@ -143,7 +143,7 @@ DROP SEQUENCE db2."Sequence";
             [],
             dbModel =>
             {
-                Assert.Equal("public", dbModel.DefaultSchema);
+                Assert.Equal("PUBLIC", dbModel.DefaultSchema);
             },
             null);
 
@@ -163,12 +163,12 @@ CREATE TABLE "Denali" (id int);
                     dbModel.Tables.OrderBy(t => t.Name),
                     d =>
                     {
-                        Assert.Equal("public", d.Schema);
+                        Assert.Equal("PUBLIC", d.Schema);
                         Assert.Equal("Denali", d.Name);
                     },
                     e =>
                     {
-                        Assert.Equal("public", e.Schema);
+                        Assert.Equal("PUBLIC", e.Schema);
                         Assert.Equal("Everest", e.Name);
                     });
             },
@@ -432,10 +432,10 @@ CREATE TABLE "db2"."DependentTable" (
                 Assert.Single(dbModel.Tables.Where(t => t.Schema == "db.2" && t.Name == "SimpleTableName"));
                 Assert.Single(dbModel.Tables.Where(t => t.Schema == "db.2" && t.Name == "JustTableName"));
 
-                Assert.DoesNotContain(dbModel.Tables, t => t.Schema == "public" && t.Name == "QuotedTableName");
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "public" && t.Name == "Table.With.Dot"));
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "public" && t.Name == "SimpleTableName"));
-                Assert.Single(dbModel.Tables.Where(t => t.Schema == "public" && t.Name == "JustTableName"));
+                Assert.DoesNotContain(dbModel.Tables, t => t.Schema == "PUBLIC" && t.Name == "QuotedTableName");
+                Assert.Single(dbModel.Tables.Where(t => t.Schema == "PUBLIC" && t.Name == "Table.With.Dot"));
+                Assert.Single(dbModel.Tables.Where(t => t.Schema == "PUBLIC" && t.Name == "SimpleTableName"));
+                Assert.Single(dbModel.Tables.Where(t => t.Schema == "PUBLIC" && t.Name == "JustTableName"));
 
                 Assert.Single(dbModel.Tables.Where(t => t.Schema == "db2" && t.Name == "QuotedTableName"));
                 Assert.Single(dbModel.Tables.Where(t => t.Schema == "db2" && t.Name == "Table.With.Dot"));
@@ -498,7 +498,7 @@ CREATE TABLE "Blogs" (
                 Assert.All(
                     table.Columns, c =>
                     {
-                        Assert.Equal("public", c.Table.Schema);
+                        Assert.Equal("PUBLIC", c.Table.Schema);
                         Assert.Equal("Blogs", c.Table.Name);
                     });
 
@@ -527,7 +527,7 @@ CREATE VIEW "BlogsView" AS SELECT 100::int AS "Id", ''::text AS "Name";
                 Assert.All(
                     table.Columns, c =>
                     {
-                        Assert.Equal("public", c.Table.Schema);
+                        Assert.Equal("PUBLIC", c.Table.Schema);
                         Assert.Equal("BlogsView", c.Table.Name);
                     });
 
@@ -554,7 +554,7 @@ CREATE MATERIALIZED VIEW "BlogsView" AS SELECT 100::int AS "Id", ''::text AS "Na
                 Assert.All(
                     table.Columns, c =>
                     {
-                        Assert.Equal("public", c.Table.Schema);
+                        Assert.Equal("PUBLIC", c.Table.Schema);
                         Assert.Equal("BlogsView", c.Table.Name);
                     });
 
@@ -576,7 +576,7 @@ CREATE TABLE "PrimaryKeyTable" ("Id" int PRIMARY KEY);
             {
                 var pk = dbModel.Tables.Single().PrimaryKey;
 
-                Assert.Equal("public", pk.Table.Schema);
+                Assert.Equal("PUBLIC", pk.Table.Schema);
                 Assert.Equal("PrimaryKeyTable", pk.Table.Name);
                 Assert.StartsWith("PrimaryKeyTable_pkey", pk.Name);
                 Assert.Equal(["Id"], pk.Columns.Select(ic => ic.Name).ToList());
@@ -609,13 +609,13 @@ CREATE INDEX "IX_INDEX" on "UniqueConstraint" ("IndexProperty");
                 Assert.Equal(2, table.UniqueConstraints.Count);
 
                 var firstConstraint = table.UniqueConstraints.Single(c => c.Columns.Count == 1);
-                Assert.Equal("public", firstConstraint.Table.Schema);
+                Assert.Equal("PUBLIC", firstConstraint.Table.Schema);
                 Assert.Equal("UniqueConstraint", firstConstraint.Table.Name);
                 //Assert.StartsWith("UQ__UniqueCo", uniqueConstraint.Name);
                 Assert.Equal(["Name"], firstConstraint.Columns.Select(ic => ic.Name).ToList());
 
                 var secondConstraint = table.UniqueConstraints.Single(c => c.Columns.Count == 2);
-                Assert.Equal("public", secondConstraint.Table.Schema);
+                Assert.Equal("PUBLIC", secondConstraint.Table.Schema);
                 Assert.Equal("UniqueConstraint", secondConstraint.Table.Name);
                 Assert.Equal(["Unq1", "Unq2"], secondConstraint.Columns.Select(ic => ic.Name).ToList());
             },
@@ -650,7 +650,7 @@ CREATE INDEX "IX_INDEX" on "IndexTable" ("IndexProperty");
                 Assert.All(
                     table.Indexes, c =>
                     {
-                        Assert.Equal("public", c.Table.Schema);
+                        Assert.Equal("PUBLIC", c.Table.Schema);
                         Assert.Equal("IndexTable", c.Table.Name);
                     });
 
@@ -688,9 +688,9 @@ CREATE TABLE "SecondDependent" (
                 var firstFk = Assert.Single(dbModel.Tables.Single(t => t.Name == "FirstDependent").ForeignKeys);
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", firstFk.Table.Schema);
+                Assert.Equal("PUBLIC", firstFk.Table.Schema);
                 Assert.Equal("FirstDependent", firstFk.Table.Name);
-                Assert.Equal("public", firstFk.PrincipalTable.Schema);
+                Assert.Equal("PUBLIC", firstFk.PrincipalTable.Schema);
                 Assert.Equal("PrincipalTable", firstFk.PrincipalTable.Name);
                 Assert.Equal(["ForeignKeyId"], firstFk.Columns.Select(ic => ic.Name).ToList());
                 Assert.Equal(["Id"], firstFk.PrincipalColumns.Select(ic => ic.Name).ToList());
@@ -699,9 +699,9 @@ CREATE TABLE "SecondDependent" (
                 var secondFk = Assert.Single(dbModel.Tables.Single(t => t.Name == "SecondDependent").ForeignKeys);
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", secondFk.Table.Schema);
+                Assert.Equal("PUBLIC", secondFk.Table.Schema);
                 Assert.Equal("SecondDependent", secondFk.Table.Name);
-                Assert.Equal("public", secondFk.PrincipalTable.Schema);
+                Assert.Equal("PUBLIC", secondFk.PrincipalTable.Schema);
                 Assert.Equal("PrincipalTable", secondFk.PrincipalTable.Name);
                 Assert.Equal(["Id"], secondFk.Columns.Select(ic => ic.Name).ToList());
                 Assert.Equal(["Id"], secondFk.PrincipalColumns.Select(ic => ic.Name).ToList());
@@ -1167,7 +1167,7 @@ CREATE TABLE "CompositePrimaryKeyTable" (
             {
                 var pk = dbModel.Tables.Single().PrimaryKey;
 
-                Assert.Equal("public", pk.Table.Schema);
+                Assert.Equal("PUBLIC", pk.Table.Schema);
                 Assert.Equal("CompositePrimaryKeyTable", pk.Table.Name);
                 Assert.Equal(["Id2", "Id1"], pk.Columns.Select(ic => ic.Name).ToList());
             },
@@ -1192,7 +1192,7 @@ CREATE TABLE "PrimaryKeyName" (
             {
                 var pk = dbModel.Tables.Single().PrimaryKey;
 
-                Assert.Equal("public", pk.Table.Schema);
+                Assert.Equal("PUBLIC", pk.Table.Schema);
                 Assert.Equal("PrimaryKeyName", pk.Table.Name);
                 Assert.StartsWith("MyPK", pk.Name);
                 Assert.Equal(["Id2"], pk.Columns.Select(ic => ic.Name).ToList());
@@ -1223,7 +1223,7 @@ CREATE TABLE "CompositeUniqueConstraintTable" (
                 var uniqueConstraint = Assert.Single(dbModel.Tables.Single().UniqueConstraints);
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", uniqueConstraint.Table.Schema);
+                Assert.Equal("PUBLIC", uniqueConstraint.Table.Schema);
                 Assert.Equal("CompositeUniqueConstraintTable", uniqueConstraint.Table.Name);
                 Assert.Equal("UX", uniqueConstraint.Name);
                 Assert.Equal(["Id2", "Id1"], uniqueConstraint.Columns.Select(ic => ic.Name).ToList());
@@ -1251,7 +1251,7 @@ CREATE TABLE "UniqueConstraintName" (
                 var uniqueConstraint = Assert.Single(table.UniqueConstraints);
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", uniqueConstraint.Table.Schema);
+                Assert.Equal("PUBLIC", uniqueConstraint.Table.Schema);
                 Assert.Equal("UniqueConstraintName", uniqueConstraint.Table.Name);
                 Assert.Equal("MyUC", uniqueConstraint.Name);
                 Assert.Equal(["Id2"], uniqueConstraint.Columns.Select(ic => ic.Name).ToList());
@@ -1284,7 +1284,7 @@ CREATE INDEX "IX_COMPOSITE" ON "CompositeIndexTable" ( "Id2", "Id1" );
                 var index = Assert.Single(dbModel.Tables.Single().Indexes);
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", index.Table.Schema);
+                Assert.Equal("PUBLIC", index.Table.Schema);
                 Assert.Equal("CompositeIndexTable", index.Table.Name);
                 Assert.Equal("IX_COMPOSITE", index.Name);
                 Assert.Equal(["Id2", "Id1"], index.Columns.Select(ic => ic.Name).ToList());
@@ -1312,7 +1312,7 @@ CREATE UNIQUE INDEX "IX_UNIQUE" ON "UniqueIndexTable" ( "Id2" );
                 var index = Assert.Single(dbModel.Tables.Single().Indexes);
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", index.Table.Schema);
+                Assert.Equal("PUBLIC", index.Table.Schema);
                 Assert.Equal("UniqueIndexTable", index.Table.Name);
                 Assert.Equal("IX_UNIQUE", index.Name);
                 Assert.True(index.IsUnique);
@@ -1342,7 +1342,7 @@ CREATE UNIQUE INDEX "IX_UNIQUE" ON "FilteredIndexTable" ( "Id2" ) WHERE "Id2" > 
                 var index = Assert.Single(dbModel.Tables.Single().Indexes);
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", index.Table.Schema);
+                Assert.Equal("PUBLIC", index.Table.Schema);
                 Assert.Equal("FilteredIndexTable", index.Table.Name);
                 Assert.Equal("IX_UNIQUE", index.Name);
                 Assert.Equal("""("Id2" > 10)""", index.Filter);
@@ -1381,9 +1381,9 @@ CREATE TABLE "DependentTable" (
                 var fk = Assert.Single(dbModel.Tables.Single(t => t.Name == "DependentTable").ForeignKeys);
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", fk.Table.Schema);
+                Assert.Equal("PUBLIC", fk.Table.Schema);
                 Assert.Equal("DependentTable", fk.Table.Name);
-                Assert.Equal("public", fk.PrincipalTable.Schema);
+                Assert.Equal("PUBLIC", fk.PrincipalTable.Schema);
                 Assert.Equal("PrincipalTable", fk.PrincipalTable.Name);
                 Assert.Equal(["ForeignKeyId1", "ForeignKeyId2"], fk.Columns.Select(ic => ic.Name).ToList());
                 Assert.Equal(["Id1", "Id2"], fk.PrincipalColumns.Select(ic => ic.Name).ToList());
@@ -1426,9 +1426,9 @@ CREATE TABLE "DependentTable" (
                 var principalFk = Assert.Single(foreignKeys.Where(f => f.PrincipalTable.Name == "PrincipalTable"));
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", principalFk.Table.Schema);
+                Assert.Equal("PUBLIC", principalFk.Table.Schema);
                 Assert.Equal("DependentTable", principalFk.Table.Name);
-                Assert.Equal("public", principalFk.PrincipalTable.Schema);
+                Assert.Equal("PUBLIC", principalFk.PrincipalTable.Schema);
                 Assert.Equal("PrincipalTable", principalFk.PrincipalTable.Name);
                 Assert.Equal(["ForeignKeyId1"], principalFk.Columns.Select(ic => ic.Name).ToList());
                 Assert.Equal(["Id"], principalFk.PrincipalColumns.Select(ic => ic.Name).ToList());
@@ -1437,9 +1437,9 @@ CREATE TABLE "DependentTable" (
                 var anotherPrincipalFk = Assert.Single(foreignKeys.Where(f => f.PrincipalTable.Name == "AnotherPrincipalTable"));
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", anotherPrincipalFk.Table.Schema);
+                Assert.Equal("PUBLIC", anotherPrincipalFk.Table.Schema);
                 Assert.Equal("DependentTable", anotherPrincipalFk.Table.Name);
-                Assert.Equal("public", anotherPrincipalFk.PrincipalTable.Schema);
+                Assert.Equal("PUBLIC", anotherPrincipalFk.PrincipalTable.Schema);
                 Assert.Equal("AnotherPrincipalTable", anotherPrincipalFk.PrincipalTable.Name);
                 Assert.Equal(["ForeignKeyId2"], anotherPrincipalFk.Columns.Select(ic => ic.Name).ToList());
                 Assert.Equal(["Id"], anotherPrincipalFk.PrincipalColumns.Select(ic => ic.Name).ToList());
@@ -1474,9 +1474,9 @@ CREATE TABLE "DependentTable" (
                 var fk = Assert.Single(dbModel.Tables.Single(t => t.Name == "DependentTable").ForeignKeys);
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", fk.Table.Schema);
+                Assert.Equal("PUBLIC", fk.Table.Schema);
                 Assert.Equal("DependentTable", fk.Table.Name);
-                Assert.Equal("public", fk.PrincipalTable.Schema);
+                Assert.Equal("PUBLIC", fk.PrincipalTable.Schema);
                 Assert.Equal("PrincipalTable", fk.PrincipalTable.Name);
                 Assert.Equal(["ForeignKeyId"], fk.Columns.Select(ic => ic.Name).ToList());
                 Assert.Equal(["Id2"], fk.PrincipalColumns.Select(ic => ic.Name).ToList());
@@ -1509,9 +1509,9 @@ CREATE TABLE "DependentTable" (
                 var fk = Assert.Single(dbModel.Tables.Single(t => t.Name == "DependentTable").ForeignKeys);
 
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("public", fk.Table.Schema);
+                Assert.Equal("PUBLIC", fk.Table.Schema);
                 Assert.Equal("DependentTable", fk.Table.Name);
-                Assert.Equal("public", fk.PrincipalTable.Schema);
+                Assert.Equal("PUBLIC", fk.PrincipalTable.Schema);
                 Assert.Equal("PrincipalTable", fk.PrincipalTable.Name);
                 Assert.Equal(["ForeignKeyId"], fk.Columns.Select(ic => ic.Name).ToList());
                 Assert.Equal(["Id"], fk.PrincipalColumns.Select(ic => ic.Name).ToList());
@@ -1555,9 +1555,9 @@ CREATE TABLE "DependentTable" (
 
                 foreach (var fk in table.ForeignKeys)
                 {
-                    Assert.Equal("public", fk.Table.Schema);
+                    Assert.Equal("PUBLIC", fk.Table.Schema);
                     Assert.Equal("DependentTable", fk.Table.Name);
-                    Assert.Equal("public", fk.PrincipalTable.Schema);
+                    Assert.Equal("PUBLIC", fk.PrincipalTable.Schema);
                     Assert.Equal("PrincipalTable", fk.PrincipalTable.Name);
                     Assert.Equal(["Id"], fk.PrincipalColumns.Select(ic => ic.Name).ToList());
                 }
