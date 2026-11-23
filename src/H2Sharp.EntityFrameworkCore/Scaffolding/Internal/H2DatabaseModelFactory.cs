@@ -88,13 +88,14 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 DefaultSchema = "PUBLIC"
             };
 
-            var schemas = options.Schemas.Any() ? options.Schemas.ToList() : new List<string> { "PUBLIC" };
+            var schemas = options.Schemas.Any() ? options.Schemas.ToList() : GetSchemas(dbConnection);
             var tables = options.Tables.Select(Parse).ToList();
 
             PopulateTables(dbConnection, databaseModel, schemas, tables);
             PopulateKeys(dbConnection, databaseModel, schemas);
             PopulateIndexes(dbConnection, databaseModel, schemas);
             PopulateSequences(dbConnection, databaseModel, schemas);
+            PopulateEnums(dbConnection, databaseModel, schemas);
             PopulateForeignKeys(dbConnection, databaseModel);
 
             return databaseModel;
@@ -106,6 +107,32 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 dbConnection.Close();
             }
         }
+    }
+
+    private static List<string> GetSchemas(DbConnection connection)
+    {
+        var schemas = new List<string>();
+
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText =
+                "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME <> 'INFORMATION_SCHEMA'";
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                schemas.Add(reader.GetString(0));
+            }
+        }
+
+        // H2's reference catalogue always contains PUBLIC; keep scaffolds usable even when
+        // a custom catalogue doesn't expose the SCHEMATA view.
+        if (!schemas.Contains("PUBLIC"))
+        {
+            schemas.Add("PUBLIC");
+        }
+
+        return schemas;
     }
 
     private static bool CatalogueIsAvailable(DbConnection connection)
@@ -132,6 +159,23 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
     {
         foreach (var schema in schemas)
         {
+            var tableComments = new Dictionary<string, string>(StringComparer.Ordinal);
+            using (var comments = connection.CreateCommand())
+            {
+                comments.CommandText =
+                    "SELECT TABLE_NAME, REMARKS FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = $p_schema";
+                comments.Parameters.Add(Parameter(comments, "p_schema", schema));
+
+                using var remarks = comments.ExecuteReader();
+                while (remarks.Read())
+                {
+                    if (!remarks.IsDBNull(1))
+                    {
+                        tableComments[remarks.GetString(0)] = remarks.GetString(1);
+                    }
+                }
+            }
+
             using var command = connection.CreateCommand();
 
             command.CommandText = """
@@ -145,7 +189,18 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                        IS_GENERATED,
                        GENERATION_EXPRESSION,
                        COLUMN_DEFAULT,
-                       DECLARED_DATA_TYPE
+                       DECLARED_DATA_TYPE,
+                       REMARKS,
+                       CHARACTER_MAXIMUM_LENGTH,
+                       NUMERIC_PRECISION,
+                       NUMERIC_SCALE,
+                       DATETIME_PRECISION,
+                       IDENTITY_START,
+                       IDENTITY_INCREMENT,
+                       IDENTITY_MINIMUM,
+                       IDENTITY_MAXIMUM,
+                       IDENTITY_CYCLE,
+                       IDENTITY_CACHE
                 FROM INFORMATION_SCHEMA.COLUMNS
                 WHERE TABLE_SCHEMA = $p_schema
                 ORDER BY TABLE_NAME, ORDINAL_POSITION
@@ -166,7 +221,13 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                     // it means it in EF Core: a list that names a table asks for that table and
                     // only that one.
                     current = wanted.Count == 0 || wanted.Any(t => Matches(t, schema, tableName))
-                        ? new DatabaseTable { Database = databaseModel, Schema = schema, Name = tableName }
+                        ? new DatabaseTable
+                    {
+                        Database = databaseModel,
+                        Schema = schema,
+                        Name = tableName,
+                        Comment = tableComments.GetValueOrDefault(tableName)
+                    }
                         : null;
 
                     if (current is not null)
@@ -195,13 +256,15 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         // The numbers are the numbers of the columns of the query above: TABLE_NAME,
         // ORDINAL_POSITION, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, IS_IDENTITY,
         // IDENTITY_GENERATION, IS_GENERATED, GENERATION_EXPRESSION, COLUMN_DEFAULT,
-        // DECLARED_DATA_TYPE.
+        // DECLARED_DATA_TYPE, REMARKS, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION,
+        // NUMERIC_SCALE, DATETIME_PRECISION.
         var column = new DatabaseColumn
         {
             Name = reader.GetString(2),
-            StoreType = reader.IsDBNull(10) ? reader.GetString(3) : reader.GetString(10),
+            StoreType = StoreType(reader),
             IsNullable = reader.GetString(4) == "YES",
-            DefaultValueSql = Text(reader, 9)
+            DefaultValueSql = Text(reader, 9),
+            Comment = Text(reader, 11)
         };
 
         // The columns of the catalogue that say how a column is made are empty when the column
@@ -219,14 +282,87 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
             column[H2AnnotationNames.ValueGenerationStrategy] = generation == "ALWAYS"
                 ? H2ValueGenerationStrategy.IdentityAlwaysColumn
                 : H2ValueGenerationStrategy.IdentityByDefaultColumn;
+
+            // H2 materialises defaults for every identity sequence; EF's model keeps the
+            // corresponding options as "not specified". Strip only those materialised values.
+            var start = ToLong(reader.GetValue(16));
+            var min = ToLong(reader.GetValue(18));
+            var max = ToLong(reader.GetValue(19));
+            var cache = ToLong(reader.GetValue(21));
+
+            var options = new IdentitySequenceOptionsData
+            {
+                StartValue = start == 1 ? null : start,
+                IncrementBy = ToLong(reader.GetValue(17)) ?? 1,
+                MinValue = min == 1 ? null : min,
+                MaxValue = max is 2147483647 or 9223372036854775807 ? null : max,
+                IsCyclic = reader.GetValue(20)?.ToString() is "YES" or "TRUE",
+                NumbersToCache = cache is null or 1 or 32 ? 1 : cache.Value
+            };
+
+            if (options.StartValue is not null || options.IncrementBy != 1
+                || options.MinValue is not null || options.MaxValue is not null
+                || options.IsCyclic || options.NumbersToCache != 1)
+            {
+                column[H2AnnotationNames.IdentityOptions] = options.Serialize();
+            }
         }
         else if (reader.GetString(7) == "ALWAYS")
         {
             column.ValueGenerated = ValueGenerated.OnAddOrUpdate;
             column.ComputedColumnSql = Text(reader, 8);
+
+            // H2 computed columns are stored in 2.5; it has no separate VIRTUAL spelling.
+            column.IsStored = true;
         }
 
         return column;
+    }
+
+    // H2's catalogue spells the common types as CHARACTER VARYING / CHARACTER / BIGINT.
+    // EF's store types follow the spellings the provider writes into DDL, so the two have
+    // to be brought together here; H2 accepts both spellings and reports only one.
+    private static string Normalize(string type)
+        => type.ToLowerInvariant()
+            .Replace("character varying", "varchar", StringComparison.Ordinal)
+            .Replace("character", "char", StringComparison.Ordinal);
+
+    private static string StoreType(DbDataReader reader)
+    {
+        var declared = Text(reader, 10);
+        if (declared is not null)
+        {
+            return Normalize(declared);
+        }
+
+        // H2 leaves DECLARED_DATA_TYPE empty for the common types and keeps the length or
+        // precision in the separate catalogue columns. EF's DatabaseColumn has a single
+        // StoreType string, so the full type has to be assembled here.
+        var type = reader.GetString(3);
+
+        if (!reader.IsDBNull(12))
+        {
+            var length = reader.GetInt64(12);
+
+            // H2 reports its maximum character length (1_000_000_000) for an unbounded
+            // CHARACTER VARYING, not an explicit precision written by the user.
+            return Normalize(length == 1_000_000_000
+                ? type
+                : $"{type}({length.ToString(CultureInfo.InvariantCulture)})");
+        }
+
+        if (!reader.IsDBNull(15))
+        {
+            return Normalize($"{type}({reader.GetInt32(15).ToString(CultureInfo.InvariantCulture)})");
+        }
+
+        if (!reader.IsDBNull(13))
+        {
+            var scale = reader.IsDBNull(14) ? 0 : reader.GetInt32(14);
+            return Normalize($"{type}({reader.GetInt32(13).ToString(CultureInfo.InvariantCulture)}, {scale.ToString(CultureInfo.InvariantCulture)})");
+        }
+
+        return Normalize(type);
     }
 
     /// <summary>
@@ -322,7 +458,8 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
             using var command = connection.CreateCommand();
 
             command.CommandText = """
-                SELECT i.INDEX_NAME, i.TABLE_NAME, i.INDEX_TYPE_NAME, c.COLUMN_NAME
+                SELECT i.INDEX_NAME, i.TABLE_NAME, i.INDEX_TYPE_NAME, c.COLUMN_NAME,
+                       c.ORDERING_SPECIFICATION, c.NULL_ORDERING, c.IS_UNIQUE
                 FROM INFORMATION_SCHEMA.INDEXES i
                 JOIN INFORMATION_SCHEMA.INDEX_COLUMNS c
                      ON c.INDEX_SCHEMA = i.INDEX_SCHEMA
@@ -367,7 +504,27 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
 
                 if (!reader.IsDBNull(3) && Find(table, reader.GetString(3)) is { } column)
                 {
+                    // In a unique index H2 marks covered (INCLUDE) columns with IS_UNIQUE = FALSE;
+                    // they are not keys and must stay out of the scaffolded column list.
+                    if (index.IsUnique && !reader.IsDBNull(6) && !reader.GetBoolean(6))
+                    {
+                        var included = index[H2AnnotationNames.IndexInclude] as string[] ?? Array.Empty<string>();
+                        index[H2AnnotationNames.IndexInclude] = new List<string>(included) { column.Name }.ToArray();
+                        continue;
+                    }
+
                     index.Columns.Add(column);
+
+                    var descending = index[H2AnnotationNames.IndexSortOrder] as List<bool> ?? new List<bool>();
+                    var nullSortOrders = index[H2AnnotationNames.IndexNullSortOrder] as NullSortOrder[]
+                        ?? Array.Empty<NullSortOrder>();
+
+                    descending.Add(reader.GetString(4) == "DESC");
+                    nullSortOrders = [.. nullSortOrders, ReadNullSortOrder(reader)];
+
+                    index.IsDescending = descending;
+                    index[H2AnnotationNames.IndexSortOrder] = descending;
+                    index[H2AnnotationNames.IndexNullSortOrder] = nullSortOrders;
                 }
             }
         }
@@ -399,13 +556,61 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                         Database = databaseModel,
                         Schema = schema,
                         Name = reader.GetString(0),
-                        StoreType = reader.IsDBNull(1) ? null : reader.GetString(1),
+                        StoreType = reader.IsDBNull(1) ? null : Normalize(reader.GetString(1)),
                         StartValue = ToLong(reader.GetValue(2)),
                         IncrementBy = ToInt(reader.GetValue(3)),
                         MinValue = ToLong(reader.GetValue(4)),
                         MaxValue = ToLong(reader.GetValue(5)),
                         IsCyclic = !reader.IsDBNull(6) && reader.GetString(6) == "YES"
                     });
+            }
+        }
+    }
+
+    private static void PopulateEnums(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
+    {
+        foreach (var schema in schemas)
+        {
+            using var command = connection.CreateCommand();
+
+            command.CommandText = """
+                SELECT d.DOMAIN_NAME, v.VALUE_NAME
+                FROM INFORMATION_SCHEMA.DOMAINS d
+                JOIN INFORMATION_SCHEMA.ENUM_VALUES v
+                     ON v.OBJECT_SCHEMA = d.DOMAIN_SCHEMA
+                    AND v.OBJECT_NAME = d.DOMAIN_NAME
+                    AND v.OBJECT_TYPE = 'DOMAIN'
+                WHERE d.DOMAIN_SCHEMA = $p_schema AND d.DATA_TYPE = 'ENUM'
+                ORDER BY d.DOMAIN_NAME, v.VALUE_ORDINAL
+                """;
+
+            command.Parameters.Add(Parameter(command, "p_schema", schema));
+
+            var labels = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var name = reader.GetString(0);
+                    if (!labels.TryGetValue(name, out var values))
+                    {
+                        values = [];
+                        labels.Add(name, values);
+                    }
+
+                    values.Add(reader.GetString(1));
+                }
+            }
+
+            foreach (var (name, values) in labels)
+            {
+                // EF models use a null schema for the default one; H2's catalogue names it PUBLIC.
+                H2Enum.GetOrAddH2Enum(
+                    databaseModel,
+                    string.Equals(schema, databaseModel.DefaultSchema, StringComparison.Ordinal) ? null : schema,
+                    name,
+                    values.ToArray());
             }
         }
     }
@@ -524,6 +729,16 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         => value is null or DBNull
             ? null
             : Convert.ToInt32(value, CultureInfo.InvariantCulture);
+
+    private static NullSortOrder ReadNullSortOrder(DbDataReader reader)
+        => reader.IsDBNull(5)
+            ? NullSortOrder.Unspecified
+            : reader.GetString(5) switch
+            {
+                "FIRST" => NullSortOrder.NullsFirst,
+                "LAST" => NullSortOrder.NullsLast,
+                _ => NullSortOrder.Unspecified
+            };
 
     private static long? ToLong(object value)
         => value is null or DBNull

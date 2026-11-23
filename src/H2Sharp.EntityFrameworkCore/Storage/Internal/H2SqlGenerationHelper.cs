@@ -80,6 +80,20 @@ public class H2SqlGenerationHelper : RelationalSqlGenerationHelper
         => base.DelimitIdentifier(identifier);
 
     /// <summary>
+    ///     H2's default schema is PUBLIC. EF models coming from PostgreSQL often spell it
+    ///     <c>public</c>; quoted, that would name a different, non-existent schema.
+    /// </summary>
+    public override string DelimitIdentifier(string name, string? schema)
+        => base.DelimitIdentifier(name, NormalizeSchema(schema));
+
+    /// <inheritdoc />
+    public override void DelimitIdentifier(StringBuilder builder, string name, string? schema)
+        => base.DelimitIdentifier(builder, name, NormalizeSchema(schema));
+
+    private static string? NormalizeSchema(string? schema)
+        => string.Equals(schema, "public", StringComparison.OrdinalIgnoreCase) ? "PUBLIC" : schema;
+
+    /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
     ///     any release. You should only use it directly in your code with extreme caution and knowing that

@@ -3,7 +3,7 @@
     <EFCoreVersion>[9.0.14,10.0.0)</EFCoreVersion>
     <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
     <!-- The engine ships its own version line (0.x while the port is unfinished). -->
-    <H2SharpVersion>0.1.43-alpha.1</H2SharpVersion>
+    <H2SharpVersion>0.1.44-alpha.1</H2SharpVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="H2Sharp" Version="$(H2SharpVersion)" />

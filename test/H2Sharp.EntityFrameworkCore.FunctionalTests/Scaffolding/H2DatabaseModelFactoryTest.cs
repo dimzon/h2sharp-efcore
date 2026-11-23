@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
+using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 using H2Sharp.EntityFrameworkCore.Diagnostics.Internal;
 using H2Sharp.EntityFrameworkCore.Internal;
@@ -943,7 +943,7 @@ CREATE TABLE "ComputedValues" (
     "Id" int,
     "A" int NOT NULL,
     "B" int NOT NULL,
-    "SumOfAAndB" int GENERATED ALWAYS AS ("A" + "B") STORED
+    "SumOfAAndB" int GENERATED ALWAYS AS ("A" + "B")
 )
 """,
             [],
@@ -1065,7 +1065,7 @@ CREATE TABLE "ValueGeneratedProperties" (
     "Id" INT GENERATED ALWAYS AS IDENTITY,
     "A" int NOT NULL,
     "B" int NOT NULL,
-    "SumOfAAndB" int GENERATED ALWAYS AS ("A" + "B") STORED
+    "SumOfAAndB" int GENERATED ALWAYS AS ("A" + "B")
 )
 """,
             [],
