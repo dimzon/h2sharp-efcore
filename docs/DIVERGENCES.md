@@ -42,10 +42,11 @@
 | dimzon/h2sharp#37 (`CAST(агрегат)` в скалярном подзапросе) | закрыт (коммит движка `69d522a`): `The_rows_are_asked_for_with_a_table_joined_from_the_left` живёт | — |
 | dimzon/h2sharp#38 (`FILTER` молча игнорировался) | закрыт (коммит движка `69d522a`): `Two_gatherings` проверяет фильтр | — |
 | `ARRAY_REMOVE` (dimzon/h2sharp#24) | провайдер пишет `array_remove` в `TranslateWhere`; не читает ни порт, ни эталон. Код оставлен как есть: если порт реализует функцию, код провайдера заработает без изменений | при закрытии проверить оба движка; если эталон не добавит функцию — решать отдельно (фильтр только через `UNNEST`, колонки отклонять явно) |
-| ambient-транзакции (`EnlistTransaction` в ADO-слое порта) | **закрыто**: ADO-слой порта зачисляет соединение в ambient-транзакцию, провайдер объявляет `AmbientTransactionsSupported => true`, ручные скипы убраны, ambient/enlisted-тесты спеки живут. Осталось десять тестов: закрытое соединение нельзя открыть снова, пока держит зачисление (dimzon/h2sharp#96) | при закрытии #96 снять трейт с десяти тестов `TransactionH2Test` |
-| байт, который вмещает .NET (`GetByte` в ADO-слое порта) | три теста `H2ByteSubstringTests` и `Preferences_are_stored_by_ef_without_losing_json_or_binary_content` помечены `BlockedByPort`: `Numeric value out of range: "255"` | починить `H2DataReader.GetByte` (dimzon/h2sharp#94) |
+| ambient-транзакции (`EnlistTransaction` в ADO-слое порта) | **закрыто**: ADO-слой зачисляет соединение, `AmbientTransactionsSupported => true`, ручные скипы убраны. #96 закрыт: восемь кейсов `SaveChanges_uses_ambient_transaction_with_connectionString` и `SaveChanges_throws_for_suppressed_ambient_transactions` сняты с трейта и зелёные | три кейса остаются красными по новым причинам: `SaveChanges_allows_nested_ambient_transactions`, `SaveChanges_allows_independent_ambient_transaction_commits`, `BeginTransaction_can_be_used_after_enlisted_transaction_if_connection_closed`; трейт остаётся на них |
+| байт, который вмещает .NET (`GetByte` в ADO-слое порта) | **закрыто**: #94 исправлен в движке, три теста `H2ByteSubstringTests` сняты с трейта и зелёные | — |
 | каталог схем в сессии (`INFORMATION_SCHEMA.SCHEMATA` с параметром) | `A_schema_of_its_own_is_made_and_found` помечен `BlockedByPort`: сессия помнит ответ параметризованного запроса и не видят схему, созданную позже | починить чтение каталога (dimzon/h2sharp#95) |
-| перехват транзакций (`H2Transaction.IsolationLevel` отвечает запрошенное, а не фактическое; `H2Connection` отказывает во второй транзакции на соединении) | набор `TransactionInterceptionH2Test` помечен трейтом `BlockedByPort` и красный в прогоне с трейтом | научить ADO-слой отчёту фактического уровня изоляции и подавляемого старта; снять трейт |
+| перехват транзакций (`H2Transaction.IsolationLevel` отвечает запрошенное, а не фактическое; `H2Connection` отказывает во второй транзакции на соединении) | **закрыто**: ADO-слой теперь отвечает фактический уровень и позволяет suppress-and-begin; оба набора `TransactionInterceptionH2Test` (72 теста) сняты с трейта и зелёные | — |
+| in-memory база и тестовое оборудование (`DefaultValuesTest`) | **закрыто**: база живёт в data source и переживает смену соединений; `Can_use_H2_default_values` снят с трейта и зелёный | — |
 
 Постоянное, не требующее пересмотра: квантованный `LIKE`/`ILIKE` через `OR`/`AND`
 (у H2 формы нет вовсе), отказ коррелированного `UNNEST` (ограничение эталона),
@@ -56,14 +57,15 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 1991 | 0 | 2005 (14 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 2075 | 0 | 2089 (14 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 129 | 0 | 129 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 317 | 0 | 317 |
-   | **Итого** | **2437** | **0** | **2451** |
+   | **Итого** | **2521** | **0** | **2535** |
 
-   Зелёный гейт: 2451 тестов на `net9.0` и `net10.0` против порта `03c0397` движка
-   (13 ноября 2026), на провайдере, который взял слой ADO.NET движка (data source, classic
-   connection string, ambient-транзакции).
+   Зелёный гейт: 2521 тест на `net9.0` и `net10.0` против опубликованного пакета
+   `H2Sharp 0.1.41-alpha.1` (23 ноября 2026). Провайдер больше не зависит от соседнего
+   чек-аута движка: он берёт пакет с nuget.org, ADO.NET-слой которого даёт data source,
+   classic connection string и ambient-транзакции.
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
@@ -79,11 +81,11 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 1991 | 0 | 2005 (14 пропущено) |
-   | `Category=BlockedByPort` | 4140 | 378 | 4518 |
+   | `Category!=BlockedByPort` | 2075 | 0 | 2089 (14 пропущено) |
+   | `Category=BlockedByPort` | 4147 | 287 | 4434 |
 
    Пропущенных в прогоне с трейтом нет: четырнадцать скипов переехали в гейт вместе со своими
-   классами. Числа — на `net10.0`, движок `03c0397` (13 ноября 2026), после шести правок
+   классами. Числа — на `net10.0`, пакет `H2Sharp 0.1.41-alpha.1` (23 ноября 2026), после правок
    провайдера: массив читается в `List<T>` (было
    `Unable to cast object of type 'System.Int32[]' to …List\`1[System.Int32]'`), тест-модель
    писал `uuid_generate_v4()` там, где H2 зовёт функцию `RANDOM_UUID()`, снят перевод
@@ -99,8 +101,9 @@ EF их не отдаёт генератору, как в апстриме).
    Триста пятьдесят пять проходящих в прогоне с трейтом — не шум: трейт стоит на методе, а
    у `[ConditionalTheory]` один метод на все строки `[InlineData]`, и шесть классов держат
    трейт на классе там, где красный метод нельзя пометить отдельно (`UpdatesH2Test`, пара
-   `ConcurrencyDetector*`, перехват транзакций) или где тест проходит в одиночку, а в общем
-   прогоне видит пустую базу (`Serialization`, `DefaultValuesTest`). Разбор — в `docs/BACKLOG.md`.
+   `ConcurrencyDetector*`) или где тест проходит в одиночку, а в общем прогоне видит пустую
+   базу (`Serialization`). Разбор — в `docs/BACKLOG.md`. Перехват транзакций и
+   `DefaultValuesTest` сняты с трейта: оба зелёные на пакете `0.1.41-alpha.1`.
 
    История этих чисел: на движке `17c9f68` было 434 и 4888, коммит `f56ca4c` («Port UNIQUE/CHECK
    constraints, TOP and explicit DUAL») дал 350 переходов красное→зелёное и ни одного обратного —
@@ -137,13 +140,13 @@ EF их не отдаёт генератору, как в апстриме).
    вместе с ним — оставшиеся тесты не доходили. Блок `DO` заменён на H2'овскую форму, и
    прогон идёт целиком, поэтому числа ниже измерены одним прогоном: миграционный набор
    (183 теста: 62 прошло в гейте, 113 помечены по методам, 2 пропущено), набор скаффолдинга
-   (56 тестов: 6 в гейте, 50 помечены), `DefaultValuesTest` и `H2ComplianceTest` (3 теста).
+   (56 тестов: 6 в гейте, 50 помечены) и `H2ComplianceTest` (3 теста). `DefaultValuesTest`
+   снят с трейта: data source движка переживает смену соединений.
 
 Два теста красные по замыслу и помечены трейтом, а не спрятаны.
 
 | Тест | Причина | Кто чинит |
 |---|---|---|
-| `DefaultValuesTest.Can_use_H2_default_values` | in-memory база исчезает вместе с последним соединением, и тестовое оборудование открывает новое соединение на каждом шаге: `Table "Chips" not found (this database is empty)` | дефект порта |
 | `H2ComplianceTest.All_test_bases_must_be_implemented` | EF Core требует, чтобы провайдер реализовал общие базовые тесты. Не реализованы: `ApiConsistencyTestBase`, `BuiltInDataTypesTestBase`, `ComplexTypesTrackingTestBase`, `CompositeKeyEndToEndTestBase` и другие. Тест красный **по замыслу** — это список оставшейся работы | мы: портируем базовые тесты под H2 |
 
 ### Что было переписано, потому что провайдер прав, а тест ждал PostgreSQL
@@ -160,7 +163,7 @@ EF их не отдаёт генератору, как в апстриме).
 | `H2MigrationsSqlGenerator`, `H2HistoryRepository` | 6 | блок `DO $EF$` — анонимный блок PL/pgSQL — заменён на H2'овское `CREATE SCHEMA IF NOT EXISTS` и на условие внутри самой вставки: `INSERT … SELECT … WHERE NOT EXISTS (…)` |
 | `H2IntervalTypeMapping` | — | литерал интервала без дней (`CAST('10:09:08.007' AS INTERVAL DAY TO SECOND)`) эталон отвергает: «невозможно преобразовать строку "10:09:08.007" в тип "INTERVAL"». Провайдер перешёл на фасад `Dialect.AppendInterval`: `INTERVAL '0 10:09:08.007' DAY TO SECOND` — типизированный литерал с числом дней (ноль включительно). Проверено на эталоне: формы с днями принимаются, включая `-0`, `-1`, `11 23:59:59.999999` |
 | `TransactionH2Test.SaveChanges_can_be_used_with_no_savepoint` | 1 | тест ждал PostgreSQL: там неудачный оператор переводит транзакцию в aborted и COMMIT выбрасывает всё. H2 следует стандарту — оператор неудачен, транзакция нет, — проверено на эталонном jar: `COMMIT` проходит, `MAX(ID)` — 77. Ожидание переписано под это |
-| `TransactionH2Test` (семейство ambient/enlisted) | 14 | тесты требовали enlistment в System.Transactions; ADO-слой порта его не имел, флаг `AmbientTransactionsSupported` был `false`, тесты без гейта в спеке скипались руками. Теперь ADO-слой зачисляет соединение, флаг `true`, ручные скипы убраны; десять тестов помечены `BlockedByPort` по dimzon/h2sharp#96 |
+| `TransactionH2Test` (семейство ambient/enlisted) | 3 | тесты требовали enlistment в System.Transactions; ADO-слой порта его не имел, флаг `AmbientTransactionsSupported` был `false`. Теперь ADO-слой зачисляет соединение, флаг `true`, ручные скипы убраны, #96 закрыт: восемь кейсов вернулись в гейт. Три остаются красными: `nested`, `independent commits` и `begin after enlisted close` |
 
 ## Плагин NodaTime: переводы членов даты и времени
 
@@ -536,9 +539,9 @@ Identity не откатывается назад. Legacy-аннотация `Se
    | 20 | **Пункт `INCLUDE` у индекса** | `Not ported yet: Parser.parseCreate: CREATE INDEX INCLUDE is not ported` | `INCLUDE (…)` у уникального индекса: H2 2.5 его читает, и провайдер его пишет |
    | 21 | **`UNIQUE` через `ALTER TABLE`** | `ALTER TABLE "Forums" ADD CONSTRAINT "UQ_Forums_Name" [*]UNIQUE ("Name")` → `expected "PRIMARY"` | `ADD CONSTRAINT … UNIQUE`: эталон принимает, и провайдер пишет эту форму из миграций (`A_unique_constraint_is_added_to_an_existing_table`) |
    | 22 | **`FINAL TABLE` над `INSERT … DEFAULT VALUES`** | `SELECT "Id", … FROM FINAL TABLE (INSERT INTO "WithNullableBackingFields" DEFAULT VALUES)` → `NULL not allowed for column "Id"` (23502); прямой `INSERT … DEFAULT VALUES` порт принимает и identity генерирует | эталон эту форму принимает и отвечает `Id = 1`. Дельта-таблица строит строку вставки через `Parser.PrepareInsert` (`Command/Parser.cs:1816`, `:6585`), а тот даёт по ячейке на столбец: у identity `Column.GetEffectiveDefaultExpression()` — `null`, и в ячейку кладётся `ValueExpression.Null`; обычная вставка идёт через `Parser.ParseInsert` (`Command/Parser.Columns.cs:438`) и кладёт пустую строку (`new Expression[0]`), после чего `Column.ValidateConvertUpdateSequence` видит `null` и берёт следующее значение identity. В дельта-таблице `ValueNull` — не `null`, и NOT NULL отвечает 23502. Дельта-таблице нужен тот же путь. Issue: dimzon/h2sharp#66 |
-   | 23 | **Байт, который вмещает .NET** | `H2DataReader.GetByte` отказывает числу, которое вмещает байт .NET: `Numeric value out of range: "255"` (знаковая проверка диапазона вместо обрезания) | байт .NET без знака: `GetByte` отдаёт 255 для числа 255. Три теста `H2ByteSubstringTests` и один тест форума помечены `BlockedByPort`. Issue: dimzon/h2sharp#94 |
+   | 23 | **Байт, который вмещает .NET** | **закрыто (#94)**: `H2DataReader.GetByte` отдаёт 255 для числа 255; три теста `H2ByteSubstringTests` сняты с трейта и зелёные | — |
    | 24 | **Каталог схем в сессии** | параметризованный запрос `INFORMATION_SCHEMA.SCHEMATA` отвечает тем, что было при первом вызове: схема, созданная позже в той же сессии, в ответе не появляется | сессия отвечает по текущему состоянию базы. Один тест форума помечен `BlockedByPort`. Issue: dimzon/h2sharp#95 |
-   | 25 | **Открытие зачисленного соединения** | соединение, закрытое во время ambient-транзакции, открыть снова нельзя: `The connection is already open` | `Open()` после `Close()` снова открывает соединение. Десять тестов `TransactionH2Test` помечены `BlockedByPort`. Issue: dimzon/h2sharp#96 |
+   | 25 | **Открытие зачисленного соединения** | **закрыто (#96) частично**: восемь кейсов ambient-тестов сняты с трейта и зелёные; три (`nested`, `independent commits`, `begin after enlisted close`) всё ещё красные и помечены | разобраться с оставшимися тремя кейсами; это новые симптомы, не `already open` |
 
    Закрытые пробелы: DDL identity-столбца, значение identity обратно (`FINAL TABLE`),
    последовательности (`CREATE SEQUENCE`, `NEXT VALUE FOR`), типизированный литерал в

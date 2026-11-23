@@ -16,4 +16,8 @@ artifacts/
 *.ide/
 TestResult.xml
 TestResults/
+TestResults-*/
+TestResults-*.log
 *.trx
+# Local agent scratch notes, not part of the provider
+.workbuddy-ai/

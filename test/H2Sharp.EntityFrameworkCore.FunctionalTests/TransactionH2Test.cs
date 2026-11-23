@@ -93,17 +93,15 @@ public class TransactionH2Test(TransactionH2Test.TransactionH2Fixture fixture)
     protected override bool AmbientTransactionsSupported
         => true;
 
-    // The engine refuses to open a connection that was closed while it was enlisted: the
-    // enlistment keeps the session, and Open() answers "The connection is already open"
-    // (dimzon/h2sharp#96). EF Core closes the connection after every operation and opens it
-    // again for the next one, so the second operation of an ambient transaction fails.
-    [Trait("Category", "BlockedByPort")]
+    // The reopening defect (dimzon/h2sharp#96) is closed: ambient SaveChanges with a connection
+    // string and the suppression check both run green now and are back in the normal suite.
+    // Three cases still wait on the engine: nested and independent ambient transactions, and
+    // reopening a connection after an enlisted transaction was explicitly closed.
     public override Task SaveChanges_uses_ambient_transaction_with_connectionString(
         bool async,
         AutoTransactionBehavior autoTransactionBehavior)
         => base.SaveChanges_uses_ambient_transaction_with_connectionString(async, autoTransactionBehavior);
 
-    [Trait("Category", "BlockedByPort")]
     public override void SaveChanges_throws_for_suppressed_ambient_transactions(bool connectionString)
         => base.SaveChanges_throws_for_suppressed_ambient_transactions(connectionString);
 

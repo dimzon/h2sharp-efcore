@@ -9,11 +9,10 @@ public class H2ByteSubstringTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    [Trait("Category", "BlockedByPort")]
     public void Every_byte_is_read_with_substring(bool first)
     {
-        // The bytes above 127 do not come back: the reader of the port refuses a number that
-        // fits a .NET byte (dimzon/h2sharp#94).
+        // dimzon/h2sharp#94 is closed: GetByte returns the unsigned value, so bytes above 127
+        // come back and this test belongs in the green run.
         using var connection = new H2Connection("Data Source=" + "byte_substring_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
         using var context = new ByteContext(new DbContextOptionsBuilder<ByteContext>().UseH2(connection).Options);
@@ -56,11 +55,10 @@ public class H2ByteSubstringTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void Constant_and_parameter_indexes_keep_the_unsigned_byte()
     {
-        // The bytes above 127 do not come back: the reader of the port refuses a number that
-        // fits a .NET byte (dimzon/h2sharp#94).
+        // dimzon/h2sharp#94 is closed: the unsigned byte survives both a constant and a
+        // parameter index.
         using var connection = new H2Connection("Data Source=" + "byte_index_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
         using var context = new ByteContext(new DbContextOptionsBuilder<ByteContext>().UseH2(connection).Options);
