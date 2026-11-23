@@ -3,8 +3,11 @@
     <EFCoreVersion>[9.0.14,10.0.0)</EFCoreVersion>
     <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
     <NpgsqlVersion>9.0.5</NpgsqlVersion>
+    <!-- The engine ships its own version line (0.x while the port is unfinished). -->
+    <H2SharpVersion>0.1.41-alpha.1</H2SharpVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="H2Sharp" Version="$(H2SharpVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="$(EFCoreVersion)" />

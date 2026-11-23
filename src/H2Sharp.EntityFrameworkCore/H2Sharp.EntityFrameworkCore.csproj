@@ -12,24 +12,15 @@
     <NoWarn>EF9100</NoWarn> <!-- Precompiled query is experimental -->
   </PropertyGroup>
 
-  <!--
-    H2Sharp is the embedded H2 port this provider sits on. It is a sibling repository and is not
-    published to nuget.org yet, so it comes in as a project reference. Set H2SharpProject to point
-    elsewhere once the engine ships as a package.
-  -->
-  <PropertyGroup>
-    <H2SharpProject Condition="'$(H2SharpProject)' == ''">$(MSBuildThisFileDirectory)..\..\..\h2sharp\src\H2Sharp\H2Sharp.csproj</H2SharpProject>
-  </PropertyGroup>
-
   <ItemGroup>
     <!-- PrivateAssets="none" is set to flow the EF Core analyzer to users referencing this package https://github.com/aspnet/EntityFrameworkCore/pull/11350 -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" PrivateAssets="none" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" PrivateAssets="none" />
     <!--
-      The engine is not pinned to a framework: H2Sharp multi-targets net8.0 and net10.0, and each
-      target of this provider takes the engine build that matches it.
+      The engine is published on nuget.org and multi-targets net8.0 and net10.0, so each target
+      of this provider picks up the matching build of the same package version.
     -->
-    <ProjectReference Include="$(H2SharpProject)" />
+    <PackageReference Include="H2Sharp" />
   </ItemGroup>
 
   <ItemGroup>
