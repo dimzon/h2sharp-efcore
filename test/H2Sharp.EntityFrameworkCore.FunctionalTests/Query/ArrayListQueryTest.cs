@@ -112,13 +112,12 @@ WHERE FALSE
     {
         await base.SequenceEqual_with_parameter(async);
 
-        AssertSql(
-            """
-$__arr_0={ '3', '4' } (DbType = Object)
+        AssertSql("""
+$__ToList_0={ '3', '4' } (DbType = Int32)
 
 SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
 FROM "SomeEntities" "s"
-WHERE "s"."IntList" = $__arr_0
+WHERE "s"."IntList" = $__ToList_0
 """);
     }
 
@@ -220,11 +219,10 @@ WHERE array_contains("s"."IntList", "s"."Id" + 2)
     {
         await base.Array_column_Contains_null_constant(async);
 
-        AssertSql(
-            """
+        AssertSql("""
 SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
 FROM "SomeEntities" "s"
-WHERE array_contains($left, NULL)
+WHERE array_contains("s"."NullableStringList", NULL)
 """);
     }
 
