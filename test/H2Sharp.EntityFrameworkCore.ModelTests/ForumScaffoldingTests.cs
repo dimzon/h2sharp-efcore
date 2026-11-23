@@ -72,7 +72,7 @@ public class ForumScaffoldingTests
         // H2 leaves DECLARED_DATA_TYPE empty for these columns; the length and precision come
         // from CHARACTER_MAXIMUM_LENGTH / NUMERIC_PRECISION instead.
         Assert.Equal("varchar(50)", columns["UserName"]);
-        Assert.Equal("numeric", columns["Balance"]);
+        Assert.Equal("numeric(18,2)", columns["Balance"]);
     }
 
     [Fact]

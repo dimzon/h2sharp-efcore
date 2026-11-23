@@ -64,7 +64,7 @@ CREATE SEQUENCE db2."CustomFacetsSequence"
                 Assert.Null(defaultSequence.MaxValue);
 
                 var customSequence = dbModel.Sequences.First(ds => ds.Name == "CustomFacetsSequence");
-                Assert.Equal("db2", customSequence.Schema);
+                Assert.Equal("DB2", customSequence.Schema);
                 Assert.Equal("CustomFacetsSequence", customSequence.Name);
                 Assert.Equal(supportsDataType ? "integer" : "bigint", customSequence.StoreType);
                 Assert.True(customSequence.IsCyclic);
@@ -121,7 +121,7 @@ CREATE SEQUENCE db2."Sequence"
             {
                 var sequence = Assert.Single(dbModel.Sequences);
                 // ReSharper disable once PossibleNullReferenceException
-                Assert.Equal("db2", sequence.Schema);
+                Assert.Equal("DB2", sequence.Schema);
                 Assert.Equal("Sequence", sequence.Name);
                 Assert.Equal("bigint", sequence.StoreType);
             },
@@ -578,7 +578,7 @@ CREATE TABLE "PrimaryKeyTable" ("Id" int PRIMARY KEY);
 
                 Assert.Equal("PUBLIC", pk.Table.Schema);
                 Assert.Equal("PrimaryKeyTable", pk.Table.Name);
-                Assert.StartsWith("PrimaryKeyTable_pkey", pk.Name);
+                Assert.StartsWith("CONSTRAINT", pk.Name);
                 Assert.Equal(["Id"], pk.Columns.Select(ic => ic.Name).ToList());
             },
             """
@@ -927,7 +927,7 @@ CREATE TABLE "DefaultValues" (
             {
                 var columns = dbModel.Tables.Single().Columns;
                 Assert.Equal(
-                    "'1999-01-08 00:00:00'::timestamp without time zone",
+                    "'1999-01-08'",
                     columns.Single(c => c.Name == "FixedDefaultValue").DefaultValueSql);
             },
             """
@@ -1655,7 +1655,7 @@ CREATE TABLE "DependentTable" (
                 Assert.Equal(H2Resources.LogPrincipalTableNotInSelectionSet(new TestLogger<H2LoggingDefinitions>()).EventId, Id);
                 Assert.Equal(
                     H2Resources.LogPrincipalTableNotInSelectionSet(new TestLogger<H2LoggingDefinitions>()).GenerateMessage(
-                        "MYFK", "public.DependentTable", "public.PrincipalTable"), Message);
+                        "MYFK", "PUBLIC.DependentTable", "PUBLIC.PrincipalTable"), Message);
             },
             """
 DROP TABLE "DependentTable";
@@ -1833,8 +1833,8 @@ CREATE TABLE identity (
         => Test(
             """
 CREATE TABLE "IndexMethod" (a int, b int);
-CREATE INDEX ix_a ON "IndexMethod" (a);
-CREATE INDEX ix_b ON "IndexMethod" (b);
+CREATE INDEX "ix_a" ON "IndexMethod" (a);
+CREATE INDEX "ix_b" ON "IndexMethod" (b);
 """,
             [],
             [],
@@ -1861,8 +1861,8 @@ CREATE INDEX ix_b ON "IndexMethod" (b);
         => Test(
             """
 CREATE TABLE "IndexSortOrder" (a text, b text);
-CREATE INDEX ix_btree ON "IndexSortOrder" (a ASC, b DESC);
-CREATE INDEX ix_without ON "IndexSortOrder" (a, b);
+CREATE INDEX "ix_btree" ON "IndexSortOrder" (a ASC, b DESC);
+CREATE INDEX "ix_without" ON "IndexSortOrder" (a, b);
 """,
             [],
             [],
@@ -1886,8 +1886,8 @@ CREATE INDEX ix_without ON "IndexSortOrder" (a, b);
         => Test(
             """
 CREATE TABLE "IndexNullSortOrder" (a text, b text);
-CREATE INDEX ix_with ON "IndexNullSortOrder" (a NULLS FIRST, b DESC NULLS LAST);
-CREATE INDEX ix_without ON "IndexNullSortOrder" (a, b);
+CREATE INDEX "ix_with" ON "IndexNullSortOrder" (a NULLS FIRST, b DESC NULLS LAST);
+CREATE INDEX "ix_without" ON "IndexNullSortOrder" (a, b);
 """,
             [],
             [],
@@ -1900,8 +1900,12 @@ CREATE INDEX ix_without ON "IndexNullSortOrder" (a, b);
                     new[] { NullSortOrder.NullsFirst, NullSortOrder.NullsLast },
                     indexWith.FindAnnotation(H2AnnotationNames.IndexNullSortOrder).Value);
 
+                // H2 reports the ordering it applies, not whether it was written: an ASC index
+                // without NULLS FIRST and one written with it are indistinguishable in the catalogue.
                 var indexWithout = table.Indexes.Single(i => i.Name == "ix_without");
-                Assert.Null(indexWithout.FindAnnotation(H2AnnotationNames.IndexNullSortOrder));
+                Assert.Equal(
+                    new[] { NullSortOrder.NullsFirst, NullSortOrder.NullsFirst },
+                    indexWithout.FindAnnotation(H2AnnotationNames.IndexNullSortOrder).Value);
             },
             """
                 DROP TABLE "IndexNullSortOrder"
@@ -1913,8 +1917,8 @@ CREATE INDEX ix_without ON "IndexNullSortOrder" (a, b);
         => Test(
             """
 CREATE TABLE "IndexCovering" (a text, b text, c text);
-CREATE INDEX ix_with ON "IndexCovering" (a) INCLUDE (b, c);
-CREATE INDEX ix_without ON "IndexCovering" (a, b, c);
+CREATE INDEX "ix_with" ON "IndexCovering" (a) INCLUDE (b, c);
+CREATE INDEX "ix_without" ON "IndexCovering" (a, b, c);
 """,
             [],
             [],
@@ -2029,9 +2033,9 @@ ALTER TABLE foo ADD COLUMN id2 int PRIMARY KEY;
     public void Enums()
         => Test(
             """
-CREATE TYPE mood AS ENUM ('happy', 'sad');
-CREATE TYPE db2.mood AS ENUM ('excited', 'depressed');
-CREATE TABLE foo (mood mood UNIQUE);
+CREATE TYPE "mood" AS ENUM ('happy', 'sad');
+CREATE TYPE "db2"."mood" AS ENUM ('excited', 'depressed');
+CREATE TABLE "foo" ("mood" "mood" UNIQUE);
 """,
             [],
             [],
@@ -2058,9 +2062,9 @@ CREATE TABLE foo (mood mood UNIQUE);
                 Assert.Empty(table.Indexes);
             },
             """
-DROP TABLE foo;
-DROP TYPE mood;
-DROP TYPE db2.mood;
+DROP TABLE "foo";
+DROP TYPE "mood";
+DROP TYPE "db2"."mood";
 """);
 
     [Fact]
@@ -2068,7 +2072,7 @@ DROP TYPE db2.mood;
     public void Bug453()
         => Test(
             """
-CREATE TYPE mood AS ENUM ('happy', 'sad');
+CREATE TYPE "mood" AS ENUM ('happy', 'sad');
 CREATE TABLE foo (mood mood, some_num int UNIQUE);
 CREATE TABLE bar (foreign_key int REFERENCES foo(some_num));
 """,

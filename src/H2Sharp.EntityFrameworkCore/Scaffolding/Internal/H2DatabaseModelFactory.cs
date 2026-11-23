@@ -1,6 +1,8 @@
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using System.Text;
+using H2Sharp.EntityFrameworkCore.Internal;
 using H2Sharp.EntityFrameworkCore.Metadata;
 using H2Sharp.EntityFrameworkCore.Metadata.Internal;
 using H2Sharp.EntityFrameworkCore.Storage;
@@ -88,15 +90,41 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 DefaultSchema = "PUBLIC"
             };
 
-            var schemas = options.Schemas.Any() ? options.Schemas.ToList() : GetSchemas(dbConnection);
+            var catalog = GetSchemas(dbConnection);
+            var schemas = options.Schemas.Any()
+                ? ResolveSchemas(catalog, options.Schemas)
+                : catalog;
             var tables = options.Tables.Select(Parse).ToList();
+
+            if (options.Schemas.Any())
+            {
+                foreach (var requested in options.Schemas)
+                {
+                    if (!catalog.Contains(requested, StringComparer.OrdinalIgnoreCase))
+                    {
+                        _logger.MissingSchemaWarning(requested);
+                    }
+                }
+            }
 
             PopulateTables(dbConnection, databaseModel, schemas, tables);
             PopulateKeys(dbConnection, databaseModel, schemas);
             PopulateIndexes(dbConnection, databaseModel, schemas);
             PopulateSequences(dbConnection, databaseModel, schemas);
             PopulateEnums(dbConnection, databaseModel, schemas);
-            PopulateForeignKeys(dbConnection, databaseModel);
+            PopulateForeignKeys(dbConnection, databaseModel, _logger);
+
+            if (options.Tables.Any())
+            {
+                foreach (var (schema, name) in tables)
+                {
+                    if (!databaseModel.Tables.Any(
+                            t => Matches((schema, name), t.Schema ?? databaseModel.DefaultSchema!, t.Name)))
+                    {
+                        _logger.MissingTableWarning(name);
+                    }
+                }
+            }
 
             return databaseModel;
         }
@@ -107,6 +135,28 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 dbConnection.Close();
             }
         }
+    }
+
+    private static List<string> ResolveSchemas(IReadOnlyList<string> catalog, IEnumerable<string> requested)
+    {
+        var resolved = new List<string>();
+
+        foreach (var schema in requested)
+        {
+            // An unquoted identifier in H2 is upper-cased; a filter such as "db2" must find
+            // DB2 even when a quoted "db2" schema also exists. The upper-case catalogue name
+            // wins; the lower-case spelling is used only when no upper-case schema exists.
+            var upper = schema.ToUpperInvariant();
+            resolved.Add(
+                catalog.Contains(upper, StringComparer.Ordinal)
+                    ? upper
+                    : catalog.Contains(schema, StringComparer.Ordinal)
+                        ? schema
+                        : catalog.FirstOrDefault(s => string.Equals(s, schema, StringComparison.OrdinalIgnoreCase))
+                          ?? schema);
+        }
+
+        return resolved;
     }
 
     private static List<string> GetSchemas(DbConnection connection)
@@ -195,6 +245,8 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                        NUMERIC_PRECISION,
                        NUMERIC_SCALE,
                        DATETIME_PRECISION,
+                       DECLARED_NUMERIC_PRECISION,
+                       DECLARED_NUMERIC_SCALE,
                        IDENTITY_START,
                        IDENTITY_INCREMENT,
                        IDENTITY_MINIMUM,
@@ -285,18 +337,18 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
 
             // H2 materialises defaults for every identity sequence; EF's model keeps the
             // corresponding options as "not specified". Strip only those materialised values.
-            var start = ToLong(reader.GetValue(16));
-            var min = ToLong(reader.GetValue(18));
-            var max = ToLong(reader.GetValue(19));
-            var cache = ToLong(reader.GetValue(21));
+            var start = ToLong(reader.GetValue(18));
+            var min = ToLong(reader.GetValue(20));
+            var max = ToLong(reader.GetValue(21));
+            var cache = ToLong(reader.GetValue(23));
 
             var options = new IdentitySequenceOptionsData
             {
                 StartValue = start == 1 ? null : start,
-                IncrementBy = ToLong(reader.GetValue(17)) ?? 1,
+                IncrementBy = ToLong(reader.GetValue(19)) ?? 1,
                 MinValue = min == 1 ? null : min,
                 MaxValue = max is 2147483647 or 9223372036854775807 ? null : max,
-                IsCyclic = reader.GetValue(20)?.ToString() is "YES" or "TRUE",
+                IsCyclic = reader.GetValue(22)?.ToString() is "YES" or "TRUE",
                 NumbersToCache = cache is null or 1 or 32 ? 1 : cache.Value
             };
 
@@ -332,6 +384,16 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         var declared = Text(reader, 10);
         if (declared is not null)
         {
+            // NUMERIC carries its facets in DECLARED_NUMERIC_PRECISION/SCALE, not in the
+            // declared type name; a bare NUMERIC means the default precision with scale 0.
+            if (!declared.Contains('(') && !reader.IsDBNull(16))
+            {
+                var scale = reader.IsDBNull(17) ? 0 : reader.GetInt32(17);
+                return Normalize(
+                    $"{declared}({reader.GetInt32(16).ToString(CultureInfo.InvariantCulture)}," +
+                    $"{scale.ToString(CultureInfo.InvariantCulture)})");
+            }
+
             return Normalize(declared);
         }
 
@@ -550,18 +612,36 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
+                var storeType = reader.IsDBNull(1) ? null : Normalize(reader.GetString(1));
+                var start = ToLong(reader.GetValue(2));
+                var increment = ToInt(reader.GetValue(3));
+                var min = ToLong(reader.GetValue(4));
+                var max = ToLong(reader.GetValue(5));
+                var isCyclic = !reader.IsDBNull(6) && reader.GetString(6) == "YES";
+
+                // H2 materialises every default. Like the reference provider, report no
+                // options at all for an ordinary sequence, but keep a start value when any
+                // other option makes the sequence non-default.
+                var defaultMax = storeType switch
+                {
+                    "smallint" => (long)short.MaxValue,
+                    "integer" => int.MaxValue,
+                    _ => long.MaxValue
+                };
+                var hasNonDefault = start != 1 || increment != 1 || min != 1 || max != defaultMax || isCyclic;
+
                 databaseModel.Sequences.Add(
                     new DatabaseSequence
                     {
                         Database = databaseModel,
                         Schema = schema,
                         Name = reader.GetString(0),
-                        StoreType = reader.IsDBNull(1) ? null : Normalize(reader.GetString(1)),
-                        StartValue = ToLong(reader.GetValue(2)),
-                        IncrementBy = ToInt(reader.GetValue(3)),
-                        MinValue = ToLong(reader.GetValue(4)),
-                        MaxValue = ToLong(reader.GetValue(5)),
-                        IsCyclic = !reader.IsDBNull(6) && reader.GetString(6) == "YES"
+                        StoreType = storeType,
+                        StartValue = hasNonDefault ? start : null,
+                        IncrementBy = hasNonDefault ? increment : null,
+                        MinValue = hasNonDefault ? min : null,
+                        MaxValue = hasNonDefault ? max : null,
+                        IsCyclic = isCyclic ? true : hasNonDefault ? false : null
                     });
             }
         }
@@ -615,7 +695,10 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         }
     }
 
-    private static void PopulateForeignKeys(DbConnection connection, DatabaseModel databaseModel)
+    private static void PopulateForeignKeys(
+        DbConnection connection,
+        DatabaseModel databaseModel,
+        IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger)
     {
         using var command = connection.CreateCommand();
 
@@ -657,14 +740,27 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 var principalSchema = reader.IsDBNull(4) ? null : reader.GetString(4);
                 var principalConstraint = reader.IsDBNull(5) ? null : reader.GetString(5);
 
-                var principal = principalConstraint is null
-                    ? throw new InvalidOperationException(
-                        $"Foreign key '{constraintName}' on {schema}.{tableName} names no referenced " +
-                        "constraint, so the table it points at cannot be determined.")
-                    : Find(databaseModel, principalSchema, PrincipalTableName(connection, principalSchema, principalConstraint))
-                        ?? throw new InvalidOperationException(
-                            $"Foreign key '{constraintName}' references constraint '{principalConstraint}', " +
-                            "which is not among the tables being scaffolded. Include that table or the constraint cannot be resolved.");
+                if (principalConstraint is null)
+                {
+                    logger.ForeignKeyReferencesMissingPrincipalTableWarning(
+                        constraintName, schema + "." + tableName, null);
+                    continue;
+                }
+
+                var principal = Find(
+                    databaseModel,
+                    principalSchema,
+                    PrincipalTableName(connection, principalSchema, principalConstraint));
+
+                if (principal is null)
+                {
+                    logger.ForeignKeyReferencesMissingPrincipalTableWarning(
+                        constraintName,
+                        schema + "." + tableName,
+                        (principalSchema ?? databaseModel.DefaultSchema) + "." +
+                        PrincipalTableName(connection, principalSchema, principalConstraint));
+                    continue;
+                }
 
                 fk = new DatabaseForeignKey
                 {
@@ -673,6 +769,14 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                     PrincipalTable = principal,
                     OnDelete = ToReferentialAction(reader.IsDBNull(7) ? null : reader.GetString(7))
                 };
+
+                foreach (var columnName in PrincipalColumns(connection, principalSchema, principalConstraint))
+                {
+                    if (Find(principal, columnName) is { } principalColumn)
+                    {
+                        fk.PrincipalColumns.Add(principalColumn);
+                    }
+                }
 
                 table.ForeignKeys.Add(fk);
                 seen[(schema, tableName, constraintName)] = fk;
@@ -705,6 +809,30 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                ?? throw new InvalidOperationException(
                    $"Referenced constraint '{constraintName}' is not present in TABLE_CONSTRAINTS, so the " +
                    "referenced table cannot be resolved.");
+    }
+
+    private static List<string> PrincipalColumns(DbConnection connection, string? schema, string constraintName)
+    {
+        using var command = connection.CreateCommand();
+
+        command.CommandText = """
+            SELECT COLUMN_NAME
+            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE CONSTRAINT_NAME = $p_name AND CONSTRAINT_SCHEMA = $p_schema
+            ORDER BY ORDINAL_POSITION
+            """;
+
+        command.Parameters.Add(Parameter(command, "p_name", constraintName));
+        command.Parameters.Add(Parameter(command, "p_schema", (object?)schema ?? "PUBLIC"));
+
+        var names = new List<string>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            names.Add(reader.GetString(0));
+        }
+
+        return names;
     }
 
     private static DatabaseTable? Find(DatabaseModel model, string? schema, string name)
@@ -751,8 +879,47 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
 
     private static (string? Schema, string Name) Parse(string table)
     {
-        var parts = table.Split('.', 2);
-        return parts.Length == 1 ? (null, parts[0].Trim('"')) : (parts[0].Trim('"'), parts[1].Trim('"'));
+        var first = ReadIdentifier(table, 0, out var index);
+        if (index < table.Length && table[index] == '.')
+        {
+            var second = ReadIdentifier(table, index + 1, out _);
+            return (first, second);
+        }
+
+        return (null, first);
+    }
+
+    private static string ReadIdentifier(string text, int start, out int end)
+    {
+        if (start < text.Length && text[start] == '"')
+        {
+            var value = new StringBuilder();
+            var i = start + 1;
+            while (i < text.Length)
+            {
+                if (text[i] == '"')
+                {
+                    if (i + 1 < text.Length && text[i + 1] == '"')
+                    {
+                        value.Append('"');
+                        i += 2;
+                        continue;
+                    }
+
+                    i++;
+                    break;
+                }
+
+                value.Append(text[i++]);
+            }
+
+            end = i;
+            return value.ToString();
+        }
+
+        var dot = text.IndexOf('.', start);
+        end = dot < 0 ? text.Length : dot;
+        return text[start..end].Trim();
     }
 
     private static DbParameter Parameter(DbCommand command, string name, object value)
