@@ -14,6 +14,11 @@ public class ManyToManyQueryH2Fixture : ManyToManyQueryRelationalFixture
     // TODO: https://github.com/dotnet/efcore/issues/26068
     protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
     {
+        // The base fixture configures the unidirectional navigations this model also carries.
+        // Re-applying the bidirectional configuration below is idempotent, and the H2-specific
+        // column types have to come after the base so they win.
+        base.OnModelCreating(modelBuilder, context);
+
         modelBuilder.Entity<EntityOne>().Property(e => e.Id).ValueGeneratedNever();
         modelBuilder.Entity<EntityTwo>().Property(e => e.Id).ValueGeneratedNever();
         modelBuilder.Entity<EntityThree>().Property(e => e.Id).ValueGeneratedNever();

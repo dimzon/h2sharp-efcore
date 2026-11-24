@@ -65,21 +65,10 @@
     <Compile Remove="BulkUpdates\TPTFiltersInheritanceBulkUpdatesH2Test.cs" />
     <Compile Remove="BulkUpdates\TPTInheritanceBulkUpdatesH2Fixture.cs" />
     <Compile Remove="BulkUpdates\TPTInheritanceBulkUpdatesH2Test.cs" />
-    <Compile Remove="CommandInterceptionH2Test.cs" />
-    <Compile Remove="CompositeKeyEndToEndTest.cs" />
-    <Compile Remove="ComputedColumnTest.cs" />
-    <Compile Remove="ConferencePlannerH2Test.cs" />
     <Compile Remove="ConnectionInterceptionH2Test.cs" />
-    <Compile Remove="DataAnnotationH2Test.cs" />
-    <Compile Remove="EntitySplittingH2Test.cs" />
     <Compile Remove="JsonTypesH2Test.cs" />
-    <Compile Remove="MaterializationInterceptionH2Test.cs" />
     <Compile Remove="Migrations\MigrationsInfrastructureH2Test.cs" />
-    <Compile Remove="MonsterFixupChangedChangingH2Test.cs" />
-    <Compile Remove="MusicStoreH2Test.cs" />
-    <Compile Remove="NotificationEntitiesH2Test.cs" />
     <Compile Remove="OptimisticConcurrencyH2Test.cs" />
-    <Compile Remove="OverzealousInitializationH2Test.cs" />
     <Compile Remove="Query\AdHocAdvancedMappingsQueryH2Test.cs" />
     <Compile Remove="Query\AdHocComplexTypeQueryH2Test.cs" />
     <Compile Remove="Query\AdHocJsonQueryH2Test.cs" />
@@ -100,8 +89,6 @@
     <Compile Remove="Query\ComplexNavigationsSharedTypeQueryH2Fixture.cs" />
     <Compile Remove="Query\ComplexNavigationsSharedTypeQueryH2Test.cs" />
     <Compile Remove="Query\ComplexTypeQueryH2Test.cs" />
-    <Compile Remove="Query\CompositeKeysQueryH2Fixture.cs" />
-    <Compile Remove="Query\CompositeKeysQueryH2Test.cs" />
     <Compile Remove="Query\CompositeKeysSplitQueryH2Test.cs" />
     <Compile Remove="Query\Ef6GroupByH2Test.cs" />
     <Compile Remove="Query\EntitySplittingQueryH2Test.cs" />
@@ -119,9 +106,6 @@
     <Compile Remove="Query\JsonDomQueryTest.cs" />
     <Compile Remove="Query\JsonQueryH2Test.cs" />
     <Compile Remove="Query\JsonStringQueryTest.cs" />
-    <Compile Remove="Query\ManyToManyNoTrackingQueryH2Test.cs" />
-    <Compile Remove="Query\ManyToManyQueryH2Fixture.cs" />
-    <Compile Remove="Query\ManyToManyQueryH2Test.cs" />
     <Compile Remove="Query\MappingQueryH2Test.cs" />
     <Compile Remove="Query\NavigationTest.cs" />
     <Compile Remove="Query\NodaTimeQueryH2Test.cs" />
@@ -194,13 +178,8 @@
     <Compile Remove="Query\UdfDbFunctionH2Tests.cs" />
     <Compile Remove="Query\WarningsH2Test.cs" />
     <Compile Remove="QueryExpressionInterceptionH2TestBase.cs" />
-    <Compile Remove="SaveChangesInterceptionH2Test.cs" />
-    <Compile Remove="SeedingH2Test.cs" />
     <Compile Remove="SystemColumnTest.cs" />
-    <Compile Remove="TableSplittingH2Test.cs" />
-    <Compile Remove="TPTTableSplittingH2Test.cs" />
     <Compile Remove="Update\JsonUpdateH2Test.cs" />
-    <Compile Remove="Update\NonSharedModelUpdatesH2Test.cs" />
     <Compile Remove="Update\StoredProcedureUpdateH2Test.cs" />
     <Compile Remove="Update\StoreValueGenerationH2Test.cs" />
   </ItemGroup>

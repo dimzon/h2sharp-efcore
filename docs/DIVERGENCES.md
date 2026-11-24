@@ -57,17 +57,17 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 8377 | 0 | 8404 (27 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 9438 | 0 | 9479 (41 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 132 | 0 | 132 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **8834** | **0** | **8861** |
+   | **Итого** | **9895** | **0** | **9936** |
 
-   Зелёный гейт: 8834 теста на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 9895 тестов на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
    снятых трейтов, затем 150 из `ValueConvertersEndToEndH2Test`, 56 из
-   `CustomConvertersH2Test`, 3 unit-теста границ дат и 1668 из возвращённых
+   `CustomConvertersH2Test`, 3 unit-теста границ дат, 1668 и затем 1061 из возвращённых
    спецификационных наборов.
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
@@ -84,7 +84,7 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 8377 | 0 | 8404 (27 пропущено) |
+   | `Category!=BlockedByPort` | 9438 | 0 | 9479 (41 пропущено) |
    | `Category=BlockedByPort` | 0 | 1 | 1 |
 
    Прогон с трейтом держит только `H2ComplianceTest.All_test_bases_must_be_implemented`
@@ -131,11 +131,23 @@ EF их не отдаёт генератору, как в апстриме).
      `OwnedQueryH2Test` две теории пропущены: H2 2.5 отвергает qualified `ORDER BY`
      столбец, когда в `WHERE` есть коррелированный `DISTINCT`-подзапрос; проверено на
      эталонном jar, поэтому это правило H2, а не дефект порта.
+   * Вторая партия возвращённых наборов — ещё 1061 тест: `ManyToManyQueryH2Test`,
+     `ManyToManyNoTrackingQueryH2Test`, `CompositeKeysQueryH2Test`,
+     `CompositeKeyEndToEndH2Test`, `TableSplittingH2Test`, `TPTTableSplittingH2Test`,
+     `EntitySplittingH2Test`, `SeedingH2Test`, `MusicStoreH2Test`,
+     `ConferencePlannerH2Test`, `ComputedColumnTest`, `DataAnnotationH2Test`,
+     `MonsterFixupChangedChangingH2Test`, `NotificationEntitiesH2Test`,
+     `OverzealousInitializationH2Test`, `CommandInterceptionH2Test`,
+     `MaterializationInterceptionH2Test`, `SaveChangesInterceptionH2Test` и
+     `NonSharedModelUpdatesH2Test`. В `ManyToMany*` шесть теорий пропущены: им нужен
+     `LATERAL`, которого в H2 2.5 нет. `ManyToManyQueryH2Fixture` вызывает базовую
+     настройку модели, иначе unidirectional-навигации не валидируются; `SeedingH2Test`
+     явно конфигурирует провайдера в `OnConfiguring`.
 
    История: на движке `17c9f68` было 434 и 4888; коммит `f56ca4c` дал 350 переходов
    красное→зелёное и ни одного обратного. Правки провайдера добавили 288, перенос трейта
    на методы — 826, обход `Prepared.update` — 3799, эти прогоны — ещё 446,
-   возвращённые наборы — 1668.
+   возвращённые наборы — 1668 и 1061.
 
 Один тест красный по замыслу и помечен трейтом, а не спрятан.
 
@@ -1132,8 +1144,8 @@ its expression no longer fails before SQL. Green gate is unaffected (6271/129/31
   `H2GeometryTypeMapping` больше не собирают SQL вручную: `Dialect.AppendTimestampWithTimeZone`
   и `Dialect.AppendGeometry`. Встроенные (embedded) строки JSON не трогались: это не SQL-литерал.
 
-Итог: functional green gate **8377/0/8404** (27 пропущено), unit **132/132**, model
-**325/325** на `net9.0` и `net10.0`; полный functional — 8377 прошло, 27 пропущено,
+Итог: functional green gate **9438/0/9479** (41 пропущено), unit **132/132**, model
+**325/325** на `net9.0` и `net10.0`; полный functional — 9438 прошло, 41 пропущено,
 1 красный: `H2ComplianceTest` по замыслу. Последний тест конвертеров, `("Values")`,
 открылся после исправления `IsDirectQuery` в движке: quoted keyword больше не читается
 как ключевое слово. Остальные `BlockedByPort` сняты.
