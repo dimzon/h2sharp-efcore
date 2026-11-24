@@ -95,8 +95,9 @@ EF их не отдаёт генератору, как в апстриме).
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
      `TimeOnly`/`LocalTime` переживают round trip.
-   * `FORMATDATETIME` в порте принимает .NET-шаблоны, поэтому `DateTimeOffset.DateTime`
-     и `.UtcDateTime` переводятся с `FFFFFFF`, а не с java-шаблоном `SSSSSSSSS`.
+   * `FORMATDATETIME` в порте принимает .NET-шаблоны (утверждённое расхождение
+     движка D-052), поэтому `DateTimeOffset.DateTime` и `.UtcDateTime` переводятся
+     с `FFFFFFF`, а не с java-шаблоном `SSSSSSSSS`.
    * `UPDATE`/`DELETE` возвращают число строк через `FINAL TABLE`/`OLD TABLE`; пакет EF
      видит ноль и бросает `DbUpdateConcurrencyException`. Миграции остаются простыми
      `UPDATE`/`DELETE`, потому что их result set никто не читает.
@@ -1076,9 +1077,9 @@ its expression no longer fails before SQL. Green gate is unaffected (6271/129/31
   `time(7)` — семь цифр тиков .NET; проверено на jar (`TIME '12:30:45.123'` в `TIME` даёт
   `12:30:45`, в `TIME(7)` — `12:30:45.1234567`).
 * **`FORMATDATETIME` и java-шаблон.** Переводчик `DateTimeOffset.DateTime`/`.UtcDateTime`
-  писал `SSSSSSSSS`; порт `FORMATDATETIME` принимает .NET-шаблоны, поэтому `S` оставался
-  литералом и `CAST(… AS timestamp)` падал. Шаблон заменён на `FFFFFFF`; остальные
-  date-time переводы не менялись.
+  писал `SSSSSSSSS`; порт `FORMATDATETIME` принимает .NET-шаблоны по утверждённому
+  расхождению D-052, поэтому `S` оставался литералом и `CAST(… AS timestamp)` падал.
+  Шаблон заменён на `FFFFFFF`; остальные date-time переводы не менялись.
 * **Число строк `UPDATE`/`DELETE`.** Без `RETURNING` пакет EF не видел нуля и не бросал
   `DbUpdateConcurrencyException`: шесть `UpdatesH2Test` были красными. Теперь `UPDATE`
   оборачивается в `SELECT COUNT(*) FROM FINAL TABLE (…)`, `DELETE` — в `OLD TABLE`

@@ -378,7 +378,7 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
 
             // The cast gives the wall clock the session zone's offset, which is the source
             // zone ConvertTimeToUtc starts from; FORMATDATETIME then writes the same instant
-            // in UTC, and the cast back reads that wall clock as the returned DateTime.
+            // in UTC (.NET pattern per D-052), and the cast back reads that wall clock.
             SqlExpression timestampWithZone = _sqlExpressionFactory.Convert(
                 arguments[0], arguments[0].Type, _timestampTzMapping);
             SqlExpression utcText = _sqlExpressionFactory.Function(
