@@ -230,6 +230,16 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 Sql.Append(")");
                 return binary;
 
+            case ExpressionType.ExclusiveOr when binary.Type == typeof(bool):
+                // H2 2.5 has no boolean "^": the reference rejects it. The provider registers
+                // ____ef_bitwise_xor as a deterministic service UDF on every connection.
+                Sql.Append("____ef_bitwise_xor(");
+                Visit(binary.Left);
+                Sql.Append(", ");
+                Visit(binary.Right);
+                Sql.Append(")");
+                return binary;
+
             case ExpressionType.ExclusiveOr when binary.Type != typeof(bool):
                 // The exclusive or is BITXOR, the function H2 2.5 has. The hash ("a # b") is
                 // not in the grammar of H2 2.5.

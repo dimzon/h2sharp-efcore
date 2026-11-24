@@ -170,8 +170,6 @@ WHERE second("o"."OrderDate") = 0
     public override Task Where_datetimeoffset_utcnow(bool async)
         => Task.CompletedTask;
 
-    // H2 2.5 has no XOR operator ("TRUE ^ TRUE" is a syntax error in the reference jar).
-    [ConditionalTheory(Skip = "H2 2.5 has no XOR operator; verified on h2.jar")]
     public override async Task Where_bitwise_xor(bool async)
     {
         await base.Where_bitwise_xor(async);
@@ -180,7 +178,7 @@ WHERE second("o"."OrderDate") = 0
             """
 SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
 FROM "Customers" "c"
-WHERE ("c"."CustomerID" = 'ALFKI') <> TRUE
+WHERE ____ef_bitwise_xor("c"."CustomerID" = 'ALFKI', TRUE)
 """);
     }
 
