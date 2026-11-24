@@ -57,12 +57,12 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 10597 | 0 | 10650 (53 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 10627 | 0 | 10680 (53 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 151 | 0 | 151 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **11073** | **0** | **11121** |
+   | **Итого** | **11103** | **0** | **11151** |
 
-   Зелёный гейт: 11073 теста на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 11103 теста на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
@@ -84,12 +84,13 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 10597 | 0 | 10650 (53 пропущено) |
-   | `Category=BlockedByPort` | 0 | 1 | 1 |
+   | `Category!=BlockedByPort` | 10627 | 0 | 10680 (53 пропущено) |
+   | `Category=BlockedByPort` | 0 | 3 | 3 |
 
-   Прогон с трейтом держит только `H2ComplianceTest.All_test_bases_must_be_implemented`
-   (красный по замыслу — список ещё не портированных базовых тестов). Миграции,
-   scaffolding, массивы, конвертеры и row value входят в зелёный гейт.
+   Прогон с трейтом держит `H2ComplianceTest.All_test_bases_must_be_implemented`
+   (красный по замыслу) и два теста `NorthwindCompiledQueryH2Test` с массивом-параметром:
+   парсер движка читает `$1[1]` как приведение и отвечает «Unknown data type: (?1)».
+   Миграции, scaffolding, массивы, конвертеры и row value входят в зелёный гейт.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
@@ -137,6 +138,8 @@ EF их не отдаёт генератору, как в апстриме).
      Пять тестов, ранее помеченных `BlockedByPort`, теперь зелёные:
      `H2ArrayTypeMapping.CreateParameter` материализует object-список/массив в тип, который
      ждёт конвертер, а `H2RowValueTypeMapping` собирает `ValueTuple` из `object[]`.
+   * Вернулся `NorthwindCompiledQueryH2Test` (+30 зелёных); два теста с `$1[1]` оставлены под
+     `BlockedByPort`: дефект парсера движка, не провайдера.
    * Вернулись `QueryNoClientEvalH2Test` (+13) и его Northwind-фикстура; набор проверяет,
      что провайдер не уходит в клиентскую оценку там, где EF Core 9 её запрещает.
    * `H2OperatorsProceduralQueryTest` добавлен в compliance-список: два процедурных теста в
@@ -1206,8 +1209,8 @@ its expression no longer fails before SQL. Green gate is unaffected (6271/129/31
   `H2GeometryTypeMapping` больше не собирают SQL вручную: `Dialect.AppendTimestampWithTimeZone`
   и `Dialect.AppendGeometry`. Встроенные (embedded) строки JSON не трогались: это не SQL-литерал.
 
-Итог: functional green gate **10597/0/10650** (53 пропущено), unit **151/151**, model
-**325/325** на `net9.0` и `net10.0`; полный functional — 10597 прошло, 53 пропущено,
+Итог: functional green gate **10627/0/10680** (53 пропущено), unit **151/151**, model
+**325/325** на `net9.0` и `net10.0`; полный functional — 10627 прошло, 53 пропущено,
 1 красный: `H2ComplianceTest` по замыслу. Последний тест конвертеров, `("Values")`,
 открылся после исправления `IsDirectQuery` в движке: quoted keyword больше не читается
 как ключевое слово. Остальные `BlockedByPort` сняты.

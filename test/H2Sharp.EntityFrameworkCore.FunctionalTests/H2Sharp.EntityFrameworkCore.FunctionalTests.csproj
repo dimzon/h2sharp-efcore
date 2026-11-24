@@ -98,7 +98,6 @@
     <Compile Remove="Query\NodaTimeQueryH2Test.cs" />
     <Compile Remove="Query\NonSharedPrimitiveCollectionsQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindAggregateOperatorsQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindCompiledQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindDbFunctionsQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindEFPropertyIncludeQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindFunctionsQueryH2Test.cs" />
