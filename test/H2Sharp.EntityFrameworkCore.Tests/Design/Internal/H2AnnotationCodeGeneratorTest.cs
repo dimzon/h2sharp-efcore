@@ -279,6 +279,27 @@ public class H2AnnotationCodeGeneratorTest
 
     #endregion Enum
 
+    [Fact]
+    public void A_scaffolded_check_constraint_becomes_a_Fluent_API_call()
+    {
+        var generator = CreateGenerator();
+        var modelBuilder = new ModelBuilder(H2ConventionSetBuilder.Build());
+        modelBuilder.Entity(
+            "Post",
+            x => x.Metadata[H2AnnotationNames.CheckConstraintPrefix + "CK_Amount"] = "\"Amount\" > 0");
+
+        var entity = (IEntityType)modelBuilder.Model.FindEntityType("Post");
+        var annotations = entity.GetAnnotations().ToDictionary(a => a.Name, a => a);
+
+        var call = generator.GenerateFluentApiCalls(entity, annotations)
+            .Single(c => c.Method == nameof(RelationalEntityTypeBuilderExtensions.HasCheckConstraint));
+
+        Assert.Collection(
+            call.Arguments,
+            name => Assert.Equal("CK_Amount", name),
+            sql => Assert.Equal("\"Amount\" > 0", sql));
+    }
+
     private H2AnnotationCodeGenerator CreateGenerator()
         => new(
             new AnnotationCodeGeneratorDependencies(

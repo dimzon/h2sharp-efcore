@@ -218,6 +218,36 @@ internal sealed class H2CatalogReader : IH2CatalogReader
         return indexes;
     }
 
+    public IReadOnlyList<H2CheckConstraintRow> GetCheckConstraints(DbConnection connection, string schema)
+    {
+        using var command = connection.CreateCommand();
+
+        command.CommandText = """
+            SELECT tc.TABLE_NAME, tc.CONSTRAINT_NAME, cc.CHECK_CLAUSE
+            FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+            JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc
+                 ON cc.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
+                AND cc.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
+            WHERE tc.TABLE_SCHEMA = $p_schema AND tc.CONSTRAINT_TYPE = 'CHECK'
+            ORDER BY tc.TABLE_NAME, tc.CONSTRAINT_NAME
+            """;
+
+        command.Parameters.Add(Parameter(command, "p_schema", schema));
+
+        var checks = new List<H2CheckConstraintRow>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            checks.Add(
+                new H2CheckConstraintRow(
+                    reader.GetString(0),
+                    reader.GetString(1),
+                    reader.GetString(2)));
+        }
+
+        return checks;
+    }
+
     public IReadOnlyList<H2SequenceRow> GetSequences(DbConnection connection, string schema)
     {
         using var command = connection.CreateCommand();

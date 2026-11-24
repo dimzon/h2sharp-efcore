@@ -33,6 +33,8 @@ public interface IH2CatalogReader
 
     IReadOnlyList<H2IndexRow> GetIndexes(DbConnection connection, string schema);
 
+    IReadOnlyList<H2CheckConstraintRow> GetCheckConstraints(DbConnection connection, string schema);
+
     IReadOnlyList<H2SequenceRow> GetSequences(DbConnection connection, string schema);
 
     IReadOnlyList<H2EnumValueRow> GetEnums(DbConnection connection, string schema);
@@ -89,6 +91,8 @@ public sealed record H2IndexRow(
     string? OrderingSpecification,
     string? NullOrdering,
     bool? IsUnique);
+
+public sealed record H2CheckConstraintRow(string TableName, string Name, string Clause);
 
 public sealed record H2SequenceRow(
     string Name,

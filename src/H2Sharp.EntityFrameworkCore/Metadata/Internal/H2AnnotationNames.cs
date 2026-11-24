@@ -139,6 +139,12 @@ public static class H2AnnotationNames
     /// </summary>
     public const string EnumPrefix = Prefix + "Enum:";
 
+    /// <summary>
+    ///     A scaffolded CHECK constraint, stored as one table annotation per constraint: the name is
+    ///     the suffix, the value is the SQL of the constraint.
+    /// </summary>
+    public const string CheckConstraintPrefix = Prefix + "CheckConstraint:";
+
     // Database model annotations
 
     /// <summary>

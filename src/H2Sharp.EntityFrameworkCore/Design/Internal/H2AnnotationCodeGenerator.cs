@@ -14,6 +14,11 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
 {
     #region MethodInfos
 
+    private static readonly MethodInfo EntityTypeHasCheckConstraintMethodInfo
+        = typeof(RelationalEntityTypeBuilderExtensions).GetRequiredRuntimeMethod(
+            nameof(RelationalEntityTypeBuilderExtensions.HasCheckConstraint),
+            typeof(EntityTypeBuilder), typeof(string), typeof(string));
+
     private static readonly MethodInfo ModelHasH2EnumMethodInfo1
         = typeof(H2ModelBuilderExtensions).GetRequiredRuntimeMethod(
             nameof(H2ModelBuilderExtensions.HasH2Enum), typeof(ModelBuilder), typeof(string), typeof(string[]));
@@ -221,6 +226,14 @@ public class H2AnnotationCodeGenerator : AnnotationCodeGenerator
     {
         Check.NotNull(entityType, nameof(entityType));
         Check.NotNull(annotation, nameof(annotation));
+
+        if (annotation.Name.StartsWith(H2AnnotationNames.CheckConstraintPrefix, StringComparison.Ordinal))
+        {
+            return new MethodCallCodeFragment(
+                EntityTypeHasCheckConstraintMethodInfo,
+                annotation.Name[H2AnnotationNames.CheckConstraintPrefix.Length..],
+                annotation.Value);
+        }
 
         return null;
     }

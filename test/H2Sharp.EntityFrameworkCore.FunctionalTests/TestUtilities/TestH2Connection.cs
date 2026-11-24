@@ -4,8 +4,8 @@ using H2Sharp.EntityFrameworkCore.Storage.Internal;
 
 namespace H2Sharp.EntityFrameworkCore.TestUtilities;
 
-public class TestH2Connection(RelationalConnectionDependencies dependencies, DbDataSource dataSource = null)
-    : H2RelationalConnection(dependencies, dataSource)
+public class TestH2Connection(RelationalConnectionDependencies dependencies)
+    : H2RelationalConnection(dependencies)
 {
     public string ErrorCode { get; set; } = "XX000";
     public Queue<bool?> OpenFailures { get; } = new();
@@ -45,7 +45,14 @@ public class TestH2Connection(RelationalConnectionDependencies dependencies, DbD
 
         if (fail.HasValue)
         {
-            throw new H2SharpException("Simulated failure", ErrorCode, "Simulated failure", "ERROR");
+            throw new H2SharpException(
+                "Simulated failure",
+                "XX000",
+                0,
+                SqlExceptionKind.Unspecified,
+                null,
+                null,
+                null);
         }
     }
 }

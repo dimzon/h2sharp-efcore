@@ -15,6 +15,20 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
 {
     private IModel? _model;
 
+    // H2 2.5 has no LOCK TABLE ... IN ACCESS EXCLUSIVE MODE. A one-row table with a MERGE on
+    // its primary key gives the same serialization: MERGE takes a write lock on that row, and
+    // the lock lives until EF commits the migration transaction (LockReleaseBehavior.Transaction).
+    private const string MigrationLockTable = "__H2SharpMigrationLock";
+
+    private string MigrationLockIdentifier
+        => Dependencies.SqlGenerationHelper.DelimitIdentifier(MigrationLockTable, TableSchema);
+
+    private string CreateMigrationLockSql
+        => $"CREATE TABLE IF NOT EXISTS {MigrationLockIdentifier} (\"Id\" INTEGER PRIMARY KEY)";
+
+    private string AcquireMigrationLockSql
+        => $"MERGE INTO {MigrationLockIdentifier} (\"Id\") KEY (\"Id\") VALUES (1)";
+
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -45,7 +59,7 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
         Dependencies.MigrationsLogger.AcquiringMigrationLock();
 
         Dependencies.RawSqlCommandBuilder
-            .Build($"LOCK TABLE {Dependencies.SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} IN ACCESS EXCLUSIVE MODE")
+            .Build(AcquireMigrationLockSql)
             .ExecuteNonQuery(CreateRelationalCommandParameters());
 
         return new H2MigrationDatabaseLock(this);
@@ -60,7 +74,7 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
     public override async Task<IMigrationsDatabaseLock> AcquireDatabaseLockAsync(CancellationToken cancellationToken = default)
     {
         await Dependencies.RawSqlCommandBuilder
-            .Build($"LOCK TABLE {Dependencies.SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} IN ACCESS EXCLUSIVE MODE")
+            .Build(AcquireMigrationLockSql)
             .ExecuteNonQueryAsync(CreateRelationalCommandParameters(), cancellationToken)
             .ConfigureAwait(false);
 
@@ -145,9 +159,16 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
         // We catch this and report that the table wasn't created.
         try
         {
-            return Dependencies.MigrationCommandExecutor.ExecuteNonQuery(
+            var created = Dependencies.MigrationCommandExecutor.ExecuteNonQuery(
                     GetCreateIfNotExistsCommands(), Dependencies.Connection, new MigrationExecutionState(), commitTransaction: true)
                 != 0;
+
+            // The migration lock needs its one-row table even when the history table already exists.
+            Dependencies.RawSqlCommandBuilder
+                .Build(CreateMigrationLockSql)
+                .ExecuteNonQuery(CreateRelationalCommandParameters());
+
+            return created;
         }
         catch (H2SharpException e) when (e.H2ErrorCode is H2ErrorCode.DuplicateKey1
                                               or H2ErrorCode.TableOrViewAlreadyExists1
@@ -164,10 +185,17 @@ public class H2HistoryRepository : HistoryRepository, IHistoryRepository
         // We catch this and report that the table wasn't created.
         try
         {
-            return (await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(
+            var created = (await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(
                     GetCreateIfNotExistsCommands(), Dependencies.Connection, new MigrationExecutionState(), commitTransaction: true,
                     cancellationToken: cancellationToken).ConfigureAwait(false))
                 != 0;
+
+            await Dependencies.RawSqlCommandBuilder
+                .Build(CreateMigrationLockSql)
+                .ExecuteNonQueryAsync(CreateRelationalCommandParameters(), cancellationToken)
+                .ConfigureAwait(false);
+
+            return created;
         }
         catch (H2SharpException e) when (e.H2ErrorCode is H2ErrorCode.DuplicateKey1
                                               or H2ErrorCode.TableOrViewAlreadyExists1

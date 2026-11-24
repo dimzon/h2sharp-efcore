@@ -118,6 +118,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
             PopulateTables(dbConnection, databaseModel, schemas, tables);
             PopulateKeys(dbConnection, databaseModel, schemas);
             PopulateIndexes(dbConnection, databaseModel, schemas);
+            PopulateCheckConstraints(dbConnection, databaseModel, schemas);
             PopulateSequences(dbConnection, databaseModel, schemas);
             PopulateEnums(dbConnection, databaseModel, schemas);
             PopulateForeignKeys(dbConnection, databaseModel);
@@ -524,6 +525,24 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 if (table.Indexes[i].Columns.Count == 0)
                 {
                     table.Indexes.RemoveAt(i);
+                }
+            }
+        }
+    }
+
+    private void PopulateCheckConstraints(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
+    {
+        // EF Core 9's DatabaseModel has no check-constraint collection. The H2 annotation is copied
+        // from the table to the entity type by RelationalScaffoldingModelFactory, and H2's code
+        // generator turns each annotation into a HasCheckConstraint(...) call in the scaffold.
+        foreach (var schema in schemas)
+        {
+            foreach (var check in _catalog.GetCheckConstraints(connection, schema))
+            {
+                var table = Find(databaseModel, schema, check.TableName);
+                if (table is not null)
+                {
+                    table[H2AnnotationNames.CheckConstraintPrefix + check.Name] = check.Clause;
                 }
             }
         }

@@ -17,11 +17,6 @@
     <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
     <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
     <!--
-      Fabricates connection failures, which needs a public constructor on the engine's
-      H2SharpException; the port's is internal (a port defect, see docs/DIVERGENCES.md).
-    -->
-    <Compile Remove="TestUtilities\TestH2Connection.cs" />
-    <!--
       Needs the TestRelationalCommandBuilderFactory/TestRelationalTransactionFactory fakes, which
       the EF Core 9 template-based IRelationalCommand makes into a rewrite rather than a port;
       see docs/DIVERGENCES.md.

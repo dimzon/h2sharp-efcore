@@ -1944,6 +1944,27 @@ ALTER TABLE foo DROP COLUMN old;
             "DROP TABLE foo");
 
     [Fact]
+    public void Check_constraints_are_scaffolded_as_table_annotations()
+        => Test(
+            """
+CREATE TABLE "CheckedItems" (
+    "Id" INTEGER PRIMARY KEY,
+    "Amount" NUMERIC(10, 2),
+    CONSTRAINT "CK_Amount_Positive" CHECK ("Amount" > 0)
+);
+""",
+            [],
+            [],
+            dbModel =>
+            {
+                var table = Assert.Single(dbModel.Tables);
+                var key = H2AnnotationNames.CheckConstraintPrefix + "CK_Amount_Positive";
+                var annotation = Assert.Single(table.GetAnnotations(), a => a.Name == key);
+                Assert.Contains("Amount", (string)annotation.Value, StringComparison.OrdinalIgnoreCase);
+            },
+            "DROP TABLE \"CheckedItems\"");
+
+    [Fact]
     public void Enums()
         => Test(
             """
