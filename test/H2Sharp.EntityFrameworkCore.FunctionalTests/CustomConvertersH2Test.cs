@@ -1,3 +1,4 @@
+using System.Globalization;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore;
@@ -62,6 +63,34 @@ public class CustomConvertersH2Test(CustomConvertersH2Test.CustomConvertersH2Fix
         protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
         {
             base.OnModelCreating(modelBuilder, context);
+
+            // The shared model converts DateOnly through ToShortDateString/Parse, which is
+            // culture-dependent; H2's DATE literal understands only the ISO form. Keep the
+            // same value converter shape but write and parse the invariant date.
+            modelBuilder.Entity<BuiltInDataTypes>().Property(e => e.TestDateOnly)
+                .HasConversion(
+                    v => v.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    v => DateOnly.ParseExact(v, "yyyy-MM-dd", CultureInfo.InvariantCulture));
+            modelBuilder.Entity<BuiltInDataTypesShadow>().Property(nameof(BuiltInDataTypes.TestDateOnly))
+                .HasConversion(new ValueConverter<DateOnly, string>(
+                    v => v.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    v => DateOnly.ParseExact(v, "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+            modelBuilder.Entity<BuiltInNullableDataTypes>().Property(e => e.TestNullableDateOnly)
+                .HasConversion(
+                    v => v.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    v => DateOnly.ParseExact(v, "yyyy-MM-dd", CultureInfo.InvariantCulture));
+            modelBuilder.Entity<BuiltInDataTypes>().Property(e => e.TestTimeOnly)
+                .HasConversion(
+                    v => v.ToString("HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture),
+                    v => TimeOnly.Parse(v, CultureInfo.InvariantCulture));
+            modelBuilder.Entity<BuiltInDataTypesShadow>().Property(nameof(BuiltInDataTypes.TestTimeOnly))
+                .HasConversion(new ValueConverter<TimeOnly, string>(
+                    v => v.ToString("HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture),
+                    v => TimeOnly.Parse(v, CultureInfo.InvariantCulture)));
+            modelBuilder.Entity<BuiltInNullableDataTypes>().Property(e => e.TestNullableTimeOnly)
+                .HasConversion(
+                    v => v.Value.ToString("HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture),
+                    v => TimeOnly.Parse(v, CultureInfo.InvariantCulture));
 
             // We default to mapping DateTime to 'timestamp with time zone', but the seeding data has Unspecified DateTimes which aren't
             // supported.

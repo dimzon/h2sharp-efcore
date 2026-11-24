@@ -38,12 +38,6 @@
     -->
     <Compile Remove="SequenceEndToEndTest.cs" />
     <Compile Remove="H2ValueGenerationScenariosTest.cs" />
-    <!--
-      CustomConverters also seeds a date written in a culture-specific format ("01.03.2020"),
-      which H2's DATE literal does not parse; ValueConvertersEndToEnd is enabled above and
-      exercises the same provider-side date/time string mappings.
-    -->
-    <Compile Remove="CustomConvertersH2Test.cs" />
   </ItemGroup>
 
   <ItemGroup>
