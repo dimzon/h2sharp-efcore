@@ -57,17 +57,18 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 6709 | 0 | 6734 (25 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 8377 | 0 | 8404 (27 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 132 | 0 | 132 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **7166** | **0** | **7191** |
+   | **Итого** | **8834** | **0** | **8861** |
 
-   Зелёный гейт: 7166 тестов на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 8834 теста на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
    снятых трейтов, затем 150 из `ValueConvertersEndToEndH2Test`, 56 из
-   `CustomConvertersH2Test` и 3 unit-теста границ дат.
+   `CustomConvertersH2Test`, 3 unit-теста границ дат и 1668 из возвращённых
+   спецификационных наборов.
 
 Набор `H2Sharp.EntityFrameworkCore.ModelTests` — модель форума: таблицы, наполнение базы
 одними и теми же строками, запросы по этим строкам, правка и удаление, типы, функции H2,
@@ -83,7 +84,7 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 6709 | 0 | 6734 (25 пропущено) |
+   | `Category!=BlockedByPort` | 8377 | 0 | 8404 (27 пропущено) |
    | `Category=BlockedByPort` | 0 | 1 | 1 |
 
    Прогон с трейтом держит только `H2ComplianceTest.All_test_bases_must_be_implemented`
@@ -123,10 +124,18 @@ EF их не отдаёт генератору, как в апстриме).
    * Enum-колонка при scaffolding больше не пропадает молча: `H2DatabaseModelFactory` пишет
      `EnumColumnSkippedWarning` с именем `PUBLIC.table.column`, как это делает Npgsql.
      EF Core не умеет scaffold-ить тип базы как CLR-enum, поэтому свойство заводится вручную.
+   * Возвращены в компиляцию и зелёные 1668 тестов: `FieldsOnlyLoadH2Test`,
+     `IncludeOneToOneH2Test`, `NullKeysH2Test`, `CharacterQueryH2Test`,
+     `ManyToManyLoadH2Test`, `ManyToManyTrackingH2Test`, `ManyToManyFieldsLoadH2Test`,
+     `OwnedEntityQueryH2Test`, `OwnedQueryH2Test` и `SharedTypeQueryH2Test`. В
+     `OwnedQueryH2Test` две теории пропущены: H2 2.5 отвергает qualified `ORDER BY`
+     столбец, когда в `WHERE` есть коррелированный `DISTINCT`-подзапрос; проверено на
+     эталонном jar, поэтому это правило H2, а не дефект порта.
 
    История: на движке `17c9f68` было 434 и 4888; коммит `f56ca4c` дал 350 переходов
    красное→зелёное и ни одного обратного. Правки провайдера добавили 288, перенос трейта
-   на методы — 826, обход `Prepared.update` — 3799, эти прогоны — ещё 446.
+   на методы — 826, обход `Prepared.update` — 3799, эти прогоны — ещё 446,
+   возвращённые наборы — 1668.
 
 Один тест красный по замыслу и помечен трейтом, а не спрятан.
 
@@ -1123,8 +1132,8 @@ its expression no longer fails before SQL. Green gate is unaffected (6271/129/31
   `H2GeometryTypeMapping` больше не собирают SQL вручную: `Dialect.AppendTimestampWithTimeZone`
   и `Dialect.AppendGeometry`. Встроенные (embedded) строки JSON не трогались: это не SQL-литерал.
 
-Итог: functional green gate **6709/0/6734** (25 пропущено), unit **132/132**, model
-**325/325** на `net9.0` и `net10.0`; полный functional — 6709 прошло, 25 пропущено,
+Итог: functional green gate **8377/0/8404** (27 пропущено), unit **132/132**, model
+**325/325** на `net9.0` и `net10.0`; полный functional — 8377 прошло, 27 пропущено,
 1 красный: `H2ComplianceTest` по замыслу. Последний тест конвертеров, `("Values")`,
 открылся после исправления `IsDirectQuery` в движке: quoted keyword больше не читается
 как ключевое слово. Остальные `BlockedByPort` сняты.

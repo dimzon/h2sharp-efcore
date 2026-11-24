@@ -73,9 +73,6 @@
     <Compile Remove="DataAnnotationH2Test.cs" />
     <Compile Remove="EntitySplittingH2Test.cs" />
     <Compile Remove="JsonTypesH2Test.cs" />
-    <Compile Remove="ManyToManyFieldsLoadH2Test.cs" />
-    <Compile Remove="ManyToManyLoadH2Test.cs" />
-    <Compile Remove="ManyToManyTrackingH2Test.cs" />
     <Compile Remove="MaterializationInterceptionH2Test.cs" />
     <Compile Remove="Migrations\MigrationsInfrastructureH2Test.cs" />
     <Compile Remove="MonsterFixupChangedChangingH2Test.cs" />
@@ -93,7 +90,6 @@
     <Compile Remove="Query\AdHocQueryFiltersQueryH2Test.cs" />
     <Compile Remove="Query\AdHocQuerySplittingQueryH2Test.cs" />
     <Compile Remove="Query\BigIntegerQueryTest.cs" />
-    <Compile Remove="Query\CharacterQueryH2Test.cs" />
     <Compile Remove="Query\CitextQueryTest.cs" />
     <Compile Remove="Query\ComplexNavigationsCollectionsQueryH2Test.cs" />
     <Compile Remove="Query\ComplexNavigationsCollectionsSharedTypeQueryH2Test.cs" />
@@ -110,12 +106,9 @@
     <Compile Remove="Query\Ef6GroupByH2Test.cs" />
     <Compile Remove="Query\EntitySplittingQueryH2Test.cs" />
     <Compile Remove="Query\EnumQueryTest.cs" />
-    <Compile Remove="Query\FieldsOnlyLoadH2Test.cs" />
     <Compile Remove="Query\FiltersInheritanceQueryH2Test.cs" />
     <Compile Remove="Query\FullTextSearchDbFunctionsH2Test.cs" />
     <Compile Remove="Query\FunkyDataQueryH2Test.cs" />
-    <Compile Remove="Query\IncludeOneToOneH2Test.cs" />
-    <Compile Remove="Query\NullKeysH2Test.cs" />
     <Compile Remove="Query\FuzzyStringMatchQueryH2Test.cs" />
     <Compile Remove="Query\GearsOfWarFromSqlQueryH2Test.cs" />
     <Compile Remove="Query\GearsOfWarQueryH2Fixture.cs" />
@@ -161,8 +154,6 @@
     <Compile Remove="Query\NullSemanticsQueryH2Test.cs" />
     <Compile Remove="Query\OperatorsQueryH2Test.cs" />
     <Compile Remove="Query\OptionalDependentQueryH2Test.cs" />
-    <Compile Remove="Query\OwnedEntityQueryH2Test.cs" />
-    <Compile Remove="Query\OwnedQueryH2Test.cs" />
     <Compile Remove="Query\PrecompiledQueryH2Test.cs" />
     <Compile Remove="Query\PrecompiledSqlPregenerationQueryH2Test.cs" />
     <Compile Remove="Query\PrimitiveCollectionsQueryH2Test.cs" />
@@ -170,7 +161,6 @@
     <Compile Remove="Query\QueryFilterFuncletizationH2Test.cs" />
     <Compile Remove="Query\QueryNoClientEvalH2Fixture.cs" />
     <Compile Remove="Query\QueryNoClientEvalH2Test.cs" />
-    <Compile Remove="Query\SharedTypeQueryH2Test.cs" />
     <Compile Remove="Query\SpatialQueryH2Fixture.cs" />
     <Compile Remove="Query\SpatialQueryH2GeographyTest.cs" />
     <Compile Remove="Query\SpatialQueryH2GeometryTest.cs" />
