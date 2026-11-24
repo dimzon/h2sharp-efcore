@@ -118,8 +118,6 @@
     <Compile Remove="Query\PrecompiledQueryH2Test.cs" />
     <Compile Remove="Query\PrecompiledSqlPregenerationQueryH2Test.cs" />
     <Compile Remove="Query\PrimitiveCollectionsQueryH2Test.cs" />
-    <Compile Remove="Query\QueryBugTest.cs" />
-    <Compile Remove="Query\QueryFilterFuncletizationH2Test.cs" />
     <Compile Remove="Query\QueryNoClientEvalH2Fixture.cs" />
     <Compile Remove="Query\QueryNoClientEvalH2Test.cs" />
     <Compile Remove="Query\SpatialQueryH2Fixture.cs" />
