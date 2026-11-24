@@ -58,11 +58,11 @@ EF их не отдаёт генератору, как в апстриме).
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 9438 | 0 | 9479 (41 пропущено) |
-   | `H2Sharp.EntityFrameworkCore.Tests` | 132 | 0 | 132 |
+   | `H2Sharp.EntityFrameworkCore.Tests` | 135 | 0 | 135 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **9895** | **0** | **9936** |
+   | **Итого** | **9898** | **0** | **9939** |
 
-   Зелёный гейт: 9895 тестов на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 9898 тестов на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
@@ -121,6 +121,10 @@ EF их не отдаёт генератору, как в апстриме).
      `ToShortDateString` и `TimeOnly` в тики, а H2 понимает только ISO-формы. Фикстура
      переопределяет эти конвертеры на `yyyy-MM-dd` и `HH:mm:ss.FFFFFFF`; 56 тестов зелёные,
      4 пропущены по DateTimeOffset.
+   * Каталог вынесен в `IH2CatalogReader`: 12 параметризованных запросов к `INFORMATION_SCHEMA` и
+     типизированные строки живут в одном месте, скаффолдер и `H2DatabaseCreator` читают их,
+     а не повторяют SQL. Три unit-теста `H2CatalogReaderTests` держат форму строк
+     (колонки, identity, ключи, индексы, sequence, enum, FK), проверенную на эталонном jar.
    * Enum-колонка при scaffolding больше не пропадает молча: `H2DatabaseModelFactory` пишет
      `EnumColumnSkippedWarning` с именем `PUBLIC.table.column`, как это делает Npgsql.
      EF Core не умеет scaffold-ить тип базы как CLR-enum, поэтому свойство заводится вручную.
@@ -1144,7 +1148,7 @@ its expression no longer fails before SQL. Green gate is unaffected (6271/129/31
   `H2GeometryTypeMapping` больше не собирают SQL вручную: `Dialect.AppendTimestampWithTimeZone`
   и `Dialect.AppendGeometry`. Встроенные (embedded) строки JSON не трогались: это не SQL-литерал.
 
-Итог: functional green gate **9438/0/9479** (41 пропущено), unit **132/132**, model
+Итог: functional green gate **9438/0/9479** (41 пропущено), unit **135/135**, model
 **325/325** на `net9.0` и `net10.0`; полный functional — 9438 прошло, 41 пропущено,
 1 красный: `H2ComplianceTest` по замыслу. Последний тест конвертеров, `("Values")`,
 открылся после исправления `IsDirectQuery` в движке: quoted keyword больше не читается

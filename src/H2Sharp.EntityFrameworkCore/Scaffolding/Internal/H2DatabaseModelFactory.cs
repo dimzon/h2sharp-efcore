@@ -21,9 +21,9 @@ namespace H2Sharp.EntityFrameworkCore.Scaffolding.Internal;
 ///     <para>
 ///         Upstream this class reverse-engineered a PostgreSQL database by querying pg_catalog: pg_class,
 ///         pg_attribute, pg_constraint, pg_index, pg_sequence, plus a catalogue_version switch on almost
-///         every query. None of that exists in H2. Everything here reads INFORMATION_SCHEMA, which is the
-///         standard catalogue the reference engine exposes. The column lists below were taken from the
-///         reference engine rather than assumed; see <c>docs/DIALECT.md</c> for the probes.
+///         every query. None of that exists in H2. The shared <see cref="IH2CatalogReader" /> reads
+///         INFORMATION_SCHEMA, the standard catalogue the reference engine exposes, and this class
+///         interprets its typed rows; see <c>docs/DIALECT.md</c> for the catalogue probes.
 ///     </para>
 ///     <para>
 ///         Three properties of H2's catalogue shape are load-bearing and worth stating: index columns
@@ -37,15 +37,22 @@ namespace H2Sharp.EntityFrameworkCore.Scaffolding.Internal;
 public class H2DatabaseModelFactory : DatabaseModelFactory
 {
     private readonly IDiagnosticsLogger<DbLoggerCategory.Scaffolding> _logger;
+    private readonly IH2CatalogReader _catalog;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+    ///     doing so can result in application failures when updating to a new EntityFramework Core release.
     /// </summary>
-    public H2DatabaseModelFactory(IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger)
-        => _logger = Check.NotNull(logger, nameof(logger));
+    public H2DatabaseModelFactory(
+        IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger,
+        IH2CatalogReader? catalog = null)
+    {
+        _logger = Check.NotNull(logger, nameof(logger));
+        // Direct construction in tests does not go through EF's design-time container.
+        _catalog = catalog ?? new H2CatalogReader();
+    }
 
     /// <inheritdoc />
     public override DatabaseModel Create(string connectionString, DatabaseModelFactoryOptions options)
@@ -78,11 +85,11 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
             // The catalogue is the only way to see what a database contains. If it is missing, say so:
             // an empty model here would be indistinguishable from an empty database, and every migration
             // generated from it would try to recreate tables that already exist.
-            if (!CatalogueIsAvailable(dbConnection))
+            if (!_catalog.IsAvailable(dbConnection))
             {
                 throw new InvalidOperationException(
                     "Scaffolding reads INFORMATION_SCHEMA, and this H2 database does not expose it. The " +
-                    "reference engine (H2 2.5) provides it; the port does not implement it yet.");
+                    "reference engine (H2 2.5) provides it.");
             }
 
             var databaseModel = new DatabaseModel
@@ -91,7 +98,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 DefaultSchema = "PUBLIC"
             };
 
-            var catalog = GetSchemas(dbConnection);
+            var catalog = _catalog.GetSchemas(dbConnection);
             var schemas = options.Schemas.Any()
                 ? ResolveSchemas(catalog, options.Schemas)
                 : catalog;
@@ -113,7 +120,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
             PopulateIndexes(dbConnection, databaseModel, schemas);
             PopulateSequences(dbConnection, databaseModel, schemas);
             PopulateEnums(dbConnection, databaseModel, schemas);
-            PopulateForeignKeys(dbConnection, databaseModel, _logger);
+            PopulateForeignKeys(dbConnection, databaseModel);
 
             if (options.Tables.Any())
             {
@@ -160,48 +167,6 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         return resolved;
     }
 
-    private static List<string> GetSchemas(DbConnection connection)
-    {
-        var schemas = new List<string>();
-
-        using (var command = connection.CreateCommand())
-        {
-            command.CommandText =
-                "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME <> 'INFORMATION_SCHEMA'";
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                schemas.Add(reader.GetString(0));
-            }
-        }
-
-        // H2's reference catalogue always contains PUBLIC; keep scaffolds usable even when
-        // a custom catalogue doesn't expose the SCHEMATA view.
-        if (!schemas.Contains("PUBLIC"))
-        {
-            schemas.Add("PUBLIC");
-        }
-
-        return schemas;
-    }
-
-    private static bool CatalogueIsAvailable(DbConnection connection)
-    {
-        using var command = connection.CreateCommand();
-        command.CommandText = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'INFORMATION_SCHEMA'";
-
-        try
-        {
-            using var reader = command.ExecuteReader();
-            return reader.Read();
-        }
-        catch (DbException)
-        {
-            return false;
-        }
-    }
-
     private void PopulateTables(
         DbConnection connection,
         DatabaseModel databaseModel,
@@ -211,76 +176,22 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         foreach (var schema in schemas)
         {
             var tableTypes = new Dictionary<string, string>(StringComparer.Ordinal);
-            using (var types = connection.CreateCommand())
-            {
-                types.CommandText =
-                    "SELECT TABLE_NAME, TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = $p_schema";
-                types.Parameters.Add(Parameter(types, "p_schema", schema));
-
-                using var typeReader = types.ExecuteReader();
-                while (typeReader.Read())
-                {
-                    tableTypes[typeReader.GetString(0)] = typeReader.IsDBNull(1) ? "" : typeReader.GetString(1);
-                }
-            }
-
             var tableComments = new Dictionary<string, string>(StringComparer.Ordinal);
-            using (var comments = connection.CreateCommand())
-            {
-                comments.CommandText =
-                    "SELECT TABLE_NAME, REMARKS FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = $p_schema";
-                comments.Parameters.Add(Parameter(comments, "p_schema", schema));
 
-                using var remarks = comments.ExecuteReader();
-                while (remarks.Read())
+            foreach (var table in _catalog.GetTables(connection, schema))
+            {
+                tableTypes[table.Name] = table.Type ?? "";
+                if (table.Comment is not null)
                 {
-                    if (!remarks.IsDBNull(1))
-                    {
-                        tableComments[remarks.GetString(0)] = remarks.GetString(1);
-                    }
+                    tableComments[table.Name] = table.Comment;
                 }
             }
-
-            using var command = connection.CreateCommand();
-
-            command.CommandText = """
-                SELECT TABLE_NAME,
-                       ORDINAL_POSITION,
-                       COLUMN_NAME,
-                       DATA_TYPE,
-                       IS_NULLABLE,
-                       IS_IDENTITY,
-                       IDENTITY_GENERATION,
-                       IS_GENERATED,
-                       GENERATION_EXPRESSION,
-                       COLUMN_DEFAULT,
-                       DECLARED_DATA_TYPE,
-                       REMARKS,
-                       CHARACTER_MAXIMUM_LENGTH,
-                       NUMERIC_PRECISION,
-                       NUMERIC_SCALE,
-                       DATETIME_PRECISION,
-                       DECLARED_NUMERIC_PRECISION,
-                       DECLARED_NUMERIC_SCALE,
-                       IDENTITY_START,
-                       IDENTITY_INCREMENT,
-                       IDENTITY_MINIMUM,
-                       IDENTITY_MAXIMUM,
-                       IDENTITY_CYCLE,
-                       IDENTITY_CACHE
-                FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_SCHEMA = $p_schema
-                ORDER BY TABLE_NAME, ORDINAL_POSITION
-                """;
-
-            command.Parameters.Add(Parameter(command, "p_schema", schema));
 
             var current = default(DatabaseTable);
 
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
+            foreach (var column in _catalog.GetColumns(connection, schema))
             {
-                var tableName = reader.GetString(0);
+                var tableName = column.TableName;
 
                 if (current is null || !string.Equals(current.Name, tableName, StringComparison.Ordinal))
                 {
@@ -331,44 +242,39 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 // DOMAIN_SCHEMA/DOMAIN_NAME. EF Core has no scaffolding model for a database enum
                 // type, so the column is left out and the warning says the property must be mapped
                 // by hand; dropping it silently would lose a column without a trace.
-                if (!reader.IsDBNull(3) && reader.GetString(3) == "ENUM")
+                if (column.DataType == "ENUM")
                 {
                     _logger.EnumColumnSkippedWarning(
-                        $"{current.Schema ?? databaseModel.DefaultSchema}.{current.Name}.{reader.GetString(2)}");
+                        $"{current.Schema ?? databaseModel.DefaultSchema}.{current.Name}.{column.ColumnName}");
                     continue;
                 }
 
-                var column = ReadColumn(reader);
-                column.Table = current;
-                current.Columns.Add(column);
+                var scaffolded = ReadColumn(column);
+                scaffolded.Table = current;
+                current.Columns.Add(scaffolded);
             }
         }
     }
 
-    private static DatabaseColumn ReadColumn(DbDataReader reader)
+    private static DatabaseColumn ReadColumn(H2ColumnRow row)
     {
         // DECLARED_DATA_TYPE is the type as written in the DDL ("VARCHAR(50)", "NUMERIC(10, 2)"); DATA_TYPE
         // is only the base name. EF Core's scaffolding model keeps the whole thing in StoreType and has no
         // separate precision or length, so the declared form is what has to be carried.
-        // The numbers are the numbers of the columns of the query above: TABLE_NAME,
-        // ORDINAL_POSITION, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, IS_IDENTITY,
-        // IDENTITY_GENERATION, IS_GENERATED, GENERATION_EXPRESSION, COLUMN_DEFAULT,
-        // DECLARED_DATA_TYPE, REMARKS, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION,
-        // NUMERIC_SCALE, DATETIME_PRECISION.
         var column = new DatabaseColumn
         {
-            Name = reader.GetString(2),
-            StoreType = StoreType(reader),
-            IsNullable = reader.GetString(4) == "YES",
-            DefaultValueSql = Text(reader, 9),
-            Comment = Text(reader, 11)
+            Name = row.ColumnName,
+            StoreType = StoreType(row),
+            IsNullable = row.IsNullable == "YES",
+            DefaultValueSql = row.ColumnDefault,
+            Comment = row.Remarks
         };
 
         // The columns of the catalogue that say how a column is made are empty when the column
         // is made in the ordinary way, and the reference leaves them empty too.
-        if (reader.GetString(5) == "YES")
+        if (row.IsIdentity == "YES")
         {
-            var generation = Text(reader, 6);
+            var generation = row.IdentityGeneration;
             column.ValueGenerated = generation == "ALWAYS"
                 ? ValueGenerated.OnAddOrUpdate
                 : ValueGenerated.OnAdd;
@@ -382,18 +288,18 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
 
             // H2 materialises defaults for every identity sequence; EF's model keeps the
             // corresponding options as "not specified". Strip only those materialised values.
-            var start = ToLong(reader.GetValue(18));
-            var min = ToLong(reader.GetValue(20));
-            var max = ToLong(reader.GetValue(21));
-            var cache = ToLong(reader.GetValue(23));
+            var start = row.IdentityStart;
+            var min = row.IdentityMinimum;
+            var max = row.IdentityMaximum;
+            var cache = row.IdentityCache;
 
             var options = new IdentitySequenceOptionsData
             {
                 StartValue = start == 1 ? null : start,
-                IncrementBy = ToLong(reader.GetValue(19)) ?? 1,
+                IncrementBy = row.IdentityIncrement ?? 1,
                 MinValue = min == 1 ? null : min,
                 MaxValue = max is 2147483647 or 9223372036854775807 ? null : max,
-                IsCyclic = reader.GetValue(22)?.ToString() is "YES" or "TRUE",
+                IsCyclic = row.IdentityCycle is "YES" or "TRUE",
                 NumbersToCache = cache is null or 1 or 32 ? 1 : cache.Value
             };
 
@@ -404,10 +310,10 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 column[H2AnnotationNames.IdentityOptions] = options.Serialize();
             }
         }
-        else if (reader.GetString(7) == "ALWAYS")
+        else if (row.IsGenerated == "ALWAYS")
         {
             column.ValueGenerated = ValueGenerated.OnAddOrUpdate;
-            column.ComputedColumnSql = Text(reader, 8);
+            column.ComputedColumnSql = row.GenerationExpression;
 
             // H2 computed columns are stored in 2.5; it has no separate VIRTUAL spelling.
             column.IsStored = true;
@@ -424,18 +330,18 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
             .Replace("character varying", "varchar", StringComparison.Ordinal)
             .Replace("character", "char", StringComparison.Ordinal);
 
-    private static string StoreType(DbDataReader reader)
+    private static string StoreType(H2ColumnRow row)
     {
-        var declared = Text(reader, 10);
+        var declared = row.DeclaredDataType;
         if (declared is not null)
         {
             // NUMERIC carries its facets in DECLARED_NUMERIC_PRECISION/SCALE, not in the
             // declared type name; a bare NUMERIC means the default precision with scale 0.
-            if (!declared.Contains('(') && !reader.IsDBNull(16))
+            if (!declared.Contains('(') && row.DeclaredNumericPrecision is not null)
             {
-                var scale = reader.IsDBNull(17) ? 0 : reader.GetInt32(17);
+                var scale = row.DeclaredNumericScale ?? 0;
                 return Normalize(
-                    $"{declared}({reader.GetInt32(16).ToString(CultureInfo.InvariantCulture)}," +
+                    $"{declared}({row.DeclaredNumericPrecision.Value.ToString(CultureInfo.InvariantCulture)}," +
                     $"{scale.ToString(CultureInfo.InvariantCulture)})");
             }
 
@@ -445,11 +351,11 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         // H2 leaves DECLARED_DATA_TYPE empty for the common types and keeps the length or
         // precision in the separate catalogue columns. EF's DatabaseColumn has a single
         // StoreType string, so the full type has to be assembled here.
-        var type = reader.GetString(3);
+        var type = row.DataType ?? string.Empty;
 
-        if (!reader.IsDBNull(12))
+        if (row.CharacterMaximumLength is not null)
         {
-            var length = reader.GetInt64(12);
+            var length = row.CharacterMaximumLength.Value;
 
             // H2 reports its maximum character length (1_000_000_000) for an unbounded
             // CHARACTER VARYING, not an explicit precision written by the user.
@@ -458,9 +364,9 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 : $"{type}({length.ToString(CultureInfo.InvariantCulture)})");
         }
 
-        if (!reader.IsDBNull(15))
+        if (row.DateTimePrecision is not null)
         {
-            var precision = reader.GetInt32(15).ToString(CultureInfo.InvariantCulture);
+            var precision = row.DateTimePrecision.Value.ToString(CultureInfo.InvariantCulture);
             const string withZone = " WITH TIME ZONE";
 
             return Normalize(type.EndsWith(withZone, StringComparison.Ordinal)
@@ -468,82 +374,53 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 : $"{type}({precision})");
         }
 
-        if (!reader.IsDBNull(13))
+        if (row.NumericPrecision is not null)
         {
-            var scale = reader.IsDBNull(14) ? 0 : reader.GetInt32(14);
-            return Normalize($"{type}({reader.GetInt32(13).ToString(CultureInfo.InvariantCulture)}, {scale.ToString(CultureInfo.InvariantCulture)})");
+            var scale = row.NumericScale ?? 0;
+            return Normalize(
+                $"{type}({row.NumericPrecision.Value.ToString(CultureInfo.InvariantCulture)}, "
+                + $"{scale.ToString(CultureInfo.InvariantCulture)})");
         }
 
         return Normalize(type);
     }
 
-    /// <summary>
-    ///     The text of a column of the catalogue, or nothing when the column is empty.
-    /// </summary>
-    /// <param name="reader">The reader over the catalogue.</param>
-    /// <param name="ordinal">The number of the column.</param>
-    /// <returns>The text, or null.</returns>
-    private static string? Text(DbDataReader reader, int ordinal)
-        => reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);
-
-    private static void PopulateKeys(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
+    private void PopulateKeys(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
     {
         foreach (var schema in schemas)
         {
-            using var command = connection.CreateCommand();
-
-            // H2 keeps index columns in INFORMATION_SCHEMA.INDEX_COLUMNS rather than on INDEXES, which is
-            // why joining only TABLE_CONSTRAINTS to KEY_COLUMN_USAGE would miss a plain CREATE INDEX.
-            command.CommandText = """
-                SELECT tc.TABLE_NAME, tc.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, kcu.COLUMN_NAME
-                FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
-                LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu
-                       ON kcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
-                      AND kcu.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
-                WHERE tc.TABLE_SCHEMA = $p_schema
-                  AND tc.CONSTRAINT_TYPE IN ('PRIMARY KEY', 'UNIQUE')
-                ORDER BY tc.TABLE_NAME, tc.CONSTRAINT_NAME, kcu.ORDINAL_POSITION
-                """;
-
-            command.Parameters.Add(Parameter(command, "p_schema", schema));
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
+            foreach (var key in _catalog.GetKeys(connection, schema))
             {
-                if (reader.IsDBNull(0) || reader.IsDBNull(1) || reader.IsDBNull(2))
+                if (key.TableName is null || key.ConstraintName is null || key.ConstraintType is null)
                 {
                     continue;
                 }
 
-                var tableName = reader.GetString(0);
-                var constraintName = reader.GetString(1);
-                var constraintType = reader.GetString(2);
-
-                var table = Find(databaseModel, schema, tableName);
+                var table = Find(databaseModel, schema, key.TableName);
                 if (table is null)
                 {
                     continue;
                 }
 
-                if (constraintType == "PRIMARY KEY")
+                if (key.ConstraintType == "PRIMARY KEY")
                 {
-                    table.PrimaryKey ??= new DatabasePrimaryKey { Name = constraintName, Table = table };
+                    table.PrimaryKey ??= new DatabasePrimaryKey { Name = key.ConstraintName, Table = table };
 
-                    if (!reader.IsDBNull(3) && Find(table, reader.GetString(3)) is { } keyColumn)
+                    if (key.ColumnName is not null && Find(table, key.ColumnName) is { } keyColumn)
                     {
                         table.PrimaryKey.Columns.Add(keyColumn);
                     }
                 }
                 else
                 {
-                    var existing = table.UniqueConstraints.FirstOrDefault(k => k.Name == constraintName);
+                    var existing = table.UniqueConstraints.FirstOrDefault(k => k.Name == key.ConstraintName);
                     if (existing is null)
                     {
-                        existing = new DatabaseUniqueConstraint { Name = constraintName, Table = table };
+                        existing = new DatabaseUniqueConstraint { Name = key.ConstraintName, Table = table };
                         table.UniqueConstraints.Add(existing);
                     }
 
-                    if (!reader.IsDBNull(3) && Find(table, reader.GetString(3)) is { } column)
+                    if (key.ColumnName is not null && Find(table, key.ColumnName) is { } column)
                     {
                         existing.Columns.Add(column);
                     }
@@ -581,62 +458,42 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
     /// <param name="connection">The connection to the database.</param>
     /// <param name="databaseModel">The model to fill.</param>
     /// <param name="schemas">The schemas to read.</param>
-    private static void PopulateIndexes(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
+    private void PopulateIndexes(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
     {
         foreach (var schema in schemas)
         {
-            using var command = connection.CreateCommand();
-
-            command.CommandText = """
-                SELECT i.INDEX_NAME, i.TABLE_NAME, i.INDEX_TYPE_NAME, c.COLUMN_NAME,
-                       c.ORDERING_SPECIFICATION, c.NULL_ORDERING, c.IS_UNIQUE
-                FROM INFORMATION_SCHEMA.INDEXES i
-                JOIN INFORMATION_SCHEMA.INDEX_COLUMNS c
-                     ON c.INDEX_SCHEMA = i.INDEX_SCHEMA
-                    AND c.INDEX_NAME = i.INDEX_NAME
-                WHERE i.INDEX_SCHEMA = $p_schema
-                  AND i.IS_GENERATED = FALSE
-                ORDER BY i.INDEX_NAME, c.ORDINAL_POSITION
-                """;
-
-            command.Parameters.Add(Parameter(command, "p_schema", schema));
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
+            foreach (var row in _catalog.GetIndexes(connection, schema))
             {
-                if (reader.IsDBNull(0) || reader.IsDBNull(1))
+                if (row.IndexName is null || row.TableName is null)
                 {
                     continue;
                 }
 
-                var indexName = reader.GetString(0);
-                var tableName = reader.GetString(1);
-                var indexType = reader.IsDBNull(2) ? null : reader.GetString(2);
-
-                var table = Find(databaseModel, schema, tableName);
+                var table = Find(databaseModel, schema, row.TableName);
                 if (table is null)
                 {
                     continue;
                 }
 
-                var index = table.Indexes.FirstOrDefault(i => i.Name == indexName);
+                var index = table.Indexes.FirstOrDefault(i => i.Name == row.IndexName);
                 if (index is null)
                 {
                     index = new DatabaseIndex
                     {
-                        Name = indexName,
+                        Name = row.IndexName,
                         Table = table,
-                        IsUnique = indexType is not null && indexType.StartsWith("UNIQUE", StringComparison.Ordinal)
+                        IsUnique = row.IndexTypeName is not null
+                            && row.IndexTypeName.StartsWith("UNIQUE", StringComparison.Ordinal)
                     };
 
                     table.Indexes.Add(index);
                 }
 
-                if (!reader.IsDBNull(3) && Find(table, reader.GetString(3)) is { } column)
+                if (row.ColumnName is not null && Find(table, row.ColumnName) is { } column)
                 {
                     // In a unique index H2 marks covered (INCLUDE) columns with IS_UNIQUE = FALSE;
                     // they are not keys and must stay out of the scaffolded column list.
-                    if (index.IsUnique && !reader.IsDBNull(6) && !reader.GetBoolean(6))
+                    if (index.IsUnique && row.IsUnique is false)
                     {
                         var included = index[H2AnnotationNames.IndexInclude] as string[] ?? Array.Empty<string>();
                         index[H2AnnotationNames.IndexInclude] = new List<string>(included) { column.Name }.ToArray();
@@ -649,8 +506,8 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                     var nullSortOrders = index[H2AnnotationNames.IndexNullSortOrder] as NullSortOrder[]
                         ?? Array.Empty<NullSortOrder>();
 
-                    descending.Add(reader.GetString(4) == "DESC");
-                    nullSortOrders = [.. nullSortOrders, ReadNullSortOrder(reader)];
+                    descending.Add(row.OrderingSpecification == "DESC");
+                    nullSortOrders = [.. nullSortOrders, ReadNullSortOrder(row.NullOrdering)];
 
                     index.IsDescending = descending;
                     index[H2AnnotationNames.IndexSortOrder] = descending;
@@ -672,32 +529,18 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         }
     }
 
-    private static void PopulateSequences(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
+    private void PopulateSequences(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
     {
         foreach (var schema in schemas)
         {
-            using var command = connection.CreateCommand();
-
-            // H2 names these START_VALUE / CYCLE_OPTION; there is no CYCLE and no CACHE_SIZE column, and
-            // the base value of a sequence is a separate column from the value it starts at.
-            command.CommandText = """
-                SELECT SEQUENCE_NAME, DATA_TYPE, START_VALUE, INCREMENT, MINIMUM_VALUE, MAXIMUM_VALUE, CYCLE_OPTION
-                FROM INFORMATION_SCHEMA.SEQUENCES
-                WHERE SEQUENCE_SCHEMA = $p_schema
-                ORDER BY SEQUENCE_NAME
-                """;
-
-            command.Parameters.Add(Parameter(command, "p_schema", schema));
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
+            foreach (var row in _catalog.GetSequences(connection, schema))
             {
-                var storeType = reader.IsDBNull(1) ? null : Normalize(reader.GetString(1));
-                var start = ToLong(reader.GetValue(2));
-                var increment = ToInt(reader.GetValue(3));
-                var min = ToLong(reader.GetValue(4));
-                var max = ToLong(reader.GetValue(5));
-                var isCyclic = !reader.IsDBNull(6) && reader.GetString(6) == "YES";
+                var storeType = row.DataType is null ? null : Normalize(row.DataType);
+                var start = row.StartValue;
+                var increment = row.Increment;
+                var min = row.MinimumValue;
+                var max = row.MaximumValue;
+                var isCyclic = row.IsCyclic;
 
                 // H2 materialises every default. Like the reference provider, report no
                 // options at all for an ordinary sequence, but keep a start value when any
@@ -715,7 +558,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                     {
                         Database = databaseModel,
                         Schema = schema,
-                        Name = reader.GetString(0),
+                        Name = row.Name,
                         StoreType = storeType,
                         StartValue = hasNonDefault ? start : null,
                         IncrementBy = hasNonDefault ? increment : null,
@@ -727,40 +570,21 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         }
     }
 
-    private static void PopulateEnums(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
+    private void PopulateEnums(DbConnection connection, DatabaseModel databaseModel, IReadOnlyList<string> schemas)
     {
         foreach (var schema in schemas)
         {
-            using var command = connection.CreateCommand();
-
-            command.CommandText = """
-                SELECT d.DOMAIN_NAME, v.VALUE_NAME
-                FROM INFORMATION_SCHEMA.DOMAINS d
-                JOIN INFORMATION_SCHEMA.ENUM_VALUES v
-                     ON v.OBJECT_SCHEMA = d.DOMAIN_SCHEMA
-                    AND v.OBJECT_NAME = d.DOMAIN_NAME
-                    AND v.OBJECT_TYPE = 'DOMAIN'
-                WHERE d.DOMAIN_SCHEMA = $p_schema AND d.DATA_TYPE = 'ENUM'
-                ORDER BY d.DOMAIN_NAME, v.VALUE_ORDINAL
-                """;
-
-            command.Parameters.Add(Parameter(command, "p_schema", schema));
-
             var labels = new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
-            using (var reader = command.ExecuteReader())
+            foreach (var row in _catalog.GetEnums(connection, schema))
             {
-                while (reader.Read())
+                if (!labels.TryGetValue(row.Name, out var values))
                 {
-                    var name = reader.GetString(0);
-                    if (!labels.TryGetValue(name, out var values))
-                    {
-                        values = [];
-                        labels.Add(name, values);
-                    }
-
-                    values.Add(reader.GetString(1));
+                    values = [];
+                    labels.Add(row.Name, values);
                 }
+
+                values.Add(row.Value);
             }
 
             foreach (var (name, values) in labels)
@@ -775,39 +599,20 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         }
     }
 
-    private static void PopulateForeignKeys(
-        DbConnection connection,
-        DatabaseModel databaseModel,
-        IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger)
+    private void PopulateForeignKeys(DbConnection connection, DatabaseModel databaseModel)
     {
-        using var command = connection.CreateCommand();
-
-        // REFERENTIAL_CONSTRAINTS names the referenced constraint, which is how the principal table and its
-        // key columns are recovered: H2 exposes no "referenced column" column of its own.
-        command.CommandText = """
-            SELECT fk.TABLE_SCHEMA, fk.TABLE_NAME, fk.CONSTRAINT_NAME, fk.COLUMN_NAME,
-                   rc.UNIQUE_CONSTRAINT_SCHEMA, rc.UNIQUE_CONSTRAINT_NAME,
-                   rc.UPDATE_RULE, rc.DELETE_RULE, fk.ORDINAL_POSITION
-            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE fk
-            JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
-                 ON rc.CONSTRAINT_NAME = fk.CONSTRAINT_NAME
-                AND rc.CONSTRAINT_SCHEMA = fk.CONSTRAINT_SCHEMA
-            ORDER BY fk.TABLE_SCHEMA, fk.TABLE_NAME, fk.CONSTRAINT_NAME, fk.ORDINAL_POSITION
-            """;
-
         var seen = new Dictionary<(string, string, string), DatabaseForeignKey>();
 
-        using var reader = command.ExecuteReader();
-        while (reader.Read())
+        foreach (var row in _catalog.GetForeignKeys(connection))
         {
-            if (reader.IsDBNull(0) || reader.IsDBNull(1) || reader.IsDBNull(2))
+            if (row.TableSchema is null || row.TableName is null || row.ConstraintName is null)
             {
                 continue;
             }
 
-            var schema = reader.GetString(0);
-            var tableName = reader.GetString(1);
-            var constraintName = reader.GetString(2);
+            var schema = row.TableSchema;
+            var tableName = row.TableName;
+            var constraintName = row.ConstraintName;
 
             var table = Find(databaseModel, schema, tableName);
             if (table is null)
@@ -817,28 +622,29 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
 
             if (!seen.TryGetValue((schema, tableName, constraintName), out var fk))
             {
-                var principalSchema = reader.IsDBNull(4) ? null : reader.GetString(4);
-                var principalConstraint = reader.IsDBNull(5) ? null : reader.GetString(5);
+                var principalSchema = row.UniqueConstraintSchema;
+                var principalConstraint = row.UniqueConstraintName;
 
                 if (principalConstraint is null)
                 {
-                    logger.ForeignKeyReferencesMissingPrincipalTableWarning(
+                    _logger.ForeignKeyReferencesMissingPrincipalTableWarning(
                         constraintName, schema + "." + tableName, null);
                     continue;
                 }
 
-                var principal = Find(
-                    databaseModel,
-                    principalSchema,
-                    PrincipalTableName(connection, principalSchema, principalConstraint));
+                var principalName = _catalog.GetPrincipalTableName(connection, principalSchema, principalConstraint)
+                    ?? throw new InvalidOperationException(
+                        $"Referenced constraint '{principalConstraint}' is not present in TABLE_CONSTRAINTS, so the " +
+                        "referenced table cannot be resolved.");
+
+                var principal = Find(databaseModel, principalSchema, principalName);
 
                 if (principal is null)
                 {
-                    logger.ForeignKeyReferencesMissingPrincipalTableWarning(
+                    _logger.ForeignKeyReferencesMissingPrincipalTableWarning(
                         constraintName,
                         schema + "." + tableName,
-                        (principalSchema ?? databaseModel.DefaultSchema) + "." +
-                        PrincipalTableName(connection, principalSchema, principalConstraint));
+                        (principalSchema ?? databaseModel.DefaultSchema) + "." + principalName);
                     continue;
                 }
 
@@ -847,10 +653,10 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                     Name = constraintName,
                     Table = table,
                     PrincipalTable = principal,
-                    OnDelete = ToReferentialAction(reader.IsDBNull(7) ? null : reader.GetString(7))
+                    OnDelete = ToReferentialAction(row.DeleteRule)
                 };
 
-                foreach (var columnName in PrincipalColumns(connection, principalSchema, principalConstraint))
+                foreach (var columnName in _catalog.GetPrincipalColumns(connection, principalSchema, principalConstraint))
                 {
                     if (Find(principal, columnName) is { } principalColumn)
                     {
@@ -864,55 +670,14 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                 // OnUpdate is deliberately not read: EF Core's scaffolding model has no member for it,
                 // so an H2 ON UPDATE rule has nowhere to go and dropping it silently is better than
                 // pretending it was carried. It is a known gap, tracked in docs/DIALECT.md.
-                _ = reader.IsDBNull(6) ? null : reader.GetString(6);
+                _ = row.UpdateRule;
             }
 
-            if (!reader.IsDBNull(3) && Find(table, reader.GetString(3)) is { } column)
+            if (row.ColumnName is not null && Find(table, row.ColumnName) is { } column)
             {
                 fk.Columns.Add(column);
             }
         }
-    }
-
-    private static string PrincipalTableName(DbConnection connection, string? schema, string constraintName)
-    {
-        using var command = connection.CreateCommand();
-        command.CommandText = """
-            SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-            WHERE CONSTRAINT_NAME = $p_name AND CONSTRAINT_SCHEMA = $p_schema
-            """;
-
-        command.Parameters.Add(Parameter(command, "p_name", constraintName));
-        command.Parameters.Add(Parameter(command, "p_schema", (object?)schema ?? "PUBLIC"));
-
-        return command.ExecuteScalar() as string
-               ?? throw new InvalidOperationException(
-                   $"Referenced constraint '{constraintName}' is not present in TABLE_CONSTRAINTS, so the " +
-                   "referenced table cannot be resolved.");
-    }
-
-    private static List<string> PrincipalColumns(DbConnection connection, string? schema, string constraintName)
-    {
-        using var command = connection.CreateCommand();
-
-        command.CommandText = """
-            SELECT COLUMN_NAME
-            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-            WHERE CONSTRAINT_NAME = $p_name AND CONSTRAINT_SCHEMA = $p_schema
-            ORDER BY ORDINAL_POSITION
-            """;
-
-        command.Parameters.Add(Parameter(command, "p_name", constraintName));
-        command.Parameters.Add(Parameter(command, "p_schema", (object?)schema ?? "PUBLIC"));
-
-        var names = new List<string>();
-        using var reader = command.ExecuteReader();
-        while (reader.Read())
-        {
-            names.Add(reader.GetString(0));
-        }
-
-        return names;
     }
 
     private static DatabaseTable? Find(DatabaseModel model, string? schema, string name)
@@ -933,25 +698,13 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
             _ => ReferentialAction.NoAction
         };
 
-    private static int? ToInt(object value)
-        => value is null or DBNull
-            ? null
-            : Convert.ToInt32(value, CultureInfo.InvariantCulture);
-
-    private static NullSortOrder ReadNullSortOrder(DbDataReader reader)
-        => reader.IsDBNull(5)
-            ? NullSortOrder.Unspecified
-            : reader.GetString(5) switch
-            {
-                "FIRST" => NullSortOrder.NullsFirst,
-                "LAST" => NullSortOrder.NullsLast,
-                _ => NullSortOrder.Unspecified
-            };
-
-    private static long? ToLong(object value)
-        => value is null or DBNull
-            ? null
-            : Convert.ToInt64(value, CultureInfo.InvariantCulture);
+    private static NullSortOrder ReadNullSortOrder(string? value)
+        => value switch
+        {
+            "FIRST" => NullSortOrder.NullsFirst,
+            "LAST" => NullSortOrder.NullsLast,
+            _ => NullSortOrder.Unspecified
+        };
 
     private static bool Matches((string? Schema, string Name) wanted, string schema, string name)
         => (wanted.Schema is null || string.Equals(wanted.Schema, schema, StringComparison.OrdinalIgnoreCase))
@@ -1002,11 +755,4 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         return text[start..end].Trim();
     }
 
-    private static DbParameter Parameter(DbCommand command, string name, object value)
-    {
-        var parameter = command.CreateParameter();
-        parameter.ParameterName = name;
-        parameter.Value = value;
-        return parameter;
-    }
 }

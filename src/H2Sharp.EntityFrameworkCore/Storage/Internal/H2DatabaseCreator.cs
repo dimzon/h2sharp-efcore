@@ -1,6 +1,7 @@
 using System.Data;
 using System.Data.Common;
 using H2Sharp.Data;
+using H2Sharp.EntityFrameworkCore.Scaffolding.Internal;
 
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal;
 
@@ -29,6 +30,7 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
 {
     private readonly IH2RelationalConnection _connection;
     private readonly ISqlGenerationHelper _sqlGenerationHelper;
+    private readonly IH2CatalogReader _catalog;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -39,11 +41,13 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
     public H2DatabaseCreator(
         RelationalDatabaseCreatorDependencies dependencies,
         IH2RelationalConnection connection,
-        ISqlGenerationHelper sqlGenerationHelper)
+        ISqlGenerationHelper sqlGenerationHelper,
+        IH2CatalogReader? catalog = null)
         : base(dependencies)
     {
         _connection = connection;
         _sqlGenerationHelper = sqlGenerationHelper;
+        _catalog = catalog ?? new H2CatalogReader();
     }
 
     /// <summary>
@@ -171,16 +175,7 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
         var schema = Schema ?? "PUBLIC";
 
         using var scope = OpenConnection();
-        using var command = scope.Connection.CreateCommand();
-        command.CommandText =
-            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = $p";
-
-        var parameter = command.CreateParameter();
-        parameter.ParameterName = "p";
-        parameter.Value = schema;
-        command.Parameters.Add(parameter);
-
-        return Convert.ToInt64(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0;
+        return _catalog.HasTables(scope.Connection, schema);
     }
 
     /// <inheritdoc />
@@ -190,14 +185,7 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
     private bool SchemaExists(string schema)
     {
         using var scope = OpenConnection();
-        using var command = scope.Connection.CreateCommand();
-        command.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = $p";
-        var parameter = command.CreateParameter();
-        parameter.ParameterName = "p";
-        parameter.Value = schema;
-        command.Parameters.Add(parameter);
-
-        return Convert.ToInt64(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0;
+        return _catalog.SchemaExists(scope.Connection, schema);
     }
 
     private void Execute(string sql)

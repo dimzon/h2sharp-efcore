@@ -9,6 +9,7 @@ using H2Sharp.EntityFrameworkCore.Migrations.Internal;
 using H2Sharp.EntityFrameworkCore.Query;
 using H2Sharp.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 using H2Sharp.EntityFrameworkCore.Query.Internal;
+using H2Sharp.EntityFrameworkCore.Scaffolding.Internal;
 using H2Sharp.EntityFrameworkCore.Storage.Internal;
 using H2Sharp.EntityFrameworkCore.Update.Internal;
 using H2Sharp.EntityFrameworkCore.ValueGeneration.Internal;
@@ -121,6 +122,7 @@ public static class H2ServiceCollectionExtensions
             .TryAdd<IQueryCompilationContextFactory, H2QueryCompilationContextFactory>()
             .TryAddProviderSpecificServices(
                 b => b
+                    .TryAddSingleton<IH2CatalogReader, H2CatalogReader>()
                     .TryAddSingleton<IH2ValueGeneratorCache, H2ValueGeneratorCache>()
                     .TryAddSingleton<IH2SingletonOptions, H2SingletonOptions>()
                     .TryAddSingleton<IH2SequenceValueGeneratorFactory, H2SequenceValueGeneratorFactory>()
