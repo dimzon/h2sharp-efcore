@@ -202,7 +202,7 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
         }
     }
 
-    private static void PopulateTables(
+    private void PopulateTables(
         DbConnection connection,
         DatabaseModel databaseModel,
         IReadOnlyList<string> schemas,
@@ -327,10 +327,14 @@ public class H2DatabaseModelFactory : DatabaseModelFactory
                     continue;
                 }
 
-                // Enum columns do not have an EF Core store type yet; the enum itself is
-                // scaffolded into the model, and the column is left for the enum mapping work.
+                // An enum column is reported as DATA_TYPE = ENUM, and its type name lives in
+                // DOMAIN_SCHEMA/DOMAIN_NAME. EF Core has no scaffolding model for a database enum
+                // type, so the column is left out and the warning says the property must be mapped
+                // by hand; dropping it silently would lose a column without a trace.
                 if (!reader.IsDBNull(3) && reader.GetString(3) == "ENUM")
                 {
+                    _logger.EnumColumnSkippedWarning(
+                        $"{current.Schema ?? databaseModel.DefaultSchema}.{current.Name}.{reader.GetString(2)}");
                     continue;
                 }
 

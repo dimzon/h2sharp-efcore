@@ -1969,11 +1969,19 @@ CREATE TABLE "foo" ("mood" "mood" UNIQUE);
                 var table = Assert.Single(dbModel.Tables);
                 Assert.NotNull(table);
 
-                // Enum columns are left out of the model for now (a warning is logged).
+                // Enum columns are left out of the model for now: EF Core has no scaffolding
+                // model for a database enum type, so the warning has to say so.
                 Assert.Empty(table.Columns);
                 // Constraints and indexes over enum columns also need to be left out
                 Assert.Empty(table.UniqueConstraints);
                 Assert.Empty(table.Indexes);
+
+                var (_, Id, Message, _, _) = Assert.Single(Fixture.ListLoggerFactory.Log.Where(t => t.Level == LogLevel.Warning));
+                Assert.Equal(H2Resources.LogEnumColumnSkipped(new TestLogger<H2LoggingDefinitions>()).EventId, Id);
+                Assert.Equal(
+                    H2Resources.LogEnumColumnSkipped(new TestLogger<H2LoggingDefinitions>())
+                        .GenerateMessage("PUBLIC.foo.mood"),
+                    Message);
             },
             """
 DROP TABLE "foo";
@@ -1991,8 +1999,19 @@ CREATE TABLE "bar" (foreign_key int REFERENCES "foo"(some_num));
 """,
             [],
             [],
-            // Enum columns are left out of the model for now (a warning is logged).
-            dbModel => Assert.Single(dbModel.Tables.Single(t => t.Name == "foo").Columns),
+            // Enum columns are left out of the model for now: EF Core has no scaffolding
+            // model for a database enum type, so the warning has to say so.
+            dbModel =>
+            {
+                Assert.Single(dbModel.Tables.Single(t => t.Name == "foo").Columns);
+
+                var (_, Id, Message, _, _) = Assert.Single(Fixture.ListLoggerFactory.Log.Where(t => t.Level == LogLevel.Warning));
+                Assert.Equal(H2Resources.LogEnumColumnSkipped(new TestLogger<H2LoggingDefinitions>()).EventId, Id);
+                Assert.Equal(
+                    H2Resources.LogEnumColumnSkipped(new TestLogger<H2LoggingDefinitions>())
+                        .GenerateMessage("PUBLIC.foo.mood"),
+                    Message);
+            },
             """
 DROP TABLE "bar";
 DROP TABLE "foo";
