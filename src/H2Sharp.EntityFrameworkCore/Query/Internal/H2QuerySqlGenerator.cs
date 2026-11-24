@@ -134,6 +134,17 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
             _ => base.GetOperator(e)
         };
 
+    private static bool IsNullableArray(SqlExpression expression)
+    {
+        var elementType = expression.Type.TryGetSequenceType();
+        if (elementType is null && expression.TypeMapping is H2ArrayTypeMapping arrayMapping)
+        {
+            elementType = arrayMapping.ElementTypeMapping?.ClrType;
+        }
+
+        return elementType is not null && Nullable.GetUnderlyingType(elementType) is not null;
+    }
+
     /// <inheritdoc />
     protected override Expression VisitOrdering(OrderingExpression ordering)
     {
@@ -188,6 +199,15 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     {
         switch (binary.OperatorType)
         {
+            case ExpressionType.Equal
+                when IsNullableArray(binary.Left) || IsNullableArray(binary.Right):
+                // C# SequenceEqual treats NULL elements as equal; H2's "=" yields UNKNOWN when
+                // either array contains NULL, and the row disappears from WHERE.
+                Visit(binary.Left);
+                Sql.Append(" IS NOT DISTINCT FROM ");
+                Visit(binary.Right);
+                return binary;
+
             case ExpressionType.Add when binary.Type == typeof(string):
                 // The strings are joined with CONCAT, the function H2 2.5 has. The pipes
                 // ("a || b") mean something else: they make the whole result NULL when

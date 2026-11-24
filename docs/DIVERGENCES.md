@@ -1078,3 +1078,13 @@ SQL-базлайнов (`$left`/`$elem`, имена параметров), а н
 `SequenceEqual_over_nullable_with_parameter` (возвращает 0 строк) и
 `ArrayArrayQueryTest.SequenceEqual_over_nullable_with_parameter` (span в параметре);
 это уже поведение провайдера/движка, а не базлайны.
+
+### Nullable SequenceEqual: IS NOT DISTINCT FROM (24 ноября 2026)
+
+H2's plain `=` over arrays containing NULL yields UNKNOWN, so a row whose array has a NULL
+element disappears from WHERE; C# `SequenceEqual` treats that NULL as equal. The SQL
+generator now writes `left IS NOT DISTINCT FROM right` when either side is an array with a
+nullable element. SQL is correct and the reference accepts it, but the four
+`SequenceEqual_over_nullable_with_parameter` cases still return 0 rows -- the parameter/data
+path needs further tracing. `ArrayArrayQueryTest` also got a span-to-Enumerable rewrite, so
+its expression no longer fails before SQL. Green gate is unaffected (6271/129/317).

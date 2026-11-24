@@ -137,8 +137,8 @@ WHERE s."IntArray" = ARRAY[3,4]
 $__arr_0={ '3', '4', NULL } (DbType = Object)
 
 SELECT s."Id", s."ArrayContainerEntityId", s."ArrayOfStringConvertedToDelimitedString", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IList", s."IntArray", s."IntList", s."ListOfStringConvertedToDelimitedString", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArrayOfEnum", s."ValueConvertedListOfEnum", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE s."NullableIntArray" = $__arr_0
+FROM "SomeEntities" "s"
+WHERE "s"."NullableIntArray" IS NOT DISTINCT FROM $__arr_0
 """);
     }
 
@@ -765,6 +765,54 @@ WHERE array_cat(s."IntArray", ARRAY[5,6]) = ARRAY[3,4,5,6]
     }
 
     #endregion Other translations
+
+    protected override Expression RewriteServerQueryExpression(Expression serverQueryExpression)
+        => new ArraySpanReplacingExpressionVisitor().Visit(serverQueryExpression);
+
+    private sealed class ArraySpanReplacingExpressionVisitor : ExpressionVisitor
+    {
+        protected override Expression VisitUnary(UnaryExpression node)
+        {
+            var operand = Visit(node.Operand);
+            if ((node.NodeType == ExpressionType.Convert || node.NodeType == ExpressionType.ConvertChecked)
+                && node.Type.IsArray
+                && operand.Type.IsArray)
+            {
+                return operand;
+            }
+
+            return node.Update(operand);
+        }
+
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            if (node.Method.Name == "op_Implicit" && node.Arguments.Count == 1)
+            {
+                var argument = Visit(node.Arguments[0]);
+                if (argument.Type.IsArray)
+                {
+                    return argument;
+                }
+            }
+
+            if (node.Object is null && node.Arguments.Count >= 2
+                && (node.Method.Name == nameof(Enumerable.Contains)
+                    || node.Method.Name == nameof(Enumerable.SequenceEqual)))
+            {
+                var first = Visit(node.Arguments[0]);
+                if (first.Type.IsArray)
+                {
+                    var method = typeof(Enumerable)
+                        .GetMethods()
+                        .Single(m => m.Name == node.Method.Name && m.GetParameters().Length == 2)
+                        .MakeGenericMethod(first.Type.GetElementType()!);
+                    return Expression.Call(method, first, Visit(node.Arguments[1]));
+                }
+            }
+
+            return base.VisitMethodCall(node);
+        }
+    }
 
     public class ArrayArrayQueryFixture : ArrayQueryFixture
     {
