@@ -57,12 +57,12 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 10573 | 0 | 10625 (52 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 10579 | 0 | 10631 (52 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 151 | 0 | 151 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **11049** | **0** | **11101** |
+   | **Итого** | **11055** | **0** | **11107** |
 
-   Зелёный гейт: 11049 тестов на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 11055 тестов на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
@@ -84,7 +84,7 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 10573 | 0 | 10625 (52 пропущено) |
+   | `Category!=BlockedByPort` | 10579 | 0 | 10631 (52 пропущено) |
    | `Category=BlockedByPort` | 0 | 6 | 6 |
 
    Прогон с трейтом держит `H2ComplianceTest.All_test_bases_must_be_implemented`
@@ -134,9 +134,10 @@ EF их не отдаёт генератору, как в апстриме).
    * `NorthwindWhereQueryH2Test` вернулся (+484 зелёных): PG-базлайны переписаны на H2
      (`count(*)::int` → `CAST(count(*) AS integer)`, кавычки на алиасах,
      `date_part(...)::int` → `year/month/day/hour/minute/second`, `date_trunc` на `DATE`).
-     `Where_bitwise_xor` переведён в служебную deterministic UDF `____ef_bitwise_xor`
-     (ADR-001): `H2DataSources` регистрирует её на каждом соединении провайдера, а
-     `H2QuerySqlGenerator` пишет вызов вместо `^`, которого нет в эталоне. Пять тестов помечены
+     `Where_bitwise_xor` переведён на эталонную функцию `BITXOR`: булевы операнды приводятся
+     к 1/0, результат сравнивается с 1. Служебная UDF не нужна — H2 2.5 умеет BITXOR и
+     сохраняет NULL. `H2BitwiseFunctionTests` проверяет три-valued семантику на NULL-операндах.
+     Пять тестов помечены
      `BlockedByPort`: object-массив/список-параметр и материализация row value.
    * Вернулись `QueryFilterFuncletizationH2Test` (+28) и `QueryBugsTest` (+1). Первый ушёл из
      compliance-списка отсутствующих баз; его переопределённый тест проверяет H2-перевод
@@ -1203,8 +1204,8 @@ its expression no longer fails before SQL. Green gate is unaffected (6271/129/31
   `H2GeometryTypeMapping` больше не собирают SQL вручную: `Dialect.AppendTimestampWithTimeZone`
   и `Dialect.AppendGeometry`. Встроенные (embedded) строки JSON не трогались: это не SQL-литерал.
 
-Итог: functional green gate **10573/0/10625** (52 пропущено), unit **151/151**, model
-**325/325** на `net9.0` и `net10.0`; полный functional — 10573 прошло, 52 пропущено,
+Итог: functional green gate **10579/0/10631** (52 пропущено), unit **151/151**, model
+**325/325** на `net9.0` и `net10.0`; полный functional — 10579 прошло, 52 пропущено,
 1 красный: `H2ComplianceTest` по замыслу. Последний тест конвертеров, `("Values")`,
 открылся после исправления `IsDirectQuery` в движке: quoted keyword больше не читается
 как ключевое слово. Остальные `BlockedByPort` сняты.

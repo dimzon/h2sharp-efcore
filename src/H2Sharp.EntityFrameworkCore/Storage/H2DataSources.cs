@@ -43,17 +43,7 @@ public static class H2DataSources
     public static H2DataSource GetOrCreate(string connectionString)
         => Sources.GetOrAdd(
             Key(connectionString),
-            _ => new H2DataSourceBuilder(connectionString)
-                .ConfigureExtensions(RegisterServiceUdfs)
-                .Build());
-
-    // H2 2.5 has no boolean XOR operator. The provider's SQL generator writes this service UDF
-    // instead; it is registered on every connection the provider creates.
-    private static void RegisterServiceUdfs(IH2Extensions extensions)
-        => extensions.RegisterUdf(
-            "____ef_bitwise_xor",
-            (bool? left, bool? right) => left ^ right,
-            deterministic: true);
+            _ => new H2DataSourceBuilder(connectionString).Build());
 
     /// <summary>
     ///     The data source that owns the database the connection string names, if there is one.
