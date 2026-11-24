@@ -18,7 +18,21 @@
     <PackageVersion Include="NodaTime" Version="3.2.2" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.14" />
     <PackageVersion Include="NetTopologySuite" Version="2.6.0" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.200" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.303" />
+    <!--
+      EF Core's design-time packages bring Microsoft.Build.Tasks.Core 17.7.2 transitively,
+      which has two high-severity advisories: GHSA-h4j7-5rxr-p4wc (patched in 17.14.8) and
+      GHSA-w3q9-fxm7-j8fq (patched in 17.14.28). The test projects reference the patched
+      version directly so the vulnerable assembly is not restored.
+    -->
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="17.14.28" />
+    <!--
+      Microsoft.Build.Tasks.Core 17.14.28 still asks for 9.0.0 of these crypto packages, and
+      both 9.0.0 builds carry high-severity advisories. The test projects reference the patched
+      9.0 line directly.
+    -->
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.23" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.23" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.assert" Version="2.9.3" />

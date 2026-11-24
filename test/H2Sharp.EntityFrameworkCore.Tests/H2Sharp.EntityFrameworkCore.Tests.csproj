@@ -3,10 +3,6 @@
   <PropertyGroup>
     <AssemblyName>H2Sharp.EntityFrameworkCore.Tests</AssemblyName>
     <RootNamespace>H2Sharp.EntityFrameworkCore</RootNamespace>
-
-    <NoWarn>$(NoWarn);NU1903</NoWarn> <!-- TEMPORARY, DO NOT MERGE -->
-    <NuGetAudit>false</NuGetAudit>
-    <NuGetAuditLevel>critical</NuGetAuditLevel>
   </PropertyGroup>
 
     <ItemGroup>
@@ -34,6 +30,14 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <!--
+      See Directory.Packages.props: EF Core's design-time package brings a vulnerable
+      Microsoft.Build.Tasks.Core, which itself brings vulnerable crypto builds; the direct
+      references pin the patched versions for the whole test graph.
+    -->
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 
