@@ -85,7 +85,7 @@ EF их не отдаёт генератору, как в апстриме).
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `Category!=BlockedByPort` | 6271 | 0 | 6285 (14 пропущено) |
-   | `Category=BlockedByPort` | 207 | 25 | 238 (6 пропущено) |
+   | `Category=BlockedByPort` | 209 | 23 | 238 (6 пропущено) |
 
    Пропущенных в прогоне с трейтом нет: четырнадцать скипов переехали в гейт вместе со своими
    классами. Числа — на `net10.0`, пакет `H2Sharp 0.1.44-alpha.1` (23 ноября 2026), после правок
@@ -1005,7 +1005,7 @@ serial-последовательности, частичные индексы) 
 
 Провайдер уже читает домены, enum-колонки (пропускаются до enum-маппинга), views и
 materialized views (view + скрытая backing-таблица `NAME$1`), а также сериализует
-`RecordsAffected`; красный functional-прогон стал 25 (6 пропущено), scaffolding-кластер — 0 тестов.
+`RecordsAffected`; красный functional-прогон стал 23 (6 пропущено), scaffolding-кластер — 0 тестов.
 
 ### Дальнейшая сверка scaffolding с h2.jar (23 ноября 2026)
 
@@ -1022,7 +1022,7 @@ materialized views (view + скрытая backing-таблица `NAME$1`), а �
 * PG-only типы (`money`, `jsonb`, `varbit`, `timetz`, `interval(5)`, `bit(111)`) остаются
   только в тестах, которые ещё не переписаны; эталон их не знает.
 
-Красный functional-прогон: 25 падений и 6 пропусков; scaffolding — 0 падений.
+Красный functional-прогон: 23 падения и 6 пропусков; scaffolding — 0 падений.
 
 ### Политика для невозможного в H2 (23 ноября 2026)
 
@@ -1088,3 +1088,11 @@ nullable element. SQL is correct and the reference accepts it, but the four
 `SequenceEqual_over_nullable_with_parameter` cases still return 0 rows -- the parameter/data
 path needs further tracing. `ArrayArrayQueryTest` also got a span-to-Enumerable rewrite, so
 its expression no longer fails before SQL. Green gate is unaffected (6271/129/317).
+
+### byte[] с DbType.Byte больше не VARBINARY (24 ноября 2026)
+
+`Byte_array_parameter_contains_column` уходил в `VARBINARY`: `H2ValueMapper` видел `byte[]`
+раньше, чем `DbType.Byte`, который ставит array-маппинг. Теперь байтовый массив с
+`DbType.Byte` разворачивается в SQL ARRAY of SMALLINT; `DbType.Binary` остаётся бинарной
+строкой. Базлайн параметра обновлён на `0x14 (DbType = Byte)`. Остались 4 nullable
+`SequenceEqual` (SQL `IS NOT DISTINCT FROM` корректен, но запрос возвращает 0 строк).

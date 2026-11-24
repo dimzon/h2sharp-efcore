@@ -429,7 +429,7 @@ WHERE CAST("s"."Id" AS text) = ANY ($__values_0)
 
         AssertSql(
             """
-$__values_0={ '20' } (DbType = Object)
+$__values_0='0x14' (DbType = Byte)
 
 SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
 FROM "SomeEntities" "s"
