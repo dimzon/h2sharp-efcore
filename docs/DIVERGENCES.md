@@ -58,11 +58,11 @@ EF их не отдаёт генератору, как в апстриме).
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 9476 | 0 | 9517 (41 пропущено) |
-   | `H2Sharp.EntityFrameworkCore.Tests` | 137 | 0 | 137 |
+   | `H2Sharp.EntityFrameworkCore.Tests` | 151 | 0 | 151 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **9938** | **0** | **9979** |
+   | **Итого** | **9952** | **0** | **9993** |
 
-   Зелёный гейт: 9938 тестов на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 9952 теста на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
@@ -121,6 +121,13 @@ EF их не отдаёт генератору, как в апстриме).
      `ToShortDateString` и `TimeOnly` в тики, а H2 понимает только ISO-формы. Фикстура
      переопределяет эти конвертеры на `yyyy-MM-dd` и `HH:mm:ss.FFFFFFF`; 56 тестов зелёные,
      4 пропущены по DateTimeOffset.
+   * `H2CodeGeneratorTest`, `H2DbContextOptionsExtensionsTest` и
+     `H2ModificationCommandBatchTest` вернулись в unit-сборку (+14): удалён тест несуществующего
+     `H2NodaTimeCodeGeneratorPlugin`, `H2DataSource.Create` заменён на
+     `H2DataSources.GetOrCreate`. Найден и исправлен дефект `H2NetTopologySuiteCodeGeneratorPlugin`:
+     он искал несуществующую 5-аргументную перегрузку `UseNetTopologySuite` и падал в static
+     initializer; теперь берёт единственный реальный метод. `H2RelationalConnectionTest`
+     остаётся исключённым — он целиком построен на PG data source/admin API.
    * `ExecutionStrategyTest` включён (+37): восстановлены stateful-fakes из истории репозитория —
      `TestRelationalCommand` внутри `TestRelationalCommandBuilderFactory` и
      `TestRelationalTransaction`/Factory. Мок-фреймворк не понадобился: тест кастует сервис к
@@ -1162,7 +1169,7 @@ its expression no longer fails before SQL. Green gate is unaffected (6271/129/31
   `H2GeometryTypeMapping` больше не собирают SQL вручную: `Dialect.AppendTimestampWithTimeZone`
   и `Dialect.AppendGeometry`. Встроенные (embedded) строки JSON не трогались: это не SQL-литерал.
 
-Итог: functional green gate **9476/0/9517** (41 пропущено), unit **137/137**, model
+Итог: functional green gate **9476/0/9517** (41 пропущено), unit **151/151**, model
 **325/325** на `net9.0` и `net10.0`; полный functional — 9476 прошло, 41 пропущено,
 1 красный: `H2ComplianceTest` по замыслу. Последний тест конвертеров, `("Values")`,
 открылся после исправления `IsDirectQuery` в движке: quoted keyword больше не читается

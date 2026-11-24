@@ -1,6 +1,5 @@
 using H2Sharp.EntityFrameworkCore.Infrastructure;
 using H2Sharp.EntityFrameworkCore.NetTopologySuite.Scaffolding.Internal;
-using H2Sharp.EntityFrameworkCore.NodaTime.Scaffolding.Internal;
 using H2Sharp.EntityFrameworkCore.Scaffolding.Internal;
 
 namespace H2Sharp.EntityFrameworkCore.Scaffolding;
@@ -67,29 +66,6 @@ public class H2CodeGeneratorTest
 
                 Assert.Equal("x", nestedClosure.Parameter);
                 Assert.Equal("UseNetTopologySuite", nestedClosure.MethodCalls[0].Method);
-            });
-        Assert.Null(result.ChainedCall);
-    }
-
-    [ConditionalFact]
-    public virtual void Use_provider_method_is_generated_correctly_with_NodaTime()
-    {
-        var codeGenerator = new H2CodeGenerator(
-            new ProviderCodeGeneratorDependencies(
-                [new H2NodaTimeCodeGeneratorPlugin()]));
-
-        var result = ((IProviderConfigurationCodeGenerator)codeGenerator).GenerateUseProvider("Data Source=Test");
-
-        Assert.Equal("UseH2", result.Method);
-        Assert.Collection(
-            result.Arguments,
-            a => Assert.Equal("Data Source=Test", a),
-            a =>
-            {
-                var nestedClosure = Assert.IsType<NestedClosureCodeFragment>(a);
-
-                Assert.Equal("x", nestedClosure.Parameter);
-                Assert.Equal("UseNodaTime", nestedClosure.MethodCalls[0].Method);
             });
         Assert.Null(result.ChainedCall);
     }

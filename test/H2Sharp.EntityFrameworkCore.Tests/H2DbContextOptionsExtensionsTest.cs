@@ -1,4 +1,5 @@
 using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
+using H2Sharp.EntityFrameworkCore.Storage;
 
 namespace H2Sharp.EntityFrameworkCore;
 
@@ -122,7 +123,7 @@ public class H2DbContextOptionsExtensionsTest
         for (var i = 0; i < 21; i++)
         {
             var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
-            var dataSource = H2DataSource.Create($"Host=localhost;Database={i};Include Error Detail=true;Username=admin;Password=admin");
+            var dataSource = H2DataSources.GetOrCreate($"Data Source=options_test_{i};Storage=Memory");
             optionsBuilder.UseH2(dataSource);
 
             using var context = new ApplicationDbContext(optionsBuilder.Options);

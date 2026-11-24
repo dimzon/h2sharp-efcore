@@ -10,14 +10,11 @@
       Not yet ported: these still assume PostgreSQL types and server behaviour that H2 has no
       answer for. See docs/DIVERGENCES.md.
     -->
-      <Compile Remove="Scaffolding\H2CodeGeneratorTest.cs" />
       <Compile Remove="Storage\H2TypeMappingSourceTest.cs" />
       <Compile Remove="Storage\H2TypeMappingTest.cs" />
-      <Compile Remove="H2DbContextOptionsExtensionsTest.cs" />
       <Compile Remove="H2RelationalConnectionTest.cs" />
       <Compile Remove="Storage\H2NodaTimeTypeMappingTest.cs" />
       <Compile Remove="Types\LTreeTest.cs" />
-      <Compile Remove="Update\H2ModificationCommandBatchTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\H2Sharp.EntityFrameworkCore\H2Sharp.EntityFrameworkCore.csproj" />

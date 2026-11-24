@@ -11,13 +11,8 @@ namespace H2Sharp.EntityFrameworkCore.NetTopologySuite.Scaffolding.Internal;
 public class H2NetTopologySuiteCodeGeneratorPlugin : ProviderCodeGeneratorPlugin
 {
     private static readonly MethodInfo _useNetTopologySuiteMethodInfo
-        = typeof(H2NetTopologySuiteDbContextOptionsBuilderExtensions).GetRequiredRuntimeMethod(
-            nameof(H2NetTopologySuiteDbContextOptionsBuilderExtensions.UseNetTopologySuite),
-            typeof(H2DbContextOptionsBuilder),
-            typeof(CoordinateSequenceFactory),
-            typeof(PrecisionModel),
-            typeof(Ordinates),
-            typeof(bool));
+        = typeof(H2NetTopologySuiteDbContextOptionsBuilderExtensions).GetRuntimeMethods()
+            .Single(m => m.Name == nameof(H2NetTopologySuiteDbContextOptionsBuilderExtensions.UseNetTopologySuite));
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
