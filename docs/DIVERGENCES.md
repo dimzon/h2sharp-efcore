@@ -57,12 +57,12 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 9439 | 0 | 9480 (41 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 9476 | 0 | 9517 (41 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 137 | 0 | 137 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **9901** | **0** | **9942** |
+   | **Итого** | **9938** | **0** | **9979** |
 
-   Зелёный гейт: 9901 тест на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 9938 тестов на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
@@ -84,7 +84,7 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 9439 | 0 | 9480 (41 пропущено) |
+   | `Category!=BlockedByPort` | 9476 | 0 | 9517 (41 пропущено) |
    | `Category=BlockedByPort` | 0 | 1 | 1 |
 
    Прогон с трейтом держит только `H2ComplianceTest.All_test_bases_must_be_implemented`
@@ -121,6 +121,12 @@ EF их не отдаёт генератору, как в апстриме).
      `ToShortDateString` и `TimeOnly` в тики, а H2 понимает только ISO-формы. Фикстура
      переопределяет эти конвертеры на `yyyy-MM-dd` и `HH:mm:ss.FFFFFFF`; 56 тестов зелёные,
      4 пропущены по DateTimeOffset.
+   * `ExecutionStrategyTest` включён (+37): восстановлены stateful-fakes из истории репозитория —
+     `TestRelationalCommand` внутри `TestRelationalCommandBuilderFactory` и
+     `TestRelationalTransaction`/Factory. Мок-фреймворк не понадобился: тест кастует сервис к
+     `TestH2Connection` и читает очереди отказов/счётчики, а команда должна делегировать
+     настоящему `RelationalCommand`. Ожидаемый текст retry-сообщения заменён на
+     `Simulated failure` вместо постгресового `PostgresException … XX000`.
    * Три дешёвых разблокирующих исправления: `H2SharpException` получил публичный
      конструктор (fake `TestH2Connection` теперь компилируется); `H2HistoryRepository`
      больше не пишет постгресовый `LOCK TABLE … IN ACCESS EXCLUSIVE MODE`, а берёт
@@ -1156,8 +1162,8 @@ its expression no longer fails before SQL. Green gate is unaffected (6271/129/31
   `H2GeometryTypeMapping` больше не собирают SQL вручную: `Dialect.AppendTimestampWithTimeZone`
   и `Dialect.AppendGeometry`. Встроенные (embedded) строки JSON не трогались: это не SQL-литерал.
 
-Итог: functional green gate **9439/0/9480** (41 пропущено), unit **137/137**, model
-**325/325** на `net9.0` и `net10.0`; полный functional — 9439 прошло, 41 пропущено,
+Итог: functional green gate **9476/0/9517** (41 пропущено), unit **137/137**, model
+**325/325** на `net9.0` и `net10.0`; полный functional — 9476 прошло, 41 пропущено,
 1 красный: `H2ComplianceTest` по замыслу. Последний тест конвертеров, `("Values")`,
 открылся после исправления `IsDirectQuery` в движке: quoted keyword больше не читается
 как ключевое слово. Остальные `BlockedByPort` сняты.

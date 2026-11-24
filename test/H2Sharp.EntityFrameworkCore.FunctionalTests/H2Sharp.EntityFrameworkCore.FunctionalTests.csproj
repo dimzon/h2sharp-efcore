@@ -14,14 +14,6 @@
       collation. They are excluded from the compilation until they are rewritten against H2, and each
       one is listed in docs/DIVERGENCES.md.
     -->
-    <Compile Remove="TestUtilities\TestRelationalCommandBuilderFactory.cs" />
-    <Compile Remove="TestUtilities\TestRelationalTransaction.cs" />
-    <!--
-      Needs the TestRelationalCommandBuilderFactory/TestRelationalTransactionFactory fakes, which
-      the EF Core 9 template-based IRelationalCommand makes into a rewrite rather than a port;
-      see docs/DIVERGENCES.md.
-    -->
-    <Compile Remove="ExecutionStrategyTest.cs" />
     <!--
       Both suites save through the batch, and the port's Prepared update path is a stub ("Not
       ported yet: Prepared.update"), so every save fails at the engine. The classes carry the
