@@ -137,6 +137,8 @@ EF их не отдаёт генератору, как в апстриме).
      Пять тестов, ранее помеченных `BlockedByPort`, теперь зелёные:
      `H2ArrayTypeMapping.CreateParameter` материализует object-список/массив в тип, который
      ждёт конвертер, а `H2RowValueTypeMapping` собирает `ValueTuple` из `object[]`.
+   * `H2OperatorsProceduralQueryTest` добавлен в compliance-список: два процедурных теста в
+     EF Core 9 закомментированы в базовом классе, поэтому у класса нет запускаемых методов.
    * Вернулись `QueryFilterFuncletizationH2Test` (+28) и `QueryBugsTest` (+1). Первый ушёл из
      compliance-списка отсутствующих баз; его переопределённый тест проверяет H2-перевод
      списка в query filter вместо клиентской ошибки EF.
