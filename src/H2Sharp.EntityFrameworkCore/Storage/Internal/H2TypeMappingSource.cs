@@ -110,6 +110,16 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     private readonly H2DateOnlyTypeMapping _dateDateOnly = H2DateOnlyTypeMapping.Default;
     private readonly H2TimeTypeMapping _timeTimeOnly = H2TimeTypeMapping.Default;
 
+    // A value converter can make the provider CLR type string while the store type stays a
+    // temporal one (DateOnly -> string, DateTime -> string, ...). H2 assigns a string to a
+    // date/time column by its usual conversion, and reads the value back as text; these
+    // mappings are what lets the model validator accept such a property.
+    private readonly StringTypeMapping _dateString = new("date", DbType.String);
+    private readonly StringTypeMapping _timeString = new("time", DbType.String);
+    private readonly StringTypeMapping _timestampString = new("timestamp", DbType.String);
+    private readonly StringTypeMapping _timestamptzString = new("timestamp with time zone", DbType.String);
+    private readonly StringTypeMapping _intervalString = new("interval", DbType.String);
+
     // Binary types
     private readonly H2ByteArrayTypeMapping _varBinary = H2ByteArrayTypeMapping.Default;
     private readonly H2BlobTypeMapping _blob = H2BlobTypeMapping.Default;
@@ -176,12 +186,12 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
 
             { "boolean", [_bool] },
 
-            { "timestamp", [_timestamp] },
-            { "timestamp with time zone", [_timestamptz, _timestamptzDto] },
-            { "time", [_timeTimeOnly, _timeTimeSpan] },
+            { "timestamp", [_timestamp, _timestampString] },
+            { "timestamp with time zone", [_timestamptz, _timestamptzDto, _timestamptzString] },
+            { "time", [_timeTimeOnly, _timeTimeSpan, _timeString] },
             { "time with time zone", [_timetz] },
-            { "date", [_dateDateOnly, _dateDateTime] },
-            { "interval", [_interval] },
+            { "date", [_dateDateOnly, _dateDateTime, _dateString] },
+            { "interval", [_interval, _intervalString] },
 
             { "binary varying", [_varBinary] },
             { "varbinary", [_varBinary] },

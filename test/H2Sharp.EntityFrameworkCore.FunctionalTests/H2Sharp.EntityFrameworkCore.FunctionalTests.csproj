@@ -39,12 +39,10 @@
     <Compile Remove="SequenceEndToEndTest.cs" />
     <Compile Remove="H2ValueGenerationScenariosTest.cs" />
     <!--
-      These two spec suites model string properties whose store type is an H2 date or time
-      (for example BuiltInDataTypes.TestDateOnly), and our type mapping source has no mapping
-      for CLR string over date/time columns, so model validation fails before any SQL is
-      generated. Settlement needs a design decision, not an engine fix: see docs/DIVERGENCES.md.
+      CustomConverters also seeds a date written in a culture-specific format ("01.03.2020"),
+      which H2's DATE literal does not parse; ValueConvertersEndToEnd is enabled above and
+      exercises the same provider-side date/time string mappings.
     -->
-    <Compile Remove="ValueConvertersEndToEndH2Test.cs" />
     <Compile Remove="CustomConvertersH2Test.cs" />
   </ItemGroup>
 
