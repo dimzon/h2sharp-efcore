@@ -11,10 +11,9 @@ public class H2NorthwindTestStoreFactory : H2TestStoreFactory
     }
 
     public override TestStore GetOrCreate(string storeName)
-        // H2 has no ICU collation and no user-defined collations in the port yet, so the
-        // case-insensitive collation the Northwind script asks for cannot be created. The
-        // script that creates the Northwind data is H2's own, not PostgreSQL's.
-        => H2TestStore.GetOrCreate(
-            Name,
-            scriptPath: "Northwind.sql");
+        // Northwind.sql is a PostgreSQL dump: SET statement_timeout, CREATE EXTENSION, SERIAL,
+        // bytea and 3202 E'\\x...' literals. The reference engine refuses it. EF's Northwind
+        // fixture already seeds NorthwindData after the store is initialized, so let H2 create
+        // the schema from NorthwindH2Context and load the data through EF instead.
+        => base.GetOrCreate(Name);
 }

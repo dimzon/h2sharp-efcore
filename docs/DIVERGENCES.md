@@ -57,12 +57,12 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 9476 | 0 | 9517 (41 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 9709 | 0 | 9751 (42 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 151 | 0 | 151 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **9952** | **0** | **9993** |
+   | **Итого** | **10185** | **0** | **10227** |
 
-   Зелёный гейт: 9952 теста на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 10185 тестов на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
@@ -84,7 +84,7 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 9476 | 0 | 9517 (41 пропущено) |
+   | `Category!=BlockedByPort` | 9709 | 0 | 9751 (42 пропущено) |
    | `Category=BlockedByPort` | 0 | 1 | 1 |
 
    Прогон с трейтом держит только `H2ComplianceTest.All_test_bases_must_be_implemented`
@@ -128,6 +128,14 @@ EF их не отдаёт генератору, как в апстриме).
      он искал несуществующую 5-аргументную перегрузку `UseNetTopologySuite` и падал в static
      initializer; теперь берёт единственный реальный метод. `H2RelationalConnectionTest`
      остаётся исключённым — он целиком построен на PG data source/admin API.
+   * Northwind больше не грузится из PostgreSQL-дампа `Northwind.sql` (`SET statement_timeout`,
+     `CREATE EXTENSION`, `SERIAL`, `bytea`, 3202 `E'\\x…'`-литерала — эталон отказывает).
+     `H2NorthwindTestStoreFactory` использует общий store из `H2TestStoreFactory` и даёт EF
+     создать схему из `NorthwindH2Context`, после чего `NorthwindData.SeedAsync` грузит строки.
+     Включены 6 наборов (+233): AsNoTracking, AsTracking, ChangeTracking, Navigations,
+     QueryFilters, QueryTagging. Одна теория Navigations пропущена: H2 не разрешает
+     квалифицированную внешнюю колонку внутри `DISTINCT`-подзапроса (проверено на jar).
+     Остальные Northwind-наборы пока держат PG-базлайны (`::`, `date_part`, LATERAL, JSON).
    * `ExecutionStrategyTest` включён (+37): восстановлены stateful-fakes из истории репозитория —
      `TestRelationalCommand` внутри `TestRelationalCommandBuilderFactory` и
      `TestRelationalTransaction`/Factory. Мок-фреймворк не понадобился: тест кастует сервис к
@@ -1169,8 +1177,8 @@ its expression no longer fails before SQL. Green gate is unaffected (6271/129/31
   `H2GeometryTypeMapping` больше не собирают SQL вручную: `Dialect.AppendTimestampWithTimeZone`
   и `Dialect.AppendGeometry`. Встроенные (embedded) строки JSON не трогались: это не SQL-литерал.
 
-Итог: functional green gate **9476/0/9517** (41 пропущено), unit **151/151**, model
-**325/325** на `net9.0` и `net10.0`; полный functional — 9476 прошло, 41 пропущено,
+Итог: functional green gate **9709/0/9751** (42 пропущено), unit **151/151**, model
+**325/325** на `net9.0` и `net10.0`; полный functional — 9709 прошло, 42 пропущено,
 1 красный: `H2ComplianceTest` по замыслу. Последний тест конвертеров, `("Values")`,
 открылся после исправления `IsDirectQuery` в движке: quoted keyword больше не читается
 как ключевое слово. Остальные `BlockedByPort` сняты.
