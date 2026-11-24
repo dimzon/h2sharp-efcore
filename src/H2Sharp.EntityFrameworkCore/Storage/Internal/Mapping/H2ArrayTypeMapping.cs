@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Globalization;
 using System.Data;
 using System.Data.Common;
 using System.Text;
@@ -158,7 +159,10 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
             var providerElementType = elementConverter.ProviderClrType;
 
             // Nullability has been unwrapped on the element converter's provider CLR type, so add it back here if needed
-            if (elementType.IsNullableValueType())
+            // object can hold null, and a non-nullable value-type provider element cannot carry
+            // it: make it nullable the same way the reference provider does.
+            if (elementType.IsNullableValueType()
+                || elementType.UnwrapNullableType() == typeof(object) && providerElementType.IsValueType)
             {
                 providerElementType = providerElementType.MakeNullable();
             }
@@ -271,13 +275,44 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
         bool? nullable = null,
         ParameterDirection direction = ParameterDirection.Input)
     {
-        // In queries which compose non-server-correlated LINQ operators over an array parameter (e.g. Where(b => ids.Skip(1)...) we
-        // get an enumerable parameter value that isn't an array/list - but those aren't supported at the H2 ADO level.
-        // Detect this here and evaluate the enumerable to get a fully materialized List.
-        // Note that when we have a value converter (e.g. for HashSet), we don't want to convert it to a List, since the value converter
-        // expects the original type.
+        // EF infers the element CLR type from the comparison (Contains(o.OrderID) gives int), but
+        // the query parameter can still be object[] or List<object>. Materialize it into the type
+        // the converter expects before the converter's object-level sanitizer runs; that sanitizer
+        // only knows Convert.ChangeType and cannot turn object[] into List<int>.
+        if (value is not null && Converter is { } converter)
+        {
+            var modelType = converter.ModelClrType;
+            if (!modelType.IsInstanceOfType(value) && value is IEnumerable values)
+            {
+                var elementType = modelType.TryGetElementType(typeof(IEnumerable<>))
+                    ?? modelType.GetElementType()
+                    ?? typeof(TElement);
+                var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(elementType))!;
+
+                foreach (var item in values)
+                {
+                    list.Add(item is null || elementType.IsInstanceOfType(item)
+                        ? item
+                        : Convert.ChangeType(item, elementType, CultureInfo.InvariantCulture));
+                }
+
+                if (modelType.IsArray)
+                {
+                    var array = Array.CreateInstance(elementType, list.Count);
+                    list.CopyTo(array, 0);
+                    value = array;
+                }
+                else
+                {
+                    value = list;
+                }
+            }
+        }
+        // Queries which compose non-server-correlated LINQ operators over an array parameter
+        // (ids.Skip(1)) hand us an enumerable that isn't an array/list. With no converter we can
+        // safely evaluate it into a List of the mapping's element type.
         // TODO: Make H2 support IList<> instead of only arrays and List<>
-        if (value is not null && Converter is null && !value.GetType().IsArrayOrGenericList())
+        else if (value is not null && !value.GetType().IsArrayOrGenericList())
         {
             switch (value)
             {

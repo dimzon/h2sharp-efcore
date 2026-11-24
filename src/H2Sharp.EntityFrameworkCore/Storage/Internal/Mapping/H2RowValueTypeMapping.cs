@@ -1,4 +1,8 @@
+using System;
 using System.Data.Common;
+using System.Linq;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
@@ -16,8 +20,50 @@ public class H2RowValueTypeMapping : RelationalTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public H2RowValueTypeMapping(Type clrType)
-        : base(new RelationalTypeMappingParameters(new CoreTypeMappingParameters(clrType), storeType: "record"))
+        : base(
+            new RelationalTypeMappingParameters(
+                new CoreTypeMappingParameters(clrType, converter: CreateConverter(clrType)),
+                storeType: "record"))
     {
+    }
+
+    // The ADO reader hands a row value back as object[], while the shaper asks for the CLR tuple
+    // the query projected. Rebuild the tuple from the array on the way from the provider.
+    private static ValueConverter CreateConverter(Type clrType)
+    {
+        var providerType = typeof(object[]);
+        var model = Expression.Parameter(clrType, "value");
+        var provider = Expression.Parameter(providerType, "values");
+
+        var toProvider = Expression.Lambda(
+            typeof(Func<,>).MakeGenericType(clrType, providerType),
+            Expression.Block(
+                Expression.Throw(
+                    Expression.New(
+                        typeof(InvalidOperationException).GetConstructor([typeof(string)])!,
+                        Expression.Constant("Row values cannot be sent as parameters"))),
+                Expression.Default(providerType)),
+            model);
+
+        var fields = clrType.GetGenericArguments();
+        var constructor = clrType.GetConstructor(fields)
+            ?? throw new InvalidOperationException($"No tuple constructor on {clrType}");
+
+        var fromProvider = Expression.Lambda(
+            typeof(Func<,>).MakeGenericType(providerType, clrType),
+            Expression.New(
+                constructor,
+                fields.Select(
+                    (field, index) => Expression.Convert(
+                        Expression.ArrayIndex(provider, Expression.Constant(index)),
+                        field))),
+            provider);
+
+        return (ValueConverter)Activator.CreateInstance(
+            typeof(ValueConverter<,>).MakeGenericType(clrType, providerType),
+            toProvider,
+            fromProvider,
+            null)!;
     }
 
     /// <summary>

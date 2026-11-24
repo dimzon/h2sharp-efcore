@@ -516,8 +516,6 @@ WHERE "c"."CustomerID" <> 'OCEAN' OR "c"."City" <> 'Buenos Aires' OR "c"."City" 
 """);
     }
 
-    // Port defect: a row value is materialized as object[] rather than ValueTuple.
-    [Trait("Category", "BlockedByPort")]
     [ConditionalFact]
     public async Task Row_value_project()
     {
@@ -540,21 +538,31 @@ LIMIT 2
 """);
     }
 
-    // Port defect: an object list parameter is not converted by H2ArrayTypeMapping.
-    [Trait("Category", "BlockedByPort")]
     public override async Task Where_list_object_contains_over_value_type(bool async)
-        => await base.Where_list_object_contains_over_value_type(async);
+    {
+        await base.Where_list_object_contains_over_value_type(async);
 
-    [Trait("Category", "BlockedByPort")]
+        AssertSql(
+            """
+$__orderIds_0={ '10248', '10249' } (DbType = Int32)
+
+SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+FROM "Orders" "o"
+WHERE "o"."OrderID" = ANY ($__orderIds_0)
+""");
+    }
+
     public override async Task Where_array_of_object_contains_over_value_type(bool async)
     {
         await base.Where_array_of_object_contains_over_value_type(async);
 
         AssertSql(
             """
-SELECT CAST(count(*) AS integer)
-FROM "Customers" "c"
-WHERE ("c"."City", "c"."CustomerID") < ('Buenos Aires', 'OCEAN')
+$__orderIds_0={ '10248', '10249' } (DbType = Int32)
+
+SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+FROM "Orders" "o"
+WHERE "o"."OrderID" = ANY ($__orderIds_0)
 """);
     }
 
