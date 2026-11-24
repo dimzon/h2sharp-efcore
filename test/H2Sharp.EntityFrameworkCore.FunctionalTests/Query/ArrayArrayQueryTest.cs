@@ -2,10 +2,8 @@
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-// The engine reads ARRAY now, so the fixture's table is created and the suite runs: 98 of its 100
-// tests pass. The one left carries the BlockedByPort trait -- SequenceEqual over a nullable array
-// with a parameter leaves an op_Implicit call on a query parameter in the tree, which no SQL
-// translation can see. See docs/BACKLOG.md, item 3.
+// The engine reads ARRAY and the nullable SequenceEqual path is translated, so the suite runs
+// with no BlockedByPort tests; the two conditional skips are provider-agnostic test skips.
 public class ArrayArrayQueryTest(ArrayArrayQueryTest.ArrayArrayQueryFixture fixture, ITestOutputHelper testOutputHelper)
     : ArrayQueryTest<ArrayArrayQueryTest.ArrayArrayQueryFixture>(fixture, testOutputHelper)
 {
@@ -127,7 +125,6 @@ WHERE "s"."IntArray" = ARRAY[3,4]
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task SequenceEqual_over_nullable_with_parameter(bool async)
     {
         await base.SequenceEqual_over_nullable_with_parameter(async);

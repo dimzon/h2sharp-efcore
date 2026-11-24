@@ -9,12 +9,9 @@ using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 namespace H2Sharp.EntityFrameworkCore.Migrations;
 
-// The suite runs 183 tests: 68 of them pass and are in the green run, the rest carry the
-// BlockedByPort trait one by one. Each of those needs the engine to run the DDL it generates, and
-// the engine still refuses parts of it: a DO block of a migration script, COMMENT ON, CREATE TYPE
-// AS ENUM, LEFT JOIN, UNLOGGED TABLE, ALTER TABLE, and the arrays and the generated columns. The
-// identity DDL, the sequences and the FINAL TABLE that gives the key back are read since they were
-// ported. The failures are the port's, not the provider's: see docs/DIVERGENCES.md.
+// The suite runs 183 tests and all of them are in the green run. The engine grew the DDL and
+// DML the migrations need (DO blocks, COMMENT ON, CREATE TYPE AS ENUM, joins, ALTER TABLE,
+// arrays, generated columns, sequences and FINAL TABLE), so no test carries BlockedByPort here.
 public class MigrationsH2Test : MigrationsTestBase<MigrationsH2Test.MigrationsH2Fixture>
 {
     public MigrationsH2Test(MigrationsH2Fixture fixture, ITestOutputHelper testOutputHelper)
@@ -25,45 +22,35 @@ public class MigrationsH2Test : MigrationsTestBase<MigrationsH2Test.MigrationsH2
     }
 
     // inherited from MigrationsTestBase: the JSON column and the two rename operations
-    [Trait("Category", "BlockedByPort")]
     public override Task Add_column_with_check_constraint()
         => base.Add_column_with_check_constraint();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Add_json_columns_to_existing_table()
         => base.Add_json_columns_to_existing_table();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Convert_json_entities_to_regular_owned()
         => base.Convert_json_entities_to_regular_owned();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Convert_regular_owned_entities_to_json()
         => base.Convert_regular_owned_entities_to_json();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Drop_json_columns_from_existing_table()
         => base.Drop_json_columns_from_existing_table();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Multiop_rename_table_and_create_new_table_with_the_old_name()
         => base.Multiop_rename_table_and_create_new_table_with_the_old_name();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Multiop_rename_table_and_drop()
         => base.Multiop_rename_table_and_drop();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Rename_json_column()
         => base.Rename_json_column();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Rename_table_with_json_column()
         => base.Rename_table_with_json_column();
 
     #region Table
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_table()
     {
         await base.Create_table();
@@ -79,7 +66,6 @@ CREATE TABLE "People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_table_all_settings()
     {
         // H2 2.5 has no column collation; the provider refuses instead of dropping the setting.
@@ -98,7 +84,6 @@ CREATE TABLE "Anonymous" (
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_table_with_comments()
     {
         await base.Create_table_with_comments();
@@ -115,7 +100,6 @@ COMMENT ON COLUMN "People"."Name" IS 'Column comment';
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_table_with_multiline_comments()
     {
         await base.Create_table_with_multiline_comments();
@@ -138,7 +122,6 @@ be found in the docs.';
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_table_with_computed_column(bool? stored)
     {
         if (stored != true)
@@ -163,7 +146,6 @@ CREATE TABLE "People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_table_with_identity_by_default()
     {
         await Test(
@@ -188,7 +170,6 @@ CREATE TABLE "People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_table_with_identity_always()
     {
         await Test(
@@ -213,7 +194,6 @@ CREATE TABLE "People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_table_with_identity_always_with_options()
     {
         await Test(
@@ -245,7 +225,6 @@ CREATE TABLE "People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_table_with_serial()
     {
         await Test(
@@ -271,7 +250,6 @@ CREATE TABLE "People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_table_with_system_column()
     {
         // System columns (e.g. xmin) are implicitly always present. If an xmin property is present,
@@ -305,7 +283,6 @@ CREATE TABLE "People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_table_with_oid_column()
     {
         // H2 2.5 has no implicit oid column, so the declared property is a normal column.
@@ -344,7 +321,6 @@ CREATE TABLE "People" (
         AssertSql("""DROP TABLE "People";""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_table_add_comment()
     {
         await base.Alter_table_add_comment();
@@ -352,7 +328,6 @@ CREATE TABLE "People" (
         AssertSql("""COMMENT ON TABLE "People" IS 'Table comment';""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_table_add_comment_non_default_schema()
     {
         await base.Alter_table_add_comment_non_default_schema();
@@ -360,7 +335,6 @@ CREATE TABLE "People" (
         AssertSql("""COMMENT ON TABLE "SomeOtherSchema"."People" IS 'Table comment';""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_table_change_comment()
     {
         await base.Alter_table_change_comment();
@@ -375,7 +349,6 @@ CREATE TABLE "People" (
         AssertSql("""COMMENT ON TABLE "People" IS NULL;""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Rename_table()
     {
         await base.Rename_table();
@@ -388,7 +361,6 @@ CREATE TABLE "People" (
             """ALTER TABLE "Persons" ADD CONSTRAINT "PK_Persons" PRIMARY KEY ("Id");""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Rename_table_with_primary_key()
     {
         await base.Rename_table_with_primary_key();
@@ -401,7 +373,6 @@ CREATE TABLE "People" (
             """ALTER TABLE "Persons" ADD CONSTRAINT "PK_Persons" PRIMARY KEY ("Id");""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Move_table()
     {
         // Verified against the pinned h2.jar: H2 2.5 has no ALTER ... SET SCHEMA/RENAME for these objects.
@@ -412,7 +383,6 @@ CREATE TABLE "People" (
 
     #region Schema
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_schema()
     {
         await base.Create_schema();
@@ -431,7 +401,6 @@ CREATE TABLE "SomeOtherSchema"."People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_schema_public_is_ignored()
     {
         await Test(
@@ -454,7 +423,6 @@ CREATE TABLE "PUBLIC"."People" (
 
     #region Column
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_defaultValue_string()
     {
         await base.Add_column_with_defaultValue_string();
@@ -462,7 +430,6 @@ CREATE TABLE "PUBLIC"."People" (
         AssertSql("""ALTER TABLE "People" ADD "Name" varchar NOT NULL DEFAULT 'John Doe';""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_defaultValue_datetime()
     {
         // We default to mapping DateTime to 'timestamp with time zone', so we need to explicitly specify UTC
@@ -483,7 +450,6 @@ CREATE TABLE "PUBLIC"."People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_defaultValueSql()
     {
         // H2 folds the expression in the catalogue: the default is stored as 3, not as 1 + 2.
@@ -502,7 +468,6 @@ CREATE TABLE "PUBLIC"."People" (
         AssertSql("""ALTER TABLE "People" ADD "Sum" integer NOT NULL DEFAULT (1 + 2);""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_computedSql(bool? stored)
     {
         if (stored != true)
@@ -517,7 +482,6 @@ CREATE TABLE "PUBLIC"."People" (
         AssertSql("""ALTER TABLE "People" ADD "Sum" varchar GENERATED ALWAYS AS ("X" + "Y");""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_required()
     {
         await base.Add_column_with_required();
@@ -525,7 +489,6 @@ CREATE TABLE "PUBLIC"."People" (
         AssertSql("""ALTER TABLE "People" ADD "Name" varchar NOT NULL DEFAULT '';""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_ansi()
     {
         await base.Add_column_with_ansi();
@@ -533,7 +496,6 @@ CREATE TABLE "PUBLIC"."People" (
         AssertSql("""ALTER TABLE "People" ADD "Name" varchar;""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_max_length()
     {
         await base.Add_column_with_max_length();
@@ -541,7 +503,6 @@ CREATE TABLE "PUBLIC"."People" (
         AssertSql("""ALTER TABLE "People" ADD "Name" varchar(30);""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_unbounded_max_length()
     {
         await base.Add_column_with_unbounded_max_length();
@@ -549,7 +510,6 @@ CREATE TABLE "PUBLIC"."People" (
         AssertSql("""ALTER TABLE "People" ADD "Name" varchar;""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_max_length_on_derived()
     {
         await base.Add_column_with_max_length_on_derived();
@@ -557,7 +517,6 @@ CREATE TABLE "PUBLIC"."People" (
         AssertSql();
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_fixed_length()
     {
         await base.Add_column_with_fixed_length();
@@ -565,7 +524,6 @@ CREATE TABLE "PUBLIC"."People" (
         AssertSql("""ALTER TABLE "People" ADD "Name" char(100);""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_column_with_comment()
     {
         await base.Add_column_with_comment();
@@ -597,7 +555,6 @@ COMMENT ON COLUMN "People"."FullName" IS 'My comment';
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Add_column_with_upper_case_store_type()
     {
         // At least for now, it's the user's responsibility to quote store type name when needed,
@@ -621,7 +578,6 @@ CREATE TABLE "People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Add_column_with_identity_by_default()
     {
         await Test(
@@ -646,7 +602,6 @@ CREATE TABLE "People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Add_column_with_identity_always()
     {
         await Test(
@@ -671,7 +626,6 @@ CREATE TABLE "People" (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Add_column_with_identity_by_default_with_all_options()
     {
         await Test(
@@ -725,7 +679,6 @@ ALTER TABLE "People" ADD "SomeColumn" integer GENERATED BY DEFAULT AS IDENTITY (
                 .UseSerialColumn());
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Add_column_required_with_serial()
     {
         await Test(
@@ -750,7 +703,6 @@ ALTER TABLE "People" ADD "SomeColumn" integer GENERATED BY DEFAULT AS IDENTITY (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Add_column_required_with_identity_by_default()
     {
         await Test(
@@ -775,7 +727,6 @@ ALTER TABLE "People" ADD "SomeColumn" integer GENERATED BY DEFAULT AS IDENTITY (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Add_column_system()
     {
         // System columns (e.g. xmin) are implicitly always present. If an xmin property is added,
@@ -802,7 +753,6 @@ ALTER TABLE "People" ADD "SomeColumn" integer GENERATED BY DEFAULT AS IDENTITY (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Add_column_with_huge_varchar()
     {
         // PostgreSQL doesn't allow varchar(x) with x > 10485760, so we map this to text.
@@ -826,7 +776,6 @@ ALTER TABLE "People" ADD "SomeColumn" integer GENERATED BY DEFAULT AS IDENTITY (
         AssertSql("""ALTER TABLE "People" ADD "Name" varchar;""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_column_change_type()
     {
         await base.Alter_column_change_type();
@@ -903,7 +852,6 @@ ALTER TABLE "People" ALTER COLUMN "FirstName" SET DEFAULT '';
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_column_make_computed(bool? stored)
     {
         if (stored != true)
@@ -1043,7 +991,6 @@ ALTER TABLE "People" ALTER COLUMN "FirstName" SET DEFAULT '';
             """ALTER TABLE "People" ADD "Sum" integer NOT NULL;""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_column_add_comment()
     {
         await base.Alter_column_add_comment();
@@ -1081,7 +1028,6 @@ ALTER TABLE "People" ALTER COLUMN "FirstName" SET DEFAULT '';
         AssertSql("""COMMENT ON COLUMN "People"."SomeColumn" IS 'Some comment';""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_column_change_comment()
     {
         await base.Alter_column_change_comment();
@@ -1098,7 +1044,6 @@ ALTER TABLE "People" ALTER COLUMN "FirstName" SET DEFAULT '';
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_make_identity_by_default()
     {
         await Test(
@@ -1122,7 +1067,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_make_identity_always()
     {
         await Test(
@@ -1147,7 +1091,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_make_default_into_identity()
     {
         await Test(
@@ -1176,7 +1119,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED ALWAYS;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_make_identity_by_default_with_options()
     {
         await Test(
@@ -1210,7 +1152,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET MAXVALUE 2000;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_make_identity_with_default_options()
     {
         await Test(
@@ -1246,7 +1187,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET MINVALUE 1;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_change_identity_options()
     {
         await Test(
@@ -1279,7 +1219,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET CYCLE;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_remove_identity_options()
     {
         await Test(
@@ -1314,7 +1253,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET CACHE 1;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_make_serial()
     {
         await Test(
@@ -1340,7 +1278,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_make_serial_in_non_default_schema()
     {
         await Test(
@@ -1367,7 +1304,6 @@ ALTER TABLE "some_schema"."People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_long_make_bigserial()
     {
         await Test(
@@ -1394,7 +1330,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_change_identity_type()
     {
         await Test(
@@ -1419,7 +1354,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_change_serial_to_identity()
     {
         await Test(
@@ -1443,7 +1377,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_serial_change_type()
     {
         await Test(
@@ -1472,7 +1405,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_restart_identity()
     {
         await Test(
@@ -1510,7 +1442,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
         await Assert.ThrowsAsync<NotSupportedException>(() => base.Alter_column_reset_collation());
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Convert_string_column_to_a_json_column_containing_reference()
     {
         // H2 2.5 has a JSON type and can cast a string to it; PostgreSQL needs USING here.
@@ -1532,7 +1463,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
         AssertSql("""ALTER TABLE "Entity" ALTER COLUMN "Name" TYPE json;""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Convert_string_column_to_a_json_column_containing_required_reference()
     {
         // H2 2.5 has a JSON type and can cast a string to it; PostgreSQL needs USING here.
@@ -1554,7 +1484,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
         AssertSql("""ALTER TABLE "Entity" ALTER COLUMN "Name" TYPE json;""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Convert_string_column_to_a_json_column_containing_collection()
     {
         // H2 2.5 has a JSON type and can cast a string to it; PostgreSQL needs USING here.
@@ -1577,7 +1506,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_column_computed_set_collation()
     {
         // H2 2.5 has no collation of a column, so the provider refuses to write it.
@@ -1604,7 +1532,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
                 }));
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Drop_column()
     {
         await base.Drop_column();
@@ -1612,7 +1539,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
         AssertSql("""ALTER TABLE "People" DROP COLUMN "SomeColumn";""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Drop_column_primary_key()
     {
         await base.Drop_column_primary_key();
@@ -1652,7 +1578,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Drop_column_system()
     {
         // System columns (e.g. xmin) are implicitly always present. If an xmin property is removed,
@@ -1684,7 +1609,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
         AssertSql();
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Rename_column()
     {
         await base.Rename_column();
@@ -1703,7 +1627,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
         AssertSql("""CREATE UNIQUE INDEX "IX_People_FirstName_LastName" ON "People" ("FirstName", "LastName");""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_index_descending()
     {
         await base.Create_index_descending();
@@ -1711,7 +1634,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
         AssertSql("""CREATE INDEX "IX_People_X" ON "People" ("X" DESC);""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_index_descending_mixed()
     {
         await base.Create_index_descending_mixed();
@@ -1720,7 +1642,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_index_descending_mixed_legacy_annotation()
     {
         await Test(
@@ -1804,7 +1725,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_index_unique_with_include()
     {
         await Test(
@@ -1847,7 +1767,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_index_unique_with_include_and_filter()
     {
         // H2 2.5 has no filtered indexes; the provider refuses them instead of silently
@@ -1873,7 +1792,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_index_with_method()
     {
         await Test(
@@ -1916,7 +1834,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_index_with_null_sort_order()
     {
         await Test(
@@ -1986,7 +1903,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
             """CREATE UNIQUE INDEX "IX_NullsNotDistinct" ON "People" ("Age") NULLS NOT DISTINCT;""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_index_change_sort_order()
     {
         await base.Alter_index_change_sort_order();
@@ -2004,7 +1920,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
         AssertSql("""DROP INDEX "IX_People_SomeField";""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Rename_index()
     {
         await base.Rename_index();
@@ -2016,7 +1931,6 @@ ALTER TABLE "People" ALTER COLUMN "Id" SET GENERATED BY DEFAULT;
 
     #region Key and constraint
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_primary_key_int()
     {
         await base.Add_primary_key_int();
@@ -2147,7 +2061,6 @@ ALTER TABLE "People" ADD CONSTRAINT "PK_Foo" PRIMARY KEY ("SomeField");
         AssertSql("""CREATE SEQUENCE "TestSequence" AS integer START WITH 1 INCREMENT BY 1 NO CYCLE;""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_sequence_all_settings()
     {
         await base.Create_sequence_all_settings();
@@ -2163,7 +2076,6 @@ CREATE SEQUENCE "dbo2"."TestSequence" START WITH 3 INCREMENT BY 2 MINVALUE 2 MAX
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_sequence_smallint()
     {
         await Test(
@@ -2180,7 +2092,6 @@ CREATE SEQUENCE "dbo2"."TestSequence" START WITH 3 INCREMENT BY 2 MINVALUE 2 MAX
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_sequence_all_settings()
     {
         await base.Alter_sequence_all_settings();
@@ -2196,7 +2107,6 @@ ALTER SEQUENCE "foo" RESTART;
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_sequence_increment_by()
     {
         await base.Alter_sequence_increment_by();
@@ -2207,7 +2117,6 @@ ALTER SEQUENCE "foo" INCREMENT BY 2 NO MINVALUE NO MAXVALUE NO CYCLE;
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Alter_sequence_restart_with()
     {
         await base.Alter_sequence_restart_with();
@@ -2226,14 +2135,12 @@ ALTER SEQUENCE "foo" RESTART;
         AssertSql("""DROP SEQUENCE "TestSequence";""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Rename_sequence()
     {
         // Verified against the pinned h2.jar: H2 2.5 has no ALTER ... SET SCHEMA/RENAME for these objects.
         await Assert.ThrowsAsync<NotSupportedException>(() => base.Rename_sequence());
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Move_sequence()
     {
         // Verified against the pinned h2.jar: H2 2.5 has no ALTER ... SET SCHEMA/RENAME for these objects.
@@ -2244,7 +2151,6 @@ ALTER SEQUENCE "foo" RESTART;
 
     #region Data seeding
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task InsertDataOperation()
     {
         await base.InsertDataOperation();
@@ -2327,7 +2233,6 @@ WHERE "Id" = 2;
     }
 
     [ConditionalFact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task InsertDataOperation_restarts_identity()
     {
         await Test(
@@ -2390,7 +2295,6 @@ ALTER TABLE "Person2" ALTER COLUMN "Id" RESTART WITH (
 
     #endregion Data seeding
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_required_primitve_collection_with_custom_default_value_sql_to_existing_table()
     {
         await base.Add_required_primitve_collection_with_custom_default_value_sql_to_existing_table_core("ARRAY[3, 2, 1]");
@@ -2402,7 +2306,6 @@ ALTER TABLE "Person2" ALTER COLUMN "Id" RESTART WITH (
     #region PostgreSQL enums
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_enum()
     {
         await Test(
@@ -2423,7 +2326,6 @@ ALTER TABLE "Person2" ALTER COLUMN "Id" RESTART WITH (
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Create_enum_with_schema()
     {
         await Test(
@@ -2451,7 +2353,6 @@ CREATE TYPE "some_schema"."Mood" AS ENUM ('Happy', 'Sad');
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Drop_enum()
     {
         await Test(
@@ -2463,7 +2364,6 @@ CREATE TYPE "some_schema"."Mood" AS ENUM ('Happy', 'Sad');
     }
 
     [Fact] // #979
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Do_not_alter_existing_enum_when_creating_new_one()
     {
         await Test(
@@ -2476,7 +2376,6 @@ CREATE TYPE "some_schema"."Mood" AS ENUM ('Happy', 'Sad');
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_enum_add_label_at_end()
     {
         // H2 2.5 appends a label with "ALTER TYPE ... ADD VALUE"; the reference takes this form
@@ -2499,7 +2398,6 @@ CREATE TYPE "some_schema"."Mood" AS ENUM ('Happy', 'Sad');
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_enum_add_label_in_middle()
     {
         // There is no BEFORE/AFTER, so the label is appended: the model says Happy, Angry, Sad
@@ -2514,7 +2412,6 @@ CREATE TYPE "some_schema"."Mood" AS ENUM ('Happy', 'Sad');
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual async Task Alter_enum_change_label_ordering_does_nothing()
     {
         await Test(
@@ -2533,14 +2430,12 @@ CREATE TYPE "some_schema"."Mood" AS ENUM ('Happy', 'Sad');
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual Task Alter_enum_drop_label_not_supported()
         => TestThrows<NotSupportedException>(
             builder => builder.HasH2Enum("Mood", ["Happy", "Sad"]),
             builder => builder.HasH2Enum("Mood", ["Happy"]));
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public virtual Task Alter_enum_change_label_not_supported()
         => TestThrows<NotSupportedException>(
             builder => builder.HasH2Enum("Mood", ["Happy", "Sad"]),
@@ -2550,7 +2445,6 @@ CREATE TYPE "some_schema"."Mood" AS ENUM ('Happy', 'Sad');
 
 
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_required_primitive_collection_to_existing_table()
     {
         await base.Add_required_primitive_collection_to_existing_table();
@@ -2558,7 +2452,6 @@ CREATE TYPE "some_schema"."Mood" AS ENUM ('Happy', 'Sad');
         AssertSql("""ALTER TABLE "Customers" ADD "Numbers" integer ARRAY NOT NULL DEFAULT ARRAY [];""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_required_primitive_collection_with_custom_default_value_to_existing_table()
     {
         await base.Add_required_primitive_collection_with_custom_default_value_to_existing_table();
@@ -2566,7 +2459,6 @@ CREATE TYPE "some_schema"."Mood" AS ENUM ('Happy', 'Sad');
         AssertSql("""ALTER TABLE "Customers" ADD "Numbers" integer ARRAY NOT NULL DEFAULT ARRAY [1, 2, 3];""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_required_primitive_collection_with_custom_default_value_sql_to_existing_table()
     {
         await base.Add_required_primitive_collection_with_custom_default_value_sql_to_existing_table_core("ARRAY[1,2,3]");
@@ -2585,7 +2477,6 @@ ALTER TABLE [Customers] ADD [Numbers] nvarchar(max) NOT NULL DEFAULT N'nothing';
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_required_primitive_collection_with_custom_converter_and_custom_default_value_to_existing_table()
     {
         await base.Add_required_primitive_collection_with_custom_converter_and_custom_default_value_to_existing_table();
@@ -2593,7 +2484,6 @@ ALTER TABLE [Customers] ADD [Numbers] nvarchar(max) NOT NULL DEFAULT N'nothing';
         AssertSql("""ALTER TABLE "Customers" ADD "Numbers" varchar NOT NULL DEFAULT 'some numbers';""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_optional_primitive_collection_to_existing_table()
     {
         await base.Add_optional_primitive_collection_to_existing_table();
@@ -2601,7 +2491,6 @@ ALTER TABLE [Customers] ADD [Numbers] nvarchar(max) NOT NULL DEFAULT N'nothing';
         AssertSql("""ALTER TABLE "Customers" ADD "Numbers" integer ARRAY;""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_table_with_required_primitive_collection()
     {
         await base.Create_table_with_required_primitive_collection();
@@ -2617,7 +2506,6 @@ CREATE TABLE "Customers" (
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_table_with_optional_primitive_collection()
     {
         await base.Create_table_with_optional_primitive_collection();
@@ -2633,7 +2521,6 @@ CREATE TABLE "Customers" (
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH()
     {
         await base.Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH();
@@ -2653,7 +2540,6 @@ CREATE TABLE "Contacts" (
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_required_primitve_collection_to_existing_table()
     {
         await base.Add_required_primitve_collection_to_existing_table();
@@ -2661,7 +2547,6 @@ CREATE TABLE "Contacts" (
         AssertSql("""ALTER TABLE "Customers" ADD "Numbers" integer ARRAY NOT NULL DEFAULT ARRAY [];""");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_required_primitve_collection_with_custom_default_value_to_existing_table()
     {
         await base.Add_required_primitve_collection_with_custom_default_value_to_existing_table();
@@ -2677,7 +2562,6 @@ CREATE TABLE "Contacts" (
         AssertSql("ALTER TABLE [Customers] ADD [Numbers] nvarchar(max) NOT NULL DEFAULT N'nothing';");
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Add_required_primitve_collection_with_custom_converter_and_custom_default_value_to_existing_table()
     {
         await base.Add_required_primitve_collection_with_custom_converter_and_custom_default_value_to_existing_table();

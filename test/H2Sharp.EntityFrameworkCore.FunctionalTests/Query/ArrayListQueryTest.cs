@@ -2,11 +2,8 @@
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-// The engine reads ARRAY now, so the fixture's table is created and the suite runs: 82 of its 100
-// tests pass. The nine left carry the BlockedByPort trait and are the list model's: a List<T>
-// cannot stand in for the int[] that MemoryExtensions.Contains wants, and SequenceEqual with a
-// parameter puts a ReadOnlySpan into the expression tree. They need the test-side rewrite
-// described in docs/BACKLOG.md, item 3.
+// The engine reads ARRAY and the test-side span/List rewrite is in place, so the whole suite
+// runs: all 100 tests are in the green gate.
 public class ArrayListQueryTest : ArrayQueryTest<ArrayListQueryTest.ArrayListQueryFixture>
 {
     public ArrayListQueryTest(ArrayListQueryFixture fixture, ITestOutputHelper testOutputHelper)
@@ -107,7 +104,6 @@ WHERE FALSE
 
     #region SequenceEqual
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task SequenceEqual_with_parameter(bool async)
     {
         await base.SequenceEqual_with_parameter(async);
@@ -133,7 +129,6 @@ WHERE "s"."IntList" = ARRAY[3,4]
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task SequenceEqual_over_nullable_with_parameter(bool async)
     {
         await base.SequenceEqual_over_nullable_with_parameter(async);
@@ -176,7 +171,6 @@ WHERE array_contains("s"."StringList", '3')
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Array_column_Contains_literal_item(bool async)
     {
         await base.Array_column_Contains_literal_item(async);
@@ -188,7 +182,6 @@ WHERE array_contains("s"."IntList", 3)
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Array_column_Contains_parameter_item(bool async)
     {
         await base.Array_column_Contains_parameter_item(async);
@@ -202,7 +195,6 @@ WHERE array_contains("s"."IntList", $__p_0)
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Array_column_Contains_column_item(bool async)
     {
         await base.Array_column_Contains_column_item(async);
@@ -214,7 +206,6 @@ WHERE array_contains("s"."IntList", "s"."Id" + 2)
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Array_column_Contains_null_constant(bool async)
     {
         await base.Array_column_Contains_null_constant(async);
@@ -246,7 +237,6 @@ WHERE array_contains("s"."StringList", NULL)
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Nullable_array_column_Contains_literal_item(bool async)
     {
         await base.Nullable_array_column_Contains_literal_item(async);
@@ -418,7 +408,6 @@ WHERE CAST("s"."Id" AS text) = ANY ($__values_0)
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Byte_array_parameter_contains_column(bool async)
     {
         var values = new List<byte> { 20 };
@@ -553,7 +542,6 @@ WHERE array_contains("s"."IList", 10)
 """);
     }
 
-    [Trait("Category", "BlockedByPort")]
     public override async Task Array_column_Contains_in_scalar_subquery(bool async)
     {
         await base.Array_column_Contains_in_scalar_subquery(async);
