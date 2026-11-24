@@ -70,17 +70,9 @@ public class H2TimestampTypeMapping : H2TypeMapping
     protected override string GenerateNonNullSqlLiteral(object value)
     {
         var dateTime = (DateTime)value;
-        if (!H2TypeMappingSource.DisableDateTimeInfinityConversions)
+        if (dateTime == DateTime.MinValue || dateTime == DateTime.MaxValue)
         {
-            if (dateTime == DateTime.MinValue)
-            {
-                return "-infinity";
-            }
-
-            if (dateTime == DateTime.MaxValue)
-            {
-                return "infinity";
-            }
+            return H2TypeMapping.TimestampLiteral(dateTime);
         }
 
         return Dialect.AppendTimestamp(new StringBuilder(), dateTime).ToString();

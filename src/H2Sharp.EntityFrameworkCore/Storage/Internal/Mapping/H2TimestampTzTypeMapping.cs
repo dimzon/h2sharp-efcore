@@ -90,6 +90,11 @@ public class H2TimestampTzTypeMapping : H2TypeMapping
                 $"Attempted to generate timestamptz literal for type {value.GetType()}, only DateTime and DateTimeOffset are supported")
         };
 
+        if (dateTimeOffset == DateTimeOffset.MinValue || dateTimeOffset == DateTimeOffset.MaxValue)
+        {
+            return H2TypeMapping.TimestampWithTimeZoneLiteral(dateTimeOffset);
+        }
+
         return Dialect.AppendTimestampWithTimeZone(new StringBuilder(), dateTimeOffset).ToString();
     }
 

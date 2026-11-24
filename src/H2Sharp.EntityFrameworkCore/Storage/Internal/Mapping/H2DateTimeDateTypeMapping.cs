@@ -61,17 +61,9 @@ public class H2DateTimeDateTypeMapping : H2TypeMapping
     protected override string GenerateNonNullSqlLiteral(object value)
     {
         var date = (DateTime)value;
-        if (!H2TypeMappingSource.DisableDateTimeInfinityConversions)
+        if (date == DateTime.MinValue || date == DateTime.MaxValue)
         {
-            if (date == DateTime.MinValue)
-            {
-                return "CAST('-Infinity' AS DATE)";
-            }
-
-            if (date == DateTime.MaxValue)
-            {
-                return "CAST('Infinity' AS DATE)";
-            }
+            return H2TypeMapping.DateLiteral(DateOnly.FromDateTime(date));
         }
 
         return Dialect.AppendDate(new StringBuilder(), DateOnly.FromDateTime(date)).ToString();

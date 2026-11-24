@@ -58,11 +58,11 @@ EF их не отдаёт генератору, как в апстриме).
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 6652 | 0 | 6673 (21 пропущено) |
-   | `H2Sharp.EntityFrameworkCore.Tests` | 129 | 0 | 129 |
+   | `H2Sharp.EntityFrameworkCore.Tests` | 132 | 0 | 132 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **7106** | **0** | **7127** |
+   | **Итого** | **7109** | **0** | **7130** |
 
-   Зелёный гейт: 7106 тестов на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 7109 тестов на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
@@ -111,6 +111,10 @@ EF их не отдаёт генератору, как в апстриме).
    * `ValueConvertersEndToEndH2Test` включён: CLR `string` теперь маппится поверх
      `date`/`time`/`timestamp`/`interval`, а ожидания типов переписаны с PostgreSQL на H2.
      150 тестов зелёные; один (`("Values")`) ждёт исправления `Token.IsIdentifier` в движке.
+   * Границы `DateTime`/`DateOnly` больше не пишутся как PostgreSQL `-infinity`/`infinity`:
+     H2 2.5 такие литералы отвергает. Провайдер пишет реальные `0001-01-01`/`9999-12-31`
+     (и `+00:00` для timestamptz); `H2TemporalInfinityLiteralTest` держит формы, проверенные
+     на эталонном jar.
 
    История: на движке `17c9f68` было 434 и 4888; коммит `f56ca4c` дал 350 переходов
    красное→зелёное и ни одного обратного. Правки провайдера добавили 288, перенос трейта
@@ -1111,7 +1115,7 @@ its expression no longer fails before SQL. Green gate is unaffected (6271/129/31
   `H2GeometryTypeMapping` больше не собирают SQL вручную: `Dialect.AppendTimestampWithTimeZone`
   и `Dialect.AppendGeometry`. Встроенные (embedded) строки JSON не трогались: это не SQL-литерал.
 
-Итог: functional green gate **6652/0/6673** (21 пропущено), unit **129/129**, model
+Итог: functional green gate **6652/0/6673** (21 пропущено), unit **132/132**, model
 **325/325** на `net9.0` и `net10.0`; полный functional — 6652 прошло, 21 пропущено,
 2 красных: `H2ComplianceTest` по замыслу и один тест конвертеров на дефект
 `Token.IsIdentifier` в движке. Остальные `BlockedByPort` сняты.

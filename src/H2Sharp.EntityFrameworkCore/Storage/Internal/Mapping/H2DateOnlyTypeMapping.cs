@@ -68,7 +68,12 @@ public class H2DateOnlyTypeMapping : H2TypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override string GenerateNonNullSqlLiteral(object value)
-        => Dialect.AppendDate(new StringBuilder(), (DateOnly)value).ToString();
+    {
+        var date = (DateOnly)value;
+        return date == DateOnly.MinValue || date == DateOnly.MaxValue
+            ? H2TypeMapping.DateLiteral(date)
+            : Dialect.AppendDate(new StringBuilder(), date).ToString();
+    }
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

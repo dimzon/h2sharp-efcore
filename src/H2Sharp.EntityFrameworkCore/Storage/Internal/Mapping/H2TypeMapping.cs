@@ -128,4 +128,32 @@ public abstract class H2TypeMapping : RelationalTypeMapping
         => value?.GetType().IsInteger() == true && ClrType.UnwrapNullableType().IsEnum
             ? Enum.ToObject(ClrType.UnwrapNullableType(), value)
             : value;
+
+    /// <summary>
+    ///     Writes a boundary DATE literal without PostgreSQL's infinity spelling.
+    /// </summary>
+    /// <remarks>
+    ///     H2 2.5 has no date/time infinities: <c>CAST('-Infinity' AS DATE)</c> is refused. The
+    ///     CLR boundaries therefore travel as the real minimum and maximum dates.
+    /// </remarks>
+    internal static string DateLiteral(DateOnly value)
+        => "DATE " + H2Sharp.Data.Dialect.AppendString(
+            new System.Text.StringBuilder(),
+            value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+
+    /// <summary>
+    ///     Writes a boundary TIMESTAMP literal without PostgreSQL's infinity spelling.
+    /// </summary>
+    internal static string TimestampLiteral(DateTime value)
+        => "TIMESTAMP " + H2Sharp.Data.Dialect.AppendString(
+            new System.Text.StringBuilder(),
+            value.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFF", System.Globalization.CultureInfo.InvariantCulture));
+
+    /// <summary>
+    ///     Writes a boundary TIMESTAMP WITH TIME ZONE literal without PostgreSQL's infinity spelling.
+    /// </summary>
+    internal static string TimestampWithTimeZoneLiteral(DateTimeOffset value)
+        => "TIMESTAMP WITH TIME ZONE " + H2Sharp.Data.Dialect.AppendString(
+            new System.Text.StringBuilder(),
+            value.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFFzzz", System.Globalization.CultureInfo.InvariantCulture));
 }
