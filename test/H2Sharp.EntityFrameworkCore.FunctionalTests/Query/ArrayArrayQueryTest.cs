@@ -121,9 +121,9 @@ WHERE "s"."IntArray" = $__arr_0
 
         AssertSql(
             """
-SELECT s."Id", s."ArrayContainerEntityId", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IntArray", s."IntList", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArray", s."ValueConvertedList", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE s."IntArray" = ARRAY[3,4]
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IntArray", "s"."IntList", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArray", "s"."ValueConvertedList", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE "s"."IntArray" = ARRAY[3,4]
 """);
     }
 
@@ -134,9 +134,9 @@ WHERE s."IntArray" = ARRAY[3,4]
 
         AssertSql(
             """
-$__arr_0={ '3', '4', NULL } (DbType = Object)
+$__arr_0={ '3', '4', NULL } (DbType = Int32)
 
-SELECT s."Id", s."ArrayContainerEntityId", s."ArrayOfStringConvertedToDelimitedString", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IList", s."IntArray", s."IntList", s."ListOfStringConvertedToDelimitedString", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArrayOfEnum", s."ValueConvertedListOfEnum", s."Varchar10", s."Varchar15"
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."ArrayOfStringConvertedToDelimitedString", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IList", "s"."IntArray", "s"."IntList", "s"."ListOfStringConvertedToDelimitedString", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArrayOfEnum", "s"."ValueConvertedListOfEnum", "s"."Varchar10", "s"."Varchar15"
 FROM "SomeEntities" "s"
 WHERE "s"."NullableIntArray" IS NOT DISTINCT FROM $__arr_0
 """);
@@ -713,9 +713,9 @@ WHERE "s"."NullableText" ILIKE 'B%' AND "s"."NullableText" ILIKE 'ba%'
     //
     //         AssertSql(
     // """
-    // SELECT s."Id", s."ArrayContainerEntityId", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IntArray", s."IntList", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArray", s."ValueConvertedList", s."Varchar10", s."Varchar15"
-    // FROM "SomeEntities" AS s
-    // WHERE array_append(s."IntArray", 5) = ARRAY[3,4,5]
+    // SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IntArray", "s"."IntList", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArray", "s"."ValueConvertedList", "s"."Varchar10", "s"."Varchar15"
+    // FROM "SomeEntities" "s"
+    // WHERE array_append("s"."IntArray", 5) = ARRAY[3,4,5]
     // """);
     public override async Task Concat(bool async)
     {
@@ -723,9 +723,9 @@ WHERE "s"."NullableText" ILIKE 'B%' AND "s"."NullableText" ILIKE 'ba%'
 
         AssertSql(
             """
-SELECT s."Id", s."ArrayContainerEntityId", s."Byte", s."ByteArray", s."Bytea", s."EnumConvertedToInt", s."EnumConvertedToString", s."IntArray", s."IntList", s."NonNullableText", s."NullableEnumConvertedToString", s."NullableEnumConvertedToStringWithNonNullableLambda", s."NullableIntArray", s."NullableIntList", s."NullableStringArray", s."NullableStringList", s."NullableText", s."StringArray", s."StringList", s."ValueConvertedArray", s."ValueConvertedList", s."Varchar10", s."Varchar15"
-FROM "SomeEntities" AS s
-WHERE array_cat(s."IntArray", ARRAY[5,6]) = ARRAY[3,4,5,6]
+SELECT "s"."Id", "s"."ArrayContainerEntityId", "s"."Byte", "s"."ByteArray", "s"."Bytea", "s"."EnumConvertedToInt", "s"."EnumConvertedToString", "s"."IntArray", "s"."IntList", "s"."NonNullableText", "s"."NullableEnumConvertedToString", "s"."NullableEnumConvertedToStringWithNonNullableLambda", "s"."NullableIntArray", "s"."NullableIntList", "s"."NullableStringArray", "s"."NullableStringList", "s"."NullableText", "s"."StringArray", "s"."StringList", "s"."ValueConvertedArray", "s"."ValueConvertedList", "s"."Varchar10", "s"."Varchar15"
+FROM "SomeEntities" "s"
+WHERE array_cat("s"."IntArray", ARRAY[5,6]) = ARRAY[3,4,5,6]
 """);
     }
 
