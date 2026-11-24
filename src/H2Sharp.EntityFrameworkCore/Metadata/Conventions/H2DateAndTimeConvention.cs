@@ -42,7 +42,11 @@ public class H2DateAndTimeConvention : IPropertyAddedConvention
         }
         else if (property.ClrType.UnwrapNullableType() == typeof(TimeOnly))
         {
-            propertyBuilder.HasColumnType("time");
+            // H2 2.5 gives TIME without a precision the precision 0, so a column declared
+            // "time" keeps whole seconds only. A TimeOnly holds ticks (hundreds of
+            // nanoseconds), and the reference keeps up to 9 fractional digits: the column
+            // asks for the 7 digits of the .NET value so the value survives the round trip.
+            propertyBuilder.HasColumnType("time(7)");
             propertyBuilder.HasConversion(
                 new ValueConverter<TimeOnly, TimeSpan>(
                     time => time.ToTimeSpan(),

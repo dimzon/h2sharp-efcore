@@ -93,10 +93,9 @@ public class TransactionH2Test(TransactionH2Test.TransactionH2Fixture fixture)
     protected override bool AmbientTransactionsSupported
         => true;
 
-    // The reopening defect (dimzon/h2sharp#96) is closed: ambient SaveChanges with a connection
-    // string and the suppression check both run green now and are back in the normal suite.
-    // Three cases still wait on the engine: nested and independent ambient transactions, and
-    // reopening a connection after an enlisted transaction was explicitly closed.
+    // The reopening defect (dimzon/h2sharp#96) is closed, and nested and independent ambient
+    // transactions run too: a connection closed inside one scope keeps that session with its
+    // enlistment, and reopens onto a session of the scope it is opened in.
     public override Task SaveChanges_uses_ambient_transaction_with_connectionString(
         bool async,
         AutoTransactionBehavior autoTransactionBehavior)
@@ -104,18 +103,6 @@ public class TransactionH2Test(TransactionH2Test.TransactionH2Fixture fixture)
 
     public override void SaveChanges_throws_for_suppressed_ambient_transactions(bool connectionString)
         => base.SaveChanges_throws_for_suppressed_ambient_transactions(connectionString);
-
-    [Trait("Category", "BlockedByPort")]
-    public override void SaveChanges_allows_nested_ambient_transactions()
-        => base.SaveChanges_allows_nested_ambient_transactions();
-
-    [Trait("Category", "BlockedByPort")]
-    public override void SaveChanges_allows_independent_ambient_transaction_commits()
-        => base.SaveChanges_allows_independent_ambient_transaction_commits();
-
-    [Trait("Category", "BlockedByPort")]
-    public override void BeginTransaction_can_be_used_after_enlisted_transaction_if_connection_closed()
-        => base.BeginTransaction_can_be_used_after_enlisted_transaction_if_connection_closed();
 
     protected override bool SnapshotSupported
         => true;

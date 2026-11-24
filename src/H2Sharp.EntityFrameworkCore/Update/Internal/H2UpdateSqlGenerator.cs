@@ -148,8 +148,6 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
         int commandPosition,
         out bool requiresTransaction)
     {
-        // The default implementation adds RETURNING 1 to do concurrency check (was the row actually updated), but in H2 we check
-        // the per-statement row-affected value exposed by H2 in the batch; so no need for RETURNING 1.
         var name = command.TableName;
         var schema = command.Schema;
         var operations = command.ColumnModifications;
@@ -160,9 +158,55 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
 
         requiresTransaction = false;
 
-        AppendUpdateCommand(commandStringBuilder, name, schema, writeOperations, readOperations, conditionOperations);
+        if (readOperations.Count == 0)
+        {
+            // A command with no entries comes from a migration: its SQL is a script statement
+            // that nobody reads a result set from, so it stays a plain UPDATE. The tracked
+            // commands of SaveChanges are the ones the batch checks against the affected count.
+            if (command.Entries.Count == 0)
+            {
+                AppendUpdateCommandHeader(commandStringBuilder, name, schema, writeOperations);
+                AppendWhereClause(commandStringBuilder, conditionOperations);
+                commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
 
-        return readOperations.Count > 0 ? ResultSetMapping.LastInResultSet : ResultSetMapping.NoResults;
+                return ResultSetMapping.NoResults;
+            }
+
+            // H2 2.5 has no RETURNING, and the affected count has to reach EF as a result set:
+            // the batch checks it against the one row the statement was meant to change and
+            // throws DbUpdateConcurrencyException when the row is gone or the token differs.
+            // FINAL TABLE is H2's form for the rows an update left, and the count of them is
+            // the update count. A plain UPDATE would report no result set at all, and the
+            // batch would take the missing row for success.
+            commandStringBuilder.Append("SELECT COUNT(*) FROM FINAL TABLE (");
+            AppendUpdateCommandHeader(commandStringBuilder, name, schema, writeOperations);
+            AppendWhereClause(commandStringBuilder, conditionOperations);
+            commandStringBuilder.Append(')');
+            commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
+
+            return ResultSetMapping.LastInResultSet | ResultSetMapping.ResultSetWithRowsAffectedOnly;
+        }
+
+        commandStringBuilder.Append("SELECT ");
+        for (var i = 0; i < readOperations.Count; i++)
+        {
+            if (i > 0)
+            {
+                commandStringBuilder.Append(", ");
+            }
+
+            commandStringBuilder.Append(SqlGenerationHelper.DelimitIdentifier(readOperations[i].ColumnName));
+        }
+
+        // H2 2.5 has no RETURNING: the row an update leaves is read through FINAL TABLE, the same
+        // form the insert uses (the grammar has { OLD | NEW | FINAL } TABLE for both).
+        commandStringBuilder.Append(" FROM FINAL TABLE (");
+        AppendUpdateCommandHeader(commandStringBuilder, name, schema, writeOperations);
+        AppendWhereClause(commandStringBuilder, conditionOperations);
+        commandStringBuilder.Append(')');
+        commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
+
+        return ResultSetMapping.LastInResultSet;
     }
 
     /// <summary>
@@ -245,17 +289,33 @@ public class H2UpdateSqlGenerator : UpdateSqlGenerator
         int commandPosition,
         out bool requiresTransaction)
     {
-        // The default implementation adds RETURNING 1 to do concurrency check (was the row actually deleted), but in H2 we check
-        // the per-statement row-affected value exposed by H2 in the batch; so no need for RETURNING 1.
         var name = command.TableName;
         var schema = command.Schema;
         var conditionOperations = command.ColumnModifications.Where(o => o.IsCondition).ToList();
 
         requiresTransaction = false;
 
-        AppendDeleteCommand(commandStringBuilder, name, schema, [], conditionOperations);
+        // A migration's DELETE is a script statement: no batch reads a result set from it.
+        if (command.Entries.Count == 0)
+        {
+            AppendDeleteCommandHeader(commandStringBuilder, name, schema);
+            AppendWhereClause(commandStringBuilder, conditionOperations);
+            commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
 
-        return ResultSetMapping.NoResults;
+            return ResultSetMapping.NoResults;
+        }
+
+        // H2 2.5 accepts UPDATE in a FINAL TABLE, but not DELETE: the rows a delete removed
+        // are the rows of OLD TABLE. The count of them is what EF checks against the row the
+        // statement was meant to remove, so a missing row becomes
+        // DbUpdateConcurrencyException instead of a silent success.
+        commandStringBuilder.Append("SELECT COUNT(*) FROM OLD TABLE (");
+        AppendDeleteCommandHeader(commandStringBuilder, name, schema);
+        AppendWhereClause(commandStringBuilder, conditionOperations);
+        commandStringBuilder.Append(')');
+        commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
+
+        return ResultSetMapping.LastInResultSet | ResultSetMapping.ResultSetWithRowsAffectedOnly;
     }
 
     /// <summary>

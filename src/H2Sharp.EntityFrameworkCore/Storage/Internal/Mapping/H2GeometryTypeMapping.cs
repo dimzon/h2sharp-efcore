@@ -61,10 +61,7 @@ public class H2GeometryTypeMapping : H2TypeMapping
     {
         Check.NotNull(value, nameof(value));
 
-        // H2 has no escape-string form for geometry; the well-known text form is a single quoted string.
-        var builder = new StringBuilder(value.ToString()!.Length + 2);
-        builder.Append('\'').Append(value).Append('\'');
-
-        return builder.ToString();
+        // H2 writes geometry as GEOMETRY '<WKT>', the literal its own values print.
+        return Dialect.AppendGeometry(new StringBuilder(), value.ToString()).ToString();
     }
 }

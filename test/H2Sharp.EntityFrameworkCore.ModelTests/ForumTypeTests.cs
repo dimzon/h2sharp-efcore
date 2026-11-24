@@ -200,7 +200,9 @@ public class ForumTypeTests
         Assert.Contains("varchar(100)", types);
         Assert.Contains("timestamp", types);
         Assert.Contains("date", types);
-        Assert.Contains("time", types);
+        // H2 2.5 makes TIME without a precision TIME(0), so the provider asks for the
+        // seven fractional digits of .NET's TimeOnly ticks.
+        Assert.Contains("time(7) without time zone", types);
         Assert.Contains("boolean", types);
         Assert.Contains("numeric(18,2)", types);
         Assert.Contains("varbinary", types);

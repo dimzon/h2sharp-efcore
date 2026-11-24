@@ -61,11 +61,8 @@ public class ForumPreferenceExamples
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void Preferences_are_stored_by_ef_without_losing_json_or_binary_content()
     {
-        // The byte 255 does not come back: the reader of the port refuses a number that fits a
-        // .NET byte (dimzon/h2sharp#94).
         using var connection = new H2Connection("Data Source=" + "plain_preferences_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
         connection.Open();
         using var context = new PlainPreferenceContext(new DbContextOptionsBuilder<PlainPreferenceContext>().UseH2(connection).Options);

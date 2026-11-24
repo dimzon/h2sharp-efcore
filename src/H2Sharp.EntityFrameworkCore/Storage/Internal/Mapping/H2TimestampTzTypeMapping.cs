@@ -82,12 +82,46 @@ public class H2TimestampTzTypeMapping : H2TypeMapping
     /// </remarks>
     protected override string GenerateNonNullSqlLiteral(object value)
     {
-        if (value is DateTimeOffset)
+        var dateTimeOffset = value switch
         {
-            return Dialect.AppendTimestampWithTimeZone(new StringBuilder(), (DateTimeOffset)value).ToString();
+            DateTimeOffset dto => dto,
+            DateTime dateTime => ToDateTimeOffset(dateTime),
+            _ => throw new InvalidCastException(
+                $"Attempted to generate timestamptz literal for type {value.GetType()}, only DateTime and DateTimeOffset are supported")
+        };
+
+        return Dialect.AppendTimestampWithTimeZone(new StringBuilder(), dateTimeOffset).ToString();
+    }
+
+    private static DateTimeOffset ToDateTimeOffset(DateTime dateTime)
+    {
+        if (!H2TypeMappingSource.DisableDateTimeInfinityConversions)
+        {
+            if (dateTime == DateTime.MinValue)
+            {
+                return DateTimeOffset.MinValue;
+            }
+
+            if (dateTime == DateTime.MaxValue)
+            {
+                return DateTimeOffset.MaxValue;
+            }
         }
 
-        return $"TIMESTAMP WITH TIME ZONE '{Format(value)}'";
+        return dateTime.Kind switch
+        {
+            DateTimeKind.Utc => new DateTimeOffset(dateTime),
+
+            DateTimeKind.Unspecified => dateTime == default
+                ? new DateTimeOffset(dateTime, TimeSpan.Zero)
+                : throw new ArgumentException(
+                    $"'timestamp with time zone' literal cannot be generated for {dateTime.Kind} DateTime: a UTC DateTime is required"),
+
+            DateTimeKind.Local => throw new ArgumentException(
+                $"'timestamp with time zone' literal cannot be generated for {dateTime.Kind} DateTime: a UTC DateTime is required"),
+
+            _ => throw new UnreachableException()
+        };
     }
 
     /// <summary>

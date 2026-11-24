@@ -395,7 +395,6 @@ public class ForumDateAndMathQueryTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_total_of_a_span_keeps_the_fraction_of_a_unit()
     {
         using var database = ForumDatabase.Filled(nameof(The_total_of_a_span_keeps_the_fraction_of_a_unit));
@@ -406,9 +405,9 @@ public class ForumDateAndMathQueryTests
         topic.LastPostAt = topic.CreatedAt.AddDays(1).AddHours(2).AddMinutes(3).AddSeconds(4).AddMilliseconds(5);
         context.SaveChanges();
 
-        // The span is 1 day, 2:03:04.005. EXTRACT answers the seconds exactly and the share of a
-        // unit divides them; the port reads the NUMERIC of the division as a Decimal and refuses
-        // a scale above 28.
+        // The span is 1 day, 2:03:04.005. EXTRACT answers the seconds exactly and the share
+        // of a unit divides them; the quotient is a NUMERIC with a scale above decimal's 28,
+        // and a floating-point read takes it straight to double.
         var totals = context.Topics.Where(t => t.Id == topic.Id)
             .Select(t => new
             {
@@ -421,8 +420,8 @@ public class ForumDateAndMathQueryTests
             .Single();
 
         Assert.Equal(1.0854630208333333, totals.TotalDays, 9);
-        Assert.Equal(26.05111111111111, totals.TotalHours, 9);
-        Assert.Equal(1563.0666666666666, totals.TotalMinutes, 9);
+        Assert.Equal(26.0511125, totals.TotalHours, 9);
+        Assert.Equal(1563.06675, totals.TotalMinutes, 9);
         Assert.Equal(93784.005, totals.TotalSeconds, 6);
         Assert.Equal(93784005.0, totals.TotalMilliseconds, 3);
     }

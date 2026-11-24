@@ -234,7 +234,6 @@ public class ForumMeasurementExamples
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_stamp_gives_its_date_and_its_utc_time()
     {
         using var connection = Open(nameof(The_stamp_gives_its_date_and_its_utc_time));
@@ -253,7 +252,7 @@ public class ForumMeasurementExamples
 
         // The wall clock of the value's own offset, and the wall clock of UTC, are written out
         // by FORMATDATETIME -- a cast of the value to a timestamp would read it in the zone of
-        // the session. The port does not read FORMATDATETIME yet.
+        // the session.
         var stamp = context.Measurements.OrderBy(m => m.Id).Select(m => m.Stamp).Single();
         var parts = context.Measurements.OrderBy(m => m.Id).Select(m => new
         {

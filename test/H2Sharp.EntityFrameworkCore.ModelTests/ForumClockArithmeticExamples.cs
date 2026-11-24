@@ -95,47 +95,41 @@ public class ForumClockArithmeticExamples
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_kind_of_a_moment_is_declared_utc()
     {
         using var database = ForumDatabase.Filled(nameof(The_kind_of_a_moment_is_declared_utc));
         using var context = database.Context();
         var source = ForumData.Topics().OrderBy(t => t.Id).ToArray();
 
-        // The wall clock of a timestamp read as UTC is the same value restated with a zone,
-        // which H2 writes with AT TIME ZONE. The port reads neither that operator nor a
-        // timestamp with a time zone as a DateTime.
+        // SpecifyKind changes the .NET Kind, not the wall clock; a timestamp without a zone
+        // already carries exactly that wall clock.
         Assert.Equal(
             source.Select(t => t.CreatedAt),
             context.Topics.OrderBy(t => t.Id).Select(t => DateTime.SpecifyKind(t.CreatedAt, DateTimeKind.Utc)).ToList());
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_moment_is_converted_to_utc()
     {
         using var database = ForumDatabase.Filled(nameof(The_moment_is_converted_to_utc));
         using var context = database.Context();
         var source = ForumData.Topics().OrderBy(t => t.Id).ToArray();
 
-        // The timestamp is cast to a timestamp with a time zone, and H2 reads a cast that way
-        // in the zone of the session -- the local time ConvertTimeToUtc starts from. The port
-        // runs the cast, but reads the value as DateTimeOffset and refuses to give it out as
-        // DateTime.
+        // The cast gives the wall clock the session zone's offset, which is the local time
+        // ConvertTimeToUtc starts from; FORMATDATETIME then writes that instant in UTC and
+        // the cast back reads the UTC wall clock.
         Assert.Equal(
             source.Select(t => TimeZoneInfo.ConvertTimeToUtc(t.CreatedAt)),
             context.Topics.OrderBy(t => t.Id).Select(t => TimeZoneInfo.ConvertTimeToUtc(t.CreatedAt)).ToList());
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void The_moment_is_converted_to_a_named_zone()
     {
         using var database = ForumDatabase.Filled(nameof(The_moment_is_converted_to_a_named_zone));
         using var context = database.Context();
         var source = ForumData.Topics().OrderBy(t => t.Id).ToArray();
 
-        // AT TIME ZONE is H2 2.5 syntax, and the port does not read it yet.
         Assert.Equal(
             source.Select(t => TimeZoneInfo.ConvertTimeBySystemTimeZoneId(t.CreatedAt.ToUniversalTime(), "UTC")),
             context.Topics.OrderBy(t => t.Id)

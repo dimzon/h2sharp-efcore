@@ -162,9 +162,10 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
 
                 if (kind == DateTimeKind.Utc)
                 {
-                    return typeMapping is H2TimestampTypeMapping
-                        ? _sqlExpressionFactory.AtUtc(arguments[0])
-                        : arguments[0];
+                    // SpecifyKind changes the .NET Kind, not the wall clock. A timestamp
+                    // without a time zone is that wall clock; AT TIME ZONE would restate it
+                    // in another zone, and the value would come back as a shifted DateTime.
+                    return arguments[0];
                 }
 
                 if (kind is DateTimeKind.Unspecified or DateTimeKind.Local)
@@ -375,7 +376,24 @@ public class H2DateTimeMethodTranslator : IMethodCallTranslator
                     "TimeZoneInfo.ConvertTimeToUtc) is only supported on columns with type 'timestamp without time zone'");
             }
 
-            return _sqlExpressionFactory.Convert(arguments[0], arguments[0].Type, _timestampTzMapping);
+            // The cast gives the wall clock the session zone's offset, which is the source
+            // zone ConvertTimeToUtc starts from; FORMATDATETIME then writes the same instant
+            // in UTC, and the cast back reads that wall clock as the returned DateTime.
+            SqlExpression timestampWithZone = _sqlExpressionFactory.Convert(
+                arguments[0], arguments[0].Type, _timestampTzMapping);
+            SqlExpression utcText = _sqlExpressionFactory.Function(
+                "FORMATDATETIME",
+                [
+                    timestampWithZone,
+                    _sqlExpressionFactory.Constant("yyyy-MM-dd HH:mm:ss.FFFFFFF"),
+                    _sqlExpressionFactory.Constant("en"),
+                    _sqlExpressionFactory.Constant("UTC"),
+                ],
+                nullable: true,
+                argumentsPropagateNullability: TrueArrays[4],
+                typeof(string));
+
+            return _sqlExpressionFactory.Convert(utcText, arguments[0].Type, _timestampMapping);
         }
 
         return null;

@@ -212,12 +212,14 @@ public class H2DateTimeMemberTranslator : IMemberTranslator
             // The wall clock of the value itself: H2 keeps the offset the value was written
             // with, and FORMATDATETIME without a named zone writes that offset's wall clock.
             // A CAST of the value to a timestamp would read it in the zone of the session.
-            nameof(DateTimeOffset.DateTime) => WallClock(instance, "yyyy-MM-dd HH:mm:ss.SSSSSSSSS"),
+            // The pattern spells the fraction with .NET's F: the port's FORMATDATETIME takes
+            // .NET patterns (see DateTimeFormatFunction), where Java's S has no fraction.
+            nameof(DateTimeOffset.DateTime) => WallClock(instance, "yyyy-MM-dd HH:mm:ss.FFFFFFF"),
 
             // The instant in UTC: FORMATDATETIME with a named zone writes the wall clock of
             // that zone. A cast of the value to a timestamp would read it in the session zone
             // even after AT TIME ZONE restated the value in UTC.
-            nameof(DateTimeOffset.UtcDateTime) => WallClock(instance, "yyyy-MM-dd HH:mm:ss.SSSSSSSSS", "UTC"),
+            nameof(DateTimeOffset.UtcDateTime) => WallClock(instance, "yyyy-MM-dd HH:mm:ss.FFFFFFF", "UTC"),
 
             // A CAST of a timestamp with a zone to a timestamp without one reads the value in
             // the zone of the session, which is the local time of .NET.

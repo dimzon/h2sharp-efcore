@@ -100,7 +100,6 @@ public class ForumDatabaseTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void A_schema_of_its_own_is_made_and_found()
     {
         using var connection = new H2Connection("Data Source=" + "forum_schema_" + Guid.NewGuid().ToString("N") + ";Storage=Memory");
@@ -111,10 +110,6 @@ public class ForumDatabaseTests
 
         // The schema the model names is not there until the creator makes it; the default
         // schema, PUBLIC, is made with the database and is never reported missing.
-        //
-        // The port reads the catalogue of the schema with a parameterized query, and the session
-        // keeps the answer of that query: the schema the creator has just made is not in it
-        // (dimzon/h2sharp#95). The reference answers with the schema that is there.
         Assert.False(creator.Exists());
 
         creator.Create();
@@ -123,7 +118,6 @@ public class ForumDatabaseTests
     }
 
     [Fact]
-    [Trait("Category", "BlockedByPort")]
     public void A_unique_constraint_is_added_to_an_existing_table()
     {
         using var database = ForumDatabase.Empty(nameof(A_unique_constraint_is_added_to_an_existing_table));
@@ -142,8 +136,6 @@ public class ForumDatabaseTests
 
         var statement = string.Join("\n", commands.Select(command => command.CommandText + ";"));
 
-        // The reference reads ALTER TABLE ... ADD CONSTRAINT ... UNIQUE; the port reads the
-        // constraint clause only for PRIMARY KEY and answers `expected "PRIMARY"`.
         var reference = H2ReferenceOracle.Run(context.Database.GenerateCreateScript() + statement);
         Assert.True(reference.Accepted, reference.Output);
 

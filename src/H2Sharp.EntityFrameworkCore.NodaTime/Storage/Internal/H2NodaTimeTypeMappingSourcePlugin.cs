@@ -61,8 +61,10 @@ public class H2NodaTimeTypeMappingSourcePlugin : IRelationalTypeMappingSourcePlu
 
         if (clrType == typeof(LocalTime))
         {
+            // H2 2.5 gives TIME without a precision the precision 0: the whole seconds only.
+            // A LocalTime is measured in ticks, and 7 fractional digits keep every tick.
             return storeType is null
-                ? new H2NodaTimeTypeMapping("time", clrType, NodaTimeValueConverters.LocalTimeConverter)
+                ? new H2NodaTimeTypeMapping("time(7)", clrType, NodaTimeValueConverters.LocalTimeConverter)
                 : null;
         }
 
