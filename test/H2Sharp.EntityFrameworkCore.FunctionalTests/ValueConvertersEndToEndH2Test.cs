@@ -153,9 +153,6 @@ public class ValueConvertersEndToEndH2Test(ValueConvertersEndToEndH2Test.ValueCo
         Assert.Equal(isNullable, property!.IsNullable);
     }
 
-    // H2 2.5 accepts INSERT INTO T ("Values"); the port's Token.IsIdentifier does not treat a
-    // quoted keyword as an identifier, so the insert is refused before the test can run.
-    [Trait("Category", "BlockedByPort")]
     [ConditionalFact]
     public async Task Can_insert_and_read_back_with_value_converted_array()
     {
