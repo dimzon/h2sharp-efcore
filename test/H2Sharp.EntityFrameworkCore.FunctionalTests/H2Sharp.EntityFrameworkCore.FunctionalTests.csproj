@@ -105,14 +105,11 @@
     <Compile Remove="Query\NorthwindGroupByQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindIncludeNoTrackingQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindIncludeQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindJoinQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindKeylessEntitiesQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindMiscellaneousQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindSelectQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindSetOperationsQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindSplitIncludeNoTrackingQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindSplitIncludeQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindSqlQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindStringIncludeQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindWhereQueryH2Test.cs" />
     <Compile Remove="Query\NullSemanticsQueryH2Test.cs" />

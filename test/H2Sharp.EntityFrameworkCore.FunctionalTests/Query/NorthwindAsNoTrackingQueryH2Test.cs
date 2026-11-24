@@ -1,5 +1,6 @@
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Collection("Northwind")]
 public class NorthwindAsNoTrackingQueryH2Test : NorthwindAsNoTrackingQueryTestBase<NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
     // ReSharper disable once UnusedParameter.Local

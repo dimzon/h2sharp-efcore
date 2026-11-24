@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Collection("Northwind")]
 public class NorthwindSetOperationsQueryH2Test
     : NorthwindSetOperationsQueryRelationalTestBase<NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
@@ -26,11 +27,11 @@ public class NorthwindSetOperationsQueryH2Test
 
         AssertSql(
             """
-SELECT NULL AS "OrderID", o."CustomerID"
-FROM "Orders" AS o
+SELECT NULL AS "OrderID", "o"."CustomerID"
+FROM "Orders" "o"
 UNION
-SELECT o0."OrderID", o0."CustomerID"
-FROM "Orders" AS o0
+SELECT "o0"."OrderID", "o0"."CustomerID"
+FROM "Orders" "o0"
 """);
     }
 
@@ -46,14 +47,14 @@ FROM "Orders" AS o0
 
         AssertSql(
             """
-SELECT NULL::int AS "OrderID", o."CustomerID"
-FROM "Orders" AS o
+SELECT CAST(NULL AS integer) AS "OrderID", "o"."CustomerID"
+FROM "Orders" "o"
 UNION
-SELECT NULL AS "OrderID", o0."CustomerID"
-FROM "Orders" AS o0
+SELECT NULL AS "OrderID", "o0"."CustomerID"
+FROM "Orders" "o0"
 UNION
-SELECT o1."OrderID", o1."CustomerID"
-FROM "Orders" AS o1
+SELECT "o1"."OrderID", "o1"."CustomerID"
+FROM "Orders" "o1"
 """);
     }
 
@@ -70,17 +71,17 @@ FROM "Orders" AS o1
 
         AssertSql(
             """
-SELECT NULL::int AS "OrderID", o."CustomerID"
-FROM "Orders" AS o
+SELECT CAST(NULL AS integer) AS "OrderID", "o"."CustomerID"
+FROM "Orders" "o"
 UNION
-SELECT NULL AS "OrderID", o0."CustomerID"
-FROM "Orders" AS o0
+SELECT NULL AS "OrderID", "o0"."CustomerID"
+FROM "Orders" "o0"
 UNION
-SELECT NULL AS "OrderID", o1."CustomerID"
-FROM "Orders" AS o1
+SELECT NULL AS "OrderID", "o1"."CustomerID"
+FROM "Orders" "o1"
 UNION
-SELECT o2."OrderID", o2."CustomerID"
-FROM "Orders" AS o2
+SELECT "o2"."OrderID", "o2"."CustomerID"
+FROM "Orders" "o2"
 """);
     }
 
@@ -98,20 +99,20 @@ FROM "Orders" AS o2
 
         AssertSql(
             """
-SELECT NULL::int AS "OrderID", o."CustomerID"
-FROM "Orders" AS o
+SELECT CAST(NULL AS integer) AS "OrderID", "o"."CustomerID"
+FROM "Orders" "o"
 UNION
-SELECT NULL AS "OrderID", o0."CustomerID"
-FROM "Orders" AS o0
+SELECT NULL AS "OrderID", "o0"."CustomerID"
+FROM "Orders" "o0"
 UNION
-SELECT NULL AS "OrderID", o1."CustomerID"
-FROM "Orders" AS o1
+SELECT NULL AS "OrderID", "o1"."CustomerID"
+FROM "Orders" "o1"
 UNION
-SELECT NULL AS "OrderID", o2."CustomerID"
-FROM "Orders" AS o2
+SELECT NULL AS "OrderID", "o2"."CustomerID"
+FROM "Orders" "o2"
 UNION
-SELECT o3."OrderID", o3."CustomerID"
-FROM "Orders" AS o3
+SELECT "o3"."OrderID", "o3"."CustomerID"
+FROM "Orders" "o3"
 """);
     }
 
@@ -135,43 +136,43 @@ FROM "Orders" AS o3
 
         AssertSql(
             """
-SELECT u0."OrderID", u0."CustomerID"
+SELECT "u0"."OrderID", "u0"."CustomerID"
 FROM (
-    SELECT NULL::int AS "OrderID", o."CustomerID"
-    FROM "Orders" AS o
+    SELECT CAST(NULL AS integer) AS "OrderID", "o"."CustomerID"
+    FROM "Orders" "o"
     UNION
-    SELECT NULL AS "OrderID", o0."CustomerID"
-    FROM "Orders" AS o0
+    SELECT NULL AS "OrderID", "o0"."CustomerID"
+    FROM "Orders" "o0"
     UNION
-    SELECT o1."OrderID", o1."CustomerID"
-    FROM "Orders" AS o1
-) AS u0
-WHERE u0."CustomerID" = (
-    SELECT u2."CustomerID"
+    SELECT "o1"."OrderID", "o1"."CustomerID"
+    FROM "Orders" "o1"
+) AS "u0"
+WHERE "u0"."CustomerID" = (
+    SELECT "u2"."CustomerID"
     FROM (
-        SELECT NULL::int AS "OrderID", o2."CustomerID"
-        FROM "Orders" AS o2
+        SELECT CAST(NULL AS integer) AS "OrderID", "o2"."CustomerID"
+        FROM "Orders" "o2"
         UNION
-        SELECT NULL AS "OrderID", o3."CustomerID"
-        FROM "Orders" AS o3
+        SELECT NULL AS "OrderID", "o3"."CustomerID"
+        FROM "Orders" "o3"
         UNION
-        SELECT o4."OrderID", o4."CustomerID"
-        FROM "Orders" AS o4
-    ) AS u2
-    ORDER BY u2."CustomerID" NULLS FIRST
-    LIMIT 1) OR (u0."CustomerID" IS NULL AND (
-    SELECT u2."CustomerID"
+        SELECT "o4"."OrderID", "o4"."CustomerID"
+        FROM "Orders" "o4"
+    ) AS "u2"
+    ORDER BY "u2"."CustomerID" NULLS FIRST
+    LIMIT 1) OR ("u0"."CustomerID" IS NULL AND (
+    SELECT "u2"."CustomerID"
     FROM (
-        SELECT NULL::int AS "OrderID", o2."CustomerID"
-        FROM "Orders" AS o2
+        SELECT CAST(NULL AS integer) AS "OrderID", "o2"."CustomerID"
+        FROM "Orders" "o2"
         UNION
-        SELECT NULL AS "OrderID", o3."CustomerID"
-        FROM "Orders" AS o3
+        SELECT NULL AS "OrderID", "o3"."CustomerID"
+        FROM "Orders" "o3"
         UNION
-        SELECT o4."OrderID", o4."CustomerID"
-        FROM "Orders" AS o4
-    ) AS u2
-    ORDER BY u2."CustomerID" NULLS FIRST
+        SELECT "o4"."OrderID", "o4"."CustomerID"
+        FROM "Orders" "o4"
+    ) AS "u2"
+    ORDER BY "u2"."CustomerID" NULLS FIRST
     LIMIT 1) IS NULL)
 """);
     }

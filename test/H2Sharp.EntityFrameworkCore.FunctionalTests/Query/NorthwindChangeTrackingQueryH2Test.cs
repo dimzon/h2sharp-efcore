@@ -3,6 +3,7 @@ using H2Sharp.EntityFrameworkCore.TestModels.Northwind;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Collection("Northwind")]
 public class NorthwindChangeTrackingQueryH2Test : NorthwindChangeTrackingQueryTestBase<NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
     // ReSharper disable once UnusedParameter.Local

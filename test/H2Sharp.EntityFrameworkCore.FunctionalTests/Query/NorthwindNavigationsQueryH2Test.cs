@@ -1,5 +1,6 @@
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Collection("Northwind")]
 public class NorthwindNavigationsQueryH2Test : NorthwindNavigationsQueryRelationalTestBase<
     NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {

@@ -2,6 +2,7 @@ using System.Data.Common;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Collection("Northwind")]
 public class NorthwindSqlQueryH2Test : NorthwindSqlQueryTestBase<NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
     public NorthwindSqlQueryH2Test(NorthwindQueryH2Fixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
@@ -26,13 +27,13 @@ SELECT "ProductID" FROM "Products"
 
         AssertSql(
             """
-SELECT o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-FROM "Orders" AS o
-WHERE o."OrderID" IN (
-    SELECT s."Value"
+SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+FROM "Orders" "o"
+WHERE "o"."OrderID" IN (
+    SELECT "s"."Value"
     FROM (
         SELECT "ProductID" AS "Value" FROM "Products"
-    ) AS s
+    ) AS "s"
 )
 """);
     }
@@ -43,11 +44,11 @@ WHERE o."OrderID" IN (
 
         AssertSql(
             """
-SELECT o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate", s."Value"::int AS p
-FROM "Orders" AS o
+SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate", CAST("s"."Value" AS integer) AS "p"
+FROM "Orders" "o"
 INNER JOIN (
     SELECT "ProductID" AS "Value" FROM "Products"
-) AS s ON o."OrderID" = s."Value"::int
+) AS "s" ON "o"."OrderID" = CAST("s"."Value" AS integer)
 """);
     }
 

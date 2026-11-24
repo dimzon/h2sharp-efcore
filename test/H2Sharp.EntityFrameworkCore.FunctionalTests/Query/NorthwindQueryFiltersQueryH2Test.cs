@@ -1,5 +1,6 @@
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Collection("Northwind")]
 public class NorthwindQueryFiltersQueryH2Test : NorthwindQueryFiltersQueryTestBase<
     NorthwindQueryH2Fixture<NorthwindQueryFiltersCustomizer>>
 {
