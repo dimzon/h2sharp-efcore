@@ -106,7 +106,6 @@
     <Compile Remove="Query\NorthwindIncludeQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindKeylessEntitiesQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindMiscellaneousQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindSelectQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindSplitIncludeNoTrackingQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindSplitIncludeQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindStringIncludeQueryH2Test.cs" />
