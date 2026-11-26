@@ -1,6 +1,7 @@
 using System.Data.Common;
 using H2Sharp.EntityFrameworkCore.Infrastructure;
 using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore;
@@ -279,7 +280,10 @@ public static class H2DbContextOptionsBuilderExtensions
             ?? new CoreOptionsExtension();
 
         coreOptionsExtension = RelationalOptionsExtension.WithDefaultWarningConfiguration(coreOptionsExtension);
-
         ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(coreOptionsExtension);
+
+        // H2 supports identity keys with TPC; the EF warning assumes providers where that is unsafe.
+        optionsBuilder.ConfigureWarnings(
+            warnings => warnings.Ignore(RelationalEventId.TpcStoreGeneratedIdentityWarning));
     }
 }

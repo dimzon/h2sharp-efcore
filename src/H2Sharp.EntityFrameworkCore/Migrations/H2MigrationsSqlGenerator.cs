@@ -1529,9 +1529,15 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
     ///     model is rewritten in the form H2 takes.
     /// </summary>
     private static string? NormalizeArrayStoreType(string? storeType)
-        => storeType is not null && storeType.EndsWith("[]", StringComparison.Ordinal)
-            ? storeType[..^2] + " ARRAY"
-            : storeType;
+        => storeType switch
+        {
+            null => null,
+            var s when s.EndsWith("[]", StringComparison.Ordinal) => s[..^2] + " ARRAY",
+            // H2 2.5 has no MONEY: the PG-flavoured models ask for it, decimal keeps the range.
+            var s when string.Equals(s, "money", StringComparison.OrdinalIgnoreCase)
+                => "numeric(19,4)",
+            _ => storeType,
+        };
 
     private string DelimitIdentifier(string identifier)
         => Dependencies.SqlGenerationHelper.DelimitIdentifier(identifier);

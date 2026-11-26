@@ -69,6 +69,10 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     private readonly H2DecimalTypeMapping _numericAsFloat = new(typeof(float));
     private readonly H2DecimalTypeMapping _numericAsDouble = new(typeof(double));
     private readonly H2DecfloatTypeMapping _decfloat = H2DecfloatTypeMapping.Default;
+
+    // H2 2.5 has no MONEY type; the PG-flavoured test models ask for one. Map it to the
+    // fixed-scale decimal that keeps the same range and four fractional digits.
+    private readonly H2DecimalTypeMapping _money = new(typeof(decimal), "numeric(19,4)");
     private readonly GuidTypeMapping _uuid = new("uuid", DbType.Guid);
     private readonly SByteTypeMapping _int1 = new("tinyint", DbType.SByte);
     private readonly ShortTypeMapping _int2 = new("smallint", DbType.Int16);
@@ -174,6 +178,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             { "numeric", [_numeric, _bigInteger, _numericAsFloat, _numericAsDouble] },
             { "decimal", [_numeric, _bigInteger, _numericAsFloat, _numericAsDouble] },
             { "decfloat", [_decfloat] },
+            { "money", [_money] },
 
             { "character varying", [_varchar] },
             { "varchar", [_varchar] },
