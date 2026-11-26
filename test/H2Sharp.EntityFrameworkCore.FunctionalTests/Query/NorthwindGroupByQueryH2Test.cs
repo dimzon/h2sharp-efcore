@@ -1514,7 +1514,7 @@ GROUP BY "s"."Key"
             """
 SELECT "o0"."Key" AS "Month", CAST(COALESCE(sum("o0"."OrderID"), 0) AS integer) AS "Total", (
     SELECT COALESCE(sum("o1"."OrderID"), 0)::int
-    FROM "Orders" AS o1
+    FROM "Orders" "o1"
     WHERE CAST(EXTRACT('month' FROM "o1"."OrderDate") AS integer) = "o0"."Key" OR ("o1"."OrderDate" IS NULL AND "o0"."Key" IS NULL)) AS "Payment"
 FROM (
     SELECT "o"."OrderID", CAST(EXTRACT('month' FROM "o"."OrderDate") AS integer) AS "Key"
@@ -2026,12 +2026,12 @@ SELECT "o"."OrderID", p1."ProductID", p2.c, p2."ProductID"
 FROM "Orders" "o"
 LEFT JOIN LATERAL (
     SELECT p."ProductID"
-    FROM "Products" AS p
+    FROM "Products" "p"
     GROUP BY p."ProductID"
 ) AS p1 ON TRUE
 LEFT JOIN LATERAL (
     SELECT CAST(count(*) AS integer) AS c, p0."ProductID"
-    FROM "Products" AS p0
+    FROM "Products" "p0"
     GROUP BY p0."ProductID"
 ) AS p2 ON TRUE
 WHERE "o"."CustomerID" LIKE 'A%'
@@ -2284,10 +2284,10 @@ GROUP BY "o"."EmployeeID"
             """
 SELECT (
     SELECT "e0"."Title"
-    FROM "Employees" AS e0
+    FROM "Employees" "e0"
     WHERE "e0"."Title" = 'Sales Representative' AND "e0"."EmployeeID" = 1 AND (e."Title" = "e0"."Title" OR (e."Title" IS NULL AND "e0"."Title" IS NULL))
     LIMIT 1)
-FROM "Employees" AS e
+FROM "Employees" "e"
 WHERE "e"."Title" = 'Sales Representative' AND "e"."EmployeeID" = 1
 GROUP BY "e"."Title"
 """);
@@ -2302,7 +2302,7 @@ GROUP BY "e"."Title"
 SELECT e3."EmployeeID", e3."City", e3."Country", e3."FirstName", e3."ReportsTo", e3."Title"
 FROM (
     SELECT "e"."Title"
-    FROM "Employees" AS e
+    FROM "Employees" "e"
     WHERE "e"."Title" = 'Sales Representative' AND "e"."EmployeeID" = 1
     GROUP BY "e"."Title"
 ) AS e1
@@ -2310,7 +2310,7 @@ LEFT JOIN (
     SELECT e2."EmployeeID", e2."City", e2."Country", e2."FirstName", e2."ReportsTo", e2."Title"
     FROM (
         SELECT "e0"."EmployeeID", "e0"."City", "e0"."Country", "e0"."FirstName", "e0"."ReportsTo", "e0"."Title", ROW_NUMBER() OVER(PARTITION BY "e0"."Title" ORDER BY "e0"."EmployeeID" NULLS FIRST) AS row
-        FROM "Employees" AS e0
+        FROM "Employees" "e0"
         WHERE "e0"."Title" = 'Sales Representative' AND "e0"."EmployeeID" = 1
     ) AS e2
     WHERE e2.row <= 1
@@ -2326,10 +2326,10 @@ LEFT JOIN (
             """
 SELECT (
     SELECT "e0"."Title"
-    FROM "Employees" AS e0
+    FROM "Employees" "e0"
     WHERE "e0"."EmployeeID" = 1 AND "e"."EmployeeID" = "e0"."EmployeeID"
     LIMIT 1)
-FROM "Employees" AS e
+FROM "Employees" "e"
 WHERE "e"."EmployeeID" = 1
 GROUP BY "e"."EmployeeID"
 """);
@@ -3372,7 +3372,7 @@ OUTER APPLY (
             """
 SELECT "o"."CustomerID" AS "Key", COALESCE((
     SELECT CAST(count(*) AS integer) + min("o"."OrderID")
-    FROM "Employees" AS e
+    FROM "Employees" "e"
     WHERE "e"."City" = 'Seattle'
     GROUP BY "e"."City"
     ORDER BY (SELECT 1) NULLS FIRST
@@ -3437,12 +3437,12 @@ FROM (
 ) AS s
 LEFT JOIN LATERAL (
     SELECT p."ProductID"
-    FROM "Products" AS p
+    FROM "Products" "p"
     GROUP BY p."ProductID"
 ) AS p1 ON TRUE
 LEFT JOIN LATERAL (
     SELECT CAST(count(*) AS integer) AS c, p0."ProductID"
-    FROM "Products" AS p0
+    FROM "Products" "p0"
     GROUP BY p0."ProductID"
 ) AS p2 ON TRUE
 ORDER BY "s"."City" NULLS FIRST, p1."ProductID" NULLS FIRST
