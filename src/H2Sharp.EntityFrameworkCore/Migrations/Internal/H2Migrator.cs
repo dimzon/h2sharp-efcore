@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
 
 namespace H2Sharp.EntityFrameworkCore.Migrations.Internal;
@@ -14,6 +16,10 @@ namespace H2Sharp.EntityFrameworkCore.Migrations.Internal;
 /// </summary>
 public class H2Migrator : Migrator
 {
+    // H2 2.5 has no advisory lock comparable to SQL Server's application lock. A process-wide
+    // gate keeps parallel Migrate calls from applying the same migration twice in tests and in
+    // embedded applications that share an internal service provider.
+    private static readonly SemaphoreSlim MigrationGate = new(1, 1);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -47,5 +53,35 @@ public class H2Migrator : Migrator
         // them added an enum, a range or an extension, reconnected to reload the driver's type cache.
         // H2Sharp has no such cache: an H2 type is created by CREATE TYPE and read back from the
         // catalogue on demand, so there is nothing to invalidate and nothing to reload.
+    }
+
+    /// <inheritdoc />
+    public override void Migrate(string? targetMigration = null)
+    {
+        MigrationGate.Wait();
+        try
+        {
+            base.Migrate(targetMigration);
+        }
+        finally
+        {
+            MigrationGate.Release();
+        }
+    }
+
+    /// <inheritdoc />
+    public override async Task MigrateAsync(
+        string? targetMigration = null,
+        CancellationToken cancellationToken = default)
+    {
+        await MigrationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await base.MigrateAsync(targetMigration, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            MigrationGate.Release();
+        }
     }
 }

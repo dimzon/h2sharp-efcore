@@ -87,7 +87,7 @@ EF их не отдаёт генератору, как в апстриме).
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `Category!=BlockedByPort` | 10930 | 0 | 11015 (85 пропущено) |
-   | `Category=BlockedByPort` | 7450/7254 | 3619/3815 | 11185 (116 пропущено) |
+   | `Category=BlockedByPort` | 7452/7256 | 3617/3813 | 11185 (116 пропущено) |
 
    Документированный `-p:H2SharpProject=...` теперь реализован в
    `src/H2Sharp.EntityFrameworkCore/H2Sharp.EntityFrameworkCore.csproj`: без свойства
@@ -118,8 +118,9 @@ EF их не отдаёт генератору, как в апстриме).
    и отдаёт не configured `H2Connection`, как ADO-провайдеры обычно делают до Open.
    В `H2SqlGenerationHelper` подавлены `START TRANSACTION`/`COMMIT` скриптов миграций:
    H2 их не читает, транзакцию держит соединение. Отказы
-   `MigrationsInfrastructureH2Test` упали с 8 до 3 (parallel-Миграции всё ещё требуют
-   блокировки истории). Миграции, scaffolding, массивы, конвертеры и row value входят
+   `MigrationsInfrastructureH2Test` упали с 8 до 2: `H2Migrator` держит process-wide
+   gate вокруг `Migrate`. Осталось `Can_apply_second_migration_in_parallel`
+   (sync/async). Миграции, scaffolding, массивы, конвертеры и row value входят
    в зелёный гейт.
 
    Закрыто в этом прогоне:
@@ -216,8 +217,9 @@ EF их не отдаёт генератору, как в апстриме).
      блокировку `MERGE` по строке служебной таблицы (H2 2.5 такого `LOCK TABLE` не знает);
      CHECK-ограничения читаются из `CHECK_CONSTRAINTS`, кладутся на таблицу аннотацией
      `H2:CheckConstraint:<name>` и превращаются в `HasCheckConstraint(...)` в сгенерированном
-     коде. `MigrationsInfrastructureH2Test` остаётся исключённым: его параллельные тесты
-     падают на владении соединениями фикстуры, а не на SQL блокировки.
+     коде. `MigrationsInfrastructureH2Test` включён: параллельные тесты теперь идут
+     через отдельные соединения и process-wide gate в `H2Migrator`; два теста второй
+     миграции ещё красные.
    * Каталог вынесен в `IH2CatalogReader`: 12 параметризованных запросов к `INFORMATION_SCHEMA` и
      типизированные строки живут в одном месте, скаффолдер и `H2DatabaseCreator` читают их,
      а не повторяют SQL. Три unit-теста `H2CatalogReaderTests` держат форму строк
