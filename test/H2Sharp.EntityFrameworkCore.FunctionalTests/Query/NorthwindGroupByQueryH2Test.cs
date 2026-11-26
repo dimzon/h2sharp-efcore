@@ -1287,7 +1287,7 @@ INNER JOIN (
     WHERE "c"."CustomerID" NOT IN ('DRACD', 'FOLKO')
     ORDER BY "c"."City" NULLS FIRST
     LIMIT $__p_2 OFFSET $__p_1
-) AS c0 ON "o0"."CustomerID" = "c0"."CustomerID"
+) AS "c0" ON "o0"."CustomerID" = "c0"."CustomerID"
 GROUP BY "c0"."CustomerID"
 """);
     }
@@ -1388,7 +1388,7 @@ FROM (
     WHERE "c"."CustomerID" NOT IN ('DRACD', 'FOLKO')
     ORDER BY "c"."City" NULLS FIRST
     LIMIT $__p_1 OFFSET $__p_0
-) AS c0
+) AS "c0"
 INNER JOIN (
     SELECT "o"."OrderID", "o"."CustomerID"
     FROM "Orders" "o"
@@ -1860,7 +1860,7 @@ INNER JOIN (
     ) AS "o0"
     GROUP BY "o0"."CustomerID", "o0"."Year"
     HAVING CAST(count(*) AS integer) > 5
-) AS o1 ON "c"."CustomerID" = "o1"."CustomerID"
+) AS "o1" ON "c"."CustomerID" = "o1"."CustomerID"
 """);
     }
 
@@ -1898,7 +1898,7 @@ INNER JOIN (
         FROM "Orders" "o0"
         GROUP BY "o0"."CustomerID"
         HAVING CAST(count(*) AS integer) > 5
-    ) AS o1 ON "c"."CustomerID" = "o1"."CustomerID"
+    ) AS "o1" ON "c"."CustomerID" = "o1"."CustomerID"
 ) AS s ON "o"."CustomerID" = "s"."CustomerID"
 WHERE "o"."OrderID" < 10400
 """);
@@ -2119,7 +2119,7 @@ GROUP BY "o"."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum("o"."OrderID") FILTER (WHERE "o"."OrderID" < 10300), 0)::int
+SELECT CAST(COALESCE(sum("o"."OrderID") FILTER (WHERE "o"."OrderID" < 10300), 0) AS integer)
 FROM "Orders" "o"
 GROUP BY "o"."CustomerID"
 """);
@@ -2131,7 +2131,7 @@ GROUP BY "o"."CustomerID"
 
         AssertSql(
             """
-SELECT count(*) FILTER (WHERE "o"."OrderID" < 10300 AND "o"."OrderDate" IS NOT NULL AND CAST(EXTRACT('year' FROM "o"."OrderDate") AS integer) = 1997)::int
+SELECT CAST(count(*) FILTER (WHERE "o"."OrderID" < 10300 AND "o"."OrderDate" IS NOT NULL AND CAST(EXTRACT('year' FROM "o"."OrderDate") AS integer) = 1997) AS integer)
 FROM "Orders" "o"
 GROUP BY "o"."CustomerID"
 """);
@@ -2143,7 +2143,7 @@ GROUP BY "o"."CustomerID"
 
         AssertSql(
             """
-SELECT count(*) FILTER (WHERE "o"."OrderID" < 10300 AND "o"."OrderDate" IS NOT NULL AND CAST(EXTRACT('year' FROM "o"."OrderDate") AS integer) = 1997)::int
+SELECT CAST(count(*) FILTER (WHERE "o"."OrderID" < 10300 AND "o"."OrderDate" IS NOT NULL AND CAST(EXTRACT('year' FROM "o"."OrderDate") AS integer) = 1997) AS integer)
 FROM "Orders" "o"
 GROUP BY "o"."CustomerID"
 """);
@@ -2155,7 +2155,7 @@ GROUP BY "o"."CustomerID"
 
         AssertSql(
             """
-SELECT count(*) FILTER (WHERE "o"."OrderID" < 10300 AND "o"."OrderDate" IS NOT NULL AND CAST(EXTRACT('year' FROM "o"."OrderDate") AS integer) = 1997)::int
+SELECT CAST(count(*) FILTER (WHERE "o"."OrderID" < 10300 AND "o"."OrderDate" IS NOT NULL AND CAST(EXTRACT('year' FROM "o"."OrderDate") AS integer) = 1997) AS integer)
 FROM "Orders" "o"
 GROUP BY "o"."CustomerID"
 """);
@@ -2283,13 +2283,13 @@ GROUP BY "o"."EmployeeID"
         AssertSql(
             """
 SELECT (
-    SELECT e0."Title"
+    SELECT "e0"."Title"
     FROM "Employees" AS e0
-    WHERE e0."Title" = 'Sales Representative' AND e0."EmployeeID" = 1 AND (e."Title" = e0."Title" OR (e."Title" IS NULL AND e0."Title" IS NULL))
+    WHERE "e0"."Title" = 'Sales Representative' AND "e0"."EmployeeID" = 1 AND (e."Title" = "e0"."Title" OR (e."Title" IS NULL AND "e0"."Title" IS NULL))
     LIMIT 1)
 FROM "Employees" AS e
-WHERE e."Title" = 'Sales Representative' AND e."EmployeeID" = 1
-GROUP BY e."Title"
+WHERE "e"."Title" = 'Sales Representative' AND "e"."EmployeeID" = 1
+GROUP BY "e"."Title"
 """);
     }
 
@@ -2301,17 +2301,17 @@ GROUP BY e."Title"
             """
 SELECT e3."EmployeeID", e3."City", e3."Country", e3."FirstName", e3."ReportsTo", e3."Title"
 FROM (
-    SELECT e."Title"
+    SELECT "e"."Title"
     FROM "Employees" AS e
-    WHERE e."Title" = 'Sales Representative' AND e."EmployeeID" = 1
-    GROUP BY e."Title"
+    WHERE "e"."Title" = 'Sales Representative' AND "e"."EmployeeID" = 1
+    GROUP BY "e"."Title"
 ) AS e1
 LEFT JOIN (
     SELECT e2."EmployeeID", e2."City", e2."Country", e2."FirstName", e2."ReportsTo", e2."Title"
     FROM (
-        SELECT e0."EmployeeID", e0."City", e0."Country", e0."FirstName", e0."ReportsTo", e0."Title", ROW_NUMBER() OVER(PARTITION BY e0."Title" ORDER BY e0."EmployeeID" NULLS FIRST) AS row
+        SELECT "e0"."EmployeeID", "e0"."City", "e0"."Country", "e0"."FirstName", "e0"."ReportsTo", "e0"."Title", ROW_NUMBER() OVER(PARTITION BY "e0"."Title" ORDER BY "e0"."EmployeeID" NULLS FIRST) AS row
         FROM "Employees" AS e0
-        WHERE e0."Title" = 'Sales Representative' AND e0."EmployeeID" = 1
+        WHERE "e0"."Title" = 'Sales Representative' AND "e0"."EmployeeID" = 1
     ) AS e2
     WHERE e2.row <= 1
 ) AS e3 ON e1."Title" = e3."Title"
@@ -2325,13 +2325,13 @@ LEFT JOIN (
         AssertSql(
             """
 SELECT (
-    SELECT e0."Title"
+    SELECT "e0"."Title"
     FROM "Employees" AS e0
-    WHERE e0."EmployeeID" = 1 AND e."EmployeeID" = e0."EmployeeID"
+    WHERE "e0"."EmployeeID" = 1 AND "e"."EmployeeID" = "e0"."EmployeeID"
     LIMIT 1)
 FROM "Employees" AS e
-WHERE e."EmployeeID" = 1
-GROUP BY e."EmployeeID"
+WHERE "e"."EmployeeID" = 1
+GROUP BY "e"."EmployeeID"
 """);
     }
 
@@ -2662,7 +2662,7 @@ FROM (
         FROM "Orders" "o"
         GROUP BY "o"."CustomerID"
     ) AS "o0"
-) AS o1
+) AS "o1"
 GROUP BY "o1"."Key0"
 """);
     }
@@ -2730,7 +2730,7 @@ SELECT "c0"."Renamed" AS "Key", CAST(count(*) AS integer) AS "Count"
 FROM (
     SELECT DISTINCT "c"."City" AS "Renamed", "c"."CustomerID"
     FROM "Customers" "c"
-) AS c0
+) AS "c0"
 GROUP BY "c0"."Renamed"
 """);
     }
@@ -2971,7 +2971,7 @@ FROM (
     SELECT "o"."CustomerID" AS "Key", max("o"."OrderDate") AS "LastOrderDate"
     FROM "Orders" "o"
     GROUP BY "o"."CustomerID"
-) AS o1
+) AS "o1"
 INNER JOIN "Orders" "o0" ON ("o1"."Key" = "o0"."CustomerID" OR ("o1"."Key" IS NULL AND "o0"."CustomerID" IS NULL)) AND ("o1"."LastOrderDate" = "o0"."OrderDate" OR ("o1"."LastOrderDate" IS NULL AND "o0"."OrderDate" IS NULL))
 """);
     }
@@ -3007,7 +3007,7 @@ FROM (
     SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Total"
     FROM "Orders" "o"
     GROUP BY "o"."CustomerID"
-) AS o1
+) AS "o1"
 INNER JOIN (
     SELECT "o0"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "ThatYear"
     FROM "Orders" "o0"
@@ -3065,7 +3065,7 @@ FROM (
         FROM "Orders" "o"
     ) AS "o0"
     GROUP BY "o0"."CustomerID", "o0"."Year"
-) AS o1
+) AS "o1"
 GROUP BY "o1"."CustomerID"
 """);
     }
@@ -3081,7 +3081,7 @@ FROM (
     SELECT min("o"."OrderID") AS "c"
     FROM "Orders" "o"
     GROUP BY "o"."CustomerID"
-) AS o1
+) AS "o1"
 CROSS JOIN "Orders" AS o0
 WHERE "o0"."OrderID" = o1.c
 """);
@@ -3115,7 +3115,7 @@ FROM (
     SELECT "o"."CustomerID"
     FROM "Orders" "o"
     GROUP BY "o"."CustomerID"
-) AS o1
+) AS "o1"
 LEFT JOIN "Orders" "o0" ON "o1"."CustomerID" = "o0"."CustomerID"
 ORDER BY "o1"."CustomerID" NULLS FIRST
 """);
@@ -3323,7 +3323,7 @@ LEFT JOIN LATERAL (
         FROM "Orders" "o"
         WHERE "o"."CustomerID" = "c"."CustomerID"
         GROUP BY "o"."CustomerID"
-    ) AS o1
+    ) AS "o1"
     LEFT JOIN (
         SELECT o2."OrderID", o2."CustomerID", o2."EmployeeID", o2."OrderDate"
         FROM (
@@ -3373,8 +3373,8 @@ OUTER APPLY (
 SELECT "o"."CustomerID" AS "Key", COALESCE((
     SELECT CAST(count(*) AS integer) + min("o"."OrderID")
     FROM "Employees" AS e
-    WHERE e."City" = 'Seattle'
-    GROUP BY e."City"
+    WHERE "e"."City" = 'Seattle'
+    GROUP BY "e"."City"
     ORDER BY (SELECT 1) NULLS FIRST
     LIMIT 1), 0) AS "A"
 FROM "Orders" "o"
@@ -3461,7 +3461,7 @@ FROM (
     FROM "Customers" "c"
     GROUP BY "c"."CustomerID"
     HAVING "c"."CustomerID" LIKE 'F%'
-) AS c0
+) AS "c0"
 LEFT JOIN "Orders" "o" ON "c0"."CustomerID" = "o"."CustomerID"
 ORDER BY "c0"."CustomerID" NULLS FIRST
 """);
@@ -3479,7 +3479,7 @@ FROM (
     FROM "Orders" "o"
     GROUP BY "o"."CustomerID"
     HAVING "o"."CustomerID" LIKE 'F%'
-) AS o1
+) AS "o1"
 LEFT JOIN "Orders" "o0" ON "o1"."CustomerID" = "o0"."CustomerID"
 ORDER BY "o1"."CustomerID" NULLS FIRST
 """);
@@ -3499,7 +3499,7 @@ ORDER BY "o1"."CustomerID" NULLS FIRST
             """
 SELECT s.c, "s"."ProductID", "c1"."CustomerID", "c1"."City"
 FROM (
-    SELECT COALESCE(sum("o"."ProductID" + "o"."OrderID" * 1000), 0)::int AS c, "o"."ProductID", min("o"."OrderID" / 100) AS c0
+    SELECT COALESCE(sum("o"."ProductID" + "o"."OrderID" * 1000), 0)::int AS c, "o"."ProductID", min("o"."OrderID" / 100) AS "c0"
     FROM "Order Details" "o"
     INNER JOIN "Orders" "o0" ON "o"."OrderID" = "o0"."OrderID"
     LEFT JOIN "Customers" "c" ON "o0"."CustomerID" = "c"."CustomerID"
@@ -3627,7 +3627,7 @@ SELECT "c0"."City", "c0"."Region", "c0"."Constant", "c0"."CustomerID", "c0"."Add
 FROM (
     SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", 1 AS "Constant"
     FROM "Customers" "c"
-) AS c0
+) AS "c0"
 ORDER BY "c0"."City" NULLS FIRST, "c0"."Region" NULLS FIRST, "c0"."Constant" NULLS FIRST
 """);
     }
@@ -3642,7 +3642,7 @@ SELECT "c0"."City", "c0"."Constant", "c0"."CustomerID", "c0"."Address", "c0"."Co
 FROM (
     SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", 1 AS "Constant"
     FROM "Customers" "c"
-) AS c0
+) AS "c0"
 ORDER BY "c0"."City" NULLS FIRST, "c0"."Constant" NULLS FIRST
 """);
     }
@@ -3717,7 +3717,7 @@ LEFT JOIN (
     SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
     FROM "Orders" "o"
     WHERE "o"."OrderID" < 11000
-) AS o1 ON "c"."CustomerID" = "o1"."CustomerID"
+) AS "o1" ON "c"."CustomerID" = "o1"."CustomerID"
 LEFT JOIN (
     SELECT o2."OrderID", o2."CustomerID", o2."EmployeeID", o2."OrderDate"
     FROM (
