@@ -109,8 +109,9 @@ EF их не отдаёт генератору, как в апстриме).
    Начат разбор `H2ComplianceTest`: включены в компиляцию и помечены `BlockedByPort`
    suite `ConnectionInterception`, `MigrationsInfrastructure`, `OptimisticConcurrency`,
    `StoredProcedureUpdate`, `StoreValueGeneration`, bulk-updates и девять Northwind
-   query-suite; число missing spec bases упало со 114 до 77. PG-only DbFunctions
-   и Functions остались вне компиляции — они используют Npgsql-специфичные `DbFunctions`.
+   query-suite, inheritance/relationships/many-to-many; число missing spec bases
+   упало со 114 до 60. PG-only DbFunctions, Functions и GearsOfWar остались вне
+   компиляции — они используют Npgsql-специфичные `DbFunctions` и `GlobalTypeMapper`.
    Заодно `H2RelationalConnection.CreateDbConnection()` перестал требовать DataSource
    и отдаёт не configured `H2Connection`, как ADO-провайдеры обычно делают до Open.
    Миграции, scaffolding, массивы, конвертеры и row value входят в зелёный гейт.

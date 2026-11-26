@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
 // ReSharper disable once UnusedMember.Global
+[Trait("Category", "BlockedByPort")]
 public class GearsOfWarQueryH2Test : GearsOfWarQueryRelationalTestBase<GearsOfWarQueryH2Fixture>
 {
     // ReSharper disable once UnusedParameter.Local

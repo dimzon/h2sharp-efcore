@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class TPTGearsOfWarQueryH2Test : TPTGearsOfWarQueryRelationalTestBase<TPTGearsOfWarQueryH2Fixture>
 {
     // ReSharper disable once UnusedParameter.Local

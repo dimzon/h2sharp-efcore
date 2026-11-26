@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class TPCGearsOfWarQueryH2Test : TPCGearsOfWarQueryRelationalTestBase<TPCGearsOfWarQueryH2Fixture>
 {
     public TPCGearsOfWarQueryH2Test(TPCGearsOfWarQueryH2Fixture fixture, ITestOutputHelper testOutputHelper)

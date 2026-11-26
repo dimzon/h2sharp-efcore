@@ -1,5 +1,8 @@
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class TPCInheritanceQueryH2Test(TPCInheritanceQueryH2Fixture fixture, ITestOutputHelper testOutputHelper)
     : TPCInheritanceQueryTestBase<TPCInheritanceQueryH2Fixture>(fixture, testOutputHelper)
 {

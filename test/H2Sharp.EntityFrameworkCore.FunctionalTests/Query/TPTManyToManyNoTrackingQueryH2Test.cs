@@ -1,5 +1,8 @@
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class TPTManyToManyNoTrackingQueryH2Test : TPTManyToManyNoTrackingQueryRelationalTestBase<TPTManyToManyQueryH2Fixture>
 {
     // ReSharper disable once UnusedParameter.Local

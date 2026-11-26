@@ -1,5 +1,8 @@
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class TPCManyToManyNoTrackingQueryH2Test : TPCManyToManyNoTrackingQueryRelationalTestBase<TPCManyToManyQueryH2Fixture>
 {
     public TPCManyToManyNoTrackingQueryH2Test(TPCManyToManyQueryH2Fixture fixture, ITestOutputHelper testOutputHelper)
