@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
+using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Update;
 
+[Trait("Category", "BlockedByPort")]
 public class ComplexTypeBulkUpdatesH2Test(
     ComplexTypeBulkUpdatesH2Test.ComplexTypeBulkUpdatesH2Fixture fixture,
     ITestOutputHelper testOutputHelper)

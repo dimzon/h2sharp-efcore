@@ -16,6 +16,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
 {
     private readonly H2TypeMappingSource _typeMappingSource;
     private readonly RelationalTypeMapping _boolTypeMapping;
+    private readonly RelationalTypeMapping _decimalTypeMapping;
 
     private static Type? _nodaTimeDurationType;
     private static Type? _nodaTimePeriodType;
@@ -29,6 +30,7 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
     {
         _typeMappingSource = (H2TypeMappingSource)dependencies.TypeMappingSource;
         _boolTypeMapping = _typeMappingSource.FindMapping(typeof(bool), dependencies.Model)!;
+        _decimalTypeMapping = _typeMappingSource.FindMapping(typeof(decimal), dependencies.Model)!;
     }
 
     #region Expression factory methods
@@ -296,6 +298,25 @@ public class H2SqlExpressionFactory : SqlExpressionFactory
             {
                 return (SqlBinaryExpression)ApplyTypeMapping(
                     new SqlBinaryExpression(ExpressionType.Subtract, left, right, typeof(int), null), typeMapping);
+            }
+
+            // H2 divides DECIMAL to scale 36, which CLR decimal cannot hold. Round in SQL
+            // so the ADO boundary keeps its exactness rule and still reads the result.
+            case ExpressionType.Divide when left.Type == typeof(decimal) && right.Type == typeof(decimal):
+            {
+                SqlExpression? quotient = base.MakeBinary(operatorType, left, right, typeMapping, existingExpr);
+                if (quotient is null)
+                {
+                    return null;
+                }
+
+                return Function(
+                    "round",
+                    [ApplyDefaultTypeMapping(quotient), Constant(28)],
+                    nullable: true,
+                    argumentsPropagateNullability: [true, false],
+                    typeof(decimal),
+                    _decimalTypeMapping);
             }
         }
 

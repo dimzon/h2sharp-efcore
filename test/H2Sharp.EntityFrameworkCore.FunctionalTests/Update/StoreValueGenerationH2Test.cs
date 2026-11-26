@@ -1,11 +1,13 @@
 using System.Text;
 using Microsoft.EntityFrameworkCore.TestModels.StoreValueGenerationModel;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
+using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Update;
 
 #nullable enable
 
+[Trait("Category", "BlockedByPort")]
 public class StoreValueGenerationH2Test : StoreValueGenerationTestBase<
     StoreValueGenerationH2Test.StoreValueGenerationH2Fixture>
 {

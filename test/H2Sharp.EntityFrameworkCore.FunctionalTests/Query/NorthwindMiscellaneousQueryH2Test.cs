@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Xunit.Sdk;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class NorthwindMiscellaneousQueryH2Test : NorthwindMiscellaneousQueryRelationalTestBase<
     NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {

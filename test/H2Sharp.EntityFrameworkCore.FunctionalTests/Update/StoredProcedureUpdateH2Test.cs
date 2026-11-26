@@ -1,10 +1,12 @@
 using H2Sharp.EntityFrameworkCore.Internal;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
+using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Update;
 
 #nullable enable
 
+[Trait("Category", "BlockedByPort")]
 [MinimumPostgresVersion(14, 0)]
 public class StoredProcedureUpdateH2Test : StoredProcedureUpdateTestBase
 {

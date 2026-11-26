@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class NorthwindGroupByQueryH2Test : NorthwindGroupByQueryRelationalTestBase<NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
     // ReSharper disable once UnusedParameter.Local

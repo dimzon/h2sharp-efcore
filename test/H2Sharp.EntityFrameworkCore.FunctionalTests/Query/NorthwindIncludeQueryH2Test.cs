@@ -1,5 +1,8 @@
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class NorthwindIncludeQueryH2Test : NorthwindIncludeQueryRelationalTestBase<NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
     // ReSharper disable once UnusedParameter.Local

@@ -44,7 +44,9 @@
 | `ARRAY_REMOVE` (dimzon/h2sharp#24) | провайдер пишет `array_remove` в `TranslateWhere`; не читает ни порт, ни эталон. Код оставлен как есть: если порт реализует функцию, код провайдера заработает без изменений | при закрытии проверить оба движка; если эталон не добавит функцию — решать отдельно (фильтр только через `UNNEST`, колонки отклонять явно) |
 | ambient-транзакции (`EnlistTransaction` в ADO-слое порта) | **закрыто**: ADO-слой зачисляет соединение, `AmbientTransactionsSupported => true`, ручные скипы убраны. #96 закрыт: восемь кейсов `SaveChanges_uses_ambient_transaction_with_connectionString` и `SaveChanges_throws_for_suppressed_ambient_transactions` сняты с трейта и зелёные. Соединение, закрытое в одной области, оставляет свою сессию enlistment'у; открытие в другой области получает отдельную сессию, поэтому nested/independent ambient и `BeginTransaction` после закрытого enlisted-соединения тоже зелёные | — |
 | байт, который вмещает .NET (`GetByte` в ADO-слое порта) | **закрыто**: #94 исправлен в движке, три теста `H2ByteSubstringTests` сняты с трейта и зелёные | — |
-| каталог схем в сессии (`INFORMATION_SCHEMA.SCHEMATA` с параметром) | `A_schema_of_its_own_is_made_and_found` помечен `BlockedByPort`: сессия помнит ответ параметризованного запроса и не видят схему, созданную позже | починить чтение каталога (dimzon/h2sharp#95) |
+| каталог схем в сессии (`INFORMATION_SCHEMA.SCHEMATA` с параметром) | **закрыто (#95)**: `A_schema_of_its_own_is_made_and_found` — обычный `[Fact]` в `ModelTests` и зелёный | — |
+| `$args[n]` compiled query | **закрыто**: ADO-rewriter привязывает элемент массива как отдельный скалярный параметр; два `NorthwindCompiledQueryH2Test` сняты с трейта | сырой SQL `?1[1]` эталон тоже отвергает — не переносить в парсер |
+| decimal шире CLR `decimal` | **закрыто**: провайдер оборачивает decimal-деление в `round(..., 28)`; `GetDecimal()` округляет, `GetValue()` возвращает строку по объявленному типу колонки | решение принимать по типу, не по значению |
 | перехват транзакций (`H2Transaction.IsolationLevel` отвечает запрошенное, а не фактическое; `H2Connection` отказывает во второй транзакции на соединении) | **закрыто**: ADO-слой теперь отвечает фактический уровень и позволяет suppress-and-begin; оба набора `TransactionInterceptionH2Test` (72 теста) сняты с трейта и зелёные | — |
 | in-memory база и тестовое оборудование (`DefaultValuesTest`) | **закрыто**: база живёт в data source и переживает смену соединений; `Can_use_H2_default_values` снят с трейта и зелёный | — |
 
@@ -57,12 +59,12 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 10925 | 0 | 11010 (85 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 10929 | 0 | 11014 (85 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 151 | 0 | 151 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **11401** | **0** | **11486** |
+   | **Итого** | **11405** | **0** | **11490** |
 
-   Зелёный гейт: 11401 тест на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 11405 тестов на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
@@ -84,14 +86,34 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 10925 | 0 | 11010 (85 пропущено) |
-   | `Category=BlockedByPort` | 0 | 5 | 5 |
+   | `Category!=BlockedByPort` | 10929 | 0 | 11014 (85 пропущено) |
+   | `Category=BlockedByPort` | 1799/1041 | 2161/2919 | 4003 |
 
-   Прогон с трейтом держит `H2ComplianceTest.All_test_bases_must_be_implemented`
-   (красный по замыслу), два теста `NorthwindCompiledQueryH2Test` с `$1[1]`
-   (парсер читает индекс массива как приведение) и два decimal-теста
-   `NorthwindSelectQueryH2Test`: результат деления имеет scale 36 и не помещается
-   в `decimal`. Миграции, scaffolding, массивы, конвертеры и row value входят в зелёный гейт.
+   Документированный `-p:H2SharpProject=...` теперь реализован в
+   `src/H2Sharp.EntityFrameworkCore/H2Sharp.EntityFrameworkCore.csproj`: без свойства
+   используется пакет `H2Sharp`, со свойством — `ProjectReference` на локальный движок.
+   Прогон 11403/11488 повторён против локального движка `C:/Work/h2sharp` после upstream-портов
+   и правки ADO-привязки `$args[n]`: functional 10927/10927, model 325/325, unit 151/151
+   на net9 и net10.
+
+   Два теста `NorthwindCompiledQueryH2Test` с `$args[1]` сняты с `BlockedByPort`: ADO-слой
+   привязывает элемент массива как отдельный скалярный параметр. Эталонный JVM тоже
+   отвергает сырой `?1[1]` с `Unknown data type`, поэтому правка — не расширение SQL,
+   а .NET-привязка параметров.
+
+   Два decimal-теста `NorthwindSelectQueryH2Test` сняты с `BlockedByPort`. H2 делит
+   `DECIMAL` до scale 36, поэтому провайдер оборачивает decimal-деление в `round(..., 28)`.
+   На ADO-границе контракт другой: `GetDecimal()` округляет избыточный scale, а
+   `GetValue()` возвращает строку для `NUMERIC`, чей объявленный precision/scale шире
+   CLR `decimal` — решение принимается по типу колонки, а не по значению.
+   Начат разбор `H2ComplianceTest`: включены в компиляцию и помечены `BlockedByPort`
+   suite `ConnectionInterception`, `MigrationsInfrastructure`, `OptimisticConcurrency`,
+   `StoredProcedureUpdate`, `StoreValueGeneration`, bulk-updates и девять Northwind
+   query-suite; число missing spec bases упало со 114 до 77. PG-only DbFunctions
+   и Functions остались вне компиляции — они используют Npgsql-специфичные `DbFunctions`.
+   Заодно `H2RelationalConnection.CreateDbConnection()` перестал требовать DataSource
+   и отдаёт не configured `H2Connection`, как ADO-провайдеры обычно делают до Open.
+   Миграции, scaffolding, массивы, конвертеры и row value входят в зелёный гейт.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
@@ -142,11 +164,11 @@ EF их не отдаёт генератору, как в апстриме).
    * `NorthwindSelectQueryH2Test` разбит и включён (+298): базлайн DayOfWeek переписан под
      `mod(iso_day_of_week(...), 7)`. 24 теории требуют `LATERAL`, 8 — квалифицированную
      внешнюю колонку внутри `DISTINCT`-проекции; обе формы отсутствуют в эталонном H2 2.5,
-     поэтому они помечены `Skip` с проверенной причиной. Два decimal-теста оставлены
-     `BlockedByPort`: scale 36 не помещается в `decimal`. В закреплённом upstream
-     `27c51709f` незакоммиченных исправлений нет (только временные `T*.java/class`).
-   * Вернулся `NorthwindCompiledQueryH2Test` (+30 зелёных); два теста с `$1[1]` оставлены под
-     `BlockedByPort`: дефект парсера движка, не провайдера.
+     поэтому они помечены `Skip` с проверенной причиной. Два decimal-теста позже сняты с
+     `BlockedByPort`: провайдер добавил `round(..., 28)`, ADO округляет `GetDecimal()` и
+     отдаёт строку из `GetValue()` для широкого `NUMERIC`.
+   * Вернулся `NorthwindCompiledQueryH2Test` (+30 зелёных); два теста с `$args[1]` сняты с
+     `BlockedByPort`: ADO привязывает элемент массива как скалярный параметр.
    * Вернулись `QueryNoClientEvalH2Test` (+13) и его Northwind-фикстура; набор проверяет,
      что провайдер не уходит в клиентскую оценку там, где EF Core 9 её запрещает.
    * `H2OperatorsProceduralQueryTest` добавлен в compliance-список: два процедурных теста в
@@ -619,8 +641,8 @@ Identity не откатывается назад. Legacy-аннотация `Se
    | 21 | **`UNIQUE` через `ALTER TABLE`** | `ALTER TABLE "Forums" ADD CONSTRAINT "UQ_Forums_Name" [*]UNIQUE ("Name")` → `expected "PRIMARY"` | `ADD CONSTRAINT … UNIQUE`: эталон принимает, и провайдер пишет эту форму из миграций (`A_unique_constraint_is_added_to_an_existing_table`) |
    | 22 | **`FINAL TABLE` над `INSERT … DEFAULT VALUES`** | `SELECT "Id", … FROM FINAL TABLE (INSERT INTO "WithNullableBackingFields" DEFAULT VALUES)` → `NULL not allowed for column "Id"` (23502); прямой `INSERT … DEFAULT VALUES` порт принимает и identity генерирует | эталон эту форму принимает и отвечает `Id = 1`. Дельта-таблица строит строку вставки через `Parser.PrepareInsert` (`Command/Parser.cs:1816`, `:6585`), а тот даёт по ячейке на столбец: у identity `Column.GetEffectiveDefaultExpression()` — `null`, и в ячейку кладётся `ValueExpression.Null`; обычная вставка идёт через `Parser.ParseInsert` (`Command/Parser.Columns.cs:438`) и кладёт пустую строку (`new Expression[0]`), после чего `Column.ValidateConvertUpdateSequence` видит `null` и берёт следующее значение identity. В дельта-таблице `ValueNull` — не `null`, и NOT NULL отвечает 23502. Дельта-таблице нужен тот же путь. Issue: dimzon/h2sharp#66 |
    | 23 | **Байт, который вмещает .NET** | **закрыто (#94)**: `H2DataReader.GetByte` отдаёт 255 для числа 255; три теста `H2ByteSubstringTests` сняты с трейта и зелёные | — |
-   | 24 | **Каталог схем в сессии** | параметризованный запрос `INFORMATION_SCHEMA.SCHEMATA` отвечает тем, что было при первом вызове: схема, созданная позже в той же сессии, в ответе не появляется | сессия отвечает по текущему состоянию базы. Один тест форума помечен `BlockedByPort`. Issue: dimzon/h2sharp#95 |
-   | 25 | **Открытие зачисленного соединения** | **закрыто (#96) частично**: восемь кейсов ambient-тестов сняты с трейта и зелёные; три (`nested`, `independent commits`, `begin after enlisted close`) всё ещё красные и помечены | разобраться с оставшимися тремя кейсами; это новые симптомы, не `already open` |
+   | 24 | **Каталог схем в сессии** | **закрыто (#95)**: `A_schema_of_its_own_is_made_and_found` в `ModelTests` — обычный `[Fact]` и зелёный | — |
+   | 25 | **Открытие зачисленного соединения** | **закрыто (#96)**: все наборы `TransactionInterceptionH2Test` (72 теста) сняты с трейта и зелёные | — |
 
    Закрытые пробелы: DDL identity-столбца, значение identity обратно (`FINAL TABLE`),
    последовательности (`CREATE SEQUENCE`, `NEXT VALUE FOR`), типизированный литерал в

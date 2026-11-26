@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore.BulkUpdates;
+using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.BulkUpdates;
 
+[Trait("Category", "BlockedByPort")]
 public class TPCInheritanceBulkUpdatesH2Test(
     TPCInheritanceBulkUpdatesH2Fixture fixture,
     ITestOutputHelper testOutputHelper)

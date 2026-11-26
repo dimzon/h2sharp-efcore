@@ -36,26 +36,9 @@
       compilation until they are rewritten against H2, and each one is listed in docs/DIVERGENCES.md.
     -->
     <Compile Remove="BuiltInDataTypesH2Test.cs" />
-    <Compile Remove="BulkUpdates\ComplexTypeBulkUpdatesH2Test.cs" />
-    <Compile Remove="BulkUpdates\NonSharedModelBulkUpdatesH2Test.cs" />
-    <Compile Remove="BulkUpdates\NorthwindBulkUpdatesH2Fixture.cs" />
-    <Compile Remove="BulkUpdates\NorthwindBulkUpdatesH2Test.cs" />
-    <Compile Remove="BulkUpdates\TPCFiltersInheritanceBulkUpdatesH2Fixture.cs" />
-    <Compile Remove="BulkUpdates\TPCFiltersInheritanceBulkUpdatesH2Test.cs" />
-    <Compile Remove="BulkUpdates\TPCInheritanceBulkUpdatesH2Fixture.cs" />
-    <Compile Remove="BulkUpdates\TPCInheritanceBulkUpdatesH2Test.cs" />
-    <Compile Remove="BulkUpdates\TPHFiltersInheritanceBulkUpdatesH2Fixture.cs" />
-    <Compile Remove="BulkUpdates\TPHFiltersInheritanceBulkUpdatesH2Test.cs" />
-    <Compile Remove="BulkUpdates\TPHInheritanceBulkUpdatesH2Fixture.cs" />
-    <Compile Remove="BulkUpdates\TPHInheritanceBulkUpdatesH2Test.cs" />
-    <Compile Remove="BulkUpdates\TPTFiltersInheritanceBulkUpdatesH2Fixture.cs" />
-    <Compile Remove="BulkUpdates\TPTFiltersInheritanceBulkUpdatesH2Test.cs" />
-    <Compile Remove="BulkUpdates\TPTInheritanceBulkUpdatesH2Fixture.cs" />
-    <Compile Remove="BulkUpdates\TPTInheritanceBulkUpdatesH2Test.cs" />
-    <Compile Remove="ConnectionInterceptionH2Test.cs" />
     <Compile Remove="JsonTypesH2Test.cs" />
-    <Compile Remove="Migrations\MigrationsInfrastructureH2Test.cs" />
-    <Compile Remove="OptimisticConcurrencyH2Test.cs" />
+    <Compile Remove="Query\NorthwindDbFunctionsQueryH2Test.cs" />
+    <Compile Remove="Query\NorthwindFunctionsQueryH2Test.cs" />
     <Compile Remove="Query\AdHocAdvancedMappingsQueryH2Test.cs" />
     <Compile Remove="Query\AdHocComplexTypeQueryH2Test.cs" />
     <Compile Remove="Query\AdHocJsonQueryH2Test.cs" />
@@ -97,18 +80,6 @@
     <Compile Remove="Query\NavigationTest.cs" />
     <Compile Remove="Query\NodaTimeQueryH2Test.cs" />
     <Compile Remove="Query\NonSharedPrimitiveCollectionsQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindAggregateOperatorsQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindDbFunctionsQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindEFPropertyIncludeQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindFunctionsQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindGroupByQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindIncludeNoTrackingQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindIncludeQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindKeylessEntitiesQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindMiscellaneousQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindSplitIncludeNoTrackingQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindSplitIncludeQueryH2Test.cs" />
-    <Compile Remove="Query\NorthwindStringIncludeQueryH2Test.cs" />
     <Compile Remove="Query\NullSemanticsQueryH2Test.cs" />
     <Compile Remove="Query\OperatorsQueryH2Test.cs" />
     <Compile Remove="Query\OptionalDependentQueryH2Test.cs" />
@@ -150,8 +121,6 @@
     <Compile Remove="QueryExpressionInterceptionH2TestBase.cs" />
     <Compile Remove="SystemColumnTest.cs" />
     <Compile Remove="Update\JsonUpdateH2Test.cs" />
-    <Compile Remove="Update\StoredProcedureUpdateH2Test.cs" />
-    <Compile Remove="Update\StoreValueGenerationH2Test.cs" />
   </ItemGroup>
 
   <ItemGroup>

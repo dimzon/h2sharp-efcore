@@ -1,11 +1,14 @@
 using Microsoft.EntityFrameworkCore.TestModels.ConcurrencyModel;
+using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore;
 
+[Trait("Category", "BlockedByPort")]
 public class OptimisticConcurrencyBytesH2Test(F1BytesH2Fixture fixture)
     : OptimisticConcurrencyH2TestBase<F1BytesH2Fixture, byte[]>(fixture);
 
 // uint maps directly to xid, which is the PG type of the xmin column that we use as a row version.
+[Trait("Category", "BlockedByPort")]
 public class OptimisticConcurrencyH2Test(F1H2Fixture fixture) : OptimisticConcurrencyH2TestBase<F1H2Fixture, uint>(fixture);
 
 public abstract class OptimisticConcurrencyH2TestBase<TFixture, TRowVersion>(TFixture fixture)

@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
+using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.BulkUpdates;
 
+[Trait("Category", "BlockedByPort")]
 public class NorthwindBulkUpdatesH2Test(
     NorthwindBulkUpdatesH2Fixture<NoopModelCustomizer> fixture,
     ITestOutputHelper testOutputHelper)

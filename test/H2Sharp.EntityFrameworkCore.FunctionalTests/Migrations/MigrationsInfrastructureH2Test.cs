@@ -1,9 +1,11 @@
 using H2Sharp.EntityFrameworkCore.Metadata;
 using H2Sharp.EntityFrameworkCore.Storage.Internal;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
+using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Migrations
 {
+    [Trait("Category", "BlockedByPort")]
     public class MigrationsInfrastructureH2Test(MigrationsInfrastructureH2Test.MigrationsInfrastructureH2Fixture fixture)
         : MigrationsInfrastructureTestBase<MigrationsInfrastructureH2Test.MigrationsInfrastructureH2Fixture>(fixture)
     {

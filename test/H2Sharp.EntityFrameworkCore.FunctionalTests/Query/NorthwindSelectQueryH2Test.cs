@@ -184,8 +184,8 @@ FROM "Orders" "o"
     public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(bool async)
         => base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(async);
 
-    // Port defect: H2's numeric division produces scale 36, which cannot be read as decimal.
-    [Trait("Category", "BlockedByPort")]
+    // H2 divides DECIMAL to scale 36. The provider rounds decimal division in SQL to
+    // scale 28, so the ADO boundary can keep its exact conversion rule.
     public override Task Explicit_cast_in_arithmetic_operation_is_preserved(bool async)
         => base.Explicit_cast_in_arithmetic_operation_is_preserved(async);
 

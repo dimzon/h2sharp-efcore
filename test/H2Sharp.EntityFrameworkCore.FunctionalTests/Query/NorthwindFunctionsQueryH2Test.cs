@@ -3,8 +3,11 @@ using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class NorthwindFunctionsQueryH2Test : NorthwindFunctionsQueryRelationalTestBase<NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
     // ReSharper disable once UnusedParameter.Local

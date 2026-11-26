@@ -13,13 +13,12 @@ public class NorthwindCompiledQueryH2Test : NorthwindCompiledQueryTestBase<North
         Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    // Port defect: the parser reads "$1[1]" (compiled query array element) as a cast and fails
-    // with "Unknown data type: (?1)".
-    [Trait("Category", "BlockedByPort")]
+    // The ADO parameter rewriter binds $args[1] as the scalar element of the argument array,
+    // which is the layout EF compiled queries expect. Verified against H2 2.5: raw ?1[1]
+    // is rejected by the engine too, so this is a .NET parameter-binding fix, not SQL syntax.
     public override void Query_with_array_parameter()
         => base.Query_with_array_parameter();
 
-    [Trait("Category", "BlockedByPort")]
     public override Task Query_with_array_parameter_async()
         => base.Query_with_array_parameter_async();
 }

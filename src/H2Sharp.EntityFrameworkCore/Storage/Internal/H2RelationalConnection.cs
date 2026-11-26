@@ -93,9 +93,21 @@ public class H2RelationalConnection : RelationalConnection, IH2RelationalConnect
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     protected override DbConnection CreateDbConnection()
-        => DataSource?.CreateConnection()
-           ?? throw new InvalidOperationException(
-               "An H2 context needs a connection string or a data source: the database is owned by a data source.");
+    {
+        // EF can configure either a data source or a plain connection string. The old
+        // data-source-only path refused the EF spec suites that use the string form.
+        if (DataSource is not null)
+        {
+            return DataSource.CreateConnection();
+        }
+
+        // ADO providers hand back an unconfigured connection here; opening it without a
+        // connection string is what refuses. EF's interception tests need to see the
+        // connection before they configure or replace it.
+        return string.IsNullOrEmpty(ConnectionString)
+            ? new H2Connection()
+            : new H2Connection(ConnectionString);
+    }
 
     /// <summary>
     ///     The connection string of the store.
