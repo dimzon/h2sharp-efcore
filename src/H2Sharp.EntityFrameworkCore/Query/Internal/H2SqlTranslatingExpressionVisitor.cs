@@ -124,6 +124,24 @@ public class H2SqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
                 when unaryExpression.Type == typeof(ITuple) && unaryExpression.Operand.Type.IsAssignableTo(typeof(ITuple)):
                 return Visit(unaryExpression.Operand);
 
+            // H2 reads bitwise complement as BITNOT(x), not as PostgreSQL's ~x.
+            case ExpressionType.Not
+                when unaryExpression.Type == typeof(int)
+                    || unaryExpression.Type == typeof(long)
+                    || unaryExpression.Type == typeof(short)
+                    || unaryExpression.Type == typeof(byte):
+                if (TranslationFailed(unaryExpression.Operand, Visit(unaryExpression.Operand), out var bitOperand))
+                {
+                    return QueryCompilationContext.NotTranslatedExpression;
+                }
+
+                return _sqlExpressionFactory.Function(
+                    "BITNOT",
+                    [bitOperand!],
+                    nullable: true,
+                    argumentsPropagateNullability: [true],
+                    unaryExpression.Type,
+                    _typeMappingSource.FindMapping(unaryExpression.Type)!);
         }
 
         return base.VisitUnary(unaryExpression);

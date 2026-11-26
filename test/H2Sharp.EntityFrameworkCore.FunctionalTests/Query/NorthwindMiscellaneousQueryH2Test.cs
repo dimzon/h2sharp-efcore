@@ -1,3 +1,5 @@
+using System.Threading;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Xunit.Sdk;
 
@@ -5,7 +7,6 @@ using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-[Trait("Category", "BlockedByPort")]
 public class NorthwindMiscellaneousQueryH2Test : NorthwindMiscellaneousQueryRelationalTestBase<
     NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
@@ -25,9 +26,9 @@ public class NorthwindMiscellaneousQueryH2Test : NorthwindMiscellaneousQueryRela
 
         AssertSql(
             """
-SELECT o."CustomerID"
-FROM "Orders" AS o
-WHERE o."OrderDate" IS NOT NULL AND COALESCE(o."EmployeeID"::text, '') LIKE '%7%'
+SELECT "o"."CustomerID"
+FROM "Orders" "o"
+WHERE "o"."OrderDate" IS NOT NULL AND COALESCE(CAST("o"."EmployeeID" AS text), '') LIKE '%7%'
 """);
     }
 
@@ -37,9 +38,9 @@ WHERE o."OrderDate" IS NOT NULL AND COALESCE(o."EmployeeID"::text, '') LIKE '%7%
 
         AssertSql(
             """
-SELECT o."OrderDate" + INTERVAL '1 years' AS "OrderDate"
-FROM "Orders" AS o
-WHERE o."OrderDate" IS NOT NULL
+SELECT TIMESTAMPADD('YEAR', 1, "o"."OrderDate") AS "OrderDate"
+FROM "Orders" "o"
+WHERE "o"."OrderDate" IS NOT NULL
 """);
     }
 
@@ -60,9 +61,9 @@ WHERE o."OrderDate" IS NOT NULL
             """
 $__years_0='2'
 
-SELECT o."OrderDate" + CAST($__years_0::text || ' years' AS interval) AS "OrderDate"
-FROM "Orders" AS o
-WHERE o."OrderDate" IS NOT NULL
+SELECT TIMESTAMPADD('YEAR', $__years_0, "o"."OrderDate") AS "OrderDate"
+FROM "Orders" "o"
+WHERE "o"."OrderDate" IS NOT NULL
 """);
     }
 
@@ -76,9 +77,9 @@ WHERE o."OrderDate" IS NOT NULL
 
         AssertSql(
             """
-SELECT o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-FROM "Orders" AS o
-WHERE o."OrderDate" - INTERVAL '1 00:00:00' = TIMESTAMP '1997-10-08T00:00:00'
+SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+FROM "Orders" "o"
+WHERE "o"."OrderDate" - INTERVAL '1 00:00:00' DAY TO SECOND = TIMESTAMP '1997-10-08 00:00:00'
 """);
     }
 
@@ -93,9 +94,9 @@ WHERE o."OrderDate" - INTERVAL '1 00:00:00' = TIMESTAMP '1997-10-08T00:00:00'
 
         AssertSql(
             """
-SELECT floor(date_part('day', date_trunc('day', now()::timestamp) - date_trunc('day', o."OrderDate")))::int AS "Elapsed"
-FROM "Orders" AS o
-WHERE o."OrderDate" IS NOT NULL
+SELECT EXTRACT('day' FROM date_trunc('day', CAST(current_timestamp() AS timestamp without time zone)) - date_trunc('day', "o"."OrderDate")) AS "Elapsed"
+FROM "Orders" "o"
+WHERE "o"."OrderDate" IS NOT NULL
 LIMIT 1
 """);
     }
@@ -162,10 +163,10 @@ LIMIT 1
         AssertSql(
             """
 SELECT (
-    SELECT max(o."OrderID")
-    FROM "Orders" AS o
-    WHERE c."CustomerID" = o."CustomerID") AS "Max"
-FROM "Customers" AS c
+    SELECT max("o"."OrderID")
+    FROM "Orders" "o"
+    WHERE "c"."CustomerID" = "o"."CustomerID") AS "Max"
+FROM "Customers" "c"
 """);
     }
 
@@ -184,21 +185,18 @@ FROM "Customers" AS c
     public override async Task
         Select_DTO_constructor_distinct_with_collection_projection_translated_to_server_with_binding_after_client_eval(bool async)
     {
-        // Allow binding of expressions after projection has turned to client eval. Issue #24478.
-        await Assert.ThrowsAsync<TrueException>(
-            () => base
-                .Select_DTO_constructor_distinct_with_collection_projection_translated_to_server_with_binding_after_client_eval(async));
+        await base.Select_DTO_constructor_distinct_with_collection_projection_translated_to_server_with_binding_after_client_eval(async);
 
         AssertSql(
             """
-SELECT o0."CustomerID", o1."OrderID", o1."CustomerID", o1."EmployeeID", o1."OrderDate"
+SELECT "o0"."CustomerID", "o1"."OrderID", "o1"."CustomerID", "o1"."EmployeeID", "o1"."OrderDate"
 FROM (
-    SELECT DISTINCT o."CustomerID"
-    FROM "Orders" AS o
-    WHERE o."OrderID" < 10300
-) AS o0
-LEFT JOIN "Orders" AS o1 ON o0."CustomerID" = o1."CustomerID"
-ORDER BY o0."CustomerID" NULLS FIRST
+    SELECT DISTINCT "o"."CustomerID"
+    FROM "Orders" "o"
+    WHERE "o"."OrderID" < 10300
+) AS "o0"
+LEFT JOIN "Orders" "o1" ON "o0"."CustomerID" = "o1"."CustomerID"
+ORDER BY "o0"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -208,9 +206,9 @@ ORDER BY o0."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-FROM "Orders" AS o
-WHERE (o."OrderID" # 1) = 10249
+SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+FROM "Orders" "o"
+WHERE (BITXOR("o"."OrderID", 1)) = 10249
 """);
     }
 
@@ -232,9 +230,9 @@ WHERE (o."OrderID" # 1) = 10249
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."CustomerID" IN ('ALFKI', 'ANATR')
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE "c"."CustomerID" IN ('ALFKI', 'ANATR')
 """);
     }
 
@@ -248,17 +246,17 @@ WHERE c."CustomerID" IN ('ALFKI', 'ANATR')
             async,
             ss => ss.Set<Customer>().Where(c => regions.Contains(c.Region)));
 
-        // Instead of c."Region" IN ('UK', 'SP') we generate the PostgreSQL-specific x = ANY (a, b, c), which can
+        // Instead of "c"."Region" IN ('UK', 'SP') we generate the PostgreSQL-specific x = ANY (a, b, c), which can
         // be parameterized.
         // Ideally parameter sniffing would allow us to produce SQL without the null check since the regions array doesn't contain one
         // (see https://github.com/aspnet/EntityFrameworkCore/issues/17598).
         AssertSql(
             """
-$__regions_0={ 'UK', 'SP' } (DbType = Object)
+$__regions_0={ 'UK', 'SP' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."Region" = ANY ($__regions_0) OR (c."Region" IS NULL AND array_position($__regions_0, NULL) IS NOT NULL)
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE "c"."Region" = ANY ($__regions_0) OR ("c"."Region" IS NULL AND COALESCE(array_contains($__regions_0, NULL), FALSE))
 """);
     }
 
@@ -272,17 +270,17 @@ WHERE c."Region" = ANY ($__regions_0) OR (c."Region" IS NULL AND array_position(
             async,
             ss => ss.Set<Customer>().Where(c => regions.Contains(c.Region)));
 
-        // Instead of c."Region" IN ('UK', 'SP') we generate the PostgreSQL-specific x = ANY (a, b, c), which can
+        // Instead of "c"."Region" IN ('UK', 'SP') we generate the PostgreSQL-specific x = ANY (a, b, c), which can
         // be parameterized.
         // Ideally parameter sniffing would allow us to produce SQL with an optimized null check (no need to check the array server-side)
         // (see https://github.com/aspnet/EntityFrameworkCore/issues/17598).
         AssertSql(
             """
-$__regions_0={ 'UK', 'SP', NULL } (DbType = Object)
+$__regions_0={ 'UK', 'SP', NULL } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."Region" = ANY ($__regions_0) OR (c."Region" IS NULL AND array_position($__regions_0, NULL) IS NOT NULL)
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE "c"."Region" = ANY ($__regions_0) OR ("c"."Region" IS NULL AND COALESCE(array_contains($__regions_0, NULL), FALSE))
 """);
     }
 
@@ -328,11 +326,14 @@ WHERE c."Region" = ANY ($__regions_0) OR (c."Region" IS NULL AND array_position(
 
         AssertSql(
             """
-$__collection_1={ 'A%', 'B%', 'C%' } (DbType = Object)
+$__collection_1={ 'A%', 'B%', 'C%' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."Address" LIKE ANY ($__collection_1)
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE EXISTS (
+    SELECT 1
+    FROM UNNEST($__collection_1) "c0"("value")
+    WHERE "c"."Address" LIKE "c0"."value" ESCAPE '')
 """);
     }
 
@@ -350,11 +351,14 @@ WHERE c."Address" LIKE ANY ($__collection_1)
 
         AssertSql(
             """
-$__collection_1={ 'A%', 'B%', 'C%' } (DbType = Object)
+$__collection_1={ 'A%', 'B%', 'C%' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."Address" LIKE ALL ($__collection_1)
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM UNNEST($__collection_1) "c0"("value")
+    WHERE "c"."Address" NOT LIKE "c0"."value" ESCAPE '' OR "c"."Address" IS NULL OR "c0"."value" IS NULL)
 """);
     }
 
@@ -372,11 +376,14 @@ WHERE c."Address" LIKE ALL ($__collection_1)
 
         AssertSql(
             """
-$__collection_1={ 'A%', 'B%', 'C%' } (DbType = Object)
+$__collection_1={ 'A%', 'B%', 'C%' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE NOT (c."Address" LIKE ALL ($__collection_1))
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE EXISTS (
+    SELECT 1
+    FROM UNNEST($__collection_1) "c0"("value")
+    WHERE "c"."Address" NOT LIKE "c0"."value" ESCAPE '' OR "c"."Address" IS NULL OR "c0"."value" IS NULL)
 """);
     }
 
@@ -418,11 +425,14 @@ WHERE NOT (c."Address" LIKE ALL ($__collection_1))
 
         AssertSql(
             """
-$__collection_1={ 'a%', 'b%', 'c%' } (DbType = Object)
+$__collection_1={ 'a%', 'b%', 'c%' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."Address" ILIKE ANY ($__collection_1)
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE EXISTS (
+    SELECT 1
+    FROM UNNEST($__collection_1) "c0"("value")
+    WHERE "c"."Address" ILIKE "c0"."value" ESCAPE '')
 """);
     }
 
@@ -447,11 +457,14 @@ WHERE c."Address" ILIKE ANY ($__collection_1)
 
         AssertSql(
             """
-$__collection_1={ 'a%', 'b%', 'c%' } (DbType = Object)
+$__collection_1={ 'a%', 'b%', 'c%' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE NOT (c."Address" ILIKE ANY ($__collection_1))
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM UNNEST($__collection_1) "c0"("value")
+    WHERE "c"."Address" ILIKE "c0"."value" ESCAPE '')
 """);
     }
 
@@ -469,17 +482,20 @@ WHERE NOT (c."Address" ILIKE ANY ($__collection_1))
 
         AssertSql(
             """
-$__collection_1={ 'a%', 'b%', 'c%' } (DbType = Object)
+$__collection_1={ 'a%', 'b%', 'c%' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."Address" ILIKE ALL ($__collection_1)
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM UNNEST($__collection_1) "c0"("value")
+    WHERE "c"."Address" NOT ILIKE "c0"."value" ESCAPE '' OR "c"."Address" IS NULL OR "c0"."value" IS NULL)
 """);
     }
 
     #endregion Any/All Like
 
-    [ConditionalFact] // #1560
+    [ConditionalFact(Skip = "H2 2.5 has no LATERAL")]
     public async Task Lateral_join_with_table_is_rewritten_with_subquery()
     {
         await using var ctx = CreateContext();
@@ -488,11 +504,73 @@ WHERE c."Address" ILIKE ALL ($__collection_1)
 
         AssertSql(
             """
-SELECT c."CustomerID", c0."ContactName", c0."CustomerID"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", c0."ContactName", c0."CustomerID"
+FROM "Customers" "c"
 LEFT JOIN LATERAL (SELECT * FROM "Customers") AS c0 ON TRUE
-ORDER BY c."CustomerID" NULLS FIRST
+ORDER BY "c"."CustomerID" NULLS FIRST
 """);
+    }
+
+    // H2 2.5 has no LATERAL; these EF forms cannot be written as reference SQL.
+    [ConditionalTheory(Skip = "H2 2.5 has no LATERAL")]
+    [MemberData(nameof(IsAsyncData))]
+    public override Task Comparing_collection_navigation_to_null_complex(bool async)
+        => base.Comparing_collection_navigation_to_null_complex(async);
+
+    [ConditionalTheory(Skip = "H2 2.5 has no LATERAL")]
+    [MemberData(nameof(IsAsyncData))]
+    public override Task Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(bool async)
+        => base.Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(async);
+
+    [ConditionalTheory(Skip = "H2 2.5 has no LATERAL")]
+    [MemberData(nameof(IsAsyncData))]
+    public override Task Correlated_collection_with_distinct_without_default_identifiers_projecting_columns(bool async)
+        => base.Correlated_collection_with_distinct_without_default_identifiers_projecting_columns(async);
+
+    [ConditionalTheory(Skip = "H2 2.5 has no LATERAL")]
+    [MemberData(nameof(IsAsyncData))]
+    public override Task Correlated_collection_with_distinct_without_default_identifiers_projecting_columns_with_navigation(bool async)
+        => base.Correlated_collection_with_distinct_without_default_identifiers_projecting_columns_with_navigation(async);
+
+    [ConditionalTheory(Skip = "H2 2.5 has no LATERAL")]
+    [MemberData(nameof(IsAsyncData))]
+    public override Task DefaultIfEmpty_in_subquery_nested_filter_order_comparison(bool async)
+        => base.DefaultIfEmpty_in_subquery_nested_filter_order_comparison(async);
+
+    [ConditionalTheory(Skip = "H2 2.5 has no LATERAL")]
+    [MemberData(nameof(IsAsyncData))]
+    public override Task SelectMany_correlated_subquery_hard(bool async)
+        => base.SelectMany_correlated_subquery_hard(async);
+
+    [ConditionalTheory(Skip = "H2 2.5 has no LATERAL")]
+    [MemberData(nameof(IsAsyncData))]
+    public override Task Select_correlated_subquery_ordered(bool async)
+        => base.Select_correlated_subquery_ordered(async);
+
+    [ConditionalTheory(Skip = "H2 2.5 has no LATERAL")]
+    [MemberData(nameof(IsAsyncData))]
+    public override Task Select_subquery_recursive_trivial(bool async)
+        => base.Select_subquery_recursive_trivial(async);
+
+    [ConditionalTheory(Skip = "H2 2.5 cannot bind an outer column in a nested derived table")]
+    [MemberData(nameof(IsAsyncData))]
+    public override Task DefaultIfEmpty_Sum_over_collection_navigation(bool async)
+        => base.DefaultIfEmpty_Sum_over_collection_navigation(async);
+
+    [ConditionalTheory(Skip = "H2 2.5 cannot bind an outer column in a nested derived table")]
+    [MemberData(nameof(IsAsyncData))]
+    public override Task Subquery_with_navigation_inside_inline_collection(bool async)
+        => base.Subquery_with_navigation_inside_inline_collection(async);
+
+    [ConditionalFact]
+    public override async Task ToListAsync_with_canceled_token()
+    {
+        using var context = CreateContext();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => context.Employees.ToListAsync(new CancellationToken(true)));
+
+        Assert.Contains(CoreEventId.QueryCanceled, Fixture.ListLoggerFactory.Log.Select(l => l.Id));
     }
 
     protected override void ClearLog()
