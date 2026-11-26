@@ -1199,6 +1199,22 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
         }
         else
         {
+            if (operation.IsRowVersion)
+            {
+                // H2 has no xid system column. What it does have is ON UPDATE: SetClauseList
+                // evaluates it when a row changes and the column was not named in SET, which is
+                // exactly how EF writes a concurrency token (it goes in WHERE, not SET). The
+                // DEFAULT gives the row a value on insert. Both are parsed into the column by
+                // the reference Parser.Columns, so the order here is DEFAULT, ON UPDATE, NOT NULL.
+                var expression = RowVersionExpression(columnType);
+                if (operation.DefaultValue is null && operation.DefaultValueSql is null)
+                {
+                    builder.Append(" DEFAULT ").Append(expression);
+                }
+
+                builder.Append(" ON UPDATE ").Append(expression);
+            }
+
             if (!operation.IsNullable)
             {
                 builder.Append(" NOT NULL");
@@ -1206,6 +1222,24 @@ ALTER TABLE {table} ALTER COLUMN {column} RESTART WITH (
 
             DefaultValue(operation.DefaultValue, operation.DefaultValueSql, columnType, builder);
         }
+    }
+
+    private static string RowVersionExpression(string columnType)
+    {
+        var type = columnType.Split('(')[0].Trim().ToLowerInvariant();
+        return type switch
+        {
+            "uuid" => "RANDOM_UUID()",
+            // EF's F1 fixtures read these columns as uint (directly or through a byte[] -> uint
+            // converter), so the generated value must fit 32 bits even when H2 stores it in a
+            // BIGINT or a longer binary column.
+            "blob" or "binary" or "varbinary" or "bytea" => "SECURE_RAND(4)",
+            "integer" or "int" or "int4" or "smallint" or "int2" => "CAST(RANDOM() * 2147483647 AS INTEGER)",
+            "bigint" or "int8" => "CAST(RANDOM() * 2147483647 AS BIGINT)",
+            "timestamp" or "datetime" or "datetime2" => "CURRENT_TIMESTAMP",
+            _ => throw new NotSupportedException(
+                $"H2 cannot generate a row-version value for store type '{columnType}'.")
+        };
     }
 
     /// <inheritdoc />

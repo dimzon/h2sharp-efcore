@@ -141,6 +141,21 @@ EF их не отдаёт генератору, как в апстриме).
    `DbConnection`. Полный gate: 12399 passed / 0 failed на net9 и net10.
    Миграции, scaffolding, массивы, конвертеры и
    row value входят в зелёный гейт.
+   `OptimisticConcurrencyH2Test` и `OptimisticConcurrencyBytesH2Test` сняты с
+   `BlockedByPort`: 96 passed, 2 skipped (upstream `Issue#13890`) на framework.
+   У H2 2.5 есть `_ROWID_`, но это стабильный адрес строки (`MVTable.getRowIdColumn()`),
+   а не версия: при UPDATE он не меняется. Вместо PG `xid` провайдер использует
+  _documented_ `DEFAULT`/`ON UPDATE` колонки: `SetClauseList` пересчитывает
+   `ON UPDATE`, когда колонка не указана в `SET`, — ровно тот случай, когда EF
+   пишет concurrency token только в `WHERE`. Значения ограничены 32 битами,
+   потому что F1-модели читают колонку как `uint` напрямую или через конвертер
+   `byte[] → uint`. Добавлены `RowVersionDdlH2Test` и
+   `RowVersionFinalTableH2Test` (`FINAL TABLE` возвращает новое значение token'а).
+   Оба concurrency-класса получили отдельные store с общим внутри класса
+   соединением: `UseTransaction` требует одного соединения, а параллельные
+   транзакции на store `SerializationH2Test` давали 6 отказов на net9.
+   Полный gate: 12497 passed / 0 failed functional, 325 model, 151 unit
+   на net9 и net10.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
