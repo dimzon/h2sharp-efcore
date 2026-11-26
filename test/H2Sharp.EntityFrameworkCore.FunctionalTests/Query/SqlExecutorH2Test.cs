@@ -1,7 +1,10 @@
 using System.Data.Common;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class SqlExecutorH2Test : SqlExecutorTestBase<NorthwindQueryH2Fixture<SqlExecutorModelCustomizer>>
 {
     public SqlExecutorH2Test(NorthwindQueryH2Fixture<SqlExecutorModelCustomizer> fixture, ITestOutputHelper testOutputHelper)

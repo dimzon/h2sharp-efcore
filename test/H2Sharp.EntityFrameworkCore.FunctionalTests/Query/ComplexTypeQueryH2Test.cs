@@ -1,7 +1,10 @@
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class ComplexTypeQueryH2Test : ComplexTypeQueryRelationalTestBase<
     ComplexTypeQueryH2Test.ComplexTypeQueryH2Fixture>
 {

@@ -36,9 +36,13 @@
       compilation until they are rewritten against H2, and each one is listed in docs/DIVERGENCES.md.
     -->
     <Compile Remove="BuiltInDataTypesH2Test.cs" />
-    <Compile Remove="JsonTypesH2Test.cs" />
     <Compile Remove="Query\NorthwindDbFunctionsQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindFunctionsQueryH2Test.cs" />
+    <Compile Remove="Query\JsonDomQueryTest.cs" />
+    <Compile Remove="Query\JsonStringQueryTest.cs" />
+    <Compile Remove="Query\SpatialQueryH2Fixture.cs" />
+    <Compile Remove="Query\SpatialQueryH2GeographyTest.cs" />
+    <Compile Remove="Query\SpatialQueryH2GeometryTest.cs" />
     <Compile Remove="Query\GearsOfWarFromSqlQueryH2Test.cs" />
     <Compile Remove="Query\GearsOfWarQueryH2Fixture.cs" />
     <Compile Remove="Query\GearsOfWarQueryH2Test.cs" />
@@ -48,48 +52,16 @@
     <Compile Remove="Query\TPTGearsOfWarQueryH2Test.cs" />
     <Compile Remove="Query\BigIntegerQueryTest.cs" />
     <Compile Remove="Query\CitextQueryTest.cs" />
-    <Compile Remove="Query\ComplexNavigationsCollectionsQueryH2Test.cs" />
-    <Compile Remove="Query\ComplexNavigationsCollectionsSharedTypeQueryH2Test.cs" />
-    <Compile Remove="Query\ComplexNavigationsCollectionsSplitQueryH2Test.cs" />
-    <Compile Remove="Query\ComplexNavigationsCollectionsSplitSharedTypeQueryH2Test.cs" />
-    <Compile Remove="Query\ComplexNavigationsQueryH2Fixture.cs" />
-    <Compile Remove="Query\ComplexNavigationsQueryH2Test.cs" />
-    <Compile Remove="Query\ComplexNavigationsSharedTypeQueryH2Fixture.cs" />
-    <Compile Remove="Query\ComplexNavigationsSharedTypeQueryH2Test.cs" />
-    <Compile Remove="Query\ComplexTypeQueryH2Test.cs" />
-    <Compile Remove="Query\CompositeKeysSplitQueryH2Test.cs" />
-    <Compile Remove="Query\Ef6GroupByH2Test.cs" />
-    <Compile Remove="Query\EntitySplittingQueryH2Test.cs" />
     <Compile Remove="Query\EnumQueryTest.cs" />
     <Compile Remove="Query\FullTextSearchDbFunctionsH2Test.cs" />
-    <Compile Remove="Query\FunkyDataQueryH2Test.cs" />
     <Compile Remove="Query\FuzzyStringMatchQueryH2Test.cs" />
     <Compile Remove="Query\IncludeH2Fixture.cs" />
-    <Compile Remove="Query\JsonDomQueryTest.cs" />
-    <Compile Remove="Query\JsonQueryH2Test.cs" />
-    <Compile Remove="Query\JsonStringQueryTest.cs" />
-    <Compile Remove="Query\MappingQueryH2Test.cs" />
     <Compile Remove="Query\NavigationTest.cs" />
     <Compile Remove="Query\NodaTimeQueryH2Test.cs" />
-    <Compile Remove="Query\NonSharedPrimitiveCollectionsQueryH2Test.cs" />
-    <Compile Remove="Query\NullSemanticsQueryH2Test.cs" />
-    <Compile Remove="Query\OperatorsQueryH2Test.cs" />
-    <Compile Remove="Query\OptionalDependentQueryH2Test.cs" />
-    <Compile Remove="Query\PrecompiledQueryH2Test.cs" />
-    <Compile Remove="Query\PrecompiledSqlPregenerationQueryH2Test.cs" />
-    <Compile Remove="Query\PrimitiveCollectionsQueryH2Test.cs" />
-    <Compile Remove="Query\SpatialQueryH2Fixture.cs" />
-    <Compile Remove="Query\SpatialQueryH2GeographyTest.cs" />
-    <Compile Remove="Query\SpatialQueryH2GeometryTest.cs" />
-    <Compile Remove="Query\SqlExecutorH2Test.cs" />
-    <Compile Remove="Query\SqlQueryH2Test.cs" />
     <Compile Remove="Query\TimestampQueryTest.cs" />
     <Compile Remove="Query\TrigramsQueryH2Test.cs" />
     <Compile Remove="Query\UdfDbFunctionH2Tests.cs" />
-    <Compile Remove="Query\WarningsH2Test.cs" />
-    <Compile Remove="QueryExpressionInterceptionH2TestBase.cs" />
     <Compile Remove="SystemColumnTest.cs" />
-    <Compile Remove="Update\JsonUpdateH2Test.cs" />
   </ItemGroup>
 
   <ItemGroup>

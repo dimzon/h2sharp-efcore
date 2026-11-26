@@ -1,7 +1,10 @@
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class Ef6GroupByH2Test : Ef6GroupByTestBase<Ef6GroupByH2Test.Ef6GroupByH2Fixture>
 {
     public Ef6GroupByH2Test(Ef6GroupByH2Fixture fixture, ITestOutputHelper testOutputHelper)

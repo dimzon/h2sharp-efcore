@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore.TestModels.Operators;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class OperatorsQueryH2Test : OperatorsQueryTestBase
 {
     protected override ITestStoreFactory TestStoreFactory

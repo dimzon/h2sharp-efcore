@@ -2,6 +2,8 @@ using H2Sharp.EntityFrameworkCore.Infrastructure;
 using H2Sharp.EntityFrameworkCore.Storage.Internal;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore;
 
 public abstract class QueryExpressionInterceptionH2TestBase(
@@ -26,6 +28,7 @@ public abstract class QueryExpressionInterceptionH2TestBase(
         }
     }
 
+    [Trait("Category", "BlockedByPort")]
     public class QueryExpressionInterceptionH2Test(QueryExpressionInterceptionH2Test.InterceptionH2Fixture fixture)
         : QueryExpressionInterceptionH2TestBase(fixture), IClassFixture<QueryExpressionInterceptionH2Test.InterceptionH2Fixture>
     {
@@ -39,6 +42,7 @@ public abstract class QueryExpressionInterceptionH2TestBase(
         }
     }
 
+    [Trait("Category", "BlockedByPort")]
     public class QueryExpressionInterceptionWithDiagnosticsH2Test(
         QueryExpressionInterceptionWithDiagnosticsH2Test.InterceptionH2Fixture fixture)
         : QueryExpressionInterceptionH2TestBase(fixture),

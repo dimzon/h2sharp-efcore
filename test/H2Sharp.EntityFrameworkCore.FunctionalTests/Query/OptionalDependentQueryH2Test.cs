@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore.TestModels.OptionalDependent;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class OptionalDependentQueryH2Test : OptionalDependentQueryTestBase<
     OptionalDependentQueryH2Test.OptionalDependentQueryH2Fixture>
 {

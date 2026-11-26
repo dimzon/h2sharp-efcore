@@ -1,8 +1,11 @@
 using System.Data.Common;
 using Xunit.Sdk;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class SqlQueryH2Test : SqlQueryTestBase<NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
     public SqlQueryH2Test(NorthwindQueryH2Fixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)

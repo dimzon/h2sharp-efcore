@@ -4,10 +4,13 @@ using NetTopologySuite.Geometries;
 using H2Sharp.EntityFrameworkCore.Infrastructure;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
 // ReSharper disable once UnusedMember.Global
 [RequiresPostgis]
+[Trait("Category", "BlockedByPort")]
 public class SpatialQueryH2GeographyTest
     : SpatialQueryRelationalTestBase<SpatialQueryH2GeographyTest.SpatialQueryH2GeographyFixture>
 {

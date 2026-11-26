@@ -2,10 +2,13 @@ using Microsoft.EntityFrameworkCore.Query.Internal;
 using H2Sharp.EntityFrameworkCore.Infrastructure;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
 // ReSharper disable InconsistentNaming
 
+[Trait("Category", "BlockedByPort")]
 public class PrecompiledSqlPregenerationQueryH2Test(
     PrecompiledSqlPregenerationQueryH2Test.PrecompiledSqlPregenerationQueryH2Fixture fixture,
     ITestOutputHelper testOutputHelper)

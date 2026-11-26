@@ -59,12 +59,12 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 10929 | 0 | 11014 (85 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 10930 | 0 | 11015 (85 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 151 | 0 | 151 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **11405** | **0** | **11490** |
+   | **Итого** | **11406** | **0** | **11491** |
 
-   Зелёный гейт: 11405 тестов на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 11406 тестов на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
@@ -86,8 +86,8 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 10929 | 0 | 11014 (85 пропущено) |
-   | `Category=BlockedByPort` | 1799/1041 | 2161/2919 | 4003 |
+   | `Category!=BlockedByPort` | 10930 | 0 | 11015 (85 пропущено) |
+   | `Category=BlockedByPort` | 7447/7251 | 3622/3818 | 11185 (116 пропущено) |
 
    Документированный `-p:H2SharpProject=...` теперь реализован в
    `src/H2Sharp.EntityFrameworkCore/H2Sharp.EntityFrameworkCore.csproj`: без свойства
@@ -106,12 +106,14 @@ EF их не отдаёт генератору, как в апстриме).
    На ADO-границе контракт другой: `GetDecimal()` округляет избыточный scale, а
    `GetValue()` возвращает строку для `NUMERIC`, чей объявленный precision/scale шире
    CLR `decimal` — решение принимается по типу колонки, а не по значению.
-   Начат разбор `H2ComplianceTest`: включены в компиляцию и помечены `BlockedByPort`
-   suite `ConnectionInterception`, `MigrationsInfrastructure`, `OptimisticConcurrency`,
-   `StoredProcedureUpdate`, `StoreValueGeneration`, bulk-updates и девять Northwind
-   query-suite, inheritance/relationships/many-to-many; число missing spec bases
-   упало со 114 до 60. PG-only DbFunctions, Functions и GearsOfWar остались вне
-   компиляции — они используют Npgsql-специфичные `DbFunctions` и `GlobalTypeMapper`.
+   `H2ComplianceTest.All_test_bases_must_be_implemented` зелёный: число missing spec
+   bases упало со 114 до 0, трейт снят. В компиляцию включены suite
+   `ConnectionInterception`, `MigrationsInfrastructure`, `OptimisticConcurrency`,
+   `StoredProcedureUpdate`, `StoreValueGeneration`, bulk-updates, Northwind,
+   AdHoc, inheritance/relationships, complex navigation, core query и JSON.
+   PG-only bases (GearsOfWar, Northwind DbFunctions/Functions, Spatial) переведены
+   в `IgnoredTestBases` и их H2-форки остались вне компиляции: они используют
+   Npgsql-специфичные `DbFunctions`, `GlobalTypeMapper` и PostGIS.
    Заодно `H2RelationalConnection.CreateDbConnection()` перестал требовать DataSource
    и отдаёт не configured `H2Connection`, как ADO-провайдеры обычно делают до Open.
    Миграции, scaffolding, массивы, конвертеры и row value входят в зелёный гейт.

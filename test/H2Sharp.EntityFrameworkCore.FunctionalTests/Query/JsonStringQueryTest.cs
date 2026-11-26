@@ -2,8 +2,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class JsonStringQueryTest : IClassFixture<JsonStringQueryTest.JsonStringQueryFixture>
 {
     private JsonStringQueryFixture Fixture { get; }

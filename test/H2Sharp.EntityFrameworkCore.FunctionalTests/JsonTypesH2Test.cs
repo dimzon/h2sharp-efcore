@@ -7,10 +7,12 @@ using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using H2Sharp.EntityFrameworkCore.Infrastructure;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
+using Xunit;
 using Xunit.Sdk;
 
 namespace H2Sharp.EntityFrameworkCore;
 
+[Trait("Category", "BlockedByPort")]
 public class JsonTypesH2Test : JsonTypesRelationalTestBase
 {
     #region Nested collections (unsupported)

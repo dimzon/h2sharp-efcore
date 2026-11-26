@@ -1,7 +1,10 @@
 using Xunit.Sdk;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class ComplexNavigationsSharedTypeQueryH2Test
     : ComplexNavigationsSharedTypeQueryRelationalTestBase<ComplexNavigationsSharedTypeQueryH2Fixture>
 {

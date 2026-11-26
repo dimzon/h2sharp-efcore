@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore.TestModels.JsonQuery;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class JsonQueryH2Test : JsonQueryRelationalTestBase<JsonQueryH2Test.JsonQueryH2Fixture>
 {
     public JsonQueryH2Test(JsonQueryH2Fixture fixture, ITestOutputHelper testOutputHelper)

@@ -2,8 +2,11 @@ using Microsoft.EntityFrameworkCore.TestModels.JsonQuery;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 using Xunit.Sdk;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Update;
 
+[Trait("Category", "BlockedByPort")]
 public class JsonUpdateH2Test : JsonUpdateTestBase<JsonUpdateH2Test.JsonUpdateH2Fixture>
 {
     public JsonUpdateH2Test(JsonUpdateH2Fixture fixture)

@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore.TestModels.FunkyDataModel;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class FunkyDataQueryH2Test : FunkyDataQueryTestBase<FunkyDataQueryH2Test.FunkyDataQueryH2Fixture>
 {
     // ReSharper disable once UnusedParameter.Local

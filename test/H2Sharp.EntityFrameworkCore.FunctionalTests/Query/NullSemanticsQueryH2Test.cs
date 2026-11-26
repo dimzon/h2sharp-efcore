@@ -3,9 +3,12 @@ using H2Sharp.EntityFrameworkCore.Infrastructure;
 using H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
 // ReSharper disable once UnusedMember.Global
+[Trait("Category", "BlockedByPort")]
 public class NullSemanticsQueryH2Test : NullSemanticsQueryTestBase<NullSemanticsQueryH2Test.NullSemanticsQueryH2Fixture>
 {
     public NullSemanticsQueryH2Test(NullSemanticsQueryH2Fixture fixture, ITestOutputHelper testOutputHelper)
