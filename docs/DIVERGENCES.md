@@ -87,7 +87,7 @@ EF их не отдаёт генератору, как в апстриме).
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `Category!=BlockedByPort` | 10930 | 0 | 11015 (85 пропущено) |
-   | `Category=BlockedByPort` | 7447/7251 | 3622/3818 | 11185 (116 пропущено) |
+   | `Category=BlockedByPort` | 7450/7254 | 3619/3815 | 11185 (116 пропущено) |
 
    Документированный `-p:H2SharpProject=...` теперь реализован в
    `src/H2Sharp.EntityFrameworkCore/H2Sharp.EntityFrameworkCore.csproj`: без свойства
@@ -116,7 +116,11 @@ EF их не отдаёт генератору, как в апстриме).
    Npgsql-специфичные `DbFunctions`, `GlobalTypeMapper` и PostGIS.
    Заодно `H2RelationalConnection.CreateDbConnection()` перестал требовать DataSource
    и отдаёт не configured `H2Connection`, как ADO-провайдеры обычно делают до Open.
-   Миграции, scaffolding, массивы, конвертеры и row value входят в зелёный гейт.
+   В `H2SqlGenerationHelper` подавлены `START TRANSACTION`/`COMMIT` скриптов миграций:
+   H2 их не читает, транзакцию держит соединение. Отказы
+   `MigrationsInfrastructureH2Test` упали с 8 до 3 (parallel-Миграции всё ещё требуют
+   блокировки истории). Миграции, scaffolding, массивы, конвертеры и row value входят
+   в зелёный гейт.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:

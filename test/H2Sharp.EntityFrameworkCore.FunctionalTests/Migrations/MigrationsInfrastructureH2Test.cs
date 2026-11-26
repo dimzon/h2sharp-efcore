@@ -166,8 +166,12 @@ namespace H2Sharp.EntityFrameworkCore.Migrations
 
         public class MigrationsInfrastructureH2Fixture : MigrationsInfrastructureFixtureBase
         {
+            private static readonly H2TestStoreFactory StoreFactory = new(useConnectionString: true);
+
+            // The parallel migration tests open their own contexts; a shared H2Connection
+            // cannot carry several concurrent transactions.
             protected override ITestStoreFactory TestStoreFactory
-                => H2TestStoreFactory.Instance;
+                => StoreFactory;
 
         }
     }

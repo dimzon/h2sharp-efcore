@@ -112,6 +112,18 @@ public class H2SqlGenerationHelper : RelationalSqlGenerationHelper
     ///     The grammar of H2 2.5 requires the word <c>SAVEPOINT</c> here: <c>ROLLBACK [WORK] TO SAVEPOINT name</c>.
     ///     The default EF statement omits the word, the way PostgreSQL allows, and the engine rejects that.
     /// </remarks>
+    /// <summary>
+    ///     H2 2.5 has no START TRANSACTION statement; transactions are started by the
+    ///     connection. Migration scripts must not inject the PostgreSQL form.
+    /// </summary>
+    public override string StartTransactionStatement => string.Empty;
+
+    /// <summary>
+    ///     Paired with the empty start statement: the connection owns the transaction.
+    /// </summary>
+    public override string CommitTransactionStatement => string.Empty;
+
+    /// <inheritdoc />
     public override string GenerateRollbackToSavepointStatement(string name)
         => "ROLLBACK TO SAVEPOINT " + DelimitIdentifier(name) + StatementTerminator;
 }
