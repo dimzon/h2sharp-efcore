@@ -18,9 +18,11 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" PrivateAssets="none" />
     <!--
       The engine is published on nuget.org and multi-targets net8.0 and net10.0, so each target
-      of this provider picks up the matching build of the same package version.
+      of this provider picks up the matching build of the same package version. Local engine
+      work can be tested without publishing by setting H2SharpProject to the sibling checkout.
     -->
-    <PackageReference Include="H2Sharp" />
+    <PackageReference Include="H2Sharp" Condition="'$(H2SharpProject)' == ''" />
+    <ProjectReference Include="$(H2SharpProject)" Condition="'$(H2SharpProject)' != ''" />
   </ItemGroup>
 
   <ItemGroup>
