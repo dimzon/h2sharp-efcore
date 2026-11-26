@@ -1,7 +1,10 @@
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class AdHocAdvancedMappingsQueryH2Test : AdHocAdvancedMappingsQueryRelationalTestBase
 {
     protected override ITestStoreFactory TestStoreFactory

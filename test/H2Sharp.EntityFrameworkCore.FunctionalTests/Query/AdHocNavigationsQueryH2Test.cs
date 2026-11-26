@@ -1,7 +1,10 @@
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class AdHocNavigationsQueryH2Test : AdHocNavigationsQueryRelationalTestBase
 {
     // Cannot write DateTime with Kind=Local to PostgreSQL type 'timestamp with time zone', only UTC is supported.

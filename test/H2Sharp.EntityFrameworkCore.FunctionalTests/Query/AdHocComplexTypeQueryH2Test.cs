@@ -1,7 +1,10 @@
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class AdHocComplexTypeQueryH2Test : AdHocComplexTypeQueryTestBase
 {
     public override async Task Complex_type_equals_parameter_with_nested_types_with_property_of_same_name()

@@ -46,14 +46,6 @@
     <Compile Remove="Query\TPCGearsOfWarQueryH2Test.cs" />
     <Compile Remove="Query\TPTGearsOfWarQueryH2Fixture.cs" />
     <Compile Remove="Query\TPTGearsOfWarQueryH2Test.cs" />
-    <Compile Remove="Query\AdHocAdvancedMappingsQueryH2Test.cs" />
-    <Compile Remove="Query\AdHocComplexTypeQueryH2Test.cs" />
-    <Compile Remove="Query\AdHocJsonQueryH2Test.cs" />
-    <Compile Remove="Query\AdHocMiscellaneousQueryH2Test.cs" />
-    <Compile Remove="Query\AdHocNavigationsQueryH2Test.cs" />
-    <Compile Remove="Query\AdHocPrecompiledQueryH2Test.cs" />
-    <Compile Remove="Query\AdHocQueryFiltersQueryH2Test.cs" />
-    <Compile Remove="Query\AdHocQuerySplittingQueryH2Test.cs" />
     <Compile Remove="Query\BigIntegerQueryTest.cs" />
     <Compile Remove="Query\CitextQueryTest.cs" />
     <Compile Remove="Query\ComplexNavigationsCollectionsQueryH2Test.cs" />

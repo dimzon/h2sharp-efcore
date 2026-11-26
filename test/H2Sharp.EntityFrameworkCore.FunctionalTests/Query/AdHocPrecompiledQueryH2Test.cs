@@ -1,8 +1,11 @@
 using H2Sharp.EntityFrameworkCore.Infrastructure;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
+using Xunit;
+
 namespace H2Sharp.EntityFrameworkCore.Query;
 
+[Trait("Category", "BlockedByPort")]
 public class AdHocPrecompiledQueryH2Test(ITestOutputHelper testOutputHelper)
     : AdHocPrecompiledQueryRelationalTestBase(testOutputHelper)
 {
