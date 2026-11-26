@@ -133,6 +133,12 @@ EF их не отдаёт генератору, как в апстриме).
    H2-базлайны и снят с `BlockedByPort`: 465/491 зелёных на framework.
    LATERAL-формы, GROUP BY по параметризованному ключу и несколько H2-ограничений
    агрегатов пропущены с эталонной причиной.
+   Найдена и устранена гонка тестовой инфраструктуры, дававшая редкие 57014 и
+   `The connection is not open`: `H2Connection.Close()` по эталону отменяет сессию,
+   а несколько параллельных xunit-фикстур делили одно соединение store. Теперь
+   `H2NorthwindTestStoreFactory` и `H2TestStoreFactory.ManyToMany` выдают contexts
+   соединения из data source; добавлен regression-тест на отсутствие общего
+   `DbConnection`. Полный gate: 12399 passed / 0 failed на net9 и net10.
    Миграции, scaffolding, массивы, конвертеры и
    row value входят в зелёный гейт.
 

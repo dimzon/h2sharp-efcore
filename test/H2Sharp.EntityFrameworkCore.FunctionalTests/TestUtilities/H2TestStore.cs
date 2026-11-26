@@ -198,9 +198,10 @@ public class H2TestStore : RelationalTestStore
             // sorts NULLs last by default. This configures the provider to emit NULLS FIRST.
             .ReverseNullOrdering();
 
-        // The context takes the connection of the store, and that connection comes from the data
-        // source that owns the database: the store, the context and the provider's own catalogue
-        // reads all work with one and the same database.
+        // A store created in connection-string mode gives every context its own connection from
+        // the data source. A store created in connection mode hands out the store's connection:
+        // its fixtures must be serialized, because H2Connection.Close() cancels the session just
+        // as the JDBC reference does, and another fixture would see 57014 or a closed connection.
         return _connectionString is null
             ? builder.UseH2(Connection, npgsqlOptionsBuilder)
             : builder.UseH2(_connectionString, npgsqlOptionsBuilder);

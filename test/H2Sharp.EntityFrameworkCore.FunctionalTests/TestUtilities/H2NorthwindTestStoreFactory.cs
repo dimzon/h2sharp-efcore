@@ -7,6 +7,10 @@ public class H2NorthwindTestStoreFactory : H2TestStoreFactory
     public static new H2NorthwindTestStoreFactory Instance { get; } = new();
 
     protected H2NorthwindTestStoreFactory()
+        // Many Northwind fixtures share this store while xunit runs their classes in parallel.
+        // A single store connection would be closed by one fixture's teardown while another is
+        // still querying; H2Connection.Close() cancels its session and produces 57014.
+        : base(useConnectionString: true)
     {
     }
 

@@ -6,7 +6,7 @@ namespace H2Sharp.EntityFrameworkCore.Query;
 public class ManyToManyQueryH2Fixture : ManyToManyQueryRelationalFixture
 {
     protected override ITestStoreFactory TestStoreFactory
-        => H2TestStoreFactory.Instance;
+        => H2TestStoreFactory.ManyToMany;
 
     // We default to mapping DateTime to 'timestamp with time zone', but the seeding data has Unspecified DateTimes which aren't
     // supported. So we need to explicitly set some column types to 'timestamp without time zone', but this is difficult/problematic
