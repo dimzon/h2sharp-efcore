@@ -27,9 +27,9 @@ public class NorthwindGroupByQueryH2Test : NorthwindGroupByQueryRelationalTestBa
 
         AssertSql(
             """
-SELECT avg(o."OrderID"::double precision)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT avg(CAST("o"."OrderID" AS double precision))
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
 
         // Validating that we don't generate warning when translating GroupBy. See Issue#11157
@@ -51,9 +51,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT count(*)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(count(*) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -64,8 +64,8 @@ GROUP BY o."CustomerID"
         AssertSql(
             """
 SELECT count(*)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -75,9 +75,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT c."City", count(*)::int AS "Faxes"
-FROM "Customers" AS c
-GROUP BY c."City"
+SELECT "c"."City", CAST(count(*) AS integer) AS "Faxes"
+FROM "Customers" "c"
+GROUP BY "c"."City"
 """);
     }
 
@@ -87,9 +87,9 @@ GROUP BY c."City"
 
         AssertSql(
             """
-SELECT c."City", count(*) AS "Faxes"
-FROM "Customers" AS c
-GROUP BY c."City"
+SELECT "c"."City", count(*) AS "Faxes"
+FROM "Customers" "c"
+GROUP BY "c"."City"
 """);
     }
 
@@ -99,9 +99,9 @@ GROUP BY c."City"
 
         AssertSql(
             """
-SELECT max(o."OrderID")
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT max("o"."OrderID")
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -111,9 +111,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT min(o."OrderID")
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT min("o"."OrderID")
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -123,9 +123,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -135,9 +135,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -147,9 +147,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", avg(o."OrderID"::double precision) AS "Average"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", avg(CAST("o"."OrderID" AS double precision)) AS "Average"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -159,9 +159,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", count(*)::int AS "Count"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -171,9 +171,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", count(*) AS "LongCount"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", count(*) AS "LongCount"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -183,9 +183,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", max(o."OrderID") AS "Max"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", max("o"."OrderID") AS "Max"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -195,9 +195,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", min(o."OrderID") AS "Min"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", min("o"."OrderID") AS "Min"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -207,9 +207,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", COALESCE(sum(o."OrderID"), 0)::int AS "Sum"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -219,9 +219,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -231,9 +231,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", o."CustomerID" AS "Key", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", "o"."CustomerID" AS "Key", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -243,9 +243,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key1", COALESCE(sum(o."OrderID"), 0)::int AS "Sum"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key1", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -255,10 +255,10 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o0."Name", o0."CustomerID" AS "Value", count(*)::int AS "Count"
+SELECT o0."Name", o0."CustomerID" AS "Value", CAST(count(*) AS integer) AS "Count"
 FROM (
-    SELECT o."CustomerID", 'CustomerID' AS "Name"
-    FROM "Orders" AS o
+    SELECT "o"."CustomerID", 'CustomerID' AS "Name"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Name", o0."CustomerID"
 """);
@@ -270,15 +270,15 @@ GROUP BY o0."Name", o0."CustomerID"
 
         AssertSql(
             """
-SELECT o."OrderDate" AS "Key", CASE
-    WHEN count(*)::int = 0 THEN 1
+SELECT "o"."OrderDate" AS "Key", CASE
+    WHEN CAST(count(*) AS integer) = 0 THEN 1
     ELSE COALESCE(sum(CASE
-        WHEN o."OrderID" % 2 = 0 THEN 1
+        WHEN "o"."OrderID" % 2 = 0 THEN 1
         ELSE 0
-    END), 0)::int / count(*)::int
+    END), 0)::int / CAST(count(*) AS integer)
 END AS "SomeValue"
-FROM "Orders" AS o
-GROUP BY o."OrderDate"
+FROM "Orders" "o"
+GROUP BY "o"."OrderDate"
 """);
     }
 
@@ -289,11 +289,11 @@ GROUP BY o."OrderDate"
         AssertSql(
             """
 SELECT CASE
-    WHEN o."OrderDate" IS NULL THEN 'is null'
+    WHEN "o"."OrderDate" IS NULL THEN 'is null'
     ELSE 'is not null'
-END AS "Key", COALESCE(sum(o."OrderID"), 0)::int AS "Sum"
-FROM "Orders" AS o
-GROUP BY o."OrderDate"
+END AS "Key", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum"
+FROM "Orders" "o"
+GROUP BY "o"."OrderDate"
 """);
     }
 
@@ -303,9 +303,9 @@ GROUP BY o."OrderDate"
 
         AssertSql(
             """
-SELECT avg(o."OrderID"::double precision)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT avg(CAST("o"."OrderID" AS double precision))
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -315,9 +315,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT count(*)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(count(*) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -328,8 +328,8 @@ GROUP BY o."CustomerID"
         AssertSql(
             """
 SELECT count(*)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -339,9 +339,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT max(o."OrderID")
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT max("o"."OrderID")
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -351,9 +351,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT min(o."OrderID")
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT min("o"."OrderID")
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -363,9 +363,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -375,9 +375,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -387,9 +387,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", COALESCE(sum(o."OrderID"), 0)::int AS "Sum"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -399,9 +399,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT avg(o."OrderID"::double precision)
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT avg(CAST("o"."OrderID" AS double precision))
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -411,9 +411,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT count(*)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT CAST(count(*) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -424,8 +424,8 @@ GROUP BY o."CustomerID", o."EmployeeID"
         AssertSql(
             """
 SELECT count(*)
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -435,9 +435,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT max(o."OrderID")
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT max("o"."OrderID")
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -447,9 +447,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT min(o."OrderID")
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT min("o"."OrderID")
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -459,9 +459,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -471,9 +471,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -483,9 +483,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT o."CustomerID", o."EmployeeID", avg(o."OrderID"::double precision) AS "Average"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT "o"."CustomerID", "o"."EmployeeID", avg(CAST("o"."OrderID" AS double precision)) AS "Average"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -495,9 +495,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT o."CustomerID", o."EmployeeID", count(*)::int AS "Count"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT "o"."CustomerID", "o"."EmployeeID", CAST(count(*) AS integer) AS "Count"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -507,9 +507,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT o."CustomerID", o."EmployeeID", count(*) AS "LongCount"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT "o"."CustomerID", "o"."EmployeeID", count(*) AS "LongCount"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -519,9 +519,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT o."CustomerID", o."EmployeeID", max(o."OrderID") AS "Max"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT "o"."CustomerID", "o"."EmployeeID", max("o"."OrderID") AS "Max"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -531,9 +531,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT o."CustomerID", o."EmployeeID", min(o."OrderID") AS "Min"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT "o"."CustomerID", "o"."EmployeeID", min("o"."OrderID") AS "Min"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -543,9 +543,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT o."CustomerID", o."EmployeeID", COALESCE(sum(o."OrderID"), 0)::int AS "Sum"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT "o"."CustomerID", "o"."EmployeeID", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -555,9 +555,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT o."CustomerID", o."EmployeeID", COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT "o"."CustomerID", "o"."EmployeeID", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -567,9 +567,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", o."CustomerID", o."EmployeeID", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", "o"."CustomerID", "o"."EmployeeID", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -579,9 +579,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", o."CustomerID", o."EmployeeID", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", "o"."CustomerID", "o"."EmployeeID", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -591,9 +591,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", o."CustomerID", o."EmployeeID"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", "o"."CustomerID", "o"."EmployeeID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -603,9 +603,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."EmployeeID"::bigint), 0.0)::bigint AS "Sum", o."CustomerID" AS "Key"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT COALESCE(sum("o"."EmployeeID"::bigint), 0.0)::bigint AS "Sum", "o"."CustomerID" AS "Key"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -615,9 +615,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", o."CustomerID" AS "CustomerId", o."EmployeeID" AS "EmployeeId", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", "o"."CustomerID" AS "CustomerId", "o"."EmployeeID" AS "EmployeeId", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -627,9 +627,9 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", o."CustomerID", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID", o."EmployeeID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", "o"."CustomerID", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID", "o"."EmployeeID"
 """);
     }
 
@@ -639,10 +639,10 @@ GROUP BY o."CustomerID", o."EmployeeID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum", min(o0."OrderID") AS "Min", o0."Key", max(o0."OrderID") AS "Max", avg(o0."OrderID"::double precision) AS "Avg"
+SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum", min(o0."OrderID") AS "Min", o0."Key", max(o0."OrderID") AS "Max", avg(CAST(o0."OrderID" AS double precision)) AS "Avg"
 FROM (
-    SELECT o."OrderID", 2 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", 2 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -656,8 +656,8 @@ GROUP BY o0."Key"
             """
 SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum"
 FROM (
-    SELECT o."OrderID", 2 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", 2 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -671,8 +671,8 @@ GROUP BY o0."Key"
             """
 SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum"
 FROM (
-    SELECT o."OrderID", 2 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", 2 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -686,8 +686,8 @@ GROUP BY o0."Key"
             """
 SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum"
 FROM (
-    SELECT o."OrderID", 2 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", 2 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -699,11 +699,11 @@ GROUP BY o0."Key"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum", min(o0."OrderID") AS "Min", o0."Key" AS "Random", max(o0."OrderID") AS "Max", avg(o0."OrderID"::double precision) AS "Avg"
+SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum", min(o0."OrderID") AS "Min", o0."Key" AS "Random", max(o0."OrderID") AS "Max", avg(CAST(o0."OrderID" AS double precision)) AS "Avg"
 FROM (
-    SELECT o."OrderID", 2 AS "Key"
-    FROM "Orders" AS o
-    WHERE o."OrderID" > 10500
+    SELECT "o"."OrderID", 2 AS "Key"
+    FROM "Orders" "o"
+    WHERE "o"."OrderID" > 10500
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -717,8 +717,8 @@ GROUP BY o0."Key"
             """
 SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum", o0."Key"
 FROM (
-    SELECT o."OrderID", 2 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", 2 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -730,10 +730,10 @@ GROUP BY o0."Key"
 
         AssertSql(
             """
-SELECT min(o0."OrderDate") FILTER (WHERE 1 = o0."Key") AS "Min", max(o0."OrderDate") FILTER (WHERE 1 = o0."Key") AS "Max", COALESCE(sum(o0."OrderID") FILTER (WHERE 1 = o0."Key"), 0)::int AS "Sum", avg(o0."OrderID"::double precision) FILTER (WHERE 1 = o0."Key") AS "Average"
+SELECT min(o0."OrderDate") FILTER (WHERE 1 = o0."Key") AS "Min", max(o0."OrderDate") FILTER (WHERE 1 = o0."Key") AS "Max", COALESCE(sum(o0."OrderID") FILTER (WHERE 1 = o0."Key"), 0)::int AS "Sum", avg(CAST(o0."OrderID" AS double precision)) FILTER (WHERE 1 = o0."Key") AS "Average"
 FROM (
-    SELECT o."OrderID", o."OrderDate", 1 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", "o"."OrderDate", 1 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 ORDER BY o0."Key" NULLS FIRST
@@ -748,10 +748,10 @@ ORDER BY o0."Key" NULLS FIRST
             """
 $__a_0='2'
 
-SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum", min(o0."OrderID") AS "Min", o0."Key", max(o0."OrderID") AS "Max", avg(o0."OrderID"::double precision) AS "Avg"
+SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum", min(o0."OrderID") AS "Min", o0."Key", max(o0."OrderID") AS "Max", avg(CAST(o0."OrderID" AS double precision)) AS "Avg"
 FROM (
-    SELECT o."OrderID", $__a_0 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", $__a_0 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -767,8 +767,8 @@ $__a_0='2'
 
 SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum"
 FROM (
-    SELECT o."OrderID", $__a_0 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", $__a_0 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -784,8 +784,8 @@ $__a_0='2'
 
 SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum"
 FROM (
-    SELECT o."OrderID", $__a_0 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", $__a_0 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -801,8 +801,8 @@ $__a_0='2'
 
 SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum"
 FROM (
-    SELECT o."OrderID", $__a_0 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", $__a_0 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -818,8 +818,8 @@ $__a_0='2'
 
 SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum", o0."Key"
 FROM (
-    SELECT o."OrderID", $__a_0 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", $__a_0 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -831,10 +831,10 @@ GROUP BY o0."Key"
 
         AssertSql(
             """
-SELECT count(*)::int AS "I0", o0."I0" AS "I1"
+SELECT CAST(count(*) AS integer) AS "I0", o0."I0" AS "I1"
 FROM (
-    SELECT date_part('year', o."OrderDate")::int AS "I0"
-    FROM "Orders" AS o
+    SELECT date_part('year', "o"."OrderDate")::int AS "I0"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."I0"
 ORDER BY o0."I0" NULLS FIRST
@@ -847,9 +847,9 @@ ORDER BY o0."I0" NULLS FIRST
 
         AssertSql(
             """
-SELECT avg(o."OrderID"::double precision)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT avg(CAST("o"."OrderID" AS double precision))
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -859,9 +859,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT count(*)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(count(*) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -872,8 +872,8 @@ GROUP BY o."CustomerID"
         AssertSql(
             """
 SELECT count(*)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -883,9 +883,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT max(o."OrderID")
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT max("o"."OrderID")
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -895,9 +895,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT min(o."OrderID")
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT min("o"."OrderID")
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -907,9 +907,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -919,9 +919,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -931,9 +931,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT avg(o."OrderID"::double precision)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT avg(CAST("o"."OrderID" AS double precision))
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -943,9 +943,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT count(*)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(count(*) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -956,8 +956,8 @@ GROUP BY o."CustomerID"
         AssertSql(
             """
 SELECT count(*)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -967,9 +967,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT max(o."OrderID")
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT max("o"."OrderID")
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -979,9 +979,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT min(o."OrderID")
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT min("o"."OrderID")
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -991,9 +991,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1003,9 +1003,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."EmployeeID") AS "Min", max(o."EmployeeID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."EmployeeID") AS "Min", max("o"."EmployeeID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1015,9 +1015,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID" + 1), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT COALESCE(sum("o"."OrderID" + 1), 0)::int
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1027,9 +1027,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID" + 1), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT COALESCE(sum("o"."OrderID" + 1), 0)::int
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1039,9 +1039,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID" + 1), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT COALESCE(sum("o"."OrderID" + 1), 0)::int
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1051,9 +1051,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID" + 1), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT COALESCE(sum("o"."OrderID" + 1), 0)::int
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1063,18 +1063,18 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."OrderID", COALESCE(sum(CASE
-    WHEN o."CustomerID" = 'ALFKI' THEN CASE
-        WHEN o."OrderID" > 1000 THEN o."OrderID"
+SELECT "o"."OrderID", COALESCE(sum(CASE
+    WHEN "o"."CustomerID" = 'ALFKI' THEN CASE
+        WHEN "o"."OrderID" > 1000 THEN "o"."OrderID"
         ELSE -o."OrderID"
     END
     ELSE -CASE
-        WHEN o."OrderID" > 1000 THEN o."OrderID"
+        WHEN "o"."OrderID" > 1000 THEN "o"."OrderID"
         ELSE -o."OrderID"
     END
 END), 0)::int AS "Aggregate"
-FROM "Orders" AS o
-GROUP BY o."OrderID"
+FROM "Orders" "o"
+GROUP BY "o"."OrderID"
 """);
     }
 
@@ -1084,10 +1084,10 @@ GROUP BY o."OrderID"
 
         AssertSql(
             """
-SELECT o0."OrderMonth", o0."CustomerID" AS "Customer", count(*)::int AS "Count"
+SELECT o0."OrderMonth", o0."CustomerID" AS "Customer", CAST(count(*) AS integer) AS "Count"
 FROM (
-    SELECT o."CustomerID", NULL AS "OrderMonth"
-    FROM "Orders" AS o
+    SELECT "o"."CustomerID", NULL AS "OrderMonth"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."OrderMonth", o0."CustomerID"
 """);
@@ -1101,8 +1101,8 @@ GROUP BY o0."OrderMonth", o0."CustomerID"
             """
 SELECT COALESCE(sum(o0."OrderID"), 0)::int
 FROM (
-    SELECT o."OrderID", 1 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", 1 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -1116,8 +1116,8 @@ GROUP BY o0."Key"
             """
 SELECT COALESCE(sum(o0."OrderID"), 0)::int AS "Sum"
 FROM (
-    SELECT o."OrderID", 1 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", 1 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -1129,9 +1129,9 @@ GROUP BY o0."Key"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1143,11 +1143,11 @@ GROUP BY o."CustomerID"
             """
 $__p_0='80'
 
-SELECT avg(o0."OrderID"::double precision)
+SELECT avg(CAST(o0."OrderID" AS double precision))
 FROM (
-    SELECT o."OrderID", o."CustomerID"
-    FROM "Orders" AS o
-    ORDER BY o."OrderID" NULLS FIRST
+    SELECT "o"."OrderID", "o"."CustomerID"
+    FROM "Orders" "o"
+    ORDER BY "o"."OrderID" NULLS FIRST
     OFFSET $__p_0
 ) AS o0
 GROUP BY o0."CustomerID"
@@ -1164,9 +1164,9 @@ $__p_0='500'
 
 SELECT min(o0."OrderID")
 FROM (
-    SELECT o."OrderID", o."CustomerID"
-    FROM "Orders" AS o
-    ORDER BY o."OrderID" NULLS FIRST
+    SELECT "o"."OrderID", "o"."CustomerID"
+    FROM "Orders" "o"
+    ORDER BY "o"."OrderID" NULLS FIRST
     LIMIT $__p_0
 ) AS o0
 GROUP BY o0."CustomerID"
@@ -1184,9 +1184,9 @@ $__p_0='80'
 
 SELECT max(o0."OrderID")
 FROM (
-    SELECT o."OrderID", o."CustomerID"
-    FROM "Orders" AS o
-    ORDER BY o."OrderID" NULLS FIRST
+    SELECT "o"."OrderID", "o"."CustomerID"
+    FROM "Orders" "o"
+    ORDER BY "o"."OrderID" NULLS FIRST
     LIMIT $__p_1 OFFSET $__p_0
 ) AS o0
 GROUP BY o0."CustomerID"
@@ -1199,10 +1199,10 @@ GROUP BY o0."CustomerID"
 
         AssertSql(
             """
-SELECT o0."CustomerID" AS "Key", count(*)::int AS c
+SELECT o0."CustomerID" AS "Key", CAST(count(*) AS integer) AS c
 FROM (
-    SELECT DISTINCT o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-    FROM "Orders" AS o
+    SELECT DISTINCT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."CustomerID"
 """);
@@ -1214,10 +1214,10 @@ GROUP BY o0."CustomerID"
 
         AssertSql(
             """
-SELECT o0."EmployeeID" AS "Key", count(*)::int AS c
+SELECT o0."EmployeeID" AS "Key", CAST(count(*) AS integer) AS c
 FROM (
-    SELECT DISTINCT o."OrderID", o."EmployeeID"
-    FROM "Orders" AS o
+    SELECT DISTINCT "o"."OrderID", "o"."EmployeeID"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."EmployeeID"
 """);
@@ -1229,10 +1229,10 @@ GROUP BY o0."EmployeeID"
 
         AssertSql(
             """
-SELECT o."EmployeeID" AS "Key", count(*)::int AS c
-FROM "Customers" AS c
-INNER JOIN "Orders" AS o ON c."CustomerID" = o."CustomerID"
-GROUP BY o."EmployeeID"
+SELECT "o"."EmployeeID" AS "Key", CAST(count(*) AS integer) AS c
+FROM "Customers" "c"
+INNER JOIN "Orders" AS o ON "c"."CustomerID" = "o"."CustomerID"
+GROUP BY "o"."EmployeeID"
 """);
     }
 
@@ -1242,10 +1242,10 @@ GROUP BY o."EmployeeID"
 
         AssertSql(
             """
-SELECT c."CustomerID" AS "Key", avg(o."OrderID"::double precision) AS "Count"
-FROM "Orders" AS o
-INNER JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
-GROUP BY c."CustomerID"
+SELECT "c"."CustomerID" AS "Key", avg(CAST("o"."OrderID" AS double precision)) AS "Count"
+FROM "Orders" "o"
+INNER JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
+GROUP BY "c"."CustomerID"
 """);
     }
 
@@ -1255,9 +1255,9 @@ GROUP BY c."CustomerID"
 
         AssertSql(
             """
-SELECT o0."CustomerID" AS "CustomerId", count(*)::int AS "Count"
+SELECT o0."CustomerID" AS "CustomerId", CAST(count(*) AS integer) AS "Count"
 FROM "Order Details" AS o
-INNER JOIN "Orders" AS o0 ON o."OrderID" = o0."OrderID"
+INNER JOIN "Orders" AS o0 ON "o"."OrderID" = o0."OrderID"
 GROUP BY o0."CustomerID"
 """);
     }
@@ -1272,19 +1272,19 @@ $__p_0='100'
 $__p_2='50'
 $__p_1='10'
 
-SELECT c0."CustomerID" AS "Key", avg(o0."OrderID"::double precision) AS "Count"
+SELECT c0."CustomerID" AS "Key", avg(CAST(o0."OrderID" AS double precision)) AS "Count"
 FROM (
-    SELECT o."OrderID", o."CustomerID"
-    FROM "Orders" AS o
-    WHERE o."OrderID" < 10400
-    ORDER BY o."OrderDate" NULLS FIRST
+    SELECT "o"."OrderID", "o"."CustomerID"
+    FROM "Orders" "o"
+    WHERE "o"."OrderID" < 10400
+    ORDER BY "o"."OrderDate" NULLS FIRST
     LIMIT $__p_0
 ) AS o0
 INNER JOIN (
-    SELECT c."CustomerID"
-    FROM "Customers" AS c
-    WHERE c."CustomerID" NOT IN ('DRACD', 'FOLKO')
-    ORDER BY c."City" NULLS FIRST
+    SELECT "c"."CustomerID"
+    FROM "Customers" "c"
+    WHERE "c"."CustomerID" NOT IN ('DRACD', 'FOLKO')
+    ORDER BY "c"."City" NULLS FIRST
     LIMIT $__p_2 OFFSET $__p_1
 ) AS c0 ON o0."CustomerID" = c0."CustomerID"
 GROUP BY c0."CustomerID"
@@ -1297,11 +1297,11 @@ GROUP BY c0."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", avg(o."OrderID"::double precision) AS "Average"
-FROM "Customers" AS c
-LEFT JOIN "Orders" AS o ON c."CustomerID" = o."CustomerID"
-WHERE o."OrderID" IS NOT NULL
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", avg(CAST("o"."OrderID" AS double precision)) AS "Average"
+FROM "Customers" "c"
+LEFT JOIN "Orders" AS o ON "c"."CustomerID" = "o"."CustomerID"
+WHERE "o"."OrderID" IS NOT NULL
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1311,10 +1311,10 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT c."CustomerID" AS "Key", max(c."City") AS "Max"
-FROM "Customers" AS c
-LEFT JOIN "Orders" AS o ON c."CustomerID" = o."CustomerID"
-GROUP BY c."CustomerID"
+SELECT "c"."CustomerID" AS "Key", max("c"."City") AS "Max"
+FROM "Customers" "c"
+LEFT JOIN "Orders" AS o ON "c"."CustomerID" = "o"."CustomerID"
+GROUP BY "c"."CustomerID"
 """);
     }
 
@@ -1324,10 +1324,10 @@ GROUP BY c."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", avg(o."OrderID"::double precision) AS "Average"
-FROM "Orders" AS o
-LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", avg(CAST("o"."OrderID" AS double precision)) AS "Average"
+FROM "Orders" "o"
+LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1337,10 +1337,10 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT c."CustomerID" AS "Value", max(c."City") AS "Max"
-FROM "Customers" AS c
-LEFT JOIN "Orders" AS o ON c."CustomerID" = o."CustomerID"
-GROUP BY c."CustomerID"
+SELECT "c"."CustomerID" AS "Value", max("c"."City") AS "Max"
+FROM "Customers" "c"
+LEFT JOIN "Orders" AS o ON "c"."CustomerID" = "o"."CustomerID"
+GROUP BY "c"."CustomerID"
 """);
     }
 
@@ -1350,10 +1350,10 @@ GROUP BY c."CustomerID"
 
         AssertSql(
             """
-SELECT o."OrderID" AS "Value", avg(o."OrderID"::double precision) AS "Average"
-FROM "Orders" AS o
-LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
-GROUP BY o."OrderID"
+SELECT "o"."OrderID" AS "Value", avg(CAST("o"."OrderID" AS double precision)) AS "Average"
+FROM "Orders" "o"
+LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
+GROUP BY "o"."OrderID"
 """);
     }
 
@@ -1363,10 +1363,10 @@ GROUP BY o."OrderID"
 
         AssertSql(
             """
-SELECT c."Country", count(*)::int AS "Count"
-FROM "Orders" AS o
-LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
-GROUP BY c."Country"
+SELECT "c"."Country", CAST(count(*) AS integer) AS "Count"
+FROM "Orders" "o"
+LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
+GROUP BY "c"."Country"
 """);
     }
 
@@ -1380,19 +1380,19 @@ $__p_1='50'
 $__p_0='10'
 $__p_2='100'
 
-SELECT o0."CustomerID" AS "Key", avg(o0."OrderID"::double precision) AS "Count"
+SELECT o0."CustomerID" AS "Key", avg(CAST(o0."OrderID" AS double precision)) AS "Count"
 FROM (
-    SELECT c."CustomerID"
-    FROM "Customers" AS c
-    WHERE c."CustomerID" NOT IN ('DRACD', 'FOLKO')
-    ORDER BY c."City" NULLS FIRST
+    SELECT "c"."CustomerID"
+    FROM "Customers" "c"
+    WHERE "c"."CustomerID" NOT IN ('DRACD', 'FOLKO')
+    ORDER BY "c"."City" NULLS FIRST
     LIMIT $__p_1 OFFSET $__p_0
 ) AS c0
 INNER JOIN (
-    SELECT o."OrderID", o."CustomerID"
-    FROM "Orders" AS o
-    WHERE o."OrderID" < 10400
-    ORDER BY o."OrderDate" NULLS FIRST
+    SELECT "o"."OrderID", "o"."CustomerID"
+    FROM "Orders" "o"
+    WHERE "o"."OrderID" < 10400
+    ORDER BY "o"."OrderDate" NULLS FIRST
     LIMIT $__p_2
 ) AS o0 ON c0."CustomerID" = o0."CustomerID"
 WHERE o0."OrderID" > 10300
@@ -1406,11 +1406,11 @@ GROUP BY o0."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", avg(o0."OrderID"::double precision) AS "Count"
-FROM "Orders" AS o
-INNER JOIN "Orders" AS o0 ON o."OrderID" = o0."OrderID"
-WHERE o."OrderID" < 10400
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", avg(CAST(o0."OrderID" AS double precision)) AS "Count"
+FROM "Orders" "o"
+INNER JOIN "Orders" AS o0 ON "o"."OrderID" = o0."OrderID"
+WHERE "o"."OrderID" < 10400
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1420,10 +1420,10 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o0."CustomerID", p."ProductName", count(*)::int AS "Count"
+SELECT o0."CustomerID", p."ProductName", CAST(count(*) AS integer) AS "Count"
 FROM "Order Details" AS o
-INNER JOIN "Orders" AS o0 ON o."OrderID" = o0."OrderID"
-INNER JOIN "Products" AS p ON o."ProductID" = p."ProductID"
+INNER JOIN "Orders" AS o0 ON "o"."OrderID" = o0."OrderID"
+INNER JOIN "Products" AS p ON "o"."ProductID" = p."ProductID"
 GROUP BY o0."CustomerID", p."ProductName"
 """);
     }
@@ -1434,14 +1434,14 @@ GROUP BY o0."CustomerID", p."ProductName"
 
         AssertSql(
             """
-SELECT u."City" AS "Key", count(*)::int AS "Total"
+SELECT u."City" AS "Key", CAST(count(*) AS integer) AS "Total"
 FROM (
-    SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-    FROM "Customers" AS c
-    WHERE c."ContactTitle" = 'Owner'
+    SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+    FROM "Customers" "c"
+    WHERE "c"."ContactTitle" = 'Owner'
     UNION
     SELECT c0."CustomerID", c0."Address", c0."City", c0."CompanyName", c0."ContactName", c0."ContactTitle", c0."Country", c0."Fax", c0."Phone", c0."PostalCode", c0."Region"
-    FROM "Customers" AS c0
+    FROM "Customers" "c0"
     WHERE c0."City" = 'México D.F.'
 ) AS u
 GROUP BY u."City"
@@ -1454,10 +1454,10 @@ GROUP BY u."City"
 
         AssertSql(
             """
-SELECT min(o."OrderDate") AS "Min", max(o."OrderDate") AS "Max", COALESCE(sum(o."OrderID"), 0)::int AS "Sum", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-WHERE o."OrderID" < 10300
-GROUP BY o."CustomerID"
+SELECT min("o"."OrderDate") AS "Min", max("o"."OrderDate") AS "Max", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+WHERE "o"."OrderID" < 10300
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1467,10 +1467,10 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT c."CustomerID" AS "Key", count(*)::int AS "Count"
-FROM "Orders" AS o
-LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
-GROUP BY c."CustomerID"
+SELECT "c"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count"
+FROM "Orders" "o"
+LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
+GROUP BY "c"."CustomerID"
 """);
     }
 
@@ -1480,10 +1480,10 @@ GROUP BY c."CustomerID"
 
         AssertSql(
             """
-SELECT o0."CustomerID" AS "Key", count(*)::int AS "Count"
+SELECT o0."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count"
 FROM (
-    SELECT DISTINCT o."CustomerID", o."OrderID"
-    FROM "Orders" AS o
+    SELECT DISTINCT "o"."CustomerID", "o"."OrderID"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."CustomerID"
 """);
@@ -1495,11 +1495,11 @@ GROUP BY o0."CustomerID"
 
         AssertSql(
             """
-SELECT s."Key", count(*)::int AS "Count"
+SELECT s."Key", CAST(count(*) AS integer) AS "Count"
 FROM (
-    SELECT substring(c."CustomerID", 1, 1) AS "Key"
-    FROM "Orders" AS o
-    LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
+    SELECT substring("c"."CustomerID", 1, 1) AS "Key"
+    FROM "Orders" "o"
+    LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
 ) AS s
 GROUP BY s."Key"
 """);
@@ -1516,8 +1516,8 @@ SELECT o0."Key" AS "Month", COALESCE(sum(o0."OrderID"), 0)::int AS "Total", (
     FROM "Orders" AS o1
     WHERE date_part('month', o1."OrderDate")::int = o0."Key" OR (o1."OrderDate" IS NULL AND o0."Key" IS NULL)) AS "Payment"
 FROM (
-    SELECT o."OrderID", date_part('month', o."OrderDate")::int AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", date_part('month', "o"."OrderDate")::int AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -1529,9 +1529,9 @@ GROUP BY o0."Key"
 
         AssertSql(
             """
-SELECT c."City" AS "Key", count(*)::int AS "Count"
-FROM "Customers" AS c
-GROUP BY c."City"
+SELECT "c"."City" AS "Key", CAST(count(*) AS integer) AS "Count"
+FROM "Customers" "c"
+GROUP BY "c"."City"
 """);
     }
 
@@ -1541,10 +1541,10 @@ GROUP BY c."City"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", count(*)::int AS c
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
-ORDER BY o."CustomerID" NULLS FIRST
+SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS c
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
+ORDER BY "o"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -1554,10 +1554,10 @@ ORDER BY o."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", count(*)::int AS "Count"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
-ORDER BY count(*)::int NULLS FIRST, o."CustomerID" NULLS FIRST
+SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
+ORDER BY CAST(count(*) AS integer) NULLS FIRST, "o"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -1567,10 +1567,10 @@ ORDER BY count(*)::int NULLS FIRST, o."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", COALESCE(sum(o."OrderID"), 0)::int AS "Sum"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
-ORDER BY count(*)::int NULLS FIRST, o."CustomerID" NULLS FIRST
+SELECT "o"."CustomerID" AS "Key", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
+ORDER BY CAST(count(*) AS integer) NULLS FIRST, "o"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -1580,13 +1580,13 @@ ORDER BY count(*)::int NULLS FIRST, o."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-FROM "Orders" AS o
+SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+FROM "Orders" "o"
 WHERE EXISTS (
     SELECT 1
-    FROM "Orders" AS o0
+    FROM "Orders" "o0"
     GROUP BY o0."CustomerID"
-    HAVING count(*)::int > 30 AND (o0."CustomerID" = o."CustomerID" OR (o0."CustomerID" IS NULL AND o."CustomerID" IS NULL)))
+    HAVING CAST(count(*) AS integer) > 30 AND (o0."CustomerID" = "o"."CustomerID" OR (o0."CustomerID" IS NULL AND "o"."CustomerID" IS NULL)))
 """);
     }
 
@@ -1601,11 +1601,11 @@ $__p_1='4'
 
 SELECT o0."CustomerID"
 FROM (
-    SELECT o."CustomerID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 10
-    ORDER BY o."CustomerID" NULLS FIRST
+    SELECT "o"."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 10
+    ORDER BY "o"."CustomerID" NULLS FIRST
     LIMIT $__p_0
 ) AS o0
 ORDER BY o0."CustomerID" NULLS FIRST
@@ -1624,11 +1624,11 @@ $__p_1='4'
 
 SELECT o0."Key", o0."Max"
 FROM (
-    SELECT o."CustomerID" AS "Key", max(o."CustomerID") AS "Max"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 10
-    ORDER BY o."CustomerID" NULLS FIRST
+    SELECT "o"."CustomerID" AS "Key", max("o"."CustomerID") AS "Max"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 10
+    ORDER BY "o"."CustomerID" NULLS FIRST
     LIMIT $__p_0
 ) AS o0
 ORDER BY o0."Key" NULLS FIRST
@@ -1647,11 +1647,11 @@ $__p_1='4'
 
 SELECT length(o0."CustomerID")::int
 FROM (
-    SELECT o."CustomerID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 10
-    ORDER BY o."CustomerID" NULLS FIRST
+    SELECT "o"."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 10
+    ORDER BY "o"."CustomerID" NULLS FIRST
     LIMIT $__p_0
 ) AS o0
 ORDER BY o0."CustomerID" NULLS FIRST
@@ -1670,11 +1670,11 @@ $__p_1='4'
 
 SELECT 5
 FROM (
-    SELECT o."CustomerID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 10
-    ORDER BY o."CustomerID" NULLS FIRST
+    SELECT "o"."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 10
+    ORDER BY "o"."CustomerID" NULLS FIRST
     LIMIT $__p_0
 ) AS o0
 ORDER BY o0."CustomerID" NULLS FIRST
@@ -1688,10 +1688,10 @@ OFFSET $__p_1
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", count(*)::int AS c
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
-HAVING o."CustomerID" = 'ALFKI'
+SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS c
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
+HAVING "o"."CustomerID" = 'ALFKI'
 """);
     }
 
@@ -1701,10 +1701,10 @@ HAVING o."CustomerID" = 'ALFKI'
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", count(*)::int AS "Count"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
-HAVING count(*)::int > 4
+SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
+HAVING CAST(count(*) AS integer) > 4
 """);
     }
 
@@ -1714,13 +1714,13 @@ HAVING count(*)::int > 4
 
         AssertSql(
             """
-SELECT o0."Key" AS "Name", count(*)::int AS "Count"
+SELECT o0."Key" AS "Name", CAST(count(*) AS integer) AS "Count"
 FROM (
     SELECT 'Order' AS "Key"
-    FROM "Orders" AS o
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
-HAVING count(*)::int > 0
+HAVING CAST(count(*) AS integer) > 0
 """);
     }
 
@@ -1730,11 +1730,11 @@ HAVING count(*)::int > 0
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", count(*)::int AS "Count", COALESCE(sum(o."OrderID"), 0)::int AS "Sum"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
-HAVING count(*)::int > 4
-ORDER BY count(*)::int NULLS FIRST, o."CustomerID" NULLS FIRST
+SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
+HAVING CAST(count(*) AS integer) > 4
+ORDER BY CAST(count(*) AS integer) NULLS FIRST, "o"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -1744,14 +1744,14 @@ ORDER BY count(*)::int NULLS FIRST, o."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o1."OrderID", o1."CustomerID", o1."EmployeeID", o1."OrderDate"
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", o1."OrderID", o1."CustomerID", o1."EmployeeID", o1."OrderDate"
 FROM (
-    SELECT o."CustomerID", max(o."OrderID") AS "LastOrderID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 5
+    SELECT "o"."CustomerID", max("o"."OrderID") AS "LastOrderID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 5
 ) AS o0
-INNER JOIN "Customers" AS c ON o0."CustomerID" = c."CustomerID"
+INNER JOIN "Customers" AS c ON o0."CustomerID" = "c"."CustomerID"
 INNER JOIN "Orders" AS o1 ON o0."LastOrderID" = o1."OrderID"
 """);
     }
@@ -1762,14 +1762,14 @@ INNER JOIN "Orders" AS o1 ON o0."LastOrderID" = o1."OrderID"
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
 INNER JOIN (
-    SELECT o."CustomerID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 5
-) AS o0 ON c."CustomerID" = o0."CustomerID"
+    SELECT "o"."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 5
+) AS o0 ON "c"."CustomerID" = o0."CustomerID"
 """);
     }
 
@@ -1779,14 +1779,14 @@ INNER JOIN (
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
 LEFT JOIN (
-    SELECT o."CustomerID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 5
-) AS o0 ON c."CustomerID" = o0."CustomerID"
+    SELECT "o"."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 5
+) AS o0 ON "c"."CustomerID" = o0."CustomerID"
 """);
     }
 
@@ -1796,14 +1796,14 @@ LEFT JOIN (
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o1."OrderID", o1."CustomerID", o1."EmployeeID", o1."OrderDate"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", o1."OrderID", o1."CustomerID", o1."EmployeeID", o1."OrderDate"
+FROM "Customers" "c"
 INNER JOIN (
-    SELECT o."CustomerID", max(o."OrderID") AS "LastOrderID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 5
-) AS o0 ON c."CustomerID" = o0."CustomerID"
+    SELECT "o"."CustomerID", max("o"."OrderID") AS "LastOrderID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 5
+) AS o0 ON "c"."CustomerID" = o0."CustomerID"
 INNER JOIN "Orders" AS o1 ON o0."LastOrderID" = o1."OrderID"
 """);
     }
@@ -1814,14 +1814,14 @@ INNER JOIN "Orders" AS o1 ON o0."LastOrderID" = o1."OrderID"
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o0."LastOrderID"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", o0."LastOrderID"
+FROM "Customers" "c"
 INNER JOIN (
-    SELECT o."CustomerID", max(o."OrderID") AS "LastOrderID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 5
-) AS o0 ON c."CustomerID" = o0."CustomerID"
+    SELECT "o"."CustomerID", max("o"."OrderID") AS "LastOrderID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 5
+) AS o0 ON "c"."CustomerID" = o0."CustomerID"
 """);
     }
 
@@ -1831,15 +1831,15 @@ INNER JOIN (
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o0."LastOrderID", o1."OrderID"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", o0."LastOrderID", o1."OrderID"
+FROM "Customers" "c"
 INNER JOIN (
-    SELECT o."CustomerID", max(o."OrderID") AS "LastOrderID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 5
-) AS o0 ON c."CustomerID" = o0."CustomerID"
-INNER JOIN "Orders" AS o1 ON c."CustomerID" = o1."CustomerID"
+    SELECT "o"."CustomerID", max("o"."OrderID") AS "LastOrderID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 5
+) AS o0 ON "c"."CustomerID" = o0."CustomerID"
+INNER JOIN "Orders" AS o1 ON "c"."CustomerID" = o1."CustomerID"
 """);
     }
 
@@ -1849,17 +1849,17 @@ INNER JOIN "Orders" AS o1 ON c."CustomerID" = o1."CustomerID"
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o1."LastOrderID"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", o1."LastOrderID"
+FROM "Customers" "c"
 INNER JOIN (
     SELECT DISTINCT o0."CustomerID", max(o0."OrderID") AS "LastOrderID"
     FROM (
-        SELECT o."OrderID", o."CustomerID", date_part('year', o."OrderDate")::int AS "Year"
-        FROM "Orders" AS o
+        SELECT "o"."OrderID", "o"."CustomerID", date_part('year', "o"."OrderDate")::int AS "Year"
+        FROM "Orders" "o"
     ) AS o0
     GROUP BY o0."CustomerID", o0."Year"
-    HAVING count(*)::int > 5
-) AS o1 ON c."CustomerID" = o1."CustomerID"
+    HAVING CAST(count(*) AS integer) > 5
+) AS o1 ON "c"."CustomerID" = o1."CustomerID"
 """);
     }
 
@@ -1869,15 +1869,15 @@ INNER JOIN (
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o0."LastOrderID"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", o0."LastOrderID"
+FROM "Customers" "c"
 LEFT JOIN (
-    SELECT o."CustomerID", max(o."OrderID") AS "LastOrderID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 5
-) AS o0 ON c."CustomerID" = o0."CustomerID"
-WHERE c."CustomerID" LIKE 'A%'
+    SELECT "o"."CustomerID", max("o"."OrderID") AS "LastOrderID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 5
+) AS o0 ON "c"."CustomerID" = o0."CustomerID"
+WHERE "c"."CustomerID" LIKE 'A%'
 """);
     }
 
@@ -1887,19 +1887,19 @@ WHERE c."CustomerID" LIKE 'A%'
 
         AssertSql(
             """
-SELECT o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate", s."CustomerID", s."Address", s."City", s."CompanyName", s."ContactName", s."ContactTitle", s."Country", s."Fax", s."Phone", s."PostalCode", s."Region"
-FROM "Orders" AS o
+SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate", s."CustomerID", s."Address", s."City", s."CompanyName", s."ContactName", s."ContactTitle", s."Country", s."Fax", s."Phone", s."PostalCode", s."Region"
+FROM "Orders" "o"
 INNER JOIN (
-    SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-    FROM "Customers" AS c
+    SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+    FROM "Customers" "c"
     INNER JOIN (
         SELECT o0."CustomerID"
-        FROM "Orders" AS o0
+        FROM "Orders" "o0"
         GROUP BY o0."CustomerID"
-        HAVING count(*)::int > 5
-    ) AS o1 ON c."CustomerID" = o1."CustomerID"
-) AS s ON o."CustomerID" = s."CustomerID"
-WHERE o."OrderID" < 10400
+        HAVING CAST(count(*) AS integer) > 5
+    ) AS o1 ON "c"."CustomerID" = o1."CustomerID"
+) AS s ON "o"."CustomerID" = s."CustomerID"
+WHERE "o"."OrderID" < 10400
 """);
     }
 
@@ -1909,14 +1909,14 @@ WHERE o."OrderID" < 10400
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o0."LastOrderID"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", o0."LastOrderID"
+FROM "Customers" "c"
 INNER JOIN (
-    SELECT o."CustomerID" AS "Key", max(o."OrderID") AS "LastOrderID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 5
-) AS o0 ON c."CustomerID" = o0."Key"
+    SELECT "o"."CustomerID" AS "Key", max("o"."OrderID") AS "LastOrderID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 5
+) AS o0 ON "c"."CustomerID" = o0."Key"
 """);
     }
 
@@ -1926,9 +1926,9 @@ INNER JOIN (
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", min(o."OrderID") AS "Min", max(o."OrderID") AS "Max", avg(o."OrderID"::double precision) AS "Avg"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", min("o"."OrderID") AS "Min", max("o"."OrderID") AS "Max", avg(CAST("o"."OrderID" AS double precision)) AS "Avg"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1939,8 +1939,8 @@ GROUP BY o."CustomerID"
         AssertSql(
             """
 SELECT COALESCE(sum(1), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1951,8 +1951,8 @@ GROUP BY o."CustomerID"
         AssertSql(
             """
 SELECT COALESCE(sum(1), 0.0)::bigint
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -1962,10 +1962,10 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o0."CustomerID" AS "Key", count(*)::int AS c
+SELECT o0."CustomerID" AS "Key", CAST(count(*) AS integer) AS c
 FROM (
-    SELECT DISTINCT o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-    FROM "Orders" AS o
+    SELECT DISTINCT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."CustomerID"
 ORDER BY o0."CustomerID" NULLS FIRST
@@ -1981,17 +1981,17 @@ ORDER BY o0."CustomerID" NULLS FIRST
             """
 SELECT EXISTS (
     SELECT 1
-    FROM "Orders" AS o
-    WHERE c."CustomerID" = o."CustomerID"), c."CustomerID", t."OrderID"
-FROM "Customers" AS c
+    FROM "Orders" "o"
+    WHERE "c"."CustomerID" = "o"."CustomerID"), "c"."CustomerID", t."OrderID"
+FROM "Customers" "c"
 LEFT JOIN LATERAL (
     SELECT o0."OrderID"
-    FROM "Orders" AS o0
-    WHERE c."CustomerID" = o0."CustomerID"
+    FROM "Orders" "o0"
+    WHERE "c"."CustomerID" = o0."CustomerID"
     GROUP BY o0."OrderID"
 ) AS t ON TRUE
-WHERE c."CustomerID" LIKE 'F%'
-ORDER BY c."CustomerID" NULLS FIRST
+WHERE "c"."CustomerID" LIKE 'F%'
+ORDER BY "c"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -2001,15 +2001,15 @@ ORDER BY c."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."CustomerID", o0."OrderID"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", o0."OrderID"
+FROM "Customers" "c"
 LEFT JOIN LATERAL (
-    SELECT o."OrderID"
-    FROM "Orders" AS o
-    GROUP BY o."OrderID"
+    SELECT "o"."OrderID"
+    FROM "Orders" "o"
+    GROUP BY "o"."OrderID"
 ) AS o0 ON TRUE
-WHERE c."CustomerID" LIKE 'A%'
-ORDER BY c."CustomerID" NULLS FIRST
+WHERE "c"."CustomerID" LIKE 'A%'
+ORDER BY "c"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -2019,20 +2019,20 @@ ORDER BY c."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT o."OrderID", p1."ProductID", p2.c, p2."ProductID"
-FROM "Orders" AS o
+SELECT "o"."OrderID", p1."ProductID", p2.c, p2."ProductID"
+FROM "Orders" "o"
 LEFT JOIN LATERAL (
     SELECT p."ProductID"
     FROM "Products" AS p
     GROUP BY p."ProductID"
 ) AS p1 ON TRUE
 LEFT JOIN LATERAL (
-    SELECT count(*)::int AS c, p0."ProductID"
+    SELECT CAST(count(*) AS integer) AS c, p0."ProductID"
     FROM "Products" AS p0
     GROUP BY p0."ProductID"
 ) AS p2 ON TRUE
-WHERE o."CustomerID" LIKE 'A%'
-ORDER BY o."OrderID" NULLS FIRST, p1."ProductID" NULLS FIRST
+WHERE "o"."CustomerID" LIKE 'A%'
+ORDER BY "o"."OrderID" NULLS FIRST, p1."ProductID" NULLS FIRST
 """);
     }
 
@@ -2044,9 +2044,9 @@ ORDER BY o."OrderID" NULLS FIRST, p1."ProductID" NULLS FIRST
             """
 SELECT NOT EXISTS (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING o."CustomerID" <> 'ALFKI' OR o."CustomerID" IS NULL)
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING "o"."CustomerID" <> 'ALFKI' OR "o"."CustomerID" IS NULL)
 """);
     }
 
@@ -2056,9 +2056,9 @@ SELECT NOT EXISTS (
 
         AssertSql(
             """
-SELECT avg(o."OrderID"::double precision) FILTER (WHERE o."OrderID" < 10300)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT avg(CAST("o"."OrderID" AS double precision)) FILTER (WHERE "o"."OrderID" < 10300)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2068,9 +2068,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT count(*) FILTER (WHERE o."OrderID" < 10300)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT count(*) FILTER (WHERE "o"."OrderID" < 10300)::int
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2080,9 +2080,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT count(*) FILTER (WHERE o."OrderID" < 10300)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT count(*) FILTER (WHERE "o"."OrderID" < 10300)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2092,9 +2092,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT max(o."OrderID") FILTER (WHERE o."OrderID" < 10300)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT max("o"."OrderID") FILTER (WHERE "o"."OrderID" < 10300)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2104,9 +2104,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT min(o."OrderID") FILTER (WHERE o."OrderID" < 10300)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT min("o"."OrderID") FILTER (WHERE "o"."OrderID" < 10300)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2116,9 +2116,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(sum(o."OrderID") FILTER (WHERE o."OrderID" < 10300), 0)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT COALESCE(sum("o"."OrderID") FILTER (WHERE "o"."OrderID" < 10300), 0)::int
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2128,9 +2128,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT count(*) FILTER (WHERE o."OrderID" < 10300 AND o."OrderDate" IS NOT NULL AND date_part('year', o."OrderDate")::int = 1997)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT count(*) FILTER (WHERE "o"."OrderID" < 10300 AND "o"."OrderDate" IS NOT NULL AND date_part('year', "o"."OrderDate")::int = 1997)::int
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2140,9 +2140,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT count(*) FILTER (WHERE o."OrderID" < 10300 AND o."OrderDate" IS NOT NULL AND date_part('year', o."OrderDate")::int = 1997)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT count(*) FILTER (WHERE "o"."OrderID" < 10300 AND "o"."OrderDate" IS NOT NULL AND date_part('year', "o"."OrderDate")::int = 1997)::int
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2152,9 +2152,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT count(*) FILTER (WHERE o."OrderID" < 10300 AND o."OrderDate" IS NOT NULL AND date_part('year', o."OrderDate")::int = 1997)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT count(*) FILTER (WHERE "o"."OrderID" < 10300 AND "o"."OrderDate" IS NOT NULL AND date_part('year', "o"."OrderDate")::int = 1997)::int
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2164,9 +2164,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT min(o."OrderID") FILTER (WHERE o."OrderID" < 10300 AND o."OrderDate" IS NOT NULL AND date_part('year', o."OrderDate")::int = 1997)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT min("o"."OrderID") FILTER (WHERE "o"."OrderID" < 10300 AND "o"."OrderDate" IS NOT NULL AND date_part('year', "o"."OrderDate")::int = 1997)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2176,9 +2176,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID", count(*)::int AS "All", count(*) FILTER (WHERE o."OrderID" < 11000)::int AS "TenK", count(*) FILTER (WHERE o."OrderID" < 12000)::int AS "EleventK"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID", CAST(count(*) AS integer) AS "All", count(*) FILTER (WHERE "o"."OrderID" < 11000)::int AS "TenK", count(*) FILTER (WHERE "o"."OrderID" < 12000)::int AS "EleventK"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2188,15 +2188,15 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID", COALESCE(sum(CASE
-    WHEN o."OrderID" < 11000 THEN o."OrderID"
+SELECT "o"."CustomerID", COALESCE(sum(CASE
+    WHEN "o"."OrderID" < 11000 THEN "o"."OrderID"
     ELSE 0
 END), 0)::int AS "TenK", COALESCE(sum(CASE
-    WHEN o."OrderID" >= 11000 THEN o."OrderID"
+    WHEN "o"."OrderID" >= 11000 THEN "o"."OrderID"
     ELSE 0
 END), 0)::int AS "EleventK"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2206,15 +2206,15 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID", COALESCE(sum(CASE
-    WHEN o."OrderID" < 11000 THEN o."OrderID"
+SELECT "o"."CustomerID", COALESCE(sum(CASE
+    WHEN "o"."OrderID" < 11000 THEN "o"."OrderID"
     ELSE 0
 END), 0)::int AS "TenK", COALESCE(sum(CASE
-    WHEN o."OrderID" >= 11000 THEN o."OrderID"
+    WHEN "o"."OrderID" >= 11000 THEN "o"."OrderID"
     ELSE 0
 END), 0)::int AS "EleventK"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2224,9 +2224,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."OrderID" AS "Key", avg(o."OrderID"::double precision) AS "Avg", max(o."OrderDate") AS "Max"
-FROM "Orders" AS o
-GROUP BY o."OrderID"
+SELECT "o"."OrderID" AS "Key", avg(CAST("o"."OrderID" AS double precision)) AS "Avg", max("o"."OrderDate") AS "Max"
+FROM "Orders" "o"
+GROUP BY "o"."OrderID"
 """);
     }
 
@@ -2236,9 +2236,9 @@ GROUP BY o."OrderID"
 
         AssertSql(
             """
-SELECT o."OrderID", o."CustomerID", avg(o."OrderID"::double precision) AS "Avg", max(o."OrderDate") AS "Max"
-FROM "Orders" AS o
-GROUP BY o."OrderID", o."CustomerID"
+SELECT "o"."OrderID", "o"."CustomerID", avg(CAST("o"."OrderID" AS double precision)) AS "Avg", max("o"."OrderDate") AS "Max"
+FROM "Orders" "o"
+GROUP BY "o"."OrderID", "o"."CustomerID"
 """);
     }
 
@@ -2249,12 +2249,12 @@ GROUP BY o."OrderID", o."CustomerID"
         AssertSql(
             """
 SELECT (
-    SELECT max(c."Region")
-    FROM "Orders" AS o0
-    LEFT JOIN "Customers" AS c ON o0."CustomerID" = c."CustomerID"
-    WHERE o."EmployeeID" = o0."EmployeeID" OR (o."EmployeeID" IS NULL AND o0."EmployeeID" IS NULL)) AS max
-FROM "Orders" AS o
-GROUP BY o."EmployeeID"
+    SELECT max("c"."Region")
+    FROM "Orders" "o0"
+    LEFT JOIN "Customers" AS c ON o0."CustomerID" = "c"."CustomerID"
+    WHERE "o"."EmployeeID" = o0."EmployeeID" OR ("o"."EmployeeID" IS NULL AND o0."EmployeeID" IS NULL)) AS max
+FROM "Orders" "o"
+GROUP BY "o"."EmployeeID"
 """);
     }
 
@@ -2264,12 +2264,12 @@ GROUP BY o."EmployeeID"
 
         AssertSql(
             """
-SELECT o."EmployeeID" AS "Key", (
+SELECT "o"."EmployeeID" AS "Key", (
     SELECT max(o0."OrderID")
-    FROM "Orders" AS o0
-    WHERE o0."EmployeeID"::bigint = CAST(max(o."OrderID") * 6 AS bigint) OR (o0."EmployeeID" IS NULL AND max(o."OrderID") IS NULL)) AS "Max"
-FROM "Orders" AS o
-GROUP BY o."EmployeeID"
+    FROM "Orders" "o0"
+    WHERE o0."EmployeeID"::bigint = CAST(max("o"."OrderID") * 6 AS bigint) OR (o0."EmployeeID" IS NULL AND max("o"."OrderID") IS NULL)) AS "Max"
+FROM "Orders" "o"
+GROUP BY "o"."EmployeeID"
 """);
     }
 
@@ -2340,9 +2340,9 @@ GROUP BY e."EmployeeID"
             """
 SELECT c1."City", c0."CustomerID", c0."Address", c0."City", c0."CompanyName", c0."ContactName", c0."ContactTitle", c0."Country", c0."Fax", c0."Phone", c0."PostalCode", c0."Region"
 FROM (
-    SELECT c."City"
-    FROM "Customers" AS c
-    GROUP BY c."City"
+    SELECT "c"."City"
+    FROM "Customers" "c"
+    GROUP BY "c"."City"
 ) AS c1
 LEFT JOIN "Customers" AS c0 ON c1."City" = c0."City"
 ORDER BY c1."City" NULLS FIRST
@@ -2357,9 +2357,9 @@ ORDER BY c1."City" NULLS FIRST
             """
 SELECT c1."City", c0."CustomerID", c0."Address", c0."City", c0."CompanyName", c0."ContactName", c0."ContactTitle", c0."Country", c0."Fax", c0."Phone", c0."PostalCode", c0."Region"
 FROM (
-    SELECT c."City"
-    FROM "Customers" AS c
-    GROUP BY c."City"
+    SELECT "c"."City"
+    FROM "Customers" "c"
+    GROUP BY "c"."City"
 ) AS c1
 LEFT JOIN "Customers" AS c0 ON c1."City" = c0."City"
 ORDER BY c1."City" NULLS FIRST
@@ -2374,13 +2374,13 @@ ORDER BY c1."City" NULLS FIRST
             """
 SELECT c1."City", c2."CustomerID", c2."Address", c2."City", c2."CompanyName", c2."ContactName", c2."ContactTitle", c2."Country", c2."Fax", c2."Phone", c2."PostalCode", c2."Region"
 FROM (
-    SELECT c."City"
-    FROM "Customers" AS c
-    GROUP BY c."City"
+    SELECT "c"."City"
+    FROM "Customers" "c"
+    GROUP BY "c"."City"
 ) AS c1
 LEFT JOIN (
     SELECT c0."CustomerID", c0."Address", c0."City", c0."CompanyName", c0."ContactName", c0."ContactTitle", c0."Country", c0."Fax", c0."Phone", c0."PostalCode", c0."Region"
-    FROM "Customers" AS c0
+    FROM "Customers" "c0"
     WHERE c0."CustomerID" LIKE 'A%'
 ) AS c2 ON c1."City" = c2."City"
 ORDER BY c1."City" NULLS FIRST
@@ -2395,9 +2395,9 @@ ORDER BY c1."City" NULLS FIRST
             """
 SELECT c1."City", c0."CustomerID", c0."Address", c0."City", c0."CompanyName", c0."ContactName", c0."ContactTitle", c0."Country", c0."Fax", c0."Phone", c0."PostalCode", c0."Region"
 FROM (
-    SELECT c."City"
-    FROM "Customers" AS c
-    GROUP BY c."City"
+    SELECT "c"."City"
+    FROM "Customers" "c"
+    GROUP BY "c"."City"
 ) AS c1
 LEFT JOIN "Customers" AS c0 ON c1."City" = c0."City"
 ORDER BY c1."City" NULLS FIRST, c0."CustomerID" NULLS FIRST
@@ -2417,11 +2417,11 @@ ORDER BY c1."City" NULLS FIRST, c0."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT count(*)::int
+SELECT CAST(count(*) AS integer)
 FROM (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o0
 """);
     }
@@ -2435,8 +2435,8 @@ FROM (
 SELECT count(*)
 FROM (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o0
 """);
     }
@@ -2447,9 +2447,9 @@ FROM (
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", avg(DISTINCT o."OrderID"::double precision) AS "Average", count(DISTINCT o."EmployeeID")::int AS "Count", count(DISTINCT o."EmployeeID") AS "LongCount", max(DISTINCT o."OrderDate") AS "Max", min(DISTINCT o."OrderDate") AS "Min", COALESCE(sum(DISTINCT o."OrderID"), 0)::int AS "Sum"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", avg(DISTINCT CAST("o"."OrderID" AS double precision)) AS "Average", count(DISTINCT "o"."EmployeeID")::int AS "Count", count(DISTINCT "o"."EmployeeID") AS "LongCount", max(DISTINCT "o"."OrderDate") AS "Max", min(DISTINCT "o"."OrderDate") AS "Min", COALESCE(sum(DISTINCT "o"."OrderID"), 0)::int AS "Sum"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2459,9 +2459,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", max(DISTINCT o."OrderDate") AS "Max"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", max(DISTINCT "o"."OrderDate") AS "Max"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2471,9 +2471,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", max(DISTINCT o."OrderDate") FILTER (WHERE o."OrderDate" IS NOT NULL) AS "Max"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", max(DISTINCT "o"."OrderDate") FILTER (WHERE "o"."OrderDate" IS NOT NULL) AS "Max"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2485,18 +2485,18 @@ GROUP BY o."CustomerID"
             """
 SELECT min(o0.c)
 FROM (
-    SELECT COALESCE(sum(o."OrderID"), 0)::int AS c
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS c
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o0
 """,
             //
             """
 SELECT max(o0.c)
 FROM (
-    SELECT COALESCE(sum(o."OrderID"), 0)::int AS c
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS c
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o0
 """);
     }
@@ -2509,8 +2509,8 @@ FROM (
             """
 SELECT NOT EXISTS (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
     HAVING FALSE)
 """);
     }
@@ -2523,9 +2523,9 @@ SELECT NOT EXISTS (
             """
 SELECT NOT EXISTS (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING COALESCE(sum(o."OrderID"), 0)::int < 0)
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) < 0)
 """);
     }
 
@@ -2537,8 +2537,8 @@ SELECT NOT EXISTS (
             """
 SELECT EXISTS (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID")
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID")
 """);
     }
 
@@ -2548,11 +2548,11 @@ SELECT EXISTS (
 
         AssertSql(
             """
-SELECT count(*)::int
+SELECT CAST(count(*) AS integer)
 FROM (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o0
 """);
     }
@@ -2563,12 +2563,12 @@ FROM (
 
         AssertSql(
             """
-SELECT count(*)::int
+SELECT CAST(count(*) AS integer)
 FROM (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 1
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 1
 ) AS o0
 """);
     }
@@ -2582,8 +2582,8 @@ FROM (
 SELECT count(*)
 FROM (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o0
 """);
     }
@@ -2597,9 +2597,9 @@ FROM (
 SELECT count(*)
 FROM (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 1
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 1
 ) AS o0
 """);
     }
@@ -2612,8 +2612,8 @@ FROM (
             """
 SELECT EXISTS (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID")
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID")
 """);
     }
 
@@ -2625,9 +2625,9 @@ SELECT EXISTS (
             """
 SELECT EXISTS (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int > 1)
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) > 1)
 """);
     }
 
@@ -2639,9 +2639,9 @@ SELECT EXISTS (
             """
 SELECT NOT EXISTS (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING count(*)::int <= 1)
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING CAST(count(*) AS integer) <= 1)
 """);
     }
 
@@ -2655,9 +2655,9 @@ SELECT o1."Key0" AS "Key", COALESCE(sum(o1."Count"), 0)::int AS "Count"
 FROM (
     SELECT o0."Count", 1 AS "Key0"
     FROM (
-        SELECT count(*)::int AS "Count"
-        FROM "Orders" AS o
-        GROUP BY o."CustomerID"
+        SELECT CAST(count(*) AS integer) AS "Count"
+        FROM "Orders" "o"
+        GROUP BY "o"."CustomerID"
     ) AS o0
 ) AS o1
 GROUP BY o1."Key0"
@@ -2670,23 +2670,23 @@ GROUP BY o1."Key0"
 
         AssertSql(
             """
-SELECT o."OrderID", o."OrderDate", EXISTS (
+SELECT "o"."OrderID", "o"."OrderDate", EXISTS (
     SELECT 1
     FROM "Order Details" AS o0
-    WHERE o."OrderID" = o0."OrderID" AND o0."ProductID" < 25) AS "HasOrderDetails", CASE
+    WHERE "o"."OrderID" = o0."OrderID" AND o0."ProductID" < 25) AS "HasOrderDetails", CASE
     WHEN (
-        SELECT count(*)::int
+        SELECT CAST(count(*) AS integer)
         FROM (
             SELECT 1
             FROM "Order Details" AS o1
             INNER JOIN "Products" AS p ON o1."ProductID" = p."ProductID"
-            WHERE o."OrderID" = o1."OrderID" AND o1."ProductID" < 25
+            WHERE "o"."OrderID" = o1."OrderID" AND o1."ProductID" < 25
             GROUP BY p."ProductName"
         ) AS s) > 1 THEN TRUE
     ELSE FALSE
 END AS "HasMultipleProducts"
-FROM "Orders" AS o
-WHERE o."OrderDate" IS NOT NULL
+FROM "Orders" "o"
+WHERE "o"."OrderDate" IS NOT NULL
 """);
     }
 
@@ -2696,11 +2696,11 @@ WHERE o."OrderDate" IS NOT NULL
 
         AssertSql(
             """
-SELECT count(*)::int
+SELECT CAST(count(*) AS integer)
 FROM (
     SELECT 1
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o0
 """);
     }
@@ -2711,9 +2711,9 @@ FROM (
 
         AssertSql(
             """
-SELECT c."City" AS "Renamed", count(*)::int AS "Count"
-FROM "Customers" AS c
-GROUP BY c."City"
+SELECT "c"."City" AS "Renamed", CAST(count(*) AS integer) AS "Count"
+FROM "Customers" "c"
+GROUP BY "c"."City"
 """);
     }
 
@@ -2723,10 +2723,10 @@ GROUP BY c."City"
 
         AssertSql(
             """
-SELECT c0."Renamed" AS "Key", count(*)::int AS "Count"
+SELECT c0."Renamed" AS "Key", CAST(count(*) AS integer) AS "Count"
 FROM (
-    SELECT DISTINCT c."City" AS "Renamed", c."CustomerID"
-    FROM "Customers" AS c
+    SELECT DISTINCT "c"."City" AS "Renamed", "c"."CustomerID"
+    FROM "Customers" "c"
 ) AS c0
 GROUP BY c0."Renamed"
 """);
@@ -2738,11 +2738,11 @@ GROUP BY c0."Renamed"
 
         AssertSql(
             """
-SELECT c."CustomerID", o."OrderDate"
-FROM "Customers" AS c
-INNER JOIN "Orders" AS o ON c."CustomerID" = o."CustomerID"
-GROUP BY c."CustomerID", o."OrderDate"
-ORDER BY o."OrderDate" NULLS FIRST
+SELECT "c"."CustomerID", "o"."OrderDate"
+FROM "Customers" "c"
+INNER JOIN "Orders" AS o ON "c"."CustomerID" = "o"."CustomerID"
+GROUP BY "c"."CustomerID", "o"."OrderDate"
+ORDER BY "o"."OrderDate" NULLS FIRST
 """);
     }
 
@@ -2754,8 +2754,8 @@ ORDER BY o."OrderDate" NULLS FIRST
             """
 SELECT 'TotalAmount' AS "Name", COALESCE(sum(o0."OrderID"::numeric), 0.0) AS "Value"
 FROM (
-    SELECT o."OrderID", 1 AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."OrderID", 1 AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -2767,9 +2767,9 @@ GROUP BY o0."Key"
 
         AssertSql(
             """
-SELECT o0."CustomerID" AS "Key", COALESCE(sum(o."OrderID"), 0)::int AS "Aggregate"
+SELECT o0."CustomerID" AS "Key", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Aggregate"
 FROM "Order Details" AS o
-INNER JOIN "Orders" AS o0 ON o."OrderID" = o0."OrderID"
+INNER JOIN "Orders" AS o0 ON "o"."OrderID" = o0."OrderID"
 GROUP BY o0."CustomerID"
 """);
     }
@@ -2780,11 +2780,11 @@ GROUP BY o0."CustomerID"
 
         AssertSql(
             """
-SELECT c."Country" AS "Key", COALESCE(sum(o."OrderID"), 0)::int AS "Aggregate"
+SELECT "c"."Country" AS "Key", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Aggregate"
 FROM "Order Details" AS o
-INNER JOIN "Orders" AS o0 ON o."OrderID" = o0."OrderID"
-LEFT JOIN "Customers" AS c ON o0."CustomerID" = c."CustomerID"
-GROUP BY c."Country"
+INNER JOIN "Orders" AS o0 ON "o"."OrderID" = o0."OrderID"
+LEFT JOIN "Customers" AS c ON o0."CustomerID" = "c"."CustomerID"
+GROUP BY "c"."Country"
 """);
     }
 
@@ -2794,9 +2794,9 @@ GROUP BY c."Country"
 
         AssertSql(
             """
-SELECT o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate", COALESCE(sum(o."OrderID"), 0)::int AS "Aggregate"
+SELECT o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Aggregate"
 FROM "Order Details" AS o
-INNER JOIN "Orders" AS o0 ON o."OrderID" = o0."OrderID"
+INNER JOIN "Orders" AS o0 ON "o"."OrderID" = o0."OrderID"
 GROUP BY o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate"
 """);
     }
@@ -2807,11 +2807,11 @@ GROUP BY o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate"
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", COALESCE(sum(o."OrderID"), 0)::int AS "Aggregate"
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Aggregate"
 FROM "Order Details" AS o
-INNER JOIN "Orders" AS o0 ON o."OrderID" = o0."OrderID"
-LEFT JOIN "Customers" AS c ON o0."CustomerID" = c."CustomerID"
-GROUP BY c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
+INNER JOIN "Orders" AS o0 ON "o"."OrderID" = o0."OrderID"
+LEFT JOIN "Customers" AS c ON o0."CustomerID" = "c"."CustomerID"
+GROUP BY "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
 """);
     }
 
@@ -2823,7 +2823,7 @@ GROUP BY c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName"
             """
 SELECT o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate"
 FROM "Order Details" AS o
-INNER JOIN "Orders" AS o0 ON o."OrderID" = o0."OrderID"
+INNER JOIN "Orders" AS o0 ON "o"."OrderID" = o0."OrderID"
 GROUP BY o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate"
 """);
     }
@@ -2845,9 +2845,9 @@ $__p_0='80'
 
 SELECT COALESCE(sum(o0."OrderID"), 0)::int
 FROM (
-    SELECT o."OrderID", o."CustomerID"
-    FROM "Orders" AS o
-    ORDER BY o."CustomerID" NULLS FIRST, o."OrderID" NULLS FIRST
+    SELECT "o"."OrderID", "o"."CustomerID"
+    FROM "Orders" "o"
+    ORDER BY "o"."CustomerID" NULLS FIRST, "o"."OrderID" NULLS FIRST
     OFFSET $__p_0
 ) AS o0
 GROUP BY o0."CustomerID"
@@ -2860,9 +2860,9 @@ GROUP BY o0."CustomerID"
 
         AssertSql(
             """
-SELECT count(*) FILTER (WHERE o."OrderID" < 10300)::int
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT count(*) FILTER (WHERE "o"."OrderID" < 10300)::int
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2872,9 +2872,9 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT count(*) FILTER (WHERE o."OrderID" < 10300)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT count(*) FILTER (WHERE "o"."OrderID" < 10300)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2884,10 +2884,10 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT COALESCE(c."City", 'Unknown') AS "Locality", count(*)::int AS "Count"
-FROM "Customers" AS c
-GROUP BY c."City"
-ORDER BY count(*)::int DESC NULLS LAST, c."City" NULLS FIRST
+SELECT COALESCE("c"."City", 'Unknown') AS "Locality", CAST(count(*) AS integer) AS "Count"
+FROM "Customers" "c"
+GROUP BY "c"."City"
+ORDER BY CAST(count(*) AS integer) DESC NULLS LAST, "c"."City" NULLS FIRST
 """);
     }
 
@@ -2904,11 +2904,11 @@ ORDER BY count(*)::int DESC NULLS LAST, c."City" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."CustomerID" AS "Key", count(*)::int AS "Count"
-FROM "Orders" AS o
-LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
-GROUP BY c."CustomerID"
-HAVING count(*)::int <> 2
+SELECT "c"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count"
+FROM "Orders" "o"
+LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
+GROUP BY "c"."CustomerID"
+HAVING CAST(count(*) AS integer) <> 2
 """);
     }
 
@@ -2918,11 +2918,11 @@ HAVING count(*)::int <> 2
 
         AssertSql(
             """
-SELECT c."CustomerID" AS "Key", count(*)::int AS "Count"
-FROM "Orders" AS o
-LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
-GROUP BY c."CustomerID"
-HAVING count(*)::int < 2 OR count(*)::int > 2
+SELECT "c"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count"
+FROM "Orders" "o"
+LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
+GROUP BY "c"."CustomerID"
+HAVING CAST(count(*) AS integer) < 2 OR CAST(count(*) AS integer) > 2
 """);
     }
 
@@ -2932,12 +2932,12 @@ HAVING count(*)::int < 2 OR count(*)::int > 2
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", (
-    SELECT count(*)::int
-    FROM "Customers" AS c
-    WHERE c."CustomerID" = o."CustomerID") AS "Count"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", (
+    SELECT CAST(count(*) AS integer)
+    FROM "Customers" "c"
+    WHERE "c"."CustomerID" = "o"."CustomerID") AS "Count"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -2947,13 +2947,13 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o0."Count"
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", o0."Count"
 FROM (
-    SELECT o."CustomerID" AS "Key", count(*)::int AS "Count"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o0
-INNER JOIN "Customers" AS c ON o0."Key" = c."CustomerID"
+INNER JOIN "Customers" AS c ON o0."Key" = "c"."CustomerID"
 """);
     }
 
@@ -2965,9 +2965,9 @@ INNER JOIN "Customers" AS c ON o0."Key" = c."CustomerID"
             """
 SELECT o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate"
 FROM (
-    SELECT o."CustomerID" AS "Key", max(o."OrderDate") AS "LastOrderDate"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    SELECT "o"."CustomerID" AS "Key", max("o"."OrderDate") AS "LastOrderDate"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o1
 INNER JOIN "Orders" AS o0 ON (o1."Key" = o0."CustomerID" OR (o1."Key" IS NULL AND o0."CustomerID" IS NULL)) AND (o1."LastOrderDate" = o0."OrderDate" OR (o1."LastOrderDate" IS NULL AND o0."OrderDate" IS NULL))
 """);
@@ -2981,14 +2981,14 @@ INNER JOIN "Orders" AS o0 ON (o1."Key" = o0."CustomerID" OR (o1."Key" IS NULL AN
             """
 $__p_0='10'
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o0."Max"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", o0."Max"
+FROM "Customers" "c"
 INNER JOIN (
-    SELECT o."CustomerID" AS "Key", max(o."OrderDate") AS "Max"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-) AS o0 ON c."CustomerID" = o0."Key"
-ORDER BY o0."Max" NULLS FIRST, c."CustomerID" NULLS FIRST
+    SELECT "o"."CustomerID" AS "Key", max("o"."OrderDate") AS "Max"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+) AS o0 ON "c"."CustomerID" = o0."Key"
+ORDER BY o0."Max" NULLS FIRST, "c"."CustomerID" NULLS FIRST
 LIMIT $__p_0 OFFSET $__p_0
 """);
     }
@@ -3001,13 +3001,13 @@ LIMIT $__p_0 OFFSET $__p_0
             """
 SELECT o1."Key", o1."Total", o2."ThatYear"
 FROM (
-    SELECT o."CustomerID" AS "Key", count(*)::int AS "Total"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Total"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o1
 INNER JOIN (
-    SELECT o0."CustomerID" AS "Key", count(*)::int AS "ThatYear"
-    FROM "Orders" AS o0
+    SELECT o0."CustomerID" AS "Key", CAST(count(*) AS integer) AS "ThatYear"
+    FROM "Orders" "o0"
     WHERE date_part('year', o0."OrderDate")::int = 1997
     GROUP BY o0."CustomerID"
 ) AS o2 ON o1."Key" = o2."Key"
@@ -3022,10 +3022,10 @@ INNER JOIN (
             """
 $__p_0='0'
 
-SELECT o0."CustomerID" AS "Key", count(*)::int AS "Total"
+SELECT o0."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Total"
 FROM (
-    SELECT o."CustomerID"
-    FROM "Orders" AS o
+    SELECT "o"."CustomerID"
+    FROM "Orders" "o"
     LIMIT $__p_0 OFFSET $__p_0
 ) AS o0
 GROUP BY o0."CustomerID"
@@ -3040,10 +3040,10 @@ GROUP BY o0."CustomerID"
             """
 $__p_0='0'
 
-SELECT o."CustomerID" AS "Key", count(*)::int AS "Total"
-FROM "Orders" AS o
-WHERE o."OrderID" > 10500
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Total"
+FROM "Orders" "o"
+WHERE "o"."OrderID" > 10500
+GROUP BY "o"."CustomerID"
 LIMIT $__p_0 OFFSET $__p_0
 """);
     }
@@ -3054,12 +3054,12 @@ LIMIT $__p_0 OFFSET $__p_0
 
         AssertSql(
             """
-SELECT o1."CustomerID" AS "Key", count(*)::int AS "Count"
+SELECT o1."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count"
 FROM (
     SELECT o0."CustomerID"
     FROM (
-        SELECT o."CustomerID", date_part('year', o."OrderDate")::int AS "Year"
-        FROM "Orders" AS o
+        SELECT "o"."CustomerID", date_part('year', "o"."OrderDate")::int AS "Year"
+        FROM "Orders" "o"
     ) AS o0
     GROUP BY o0."CustomerID", o0."Year"
 ) AS o1
@@ -3075,9 +3075,9 @@ GROUP BY o1."CustomerID"
             """
 SELECT o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate"
 FROM (
-    SELECT min(o."OrderID") AS c
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    SELECT min("o"."OrderID") AS c
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o1
 CROSS JOIN "Orders" AS o0
 WHERE o0."OrderID" = o1.c
@@ -3109,9 +3109,9 @@ WHERE [o0].[OrderID] = [t].[c]
             """
 SELECT o1."CustomerID", o0."CustomerID", o0."OrderID"
 FROM (
-    SELECT o."CustomerID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    SELECT "o"."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o1
 LEFT JOIN "Orders" AS o0 ON o1."CustomerID" = o0."CustomerID"
 ORDER BY o1."CustomerID" NULLS FIRST
@@ -3124,10 +3124,10 @@ ORDER BY o1."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT o0."Key", count(*)::int AS "Count"
+SELECT o0."Key", CAST(count(*) AS integer) AS "Count"
 FROM (
-    SELECT o."CustomerID" LIKE 'A%' AND o."CustomerID" IS NOT NULL AS "Key"
-    FROM "Orders" AS o
+    SELECT "o"."CustomerID" LIKE 'A%' AND "o"."CustomerID" IS NOT NULL AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -3139,10 +3139,10 @@ GROUP BY o0."Key"
 
         AssertSql(
             """
-SELECT o0."Key", count(*)::int AS "Count"
+SELECT o0."Key", CAST(count(*) AS integer) AS "Count"
 FROM (
-    SELECT date_part('day', o."OrderDate")::int AS "Key"
-    FROM "Orders" AS o
+    SELECT date_part('day', "o"."OrderDate")::int AS "Key"
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -3154,9 +3154,9 @@ GROUP BY o0."Key"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", count(*)::int AS "Count", COALESCE(sum(o."OrderID"::bigint), 0.0)::bigint AS "Sum"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", CAST(count(*) AS integer) AS "Count", COALESCE(sum("o"."OrderID"::bigint), 0.0)::bigint AS "Sum"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -3166,15 +3166,15 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT c."CustomerID", o0."Sum", o0."CustomerID"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", o0."Sum", o0."CustomerID"
+FROM "Customers" "c"
 LEFT JOIN LATERAL (
-    SELECT COALESCE(sum(o."OrderID"), 0)::int AS "Sum", o."CustomerID"
-    FROM "Orders" AS o
-    WHERE c."CustomerID" = o."CustomerID"
-    GROUP BY o."CustomerID"
+    SELECT CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", "o"."CustomerID"
+    FROM "Orders" "o"
+    WHERE "c"."CustomerID" = "o"."CustomerID"
+    GROUP BY "o"."CustomerID"
 ) AS o0 ON TRUE
-ORDER BY c."CustomerID" NULLS FIRST
+ORDER BY "c"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -3184,15 +3184,15 @@ ORDER BY c."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."CustomerID", o0."Max", o0."Sum", o0."CustomerID"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", o0."Max", o0."Sum", o0."CustomerID"
+FROM "Customers" "c"
 LEFT JOIN LATERAL (
-    SELECT max(length(o."CustomerID")::int) AS "Max", COALESCE(sum(o."OrderID"), 0)::int AS "Sum", o."CustomerID"
-    FROM "Orders" AS o
-    WHERE c."CustomerID" = o."CustomerID"
-    GROUP BY o."CustomerID"
+    SELECT max(length("o"."CustomerID")::int) AS "Max", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", "o"."CustomerID"
+    FROM "Orders" "o"
+    WHERE "c"."CustomerID" = "o"."CustomerID"
+    GROUP BY "o"."CustomerID"
 ) AS o0 ON TRUE
-ORDER BY c."CustomerID" NULLS FIRST
+ORDER BY "c"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -3202,14 +3202,14 @@ ORDER BY c."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."CustomerID", o0."Max", o0."Sum", o0."CustomerID"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", o0."Max", o0."Sum", o0."CustomerID"
+FROM "Customers" "c"
 LEFT JOIN LATERAL (
-    SELECT max(length(o."CustomerID")::int) AS "Max", COALESCE(sum(o."OrderID"), 0)::int AS "Sum", o."CustomerID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
+    SELECT max(length("o"."CustomerID")::int) AS "Max", CAST(COALESCE(sum("o"."OrderID"), 0) AS integer) AS "Sum", "o"."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
 ) AS o0 ON TRUE
-ORDER BY c."CustomerID" NULLS FIRST
+ORDER BY "c"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -3219,9 +3219,9 @@ ORDER BY c."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT o."OrderID"::bigint AS "Id", count(*)::int AS "Count"
-FROM "Orders" AS o
-GROUP BY o."OrderID"
+SELECT "o"."OrderID"::bigint AS "Id", CAST(count(*) AS integer) AS "Count"
+FROM "Orders" "o"
+GROUP BY "o"."OrderID"
 """);
     }
 
@@ -3231,16 +3231,16 @@ GROUP BY o."OrderID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", COALESCE(sum(CASE
-    WHEN 2020 - date_part('year', o."OrderDate")::int <= 30 THEN o."OrderID"
+SELECT "o"."CustomerID" AS "Key", COALESCE(sum(CASE
+    WHEN 2020 - date_part('year', "o"."OrderDate")::int <= 30 THEN "o"."OrderID"
     ELSE 0
 END), 0)::int AS "Sum1", COALESCE(sum(CASE
-    WHEN 2020 - date_part('year', o."OrderDate")::int > 30 AND 2020 - date_part('year', o."OrderDate")::int <= 60 THEN o."OrderID"
+    WHEN 2020 - date_part('year', "o"."OrderDate")::int > 30 AND 2020 - date_part('year', "o"."OrderDate")::int <= 60 THEN "o"."OrderID"
     ELSE 0
 END), 0)::int AS "Sum2"
-FROM "Orders" AS o
-WHERE o."CustomerID" LIKE 'A%'
-GROUP BY o."CustomerID"
+FROM "Orders" "o"
+WHERE "o"."CustomerID" LIKE 'A%'
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -3251,9 +3251,9 @@ GROUP BY o."CustomerID"
         AssertSql(
             """
 SELECT 42
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
-ORDER BY o."CustomerID" NULLS FIRST
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
+ORDER BY "o"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -3263,10 +3263,10 @@ ORDER BY o."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT o."OrderID" + o."OrderID" AS "Value", avg(o."OrderID"::double precision) AS "Average"
-FROM "Orders" AS o
-LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
-GROUP BY o."OrderID"
+SELECT "o"."OrderID" + "o"."OrderID" AS "Value", avg(CAST("o"."OrderID" AS double precision)) AS "Average"
+FROM "Orders" "o"
+LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
+GROUP BY "o"."OrderID"
 """);
     }
 
@@ -3276,9 +3276,9 @@ GROUP BY o."OrderID"
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", COALESCE(sum(o."OrderID" + length(o."CustomerID")::int), 0)::int AS "Sum"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID" AS "Key", COALESCE(sum("o"."OrderID" + length("o"."CustomerID")::int), 0)::int AS "Sum"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -3288,14 +3288,14 @@ GROUP BY o."CustomerID"
 
         AssertSql(
             """
-SELECT o0."Key", count(*)::int AS "Count"
+SELECT o0."Key", CAST(count(*) AS integer) AS "Count"
 FROM (
     SELECT (
-        SELECT c."ContactName"
-        FROM "Customers" AS c
-        WHERE c."CustomerID" = o."CustomerID"
+        SELECT "c"."ContactName"
+        FROM "Customers" "c"
+        WHERE "c"."CustomerID" = "o"."CustomerID"
         LIMIT 1) AS "Key"
-    FROM "Orders" AS o
+    FROM "Orders" "o"
 ) AS o0
 GROUP BY o0."Key"
 """);
@@ -3307,28 +3307,28 @@ GROUP BY o0."Key"
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", s."OrderID", s."CustomerID", s."EmployeeID", s."OrderDate", s."CustomerID0"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", s."OrderID", s."CustomerID", s."EmployeeID", s."OrderDate", s."CustomerID0"
+FROM "Customers" "c"
 LEFT JOIN LATERAL (
     SELECT o3."OrderID", o3."CustomerID", o3."EmployeeID", o3."OrderDate", o1."CustomerID" AS "CustomerID0"
     FROM (
-        SELECT o."CustomerID"
-        FROM "Orders" AS o
-        WHERE o."CustomerID" = c."CustomerID"
-        GROUP BY o."CustomerID"
+        SELECT "o"."CustomerID"
+        FROM "Orders" "o"
+        WHERE "o"."CustomerID" = "c"."CustomerID"
+        GROUP BY "o"."CustomerID"
     ) AS o1
     LEFT JOIN (
         SELECT o2."OrderID", o2."CustomerID", o2."EmployeeID", o2."OrderDate"
         FROM (
             SELECT o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate", ROW_NUMBER() OVER(PARTITION BY o0."CustomerID" ORDER BY o0."OrderDate" DESC NULLS LAST) AS row
-            FROM "Orders" AS o0
-            WHERE o0."CustomerID" = c."CustomerID"
+            FROM "Orders" "o0"
+            WHERE o0."CustomerID" = "c"."CustomerID"
         ) AS o2
         WHERE o2.row <= 1
     ) AS o3 ON o1."CustomerID" = o3."CustomerID"
 ) AS s ON TRUE
-WHERE c."CustomerID" LIKE 'F%'
-ORDER BY c."CustomerID" NULLS FIRST, s."CustomerID0" NULLS FIRST
+WHERE "c"."CustomerID" LIKE 'F%'
+ORDER BY "c"."CustomerID" NULLS FIRST, s."CustomerID0" NULLS FIRST
 """);
     }
 
@@ -3363,15 +3363,15 @@ OUTER APPLY (
 
         AssertSql(
             """
-SELECT o."CustomerID" AS "Key", COALESCE((
-    SELECT count(*)::int + min(o."OrderID")
+SELECT "o"."CustomerID" AS "Key", COALESCE((
+    SELECT CAST(count(*) AS integer) + min("o"."OrderID")
     FROM "Employees" AS e
     WHERE e."City" = 'Seattle'
     GROUP BY e."City"
     ORDER BY (SELECT 1) NULLS FIRST
     LIMIT 1), 0) AS "A"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -3404,13 +3404,13 @@ GROUP BY [o].[CustomerID]
 
         AssertSql(
             """
-SELECT c."CustomerID", 0 AS "Sequence"
-FROM "Customers" AS c
-WHERE c."CustomerID" LIKE 'F%'
+SELECT "c"."CustomerID", 0 AS "Sequence"
+FROM "Customers" "c"
+WHERE "c"."CustomerID" LIKE 'F%'
 UNION
-SELECT o."CustomerID", 1 AS "Sequence"
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT "o"."CustomerID", 1 AS "Sequence"
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
@@ -3422,10 +3422,10 @@ GROUP BY o."CustomerID"
             """
 SELECT s."City", p1."ProductID", p2.c, p2."ProductID"
 FROM (
-    SELECT DISTINCT c."City"
-    FROM "Orders" AS o
-    LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
-    WHERE o."CustomerID" LIKE 'A%'
+    SELECT DISTINCT "c"."City"
+    FROM "Orders" "o"
+    LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
+    WHERE "o"."CustomerID" LIKE 'A%'
 ) AS s
 LEFT JOIN LATERAL (
     SELECT p."ProductID"
@@ -3433,7 +3433,7 @@ LEFT JOIN LATERAL (
     GROUP BY p."ProductID"
 ) AS p1 ON TRUE
 LEFT JOIN LATERAL (
-    SELECT count(*)::int AS c, p0."ProductID"
+    SELECT CAST(count(*) AS integer) AS c, p0."ProductID"
     FROM "Products" AS p0
     GROUP BY p0."ProductID"
 ) AS p2 ON TRUE
@@ -3447,14 +3447,14 @@ ORDER BY s."City" NULLS FIRST, p1."ProductID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c0."CustomerID", o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
+SELECT c0."CustomerID", "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
 FROM (
-    SELECT c."CustomerID"
-    FROM "Customers" AS c
-    GROUP BY c."CustomerID"
-    HAVING c."CustomerID" LIKE 'F%'
+    SELECT "c"."CustomerID"
+    FROM "Customers" "c"
+    GROUP BY "c"."CustomerID"
+    HAVING "c"."CustomerID" LIKE 'F%'
 ) AS c0
-LEFT JOIN "Orders" AS o ON c0."CustomerID" = o."CustomerID"
+LEFT JOIN "Orders" AS o ON c0."CustomerID" = "o"."CustomerID"
 ORDER BY c0."CustomerID" NULLS FIRST
 """);
     }
@@ -3467,10 +3467,10 @@ ORDER BY c0."CustomerID" NULLS FIRST
             """
 SELECT o1."CustomerID", o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate"
 FROM (
-    SELECT o."CustomerID"
-    FROM "Orders" AS o
-    GROUP BY o."CustomerID"
-    HAVING o."CustomerID" LIKE 'F%'
+    SELECT "o"."CustomerID"
+    FROM "Orders" "o"
+    GROUP BY "o"."CustomerID"
+    HAVING "o"."CustomerID" LIKE 'F%'
 ) AS o1
 LEFT JOIN "Orders" AS o0 ON o1."CustomerID" = o0."CustomerID"
 ORDER BY o1."CustomerID" NULLS FIRST
@@ -3489,16 +3489,16 @@ ORDER BY o1."CustomerID" NULLS FIRST
             """
 SELECT s.c, s."ProductID", c1."CustomerID", c1."City"
 FROM (
-    SELECT COALESCE(sum(o."ProductID" + o."OrderID" * 1000), 0)::int AS c, o."ProductID", min(o."OrderID" / 100) AS c0
+    SELECT COALESCE(sum("o"."ProductID" + "o"."OrderID" * 1000), 0)::int AS c, "o"."ProductID", min("o"."OrderID" / 100) AS c0
     FROM "Order Details" AS o
-    INNER JOIN "Orders" AS o0 ON o."OrderID" = o0."OrderID"
-    LEFT JOIN "Customers" AS c ON o0."CustomerID" = c."CustomerID"
-    WHERE c."CustomerID" = 'ALFKI'
-    GROUP BY o."ProductID"
+    INNER JOIN "Orders" AS o0 ON "o"."OrderID" = o0."OrderID"
+    LEFT JOIN "Customers" AS c ON o0."CustomerID" = "c"."CustomerID"
+    WHERE "c"."CustomerID" = 'ALFKI'
+    GROUP BY "o"."ProductID"
 ) AS s
 LEFT JOIN LATERAL (
     SELECT c0."CustomerID", c0."City"
-    FROM "Customers" AS c0
+    FROM "Customers" "c0"
     WHERE length(c0."CustomerID")::int < s.c0
 ) AS c1 ON TRUE
 ORDER BY s."ProductID" NULLS FIRST, c1."CustomerID" NULLS FIRST
@@ -3511,28 +3511,28 @@ ORDER BY s."ProductID" NULLS FIRST, c1."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."CustomerID", s1."Sum", s1."Count", s1."Key"
-FROM "Customers" AS c
+SELECT "c"."CustomerID", s1."Sum", s1."Count", s1."Key"
+FROM "Customers" "c"
 LEFT JOIN LATERAL (
     SELECT COALESCE(sum(s."OrderID"), 0)::int AS "Sum", (
-        SELECT count(*)::int
+        SELECT CAST(count(*) AS integer)
         FROM (
             SELECT o0."CustomerID", COALESCE(c1."City", '') || COALESCE(o0."CustomerID", '') AS "Key"
-            FROM "Orders" AS o0
+            FROM "Orders" "o0"
             LEFT JOIN "Customers" AS c1 ON o0."CustomerID" = c1."CustomerID"
-            WHERE c."CustomerID" = o0."CustomerID"
+            WHERE "c"."CustomerID" = o0."CustomerID"
         ) AS s0
         LEFT JOIN "Customers" AS c2 ON s0."CustomerID" = c2."CustomerID"
         WHERE (s."Key" = s0."Key" OR (s."Key" IS NULL AND s0."Key" IS NULL)) AND COALESCE(c2."City", '') || COALESCE(s0."CustomerID", '') LIKE 'Lon%') AS "Count", s."Key"
     FROM (
-        SELECT o."OrderID", COALESCE(c0."City", '') || COALESCE(o."CustomerID", '') AS "Key"
-        FROM "Orders" AS o
-        LEFT JOIN "Customers" AS c0 ON o."CustomerID" = c0."CustomerID"
-        WHERE c."CustomerID" = o."CustomerID"
+        SELECT "o"."OrderID", COALESCE(c0."City", '') || COALESCE("o"."CustomerID", '') AS "Key"
+        FROM "Orders" "o"
+        LEFT JOIN "Customers" AS c0 ON "o"."CustomerID" = c0."CustomerID"
+        WHERE "c"."CustomerID" = "o"."CustomerID"
     ) AS s
     GROUP BY s."Key"
 ) AS s1 ON TRUE
-ORDER BY c."CustomerID" NULLS FIRST
+ORDER BY "c"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -3549,9 +3549,9 @@ ORDER BY c."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."City", c."CustomerID", c."Address", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-ORDER BY c."City" NULLS FIRST
+SELECT "c"."City", "c"."CustomerID", "c"."Address", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+ORDER BY "c"."City" NULLS FIRST
 """);
     }
 
@@ -3561,11 +3561,11 @@ ORDER BY c."City" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-FROM "Orders" AS o
-LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
-WHERE o."OrderID" < 10500
-ORDER BY c."CustomerID" NULLS FIRST, c."Address" NULLS FIRST, c."City" NULLS FIRST, c."CompanyName" NULLS FIRST, c."ContactName" NULLS FIRST, c."ContactTitle" NULLS FIRST, c."Country" NULLS FIRST, c."Fax" NULLS FIRST, c."Phone" NULLS FIRST, c."PostalCode" NULLS FIRST, c."Region" NULLS FIRST
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+FROM "Orders" "o"
+LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
+WHERE "o"."OrderID" < 10500
+ORDER BY "c"."CustomerID" NULLS FIRST, "c"."Address" NULLS FIRST, "c"."City" NULLS FIRST, "c"."CompanyName" NULLS FIRST, "c"."ContactName" NULLS FIRST, "c"."ContactTitle" NULLS FIRST, "c"."Country" NULLS FIRST, "c"."Fax" NULLS FIRST, "c"."Phone" NULLS FIRST, "c"."PostalCode" NULLS FIRST, "c"."Region" NULLS FIRST
 """);
     }
 
@@ -3575,10 +3575,10 @@ ORDER BY c."CustomerID" NULLS FIRST, c."Address" NULLS FIRST, c."City" NULLS FIR
 
         AssertSql(
             """
-SELECT o."OrderID", o."ProductID", o."Discount", o."Quantity", o."UnitPrice"
+SELECT "o"."OrderID", "o"."ProductID", "o"."Discount", "o"."Quantity", "o"."UnitPrice"
 FROM "Order Details" AS o
-WHERE o."OrderID" < 10500
-ORDER BY o."OrderID" NULLS FIRST
+WHERE "o"."OrderID" < 10500
+ORDER BY "o"."OrderID" NULLS FIRST
 """);
     }
 
@@ -3588,9 +3588,9 @@ ORDER BY o."OrderID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."City", c."ContactName", c."ContactTitle"
-FROM "Customers" AS c
-ORDER BY c."City" NULLS FIRST
+SELECT "c"."City", "c"."ContactName", "c"."ContactTitle"
+FROM "Customers" "c"
+ORDER BY "c"."City" NULLS FIRST
 """);
     }
 
@@ -3600,9 +3600,9 @@ ORDER BY c."City" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."City", c."Region", c."CustomerID", c."Address", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode"
-FROM "Customers" AS c
-ORDER BY c."City" NULLS FIRST, c."Region" NULLS FIRST
+SELECT "c"."City", "c"."Region", "c"."CustomerID", "c"."Address", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode"
+FROM "Customers" "c"
+ORDER BY "c"."City" NULLS FIRST, "c"."Region" NULLS FIRST
 """);
     }
 
@@ -3614,8 +3614,8 @@ ORDER BY c."City" NULLS FIRST, c."Region" NULLS FIRST
             """
 SELECT c0."City", c0."Region", c0."Constant", c0."CustomerID", c0."Address", c0."CompanyName", c0."ContactName", c0."ContactTitle", c0."Country", c0."Fax", c0."Phone", c0."PostalCode"
 FROM (
-    SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", 1 AS "Constant"
-    FROM "Customers" AS c
+    SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", 1 AS "Constant"
+    FROM "Customers" "c"
 ) AS c0
 ORDER BY c0."City" NULLS FIRST, c0."Region" NULLS FIRST, c0."Constant" NULLS FIRST
 """);
@@ -3629,8 +3629,8 @@ ORDER BY c0."City" NULLS FIRST, c0."Region" NULLS FIRST, c0."Constant" NULLS FIR
             """
 SELECT c0."City", c0."Constant", c0."CustomerID", c0."Address", c0."CompanyName", c0."ContactName", c0."ContactTitle", c0."Country", c0."Fax", c0."Phone", c0."PostalCode", c0."Region"
 FROM (
-    SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", 1 AS "Constant"
-    FROM "Customers" AS c
+    SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", 1 AS "Constant"
+    FROM "Customers" "c"
 ) AS c0
 ORDER BY c0."City" NULLS FIRST, c0."Constant" NULLS FIRST
 """);
@@ -3642,9 +3642,9 @@ ORDER BY c0."City" NULLS FIRST, c0."Constant" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."City", c."ContactName", c."ContactTitle"
-FROM "Customers" AS c
-ORDER BY c."City" NULLS FIRST
+SELECT "c"."City", "c"."ContactName", "c"."ContactTitle"
+FROM "Customers" "c"
+ORDER BY "c"."City" NULLS FIRST
 """);
     }
 
@@ -3654,11 +3654,11 @@ ORDER BY c."City" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."City", c."CustomerID", c."Address", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region", o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-FROM "Customers" AS c
-LEFT JOIN "Orders" AS o ON c."CustomerID" = o."CustomerID"
-WHERE c."Country" = 'USA'
-ORDER BY c."City" NULLS FIRST, c."CustomerID" NULLS FIRST
+SELECT "c"."City", "c"."CustomerID", "c"."Address", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region", "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+FROM "Customers" "c"
+LEFT JOIN "Orders" AS o ON "c"."CustomerID" = "o"."CustomerID"
+WHERE "c"."Country" = 'USA'
+ORDER BY "c"."City" NULLS FIRST, "c"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -3668,11 +3668,11 @@ ORDER BY c."City" NULLS FIRST, c."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."City", c."CustomerID", o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-FROM "Customers" AS c
-LEFT JOIN "Orders" AS o ON c."CustomerID" = o."CustomerID"
-WHERE c."Country" = 'USA'
-ORDER BY c."City" NULLS FIRST, c."CustomerID" NULLS FIRST
+SELECT "c"."City", "c"."CustomerID", "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+FROM "Customers" "c"
+LEFT JOIN "Orders" AS o ON "c"."CustomerID" = "o"."CustomerID"
+WHERE "c"."Country" = 'USA'
+ORDER BY "c"."City" NULLS FIRST, "c"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -3682,15 +3682,15 @@ ORDER BY c."City" NULLS FIRST, c."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."City", c."CustomerID", o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate"
-FROM "Customers" AS c
+SELECT "c"."City", "c"."CustomerID", o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate"
+FROM "Customers" "c"
 LEFT JOIN (
-    SELECT o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-    FROM "Orders" AS o
-    WHERE o."OrderID" < 11000
-) AS o0 ON c."CustomerID" = o0."CustomerID"
-WHERE c."Country" = 'USA'
-ORDER BY c."City" NULLS FIRST, c."CustomerID" NULLS FIRST
+    SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+    FROM "Orders" "o"
+    WHERE "o"."OrderID" < 11000
+) AS o0 ON "c"."CustomerID" = o0."CustomerID"
+WHERE "c"."Country" = 'USA'
+ORDER BY "c"."City" NULLS FIRST, "c"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -3700,23 +3700,23 @@ ORDER BY c."City" NULLS FIRST, c."CustomerID" NULLS FIRST
 
         AssertSql(
             """
-SELECT c."City", c."CustomerID", o1."OrderID", o1."CustomerID", o1."EmployeeID", o1."OrderDate", o3."OrderID", o3."CustomerID", o3."EmployeeID", o3."OrderDate"
-FROM "Customers" AS c
+SELECT "c"."City", "c"."CustomerID", o1."OrderID", o1."CustomerID", o1."EmployeeID", o1."OrderDate", o3."OrderID", o3."CustomerID", o3."EmployeeID", o3."OrderDate"
+FROM "Customers" "c"
 LEFT JOIN (
-    SELECT o."OrderID", o."CustomerID", o."EmployeeID", o."OrderDate"
-    FROM "Orders" AS o
-    WHERE o."OrderID" < 11000
-) AS o1 ON c."CustomerID" = o1."CustomerID"
+    SELECT "o"."OrderID", "o"."CustomerID", "o"."EmployeeID", "o"."OrderDate"
+    FROM "Orders" "o"
+    WHERE "o"."OrderID" < 11000
+) AS o1 ON "c"."CustomerID" = o1."CustomerID"
 LEFT JOIN (
     SELECT o2."OrderID", o2."CustomerID", o2."EmployeeID", o2."OrderDate"
     FROM (
         SELECT o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate", ROW_NUMBER() OVER(PARTITION BY o0."CustomerID" ORDER BY o0."OrderDate" DESC NULLS LAST) AS row
-        FROM "Orders" AS o0
+        FROM "Orders" "o0"
     ) AS o2
     WHERE o2.row <= 1
-) AS o3 ON c."CustomerID" = o3."CustomerID"
-WHERE c."Country" = 'USA'
-ORDER BY c."City" NULLS FIRST, c."CustomerID" NULLS FIRST
+) AS o3 ON "c"."CustomerID" = o3."CustomerID"
+WHERE "c"."Country" = 'USA'
+ORDER BY "c"."City" NULLS FIRST, "c"."CustomerID" NULLS FIRST
 """);
     }
 
@@ -3779,9 +3779,9 @@ SELECT s1."Key", s3."OrderID", s3."CustomerID", s3."EmployeeID", s3."OrderDate",
 FROM (
     SELECT s."Key"
     FROM (
-        SELECT substring(c."CustomerID", 1, 1) AS "Key"
-        FROM "Orders" AS o
-        LEFT JOIN "Customers" AS c ON o."CustomerID" = c."CustomerID"
+        SELECT substring("c"."CustomerID", 1, 1) AS "Key"
+        FROM "Orders" "o"
+        LEFT JOIN "Customers" AS c ON "o"."CustomerID" = "c"."CustomerID"
     ) AS s
     GROUP BY s."Key"
 ) AS s1
@@ -3791,7 +3791,7 @@ LEFT JOIN (
         SELECT s0."OrderID", s0."CustomerID", s0."EmployeeID", s0."OrderDate", s0."CustomerID0", s0."Key", ROW_NUMBER() OVER(PARTITION BY s0."Key" ORDER BY s0."OrderID" NULLS FIRST, s0."CustomerID0" NULLS FIRST) AS row
         FROM (
             SELECT o0."OrderID", o0."CustomerID", o0."EmployeeID", o0."OrderDate", c0."CustomerID" AS "CustomerID0", substring(c0."CustomerID", 1, 1) AS "Key"
-            FROM "Orders" AS o0
+            FROM "Orders" "o0"
             LEFT JOIN "Customers" AS c0 ON o0."CustomerID" = c0."CustomerID"
         ) AS s0
     ) AS s2
@@ -3814,9 +3814,9 @@ ORDER BY s1."Key" NULLS FIRST, s3."OrderID" NULLS FIRST
 
         AssertSql(
             """
-SELECT avg(o."OrderID"::double precision ORDER BY o."OrderID" NULLS FIRST)
-FROM "Orders" AS o
-GROUP BY o."CustomerID"
+SELECT avg(CAST("o"."OrderID" AS double precision) ORDER BY "o"."OrderID" NULLS FIRST)
+FROM "Orders" "o"
+GROUP BY "o"."CustomerID"
 """);
     }
 
