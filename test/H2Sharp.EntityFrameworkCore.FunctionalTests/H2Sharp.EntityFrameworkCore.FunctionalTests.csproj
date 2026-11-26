@@ -38,6 +38,7 @@
     <Compile Remove="BuiltInDataTypesH2Test.cs" />
     <Compile Remove="Query\NorthwindDbFunctionsQueryH2Test.cs" />
     <Compile Remove="Query\NorthwindFunctionsQueryH2Test.cs" />
+    <Compile Remove="JsonTypesH2Test.cs" />
     <Compile Remove="Query\JsonDomQueryTest.cs" />
     <Compile Remove="Query\JsonStringQueryTest.cs" />
     <Compile Remove="Query\SpatialQueryH2Fixture.cs" />

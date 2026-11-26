@@ -87,7 +87,7 @@ EF их не отдаёт генератору, как в апстриме).
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
    | `Category!=BlockedByPort` | 10968 | 0 | 11053 (85 пропущено) |
-   | `Category=BlockedByPort` | 7471/7263 | 3560/3768 | 11147 (116 пропущено) |
+   | `Category=BlockedByPort` | 6889/6681 | 3542/3750 | 10547 (116 пропущено) |
 
    Документированный `-p:H2SharpProject=...` теперь реализован в
    `src/H2Sharp.EntityFrameworkCore/H2Sharp.EntityFrameworkCore.csproj`: без свойства
@@ -124,6 +124,8 @@ EF их не отдаёт генератору, как в апстриме).
    (`FINAL TABLE`/`OLD TABLE`) и снят с `BlockedByPort`: 38/38 зелёных на net9 и net10.
    `MONEY` из PG-моделей отображается в `numeric(19,4)`, а предупреждение TPC identity
    подавлено как применимое к H2; отказы BulkUpdates упали с 357/356 до 330/341.
+   `JsonTypesH2Test` выведен из компиляции и его bases добавлены в `IgnoredTestBases`:
+   18 отказов на PG-специфичные jsonb-значения (`BitArray`, `inet`, GeoJson, infinity).
    Миграции, scaffolding, массивы, конвертеры и row value входят в зелёный гейт.
 
    Закрыто в этом прогоне:

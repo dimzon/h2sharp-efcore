@@ -16,8 +16,8 @@ public class H2ComplianceTest : RelationalComplianceTestBase
         typeof(UdfDbFunctionTestBase<>),
         typeof(UpdateSqlGeneratorTestBase),
 
-        // Postgres-only: these bases rely on Npgsql DbFunctions, GlobalTypeMapper and
-        // PostGIS types that H2 2.5 does not expose. Their H2 forks stay out of compilation.
+        // Postgres-only: these bases rely on Npgsql DbFunctions, GlobalTypeMapper, PostGIS
+        // types and jsonb-specific values (BitArray, inet, GeoJson) that H2 2.5 does not expose.
         typeof(Microsoft.EntityFrameworkCore.Query.GearsOfWarQueryTestBase<>),
         typeof(Microsoft.EntityFrameworkCore.Query.GearsOfWarFromSqlQueryTestBase<>),
         typeof(Microsoft.EntityFrameworkCore.Query.GearsOfWarQueryRelationalTestBase<>),
@@ -29,6 +29,8 @@ public class H2ComplianceTest : RelationalComplianceTestBase
         typeof(Microsoft.EntityFrameworkCore.Query.NorthwindFunctionsQueryRelationalTestBase<>),
         typeof(Microsoft.EntityFrameworkCore.Query.SpatialQueryTestBase<>),
         typeof(Microsoft.EntityFrameworkCore.Query.SpatialQueryRelationalTestBase<>),
+        typeof(Microsoft.EntityFrameworkCore.JsonTypesTestBase),
+        typeof(Microsoft.EntityFrameworkCore.JsonTypesRelationalTestBase),
 
         // Disabled
         typeof(GraphUpdatesTestBase<>),
