@@ -59,12 +59,12 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Набор | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 10930 | 0 | 11015 (85 пропущено) |
+   | `H2Sharp.EntityFrameworkCore.FunctionalTests` | 10968 | 0 | 11053 (85 пропущено) |
    | `H2Sharp.EntityFrameworkCore.Tests` | 151 | 0 | 151 |
    | `H2Sharp.EntityFrameworkCore.ModelTests` | 325 | 0 | 325 |
-   | **Итого** | **11406** | **0** | **11491** |
+   | **Итого** | **11444** | **0** | **11529** |
 
-   Зелёный гейт: 11406 тестов на `net9.0` и `net10.0` против локально собранного
+   Зелёный гейт: 11444 теста на `net9.0` и `net10.0` против локально собранного
    `H2Sharp 0.1.44-alpha.2` (24 ноября 2026); пакет движка будет опубликован перед
    публикацией провайдера. Провайдер не зависит от соседнего чек-аута движка: он берёт пакет
    с nuget.org. С прошлого замера в гейт вернулись 239 тестов из закрытых кластеров и
@@ -86,8 +86,8 @@ EF их не отдаёт генератору, как в апстриме).
 
    | Прогон | Прошло | Упало | Всего |
    |---|---:|---:|---:|
-   | `Category!=BlockedByPort` | 10930 | 0 | 11015 (85 пропущено) |
-   | `Category=BlockedByPort` | 7452/7256 | 3617/3813 | 11185 (116 пропущено) |
+   | `Category!=BlockedByPort` | 10968 | 0 | 11053 (85 пропущено) |
+   | `Category=BlockedByPort` | 7444/7248 | 3587/3783 | 11147 (116 пропущено) |
 
    Документированный `-p:H2SharpProject=...` теперь реализован в
    `src/H2Sharp.EntityFrameworkCore/H2Sharp.EntityFrameworkCore.csproj`: без свойства
@@ -120,8 +120,9 @@ EF их не отдаёт генератору, как в апстриме).
    H2 их не читает, транзакцию держит соединение. Отказы
    `MigrationsInfrastructureH2Test` упали с 8 до 2: `H2Migrator` держит process-wide
    gate вокруг `Migrate`. Осталось `Can_apply_second_migration_in_parallel`
-   (sync/async). Миграции, scaffolding, массивы, конвертеры и row value входят
-   в зелёный гейт.
+   (sync/async). `StoreValueGenerationH2Test` переведён на H2-базлайны
+   (`FINAL TABLE`/`OLD TABLE`) и снят с `BlockedByPort`: 38/38 зелёных на net9 и net10.
+   Миграции, scaffolding, массивы, конвертеры и row value входят в зелёный гейт.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:

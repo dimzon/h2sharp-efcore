@@ -7,7 +7,6 @@ namespace H2Sharp.EntityFrameworkCore.Update;
 
 #nullable enable
 
-[Trait("Category", "BlockedByPort")]
 public class StoreValueGenerationH2Test : StoreValueGenerationTestBase<
     StoreValueGenerationH2Test.StoreValueGenerationH2Fixture>
 {
@@ -42,9 +41,8 @@ public class StoreValueGenerationH2Test : StoreValueGenerationTestBase<
             """
 $p0='1000'
 
-INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
-VALUES ($p0)
-RETURNING "Id", "Data1";
+SELECT "Id", "Data1" FROM FINAL TABLE (INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
+VALUES ($p0));
 """);
     }
 
@@ -69,9 +67,8 @@ VALUES ($p0, $p1, $p2);
 
         AssertSql(
             """
-INSERT INTO "WithAllDatabaseGenerated"
-DEFAULT VALUES
-RETURNING "Id", "Data1", "Data2";
+SELECT "Id", "Data1", "Data2" FROM FINAL TABLE (INSERT INTO "WithAllDatabaseGenerated"
+DEFAULT VALUES);
 """);
     }
 
@@ -84,9 +81,8 @@ RETURNING "Id", "Data1", "Data2";
 $p1='1'
 $p0='1000'
 
-UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p0
-WHERE "Id" = $p1
-RETURNING "Data1";
+SELECT "Data1" FROM FINAL TABLE (UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p0
+WHERE "Id" = $p1);
 """);
     }
 
@@ -100,8 +96,8 @@ $p2='1'
 $p0='1000'
 $p1='1000'
 
-UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p0, "Data2" = $p1
-WHERE "Id" = $p2;
+SELECT COUNT(*) FROM FINAL TABLE (UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p0, "Data2" = $p1
+WHERE "Id" = $p2);
 """);
     }
 
@@ -113,8 +109,8 @@ WHERE "Id" = $p2;
             """
 $p0='1'
 
-DELETE FROM "WithSomeDatabaseGenerated"
-WHERE "Id" = $p0;
+SELECT COUNT(*) FROM OLD TABLE (DELETE FROM "WithSomeDatabaseGenerated"
+WHERE "Id" = $p0);
 """);
     }
 
@@ -131,12 +127,10 @@ WHERE "Id" = $p0;
 $p0='1000'
 $p1='1001'
 
-INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
-VALUES ($p0)
-RETURNING "Id", "Data1";
-INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
-VALUES ($p1)
-RETURNING "Id", "Data1";
+SELECT "Id", "Data1" FROM FINAL TABLE (INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
+VALUES ($p0));
+SELECT "Id", "Data1" FROM FINAL TABLE (INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
+VALUES ($p1));
 """);
     }
 
@@ -166,12 +160,10 @@ VALUES ($p3, $p4, $p5);
 
         AssertSql(
             """
-INSERT INTO "WithAllDatabaseGenerated"
-DEFAULT VALUES
-RETURNING "Id", "Data1", "Data2";
-INSERT INTO "WithAllDatabaseGenerated"
-DEFAULT VALUES
-RETURNING "Id", "Data1", "Data2";
+SELECT "Id", "Data1", "Data2" FROM FINAL TABLE (INSERT INTO "WithAllDatabaseGenerated"
+DEFAULT VALUES);
+SELECT "Id", "Data1", "Data2" FROM FINAL TABLE (INSERT INTO "WithAllDatabaseGenerated"
+DEFAULT VALUES);
 """);
     }
 
@@ -186,12 +178,10 @@ $p0='1000'
 $p3='2'
 $p2='1001'
 
-UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p0
-WHERE "Id" = $p1
-RETURNING "Data1";
-UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p2
-WHERE "Id" = $p3
-RETURNING "Data1";
+SELECT "Data1" FROM FINAL TABLE (UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p0
+WHERE "Id" = $p1);
+SELECT "Data1" FROM FINAL TABLE (UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p2
+WHERE "Id" = $p3);
 """);
     }
 
@@ -208,10 +198,10 @@ $p5='2'
 $p3='1001'
 $p4='1001'
 
-UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p0, "Data2" = $p1
-WHERE "Id" = $p2;
-UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p3, "Data2" = $p4
-WHERE "Id" = $p5;
+SELECT COUNT(*) FROM FINAL TABLE (UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p0, "Data2" = $p1
+WHERE "Id" = $p2);
+SELECT COUNT(*) FROM FINAL TABLE (UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p3, "Data2" = $p4
+WHERE "Id" = $p5);
 """);
     }
 
@@ -224,10 +214,10 @@ WHERE "Id" = $p5;
 $p0='1'
 $p1='2'
 
-DELETE FROM "WithSomeDatabaseGenerated"
-WHERE "Id" = $p0;
-DELETE FROM "WithSomeDatabaseGenerated"
-WHERE "Id" = $p1;
+SELECT COUNT(*) FROM OLD TABLE (DELETE FROM "WithSomeDatabaseGenerated"
+WHERE "Id" = $p0);
+SELECT COUNT(*) FROM OLD TABLE (DELETE FROM "WithSomeDatabaseGenerated"
+WHERE "Id" = $p1);
 """);
     }
 
@@ -244,12 +234,10 @@ WHERE "Id" = $p1;
 $p0='1000'
 $p1='1001'
 
-INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
-VALUES ($p0)
-RETURNING "Id", "Data1";
-INSERT INTO "WithSomeDatabaseGenerated2" ("Data2")
-VALUES ($p1)
-RETURNING "Id", "Data1";
+SELECT "Id", "Data1" FROM FINAL TABLE (INSERT INTO "WithSomeDatabaseGenerated" ("Data2")
+VALUES ($p0));
+SELECT "Id", "Data1" FROM FINAL TABLE (INSERT INTO "WithSomeDatabaseGenerated2" ("Data2")
+VALUES ($p1));
 """);
     }
 
@@ -279,12 +267,10 @@ VALUES ($p3, $p4, $p5);
 
         AssertSql(
             """
-INSERT INTO "WithAllDatabaseGenerated"
-DEFAULT VALUES
-RETURNING "Id", "Data1", "Data2";
-INSERT INTO "WithAllDatabaseGenerated2"
-DEFAULT VALUES
-RETURNING "Id", "Data1", "Data2";
+SELECT "Id", "Data1", "Data2" FROM FINAL TABLE (INSERT INTO "WithAllDatabaseGenerated"
+DEFAULT VALUES);
+SELECT "Id", "Data1", "Data2" FROM FINAL TABLE (INSERT INTO "WithAllDatabaseGenerated2"
+DEFAULT VALUES);
 """);
     }
 
@@ -299,12 +285,10 @@ $p0='1000'
 $p3='2'
 $p2='1001'
 
-UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p0
-WHERE "Id" = $p1
-RETURNING "Data1";
-UPDATE "WithSomeDatabaseGenerated2" SET "Data2" = $p2
-WHERE "Id" = $p3
-RETURNING "Data1";
+SELECT "Data1" FROM FINAL TABLE (UPDATE "WithSomeDatabaseGenerated" SET "Data2" = $p0
+WHERE "Id" = $p1);
+SELECT "Data1" FROM FINAL TABLE (UPDATE "WithSomeDatabaseGenerated2" SET "Data2" = $p2
+WHERE "Id" = $p3);
 """);
     }
 
@@ -321,10 +305,10 @@ $p5='2'
 $p3='1001'
 $p4='1001'
 
-UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p0, "Data2" = $p1
-WHERE "Id" = $p2;
-UPDATE "WithNoDatabaseGenerated2" SET "Data1" = $p3, "Data2" = $p4
-WHERE "Id" = $p5;
+SELECT COUNT(*) FROM FINAL TABLE (UPDATE "WithNoDatabaseGenerated" SET "Data1" = $p0, "Data2" = $p1
+WHERE "Id" = $p2);
+SELECT COUNT(*) FROM FINAL TABLE (UPDATE "WithNoDatabaseGenerated2" SET "Data1" = $p3, "Data2" = $p4
+WHERE "Id" = $p5);
 """);
     }
 
@@ -337,10 +321,10 @@ WHERE "Id" = $p5;
 $p0='1'
 $p1='2'
 
-DELETE FROM "WithSomeDatabaseGenerated"
-WHERE "Id" = $p0;
-DELETE FROM "WithSomeDatabaseGenerated2"
-WHERE "Id" = $p1;
+SELECT COUNT(*) FROM OLD TABLE (DELETE FROM "WithSomeDatabaseGenerated"
+WHERE "Id" = $p0);
+SELECT COUNT(*) FROM OLD TABLE (DELETE FROM "WithSomeDatabaseGenerated2"
+WHERE "Id" = $p1);
 """);
     }
 
