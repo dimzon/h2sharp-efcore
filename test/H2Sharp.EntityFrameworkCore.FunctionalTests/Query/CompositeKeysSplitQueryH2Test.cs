@@ -2,7 +2,6 @@ using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-[Trait("Category", "BlockedByPort")]
 public class CompositeKeysSplitQueryH2Test : CompositeKeysSplitQueryRelationalTestBase<CompositeKeysQueryH2Fixture>
 {
     public CompositeKeysSplitQueryH2Test(

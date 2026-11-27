@@ -6,7 +6,6 @@ using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-[Trait("Category", "BlockedByPort")]
 public class AdHocQuerySplittingQueryH2Test : AdHocQuerySplittingQueryTestBase
 {
     protected override DbContextOptionsBuilder SetQuerySplittingBehavior(

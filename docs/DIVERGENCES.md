@@ -156,6 +156,18 @@ EF их не отдаёт генератору, как в апстриме).
    транзакции на store `SerializationH2Test` давали 6 отказов на net9.
    Полный gate: 12497 passed / 0 failed functional, 325 model, 151 unit
    на net9 и net10.
+   Снят `BlockedByPort` с `WarningsH2Test`, `AdHocQuerySplittingQueryH2Test`,
+   `CompositeKeysSplitQueryH2Test` и с 4 тестов `SqlExecutorH2Test`: H2-диалект
+   пишет `$name`, поэтому тестовый `DbParameter` нормализует PG-префикс `@`.
+   Три sproc-теста (6 случаев) остаются в blocked-наборе: у H2 нет хранимых
+   процедур, а имена `CustOrderHist`/`Ten Most Expensive Products` — функции
+   Northwind-фикстуры PG, а не объекты H2.
+   `PrimitiveCollectionsQueryH2Test` частично переведён на H2-базлайны
+   (aliases в кавычках, `FROM "Table" "p"`, алиасы VALUES); класс остаётся
+   blocked: 56 методов упираются в отсутствие LATERAL/correlated UNNEST в
+   эталоне, а 20 методов `Array_of_*` ещё не переопределены в H2-фикстуре.
+   Полный gate: 12557 passed / 0 failed functional, 325 model, 151 unit
+   на net9 и net10.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
