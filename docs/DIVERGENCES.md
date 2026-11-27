@@ -216,6 +216,14 @@ EF их не отдаёт генератору, как в апстриме).
    `NULL::int` → `CAST(NULL AS integer)`.
    Полный gate: 12682 passed / 0 failed functional, 325 model, 152 unit
    на net9 и net10.
+   `NorthwindAggregateOperatorsQueryH2Test` снят с `BlockedByPort`: 410
+   passed. Базлайны параметризованных IN переведены на H2 (`(DbType = Int32)`
+   для uint, `(DbType = String)` для строк, алиасы в кавычках). Двенадцать
+   случаев остались blocked на уровне методов: разница в decimal-среднем,
+   `ARRAY_REMOVE`, отсутствие LATERAL, разница типов исключения и синтаксис
+   identity equality subquery.
+   Полный gate: 13092 passed / 0 failed functional, 325 model, 152 unit
+   на net9 и net10.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:

@@ -4,7 +4,6 @@ using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-[Trait("Category", "BlockedByPort")]
 public class NorthwindAggregateOperatorsQueryH2Test : NorthwindAggregateOperatorsQueryRelationalTestBase<
     NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
@@ -18,7 +17,8 @@ public class NorthwindAggregateOperatorsQueryH2Test : NorthwindAggregateOperator
         Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    // Overriding to add equality tolerance because of floating point precision
+    // H2's decimal averaging differs from the PG result this test asserts.
+    [Trait("Category", "BlockedByPort")]
     public override async Task Average_over_max_subquery(bool async)
     {
         await AssertAverage(
@@ -39,9 +39,9 @@ SELECT avg((
     FROM "Orders" AS o
     WHERE c0."CustomerID" = o."CustomerID")::numeric)
 FROM (
-    SELECT c."CustomerID"
-    FROM "Customers" AS c
-    ORDER BY c."CustomerID" NULLS FIRST
+    SELECT "c"."CustomerID"
+    FROM "Customers" "c"
+    ORDER BY "c"."CustomerID" NULLS FIRST
     LIMIT $__p_0
 ) AS c0
 """);
@@ -54,19 +54,19 @@ FROM (
         // Note: PostgreSQL doesn't support uint, but value converters make this into bigint
         AssertSql(
             """
-$__ids_0={ '0', '1' } (DbType = Object)
+$__ids_0={ '0', '1' } (DbType = Int32)
 
-SELECT e."EmployeeID", e."City", e."Country", e."FirstName", e."ReportsTo", e."Title"
-FROM "Employees" AS e
-WHERE e."EmployeeID" = ANY ($__ids_0)
+SELECT "e"."EmployeeID", "e"."City", "e"."Country", "e"."FirstName", "e"."ReportsTo", "e"."Title"
+FROM "Employees" "e"
+WHERE "e"."EmployeeID" = ANY ($__ids_0)
 """,
             //
             """
-$__ids_0={ '0' } (DbType = Object)
+$__ids_0={ '0' } (DbType = Int32)
 
-SELECT e."EmployeeID", e."City", e."Country", e."FirstName", e."ReportsTo", e."Title"
-FROM "Employees" AS e
-WHERE e."EmployeeID" = ANY ($__ids_0)
+SELECT "e"."EmployeeID", "e"."City", "e"."Country", "e"."FirstName", "e"."ReportsTo", "e"."Title"
+FROM "Employees" "e"
+WHERE "e"."EmployeeID" = ANY ($__ids_0)
 """);
     }
 
@@ -78,19 +78,19 @@ WHERE e."EmployeeID" = ANY ($__ids_0)
 
         AssertSql(
             """
-$__ids_0={ '0', '1' } (DbType = Object)
+$__ids_0={ '0', '1' } (DbType = Int32)
 
-SELECT e."EmployeeID", e."City", e."Country", e."FirstName", e."ReportsTo", e."Title"
-FROM "Employees" AS e
-WHERE e."EmployeeID" = ANY ($__ids_0)
+SELECT "e"."EmployeeID", "e"."City", "e"."Country", "e"."FirstName", "e"."ReportsTo", "e"."Title"
+FROM "Employees" "e"
+WHERE "e"."EmployeeID" = ANY ($__ids_0)
 """,
             //
             """
-$__ids_0={ '0' } (DbType = Object)
+$__ids_0={ '0' } (DbType = Int32)
 
-SELECT e."EmployeeID", e."City", e."Country", e."FirstName", e."ReportsTo", e."Title"
-FROM "Employees" AS e
-WHERE e."EmployeeID" = ANY ($__ids_0)
+SELECT "e"."EmployeeID", "e"."City", "e"."Country", "e"."FirstName", "e"."ReportsTo", "e"."Title"
+FROM "Employees" "e"
+WHERE "e"."EmployeeID" = ANY ($__ids_0)
 """);
     }
 
@@ -98,6 +98,7 @@ WHERE e."EmployeeID" = ANY ($__ids_0)
         // Aggregates. Issue #15937.
         => AssertTranslationFailed(() => base.Contains_with_local_anonymous_type_array_closure(async));
 
+    [Trait("Category", "BlockedByPort")]
     public override Task Contains_with_local_tuple_array_closure(bool async)
         => Assert.ThrowsAsync<InvalidCastException>(() => base.Contains_with_local_tuple_array_closure(async: true));
 
@@ -111,25 +112,27 @@ WHERE e."EmployeeID" = ANY ($__ids_0)
         AssertSql();
     }
 
+    // H2 2.5 has no ARRAY_REMOVE function.
+    [Trait("Category", "BlockedByPort")]
     public override async Task Contains_with_local_enumerable_inline_closure_mix(bool async)
     {
         await base.Contains_with_local_enumerable_inline_closure_mix(async);
 
         AssertSql(
             """
-$__p_0={ 'ABCDE', 'ALFKI' } (DbType = Object)
+$__p_0={ 'ABCDE', 'ALFKI' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."CustomerID" = ANY (array_remove($__p_0, NULL))
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE "c"."CustomerID" = ANY (array_remove($__p_0, NULL))
 """,
             //
             """
-$__p_0={ 'ABCDE', 'ANATR' } (DbType = Object)
+$__p_0={ 'ABCDE', 'ANATR' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."CustomerID" = ANY (array_remove($__p_0, NULL))
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE "c"."CustomerID" = ANY (array_remove($__p_0, NULL))
 """);
     }
 
@@ -139,11 +142,11 @@ WHERE c."CustomerID" = ANY (array_remove($__p_0, NULL))
 
         AssertSql(
             """
-$__Select_0={ 'ABCDE', 'ALFKI' } (DbType = Object)
+$__Select_0={ 'ABCDE', 'ALFKI' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."CustomerID" = ANY ($__Select_0)
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE "c"."CustomerID" = ANY ($__Select_0)
 """);
     }
 
@@ -153,21 +156,34 @@ WHERE c."CustomerID" = ANY ($__Select_0)
 
         AssertSql(
             """
-$__Select_0={ 'ABCDE', 'ALFKI' } (DbType = Object)
+$__Select_0={ 'ABCDE', 'ALFKI' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."CustomerID" = ANY ($__Select_0)
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE "c"."CustomerID" = ANY ($__Select_0)
 """,
             //
             """
-$__Select_0={ 'ABCDE', 'ANATR' } (DbType = Object)
+$__Select_0={ 'ABCDE', 'ANATR' } (DbType = String)
 
-SELECT c."CustomerID", c."Address", c."City", c."CompanyName", c."ContactName", c."ContactTitle", c."Country", c."Fax", c."Phone", c."PostalCode", c."Region"
-FROM "Customers" AS c
-WHERE c."CustomerID" = ANY ($__Select_0)
+SELECT "c"."CustomerID", "c"."Address", "c"."City", "c"."CompanyName", "c"."ContactName", "c"."ContactTitle", "c"."Country", "c"."Fax", "c"."Phone", "c"."PostalCode", "c"."Region"
+FROM "Customers" "c"
+WHERE "c"."CustomerID" = ANY ($__Select_0)
 """);
     }
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Average_over_nested_subquery(bool async)
+        => base.Average_over_nested_subquery(async);
+
+    [Trait("Category", "BlockedByPort")]
+    public override Task Contains_over_entityType_with_null_should_rewrite_to_identity_equality_subquery_complex(bool async)
+        => base.Contains_over_entityType_with_null_should_rewrite_to_identity_equality_subquery_complex(async);
+
+    // H2 2.5 has no LATERAL for this outer-apply shape.
+    [Trait("Category", "BlockedByPort")]
+    public override Task Multiple_collection_navigation_with_FirstOrDefault_chained(bool async)
+        => base.Multiple_collection_navigation_with_FirstOrDefault_chained(async);
 
     private void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
