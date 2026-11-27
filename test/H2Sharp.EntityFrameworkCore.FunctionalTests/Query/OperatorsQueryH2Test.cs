@@ -5,7 +5,6 @@ using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-[Trait("Category", "BlockedByPort")]
 public class OperatorsQueryH2Test : OperatorsQueryTestBase
 {
     protected override ITestStoreFactory TestStoreFactory
@@ -20,43 +19,46 @@ public class OperatorsQueryH2Test : OperatorsQueryTestBase
 
         AssertSql(
             """
-SELECT o."Value" AS "Value1", o0."Value" AS "Value2", o1."Value" AS "Value3"
-FROM "OperatorEntityString" AS o
-CROSS JOIN "OperatorEntityString" AS o0
-CROSS JOIN "OperatorEntityBool" AS o1
-WHERE ((o0."Value" LIKE 'B' AND o0."Value" IS NOT NULL) OR o1."Value") AND o."Value" IS NOT NULL
-ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST
+SELECT "o"."Value" AS "Value1", "o0"."Value" AS "Value2", "o1"."Value" AS "Value3"
+FROM "OperatorEntityString" "o"
+CROSS JOIN "OperatorEntityString" "o0"
+CROSS JOIN "OperatorEntityBool" "o1"
+WHERE (("o0"."Value" LIKE 'B' AND "o0"."Value" IS NOT NULL) OR "o1"."Value") AND "o"."Value" IS NOT NULL
+ORDER BY "o"."Id" NULLS FIRST, "o0"."Id" NULLS FIRST, "o1"."Id" NULLS FIRST
 """);
     }
 
+    // H2 writes bitwise operators as BITAND/BITNOT functions, not PG's infix syntax.
+    [Trait("Category", "BlockedByPort")]
     public override async Task Complex_predicate_with_bitwise_and_modulo_and_negation()
     {
         await base.Complex_predicate_with_bitwise_and_modulo_and_negation();
 
         AssertSql(
             """
-SELECT o."Value" AS "Value0", o0."Value" AS "Value1", o1."Value" AS "Value2", o2."Value" AS "Value3"
-FROM "OperatorEntityLong" AS o
-CROSS JOIN "OperatorEntityLong" AS o0
-CROSS JOIN "OperatorEntityLong" AS o1
-CROSS JOIN "OperatorEntityLong" AS o2
-WHERE (o0."Value" % 2) / o."Value" & ((o2."Value" | o1."Value") - o."Value") - o1."Value" * o1."Value" >= ((o0."Value" / (~o2."Value")) % 2) % ((~o."Value") + 1)
-ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST, o2."Id" NULLS FIRST
+SELECT "o"."Value" AS "Value0", "o0"."Value" AS "Value1", "o1"."Value" AS "Value2", "o2"."Value" AS "Value3"
+FROM "OperatorEntityLong" "o"
+CROSS JOIN "OperatorEntityLong" "o0"
+CROSS JOIN "OperatorEntityLong" "o1"
+CROSS JOIN "OperatorEntityLong" "o2"
+WHERE ("o0"."Value" % 2) / "o"."Value" & (("o2"."Value" | "o1"."Value") - "o"."Value") - "o1"."Value" * "o1"."Value" >= (("o0"."Value" / (~"o2"."Value")) % 2) % ((~"o"."Value") + 1)
+ORDER BY "o"."Id" NULLS FIRST, "o0"."Id" NULLS FIRST, "o1"."Id" NULLS FIRST, "o2"."Id" NULLS FIRST
 """);
     }
 
+    [Trait("Category", "BlockedByPort")]
     public override async Task Complex_predicate_with_bitwise_and_arithmetic_operations()
     {
         await base.Complex_predicate_with_bitwise_and_arithmetic_operations();
 
         AssertSql(
             """
-SELECT o."Value" AS "Value0", o0."Value" AS "Value1", o1."Value" AS "Value2"
-FROM "OperatorEntityInt" AS o
-CROSS JOIN "OperatorEntityInt" AS o0
-CROSS JOIN "OperatorEntityBool" AS o1
-WHERE (o0."Value" & o."Value" + o."Value" & o."Value") / 1 > o0."Value" & 10 AND o1."Value"
-ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST
+SELECT "o"."Value" AS "Value0", "o0"."Value" AS "Value1", "o1"."Value" AS "Value2"
+FROM "OperatorEntityInt" "o"
+CROSS JOIN "OperatorEntityInt" "o0"
+CROSS JOIN "OperatorEntityBool" "o1"
+WHERE ("o0"."Value" & "o"."Value" + "o"."Value" & "o"."Value") / 1 > "o0"."Value" & 10 AND "o1"."Value"
+ORDER BY "o"."Id" NULLS FIRST, "o0"."Id" NULLS FIRST, "o1"."Id" NULLS FIRST
 """);
     }
 
@@ -66,28 +68,29 @@ ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST
 
         AssertSql(
             """
-SELECT o."Id" AS "Id1", o0."Id" AS "Id2", o1."Id" AS "Id3", o2."Id" AS "Id4", o3."Id" AS "Id5"
-FROM "OperatorEntityString" AS o
-CROSS JOIN "OperatorEntityString" AS o0
-CROSS JOIN "OperatorEntityString" AS o1
-CROSS JOIN "OperatorEntityString" AS o2
-CROSS JOIN "OperatorEntityInt" AS o3
-WHERE ((o."Value" = 'A' AND o0."Value" = 'A') OR (o1."Value" = 'B' AND o2."Value" = 'B')) AND o3."Value" = 2
-ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST, o2."Id" NULLS FIRST, o3."Id" NULLS FIRST
+SELECT "o"."Id" AS "Id1", "o0"."Id" AS "Id2", "o1"."Id" AS "Id3", "o2"."Id" AS "Id4", "o3"."Id" AS "Id5"
+FROM "OperatorEntityString" "o"
+CROSS JOIN "OperatorEntityString" "o0"
+CROSS JOIN "OperatorEntityString" "o1"
+CROSS JOIN "OperatorEntityString" "o2"
+CROSS JOIN "OperatorEntityInt" "o3"
+WHERE (("o"."Value" = 'A' AND "o0"."Value" = 'A') OR ("o1"."Value" = 'B' AND "o2"."Value" = 'B')) AND "o3"."Value" = 2
+ORDER BY "o"."Id" NULLS FIRST, "o0"."Id" NULLS FIRST, "o1"."Id" NULLS FIRST, "o2"."Id" NULLS FIRST, "o3"."Id" NULLS FIRST
 """);
     }
 
+    [Trait("Category", "BlockedByPort")]
     public override async Task Projection_with_not_and_negation_on_integer()
     {
         await base.Projection_with_not_and_negation_on_integer();
 
         AssertSql(
             """
-SELECT (~(-(-(o1."Value" + o."Value" + 2)))) % (-(o0."Value" + o0."Value") - o."Value")
-FROM "OperatorEntityLong" AS o
-CROSS JOIN "OperatorEntityLong" AS o0
-CROSS JOIN "OperatorEntityLong" AS o1
-ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST
+SELECT (~(-(-("o1"."Value" + "o"."Value" + 2)))) % (-("o0"."Value" + "o0"."Value") - "o"."Value")
+FROM "OperatorEntityLong" "o"
+CROSS JOIN "OperatorEntityLong" "o0"
+CROSS JOIN "OperatorEntityLong" "o1"
+ORDER BY "o"."Id" NULLS FIRST, "o0"."Id" NULLS FIRST, "o1"."Id" NULLS FIRST
 """);
     }
 
@@ -97,9 +100,9 @@ ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST
 
         AssertSql(
             """
-SELECT o."Id"
-FROM "OperatorEntityInt" AS o
-WHERE o."Id" = -o."Value"
+SELECT "o"."Id"
+FROM "OperatorEntityInt" "o"
+WHERE "o"."Id" = -"o"."Value"
 """);
     }
 
@@ -109,9 +112,9 @@ WHERE o."Id" = -o."Value"
 
         AssertSql(
             """
-SELECT o."Id"
-FROM "OperatorEntityInt" AS o
-WHERE -(-o."Value") = o."Value"
+SELECT "o"."Id"
+FROM "OperatorEntityInt" "o"
+WHERE -(-"o"."Value") = "o"."Value"
 """);
     }
 
@@ -121,10 +124,10 @@ WHERE -(-o."Value") = o."Value"
 
         AssertSql(
             """
-SELECT o."Id" AS "Id1", o0."Id" AS "Id2"
-FROM "OperatorEntityInt" AS o
-CROSS JOIN "OperatorEntityInt" AS o0
-WHERE -o."Value" = -(o."Id" + o0."Value")
+SELECT "o"."Id" AS "Id1", "o0"."Id" AS "Id2"
+FROM "OperatorEntityInt" "o"
+CROSS JOIN "OperatorEntityInt" "o0"
+WHERE -"o"."Value" = -("o"."Id" + "o0"."Value")
 """);
     }
 
@@ -134,21 +137,23 @@ WHERE -o."Value" = -(o."Id" + o0."Value")
 
         AssertSql(
             """
-SELECT o."Id"
-FROM "OperatorEntityString" AS o
-WHERE o."Value" NOT LIKE 'A%' OR o."Value" IS NULL
+SELECT "o"."Id"
+FROM "OperatorEntityString" "o"
+WHERE "o"."Value" NOT LIKE 'A%' OR "o"."Value" IS NULL
 """);
     }
 
+    // The JSON scalar needs a MemoryStream coercion the provider does not have yet.
+    [Trait("Category", "BlockedByPort")]
     public override async Task Concat_and_json_scalar(bool async)
     {
         await base.Concat_and_json_scalar(async);
 
         AssertSql(
             """
-SELECT o."Id", o."Owned"
-FROM "Owner" AS o
-WHERE 'Foo' || (o."Owned" ->> 'SomeProperty') = 'FooBar'
+SELECT "o"."Id", "o"."Owned"
+FROM "Owner" "o"
+WHERE 'Foo' || ("o"."Owned" ->> 'SomeProperty') = 'FooBar'
 LIMIT 2
 """);
     }
@@ -176,9 +181,9 @@ LIMIT 2
 
         AssertSql(
             """
-SELECT o."Id", o."Value"
-FROM "OperatorEntityDateTime" AS o
-WHERE DATE '2020-01-15' > CAST((o."Value" + INTERVAL '1 days') AT TIME ZONE 'UTC' AS date)
+SELECT "o"."Id", "o"."Value"
+FROM "OperatorEntityDateTime" "o"
+WHERE DATE '2020-01-15' > CAST(TIMESTAMPADD('DAY', CAST(1.0 AS DOUBLE PRECISION), "o"."Value") AS date)
 LIMIT 2
 """);
     }

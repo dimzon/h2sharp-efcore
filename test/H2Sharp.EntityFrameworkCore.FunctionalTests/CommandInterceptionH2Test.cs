@@ -26,6 +26,11 @@ public abstract class CommandInterceptionH2TestBase(CommandInterceptionH2TestBas
     {
         public class InterceptionH2Fixture : InterceptionH2FixtureBase
         {
+            // Both interception classes run in parallel; separate stores keep one class's reader
+            // and transaction off the other class's connection.
+            protected override string StoreName
+                => "CommandInterceptionWithoutDiagnostics";
+
             protected override bool ShouldSubscribeToDiagnosticListener
                 => false;
 
@@ -44,6 +49,9 @@ public abstract class CommandInterceptionH2TestBase(CommandInterceptionH2TestBas
     {
         public class InterceptionH2Fixture : InterceptionH2FixtureBase
         {
+            protected override string StoreName
+                => "CommandInterceptionWithDiagnostics";
+
             protected override bool ShouldSubscribeToDiagnosticListener
                 => true;
 

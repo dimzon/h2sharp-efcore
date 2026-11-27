@@ -200,6 +200,16 @@ EF их не отдаёт генератору, как в апстриме).
    JSON-коэрции и отсутствию ожидаемых исключений.
    Полный gate: 12597 passed / 0 failed functional, 325 model, 152 unit
    на net9 и net10.
+   Снят `BlockedByPort` с `OperatorsQueryH2Test`: алиасы переведены в
+   H2-форму, `AddDays` пишется как `TIMESTAMPADD`; 10 тестов зелёных.
+   Пять случаев остались blocked на уровне методов: 3 побитовых выражения
+   (у H2 `BITAND`/`BITNOT` вместо инфиксных `&`/`~`) и 2 JSON-коэрции.
+   Ещё одна гонка тестовой инфраструктуры: два класса `CommandInterception`
+   делили store `CommandInterception`, из-за чего на net9 случайные тесты
+   падали с `The connection has an open transaction`. Каждый класс получил
+   свой store; три повторных прогона — 244/244.
+   Полный gate: 12607 passed / 0 failed functional, 325 model, 152 unit
+   на net9 и net10.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
