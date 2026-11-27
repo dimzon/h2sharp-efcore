@@ -5,13 +5,14 @@ using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-[Trait("Category", "BlockedByPort")]
 public class AdHocPrecompiledQueryH2Test(ITestOutputHelper testOutputHelper)
     : AdHocPrecompiledQueryRelationalTestBase(testOutputHelper)
 {
     protected override bool AlwaysPrintGeneratedSources
         => false;
 
+    // Precompilation cannot coerce the JSON scalar into a MemoryStream in this provider.
+    [Trait("Category", "BlockedByPort")]
     public override async Task Index_no_evaluatability()
     {
         await base.Index_no_evaluatability();
@@ -24,6 +25,7 @@ WHERE j."IntList"[j."Id" + 1] = 2
 """);
     }
 
+    [Trait("Category", "BlockedByPort")]
     public override async Task Index_with_captured_variable()
     {
         await base.Index_with_captured_variable();
@@ -38,6 +40,7 @@ WHERE j."IntList"[$__id_0 + 1] = 2
 """);
     }
 
+    [Trait("Category", "BlockedByPort")]
     public override async Task JsonScalar()
     {
         await base.JsonScalar();
@@ -60,14 +63,13 @@ $p0='10' (Nullable = true)
 $p1='9' (Nullable = true)
 $p2='8' (Nullable = true)
 
-INSERT INTO "NonPublicEntities" ("PrivateAutoProperty", "PrivateProperty", "_privateField")
-VALUES ($p0, $p1, $p2)
-RETURNING "Id";
+SELECT "Id" FROM FINAL TABLE (INSERT INTO "NonPublicEntities" ("PrivateAutoProperty", "PrivateProperty", "_privateField")
+VALUES ($p0, $p1, $p2));
 """,
             //
             """
-SELECT n."Id", n."PrivateAutoProperty", n."PrivateProperty", n."_privateField"
-FROM "NonPublicEntities" AS n
+SELECT "n"."Id", "n"."PrivateAutoProperty", "n"."PrivateProperty", "n"."_privateField"
+FROM "NonPublicEntities" "n"
 LIMIT 2
 """);
     }
@@ -85,8 +87,8 @@ LIMIT 2
 
         AssertSql(
             """
-SELECT b."AudiobookDate"
-FROM "Books" AS b
+SELECT "b"."AudiobookDate"
+FROM "Books" "b"
 """);
     }
 
@@ -96,8 +98,8 @@ FROM "Books" AS b
 
         AssertSql(
             """
-SELECT b."Id", b."AudiobookDate", b."Name", b."PublishDate"
-FROM "Books" AS b
+SELECT "b"."Id", "b"."AudiobookDate", "b"."Name", "b"."PublishDate"
+FROM "Books" "b"
 """);
     }
 

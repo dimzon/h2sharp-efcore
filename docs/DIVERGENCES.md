@@ -176,6 +176,18 @@ EF их не отдаёт генератору, как в апстриме).
    raw-SQL-тесты выбирают несуществующие колонки или получают NULL. Добавление
    shadow-колонок убирает «column not found», но не даёт данных — для полного
    снятия трайта нужен перенос дампа Northwind, а не правка движка.
+   Тем же ограничением сидирования объясняется `MappingQueryH2Test`: его
+   фикстура не вызывает `NorthwindData.SeedAsync`, а ждёт данные из Northwind.sql.
+   Снят `BlockedByPort` с `AdHocComplexTypeQueryH2Test`,
+   `AdHocQueryFiltersQueryH2Test`, `AdHocNavigationsQueryH2Test` и
+   `AdHocPrecompiledQueryH2Test`: базлайны переведены на H2 (`"e"."Id"`,
+   `FROM "Table" "e"`, `SELECT ... FROM FINAL TABLE (INSERT ...)`), а
+   PG-специфичный guard `Reference_include_on_derived_type_with_sibling_works`
+   убран, потому что H2 принимает этот DateTime. На уровне методов осталось
+   blocked 10 случаев: 3 precompiled JSON (`JsonElement` → `MemoryStream`),
+   4 группы с `p0.Key` в производной таблице и 3 формы без LATERAL.
+   Полный gate: 12597 passed / 0 failed functional, 325 model, 151 unit
+   на net9 и net10.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
