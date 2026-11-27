@@ -56,11 +56,11 @@ SELECT "Region", "PostalCode", "PostalCode" AS "Foo", "Phone", "Fax", "CustomerI
 
         AssertSql(
             """
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT * FROM "Customers"
-) AS m
-WHERE m."ContactName" LIKE '%z%'
+) AS "m"
+WHERE "m"."ContactName" LIKE '%z%'
 """);
     }
 
@@ -70,7 +70,7 @@ WHERE m."ContactName" LIKE '%z%'
 
         AssertSql(
             """
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
 
         
@@ -78,8 +78,8 @@ FROM (
 
     SELECT
     * FROM "Customers"
-) AS m
-WHERE m."ContactName" LIKE '%z%'
+) AS "m"
+WHERE "m"."ContactName" LIKE '%z%'
 """);
     }
 
@@ -89,11 +89,11 @@ WHERE m."ContactName" LIKE '%z%'
 
         AssertSql(
             """
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT * FROM "Customers"
-) AS m
-WHERE m."ContactName" LIKE '%z%'
+) AS "m"
+WHERE "m"."ContactName" LIKE '%z%'
 """);
     }
 
@@ -105,11 +105,11 @@ WHERE m."ContactName" LIKE '%z%'
             """
 customer='CONSH' (Nullable = false)
 
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT * FROM "Customers" WHERE "CustomerID" = $customer
-) AS m
-WHERE m."ContactName" LIKE '%z%'
+) AS "m"
+WHERE "m"."ContactName" LIKE '%z%'
 """);
     }
 
@@ -121,11 +121,11 @@ WHERE m."ContactName" LIKE '%z%'
             """
 p0='CONSH' (Nullable = false)
 
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT * FROM "Customers" WHERE "CustomerID" = $p0
-) AS m
-WHERE m."ContactName" LIKE '%z%'
+) AS "m"
+WHERE "m"."ContactName" LIKE '%z%'
 """);
     }
 
@@ -135,11 +135,11 @@ WHERE m."ContactName" LIKE '%z%'
 
         AssertSql(
             """
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT * FROM "Customers" WHERE "CustomerID" = 'CONSH'
-) AS m
-WHERE m."ContactName" LIKE '%z%'
+) AS "m"
+WHERE "m"."ContactName" LIKE '%z%'
 """);
     }
 
@@ -149,15 +149,15 @@ WHERE m."ContactName" LIKE '%z%'
 
         AssertSql(
             """
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT * FROM "Customers"
-) AS m
-WHERE m."CustomerID" IN (
+) AS "m"
+WHERE "m"."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
         SELECT * FROM "Orders"
-    ) AS m0
+    ) AS "m0"
 )
 """);
     }
@@ -168,14 +168,14 @@ WHERE m."CustomerID" IN (
 
         AssertSql(
             """
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode", m0."CustomerID", m0."EmployeeID", m0."Freight", m0."OrderDate", m0."OrderID", m0."RequiredDate", m0."ShipAddress", m0."ShipCity", m0."ShipCountry", m0."ShipName", m0."ShipPostalCode", m0."ShipRegion", m0."ShipVia", m0."ShippedDate"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode", m0."CustomerID", m0."EmployeeID", m0."Freight", m0."OrderDate", m0."OrderID", m0."RequiredDate", m0."ShipAddress", m0."ShipCity", m0."ShipCountry", m0."ShipName", m0."ShipPostalCode", m0."ShipRegion", m0."ShipVia", m0."ShippedDate"
 FROM (
     SELECT * FROM "Customers"
-) AS m
+) AS "m"
 CROSS JOIN (
     SELECT * FROM "Orders"
-) AS m0
-WHERE m."CustomerID" = m0."CustomerID"
+) AS "m0"
+WHERE "m"."CustomerID" = m0."CustomerID"
 """);
     }
 
@@ -205,12 +205,12 @@ WHERE "City" = 'London'
 
         AssertSql(
             """
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT *
     FROM "Customers"
-) AS m
-WHERE m."City" = 'London'
+) AS "m"
+WHERE "m"."City" = 'London'
 """);
     }
 
@@ -291,11 +291,11 @@ SELECT * FROM "Employees" WHERE "ReportsTo" = $p0 OR ("ReportsTo" IS NULL AND $p
 p0='London'
 $__contactTitle_1='Sales Representative'
 
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT * FROM "Customers" WHERE "City" = $p0
-) AS m
-WHERE m."ContactTitle" = $__contactTitle_1
+) AS "m"
+WHERE "m"."ContactTitle" = $__contactTitle_1
 """);
 
         return null;
@@ -351,13 +351,13 @@ SELECT * FROM "Customers"
 
         AssertSql(
             """
-SELECT m."ProductName"
+SELECT "m"."ProductName"
 FROM (
     SELECT *
     FROM "Products"
     WHERE "Discontinued" <> TRUE
     AND (("UnitsInStock" + "UnitsOnOrder") < "ReorderLevel")
-) AS m
+) AS "m"
 """);
     }
 
@@ -470,42 +470,42 @@ SELECT * FROM "Customers" WHERE "CustomerID" = $somename
             """
 p0='10300'
 
-SELECT m."OrderID"
+SELECT "m"."OrderID"
 FROM (
     SELECT * FROM "Orders" WHERE "OrderID" >= $p0
-) AS m
+) AS "m"
 """,
             //
             """
 $__max_1='10400'
 p0='10300'
 
-SELECT m."OrderID"
+SELECT "m"."OrderID"
 FROM (
     SELECT * FROM "Orders"
-) AS m
-WHERE m."OrderID" <= $__max_1 AND EXISTS (
+) AS "m"
+WHERE "m"."OrderID" <= $__max_1 AND EXISTS (
     SELECT 1
     FROM (
         SELECT * FROM "Orders" WHERE "OrderID" >= $p0
-    ) AS m0
-    WHERE m0."OrderID" = m."OrderID")
+    ) AS "m0"
+    WHERE m0."OrderID" = "m"."OrderID")
 """,
             //
             """
 $__max_1='10400'
 p0='10300'
 
-SELECT m."OrderID"
+SELECT "m"."OrderID"
 FROM (
     SELECT * FROM "Orders"
-) AS m
-WHERE m."OrderID" <= $__max_1 AND EXISTS (
+) AS "m"
+WHERE "m"."OrderID" <= $__max_1 AND EXISTS (
     SELECT 1
     FROM (
         SELECT * FROM "Orders" WHERE "OrderID" >= $p0
-    ) AS m0
-    WHERE m0."OrderID" = m."OrderID")
+    ) AS "m0"
+    WHERE m0."OrderID" = "m"."OrderID")
 """);
     }
 
@@ -527,15 +527,15 @@ SELECT * FROM "Orders" WHERE "OrderID" < $p0
 
         AssertSql(
             """
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT * FROM "Customers" WHERE "City" = 'London'
-) AS m
+) AS "m"
 UNION ALL
 SELECT m0."Address", m0."City", m0."CompanyName", m0."ContactName", m0."ContactTitle", m0."Country", m0."CustomerID", m0."Fax", m0."Phone", m0."Region", m0."PostalCode"
 FROM (
     SELECT * FROM "Customers" WHERE "City" = 'Berlin'
-) AS m0
+) AS "m0"
 """);
     }
 
@@ -545,12 +545,12 @@ FROM (
 
         AssertSql(
             """
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT
     * FROM "Customers"
-) AS m
-WHERE m."City" = 'Seattle'
+) AS "m"
+WHERE "m"."City" = 'Seattle'
 """);
     }
 
@@ -562,15 +562,15 @@ WHERE m."City" = 'Seattle'
             """
 $city='London' (Nullable = false)
 
-SELECT m."CustomerID", m."EmployeeID", m."Freight", m."OrderDate", m."OrderID", m."RequiredDate", m."ShipAddress", m."ShipCity", m."ShipCountry", m."ShipName", m."ShipPostalCode", m."ShipRegion", m."ShipVia", m."ShippedDate"
+SELECT "m"."CustomerID", "m"."EmployeeID", "m"."Freight", "m"."OrderDate", "m"."OrderID", "m"."RequiredDate", "m"."ShipAddress", "m"."ShipCity", "m"."ShipCountry", "m"."ShipName", "m"."ShipPostalCode", "m"."ShipRegion", "m"."ShipVia", "m"."ShippedDate"
 FROM (
     SELECT * FROM "Orders"
-) AS m
-WHERE m."CustomerID" IN (
+) AS "m"
+WHERE "m"."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
         SELECT * FROM "Customers" WHERE "City" = $city
-    ) AS m0
+    ) AS "m0"
 )
 """);
     }
@@ -583,15 +583,15 @@ WHERE m."CustomerID" IN (
             """
 p0='London' (Nullable = false)
 
-SELECT m."CustomerID", m."EmployeeID", m."Freight", m."OrderDate", m."OrderID", m."RequiredDate", m."ShipAddress", m."ShipCity", m."ShipCountry", m."ShipName", m."ShipPostalCode", m."ShipRegion", m."ShipVia", m."ShippedDate"
+SELECT "m"."CustomerID", "m"."EmployeeID", "m"."Freight", "m"."OrderDate", "m"."OrderID", "m"."RequiredDate", "m"."ShipAddress", "m"."ShipCity", "m"."ShipCountry", "m"."ShipName", "m"."ShipPostalCode", "m"."ShipRegion", "m"."ShipVia", "m"."ShippedDate"
 FROM (
     SELECT * FROM "Orders"
-) AS m
-WHERE m."CustomerID" IN (
+) AS "m"
+WHERE "m"."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
         SELECT * FROM "Customers" WHERE "City" = $p0
-    ) AS m0
+    ) AS "m0"
 )
 """);
     }
@@ -604,15 +604,15 @@ WHERE m."CustomerID" IN (
             """
 $city='London' (Nullable = false)
 
-SELECT m."CustomerID", m."EmployeeID", m."Freight", m."OrderDate", m."OrderID", m."RequiredDate", m."ShipAddress", m."ShipCity", m."ShipCountry", m."ShipName", m."ShipPostalCode", m."ShipRegion", m."ShipVia", m."ShippedDate"
+SELECT "m"."CustomerID", "m"."EmployeeID", "m"."Freight", "m"."OrderDate", "m"."OrderID", "m"."RequiredDate", "m"."ShipAddress", "m"."ShipCity", "m"."ShipCountry", "m"."ShipName", "m"."ShipPostalCode", "m"."ShipRegion", "m"."ShipVia", "m"."ShippedDate"
 FROM (
     SELECT * FROM "Orders"
-) AS m
-WHERE m."CustomerID" IN (
+) AS "m"
+WHERE "m"."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
         SELECT * FROM "Customers" WHERE "City" = $city
-    ) AS m0
+    ) AS "m0"
 )
 """);
     }
@@ -626,15 +626,15 @@ WHERE m."CustomerID" IN (
 p0='London'
 $title='Sales Representative' (Nullable = false)
 
-SELECT m."CustomerID", m."EmployeeID", m."Freight", m."OrderDate", m."OrderID", m."RequiredDate", m."ShipAddress", m."ShipCity", m."ShipCountry", m."ShipName", m."ShipPostalCode", m."ShipRegion", m."ShipVia", m."ShippedDate"
+SELECT "m"."CustomerID", "m"."EmployeeID", "m"."Freight", "m"."OrderDate", "m"."OrderID", "m"."RequiredDate", "m"."ShipAddress", "m"."ShipCity", "m"."ShipCountry", "m"."ShipName", "m"."ShipPostalCode", "m"."ShipRegion", "m"."ShipVia", "m"."ShippedDate"
 FROM (
     SELECT * FROM "Orders"
-) AS m
-WHERE m."CustomerID" IN (
+) AS "m"
+WHERE "m"."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
         SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $title
-    ) AS m0
+    ) AS "m0"
 )
 """,
             //
@@ -642,15 +642,15 @@ WHERE m."CustomerID" IN (
 $city='London' (Nullable = false)
 p1='Sales Representative'
 
-SELECT m."CustomerID", m."EmployeeID", m."Freight", m."OrderDate", m."OrderID", m."RequiredDate", m."ShipAddress", m."ShipCity", m."ShipCountry", m."ShipName", m."ShipPostalCode", m."ShipRegion", m."ShipVia", m."ShippedDate"
+SELECT "m"."CustomerID", "m"."EmployeeID", "m"."Freight", "m"."OrderDate", "m"."OrderID", "m"."RequiredDate", "m"."ShipAddress", "m"."ShipCity", "m"."ShipCountry", "m"."ShipName", "m"."ShipPostalCode", "m"."ShipRegion", "m"."ShipVia", "m"."ShippedDate"
 FROM (
     SELECT * FROM "Orders"
-) AS m
-WHERE m."CustomerID" IN (
+) AS "m"
+WHERE "m"."CustomerID" IN (
     SELECT m0."CustomerID"
     FROM (
         SELECT * FROM "Customers" WHERE "City" = $city AND "ContactTitle" = $p1
-    ) AS m0
+    ) AS "m0"
 )
 """);
     }
@@ -663,15 +663,15 @@ WHERE m."CustomerID" IN (
             """
 city='Seattle' (Nullable = false)
 
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     SELECT * FROM "Customers" WHERE "City" = $city
-) AS m
+) AS "m"
 INTERSECT
 SELECT m0."Address", m0."City", m0."CompanyName", m0."ContactName", m0."ContactTitle", m0."Country", m0."CustomerID", m0."Fax", m0."Phone", m0."Region", m0."PostalCode"
 FROM (
     SELECT * FROM "Customers" WHERE "City" = $city
-) AS m0
+) AS "m0"
 """);
     }
 
@@ -681,14 +681,14 @@ FROM (
 
         AssertSql(
             """
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode"
 FROM (
     WITH "Customers2" AS (
         SELECT * FROM "Customers"
     )
     SELECT * FROM "Customers2"
-) AS m
-WHERE m."ContactName" LIKE '%z%'
+) AS "m"
+WHERE "m"."ContactName" LIKE '%z%'
 """);
     }
 
@@ -702,8 +702,9 @@ WHERE m."ContactName" LIKE '%z%'
         => Task.CompletedTask;
 #pragma warning restore xUnit1026
 
+    // The spec base creates PG-style '@name' parameters; H2 writes '$name'.
     protected override DbParameter CreateDbParameter(string name, object value)
-        => new H2Parameter { ParameterName = name, Value = value };
+        => new H2Parameter { ParameterName = name?.TrimStart('@'), Value = value };
 
     private void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
