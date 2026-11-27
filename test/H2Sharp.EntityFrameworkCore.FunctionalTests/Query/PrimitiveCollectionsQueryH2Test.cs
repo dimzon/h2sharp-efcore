@@ -21,9 +21,9 @@ public class PrimitiveCollectionsQueryH2Test : PrimitiveCollectionsQueryRelation
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" IN (10, 999)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Int" IN (10, 999)
 """);
     }
 
@@ -33,9 +33,9 @@ WHERE p."Int" IN (10, 999)
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableInt" IN (10, 999)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."NullableInt" IN (10, 999)
 """);
     }
 
@@ -45,9 +45,9 @@ WHERE p."NullableInt" IN (10, 999)
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableInt" IS NULL OR p."NullableInt" = 999
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."NullableInt" IS NULL OR "p"."NullableInt" = 999
 """);
     }
 
@@ -64,12 +64,12 @@ WHERE p."NullableInt" IS NULL OR p."NullableInt" = 999
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
-    FROM (VALUES (2::int)) AS v("Value")
-    WHERE v."Value" > p."Id") = 1
+    FROM (VALUES (2::int)) AS "v"("Value")
+    WHERE "v"."Value" > "p"."Id") = 1
 """);
     }
 
@@ -79,12 +79,12 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
-    FROM (VALUES (2::int), (999)) AS v("Value")
-    WHERE v."Value" > p."Id") = 1
+    FROM (VALUES (2::int), (999)) AS "v"("Value")
+    WHERE "v"."Value" > "p"."Id") = 1
 """);
     }
 
@@ -94,12 +94,12 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
-    FROM (VALUES (2::int), (999), (1000)) AS v("Value")
-    WHERE v."Value" > p."Id") = 2
+    FROM (VALUES (2::int), (999), (1000)) AS "v"("Value")
+    WHERE "v"."Value" > "p"."Id") = 2
 """);
     }
 
@@ -109,8 +109,8 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE FALSE
 """);
     }
@@ -121,9 +121,9 @@ WHERE FALSE
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" = 2
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" = 2
 """);
     }
 
@@ -133,9 +133,9 @@ WHERE p."Id" = 2
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" IN (2, 999)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" IN (2, 999)
 """);
     }
 
@@ -145,9 +145,9 @@ WHERE p."Id" IN (2, 999)
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" IN (2, 999, 1000)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" IN (2, 999, 1000)
 """);
     }
 
@@ -160,9 +160,9 @@ WHERE p."Id" IN (2, 999, 1000)
 $__i_0='2'
 $__j_1='999'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" IN ($__i_0, $__j_1)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" IN ($__i_0, $__j_1)
 """);
     }
 
@@ -174,9 +174,9 @@ WHERE p."Id" IN ($__i_0, $__j_1)
             """
 $__j_0='999'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" IN (2, $__j_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" IN (2, $__j_0)
 """);
     }
 
@@ -188,9 +188,9 @@ WHERE p."Id" IN (2, $__j_0)
             """
 $__i_0='11'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" IN (999, $__i_0, p."Id", p."Id" + p."Int")
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Int" IN (999, $__i_0, "p"."Id", "p"."Id" + "p"."Int")
 """);
     }
 
@@ -202,9 +202,9 @@ WHERE p."Int" IN (999, $__i_0, p."Id", p."Id" + p."Int")
             """
 $__i_0='11'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" IN (999, $__i_0, p."Id", p."Id" + p."Int")
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Int" IN (999, $__i_0, "p"."Id", "p"."Id" + "p"."Int")
 """);
     }
 
@@ -214,9 +214,9 @@ WHERE p."Int" IN (999, $__i_0, p."Id", p."Id" + p."Int")
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" IN (2, 999)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" IN (2, 999)
 """);
     }
 
@@ -226,9 +226,9 @@ WHERE p."Id" IN (2, 999)
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" NOT IN (2, 999)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" NOT IN (2, 999)
 """);
     }
 
@@ -238,9 +238,9 @@ WHERE p."Id" NOT IN (2, 999)
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE LEAST(30, p."Int") = 30
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE LEAST(30, "p"."Int") = 30
 """);
     }
 
@@ -250,9 +250,9 @@ WHERE LEAST(30, p."Int") = 30
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE LEAST(30, p."Int") = 30
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE LEAST(30, "p"."Int") = 30
 """);
     }
 
@@ -262,9 +262,9 @@ WHERE LEAST(30, p."Int") = 30
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE GREATEST(30, p."Int") = 30
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE GREATEST(30, "p"."Int") = 30
 """);
     }
 
@@ -274,9 +274,9 @@ WHERE GREATEST(30, p."Int") = 30
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE GREATEST(30, p."Int") = 30
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE GREATEST(30, "p"."Int") = 30
 """);
     }
 
@@ -288,9 +288,9 @@ WHERE GREATEST(30, p."Int") = 30
             """
 $__i_0='25'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE LEAST(30, p."Int", $__i_0) = 25
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE LEAST(30, "p"."Int", $__i_0) = 25
 """);
     }
 
@@ -302,9 +302,9 @@ WHERE LEAST(30, p."Int", $__i_0) = 25
             """
 $__i_0='25'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE LEAST(30, p."Int", $__i_0) = 25
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE LEAST(30, "p"."Int", $__i_0) = 25
 """);
     }
 
@@ -316,9 +316,9 @@ WHERE LEAST(30, p."Int", $__i_0) = 25
             """
 $__i_0='35'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE GREATEST(30, p."Int", $__i_0) = 35
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE GREATEST(30, "p"."Int", $__i_0) = 35
 """);
     }
 
@@ -330,9 +330,9 @@ WHERE GREATEST(30, p."Int", $__i_0) = 35
             """
 $__i_0='35'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE GREATEST(30, p."Int", $__i_0) = 35
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE GREATEST(30, "p"."Int", $__i_0) = 35
 """);
     }
 
@@ -344,9 +344,9 @@ WHERE GREATEST(30, p."Int", $__i_0) = 35
             """
 $__i_0='25' (Nullable = true)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE LEAST(30, p."Int", $__i_0) = 25
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE LEAST(30, "p"."Int", $__i_0) = 25
 """);
     }
 
@@ -358,9 +358,9 @@ WHERE LEAST(30, p."Int", $__i_0) = 25
             """
 $__i_0='35' (Nullable = true)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE GREATEST(30, p."Int", $__i_0) = 35
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE GREATEST(30, "p"."Int", $__i_0) = 35
 """);
     }
 
@@ -370,9 +370,9 @@ WHERE GREATEST(30, p."Int", $__i_0) = 35
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE LEAST(30, p."NullableInt", NULL) = 30
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE LEAST(30, "p"."NullableInt", NULL) = 30
 """);
     }
 
@@ -382,9 +382,9 @@ WHERE LEAST(30, p."NullableInt", NULL) = 30
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE GREATEST(30, p."NullableInt", NULL) = 30
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE GREATEST(30, "p"."NullableInt", NULL) = 30
 """);
     }
 
@@ -396,9 +396,9 @@ WHERE GREATEST(30, p."NullableInt", NULL) = 30
             """
 $__i_0='2'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" = $__i_0
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" = $__i_0
 """);
     }
 
@@ -410,12 +410,12 @@ WHERE p."Id" = $__i_0
             """
 $__i_0='2'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
-    FROM (VALUES ($__i_0::int)) AS v("Value")
-    WHERE v."Value" > p."Id") = 1
+    FROM (VALUES ($__i_0::int)) AS "v"("Value")
+    WHERE "v"."Value" > "p"."Id") = 1
 """);
     }
 
@@ -427,9 +427,9 @@ WHERE (
             """
 $__p_0={ '2', '999', '1000' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" = ANY ($__p_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" = ANY ($__p_0)
 """);
     }
 
@@ -441,12 +441,12 @@ WHERE p."Id" = ANY ($__p_0)
             """
 $__p_0={ '2', '999', '1000' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
-    FROM unnest($__p_0) AS p0(value)
-    WHERE p0.value > p."Id") = 2
+    FROM unnest($__p_0) AS "p0"("value")
+    WHERE "p0"."value" > "p"."Id") = 2
 """);
     }
 
@@ -458,12 +458,12 @@ WHERE (
             """
 $__ids_0={ '2', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM unnest($__ids_0) AS i(value)
-    WHERE i.value > p."Id") = 1
+    WHERE i.value > "p"."Id") = 1
 """);
     }
 
@@ -475,17 +475,17 @@ WHERE (
             """
 $__ints_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" = ANY ($__ints_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Int" = ANY ($__ints_0)
 """,
             //
             """
 $__ints_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."Int" = ANY ($__ints_0) AND p."Int" = ANY ($__ints_0) IS NOT NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE NOT ("p"."Int" = ANY ($__ints_0) AND "p"."Int" = ANY ($__ints_0) IS NOT NULL)
 """);
     }
 
@@ -497,17 +497,17 @@ WHERE NOT (p."Int" = ANY ($__ints_0) AND p."Int" = ANY ($__ints_0) IS NOT NULL)
             """
 $__ints_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" = ANY ($__ints_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Int" = ANY ($__ints_0)
 """,
             //
             """
 $__ints_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."Int" = ANY ($__ints_0) AND p."Int" = ANY ($__ints_0) IS NOT NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE NOT ("p"."Int" = ANY ($__ints_0) AND "p"."Int" = ANY ($__ints_0) IS NOT NULL)
 """);
     }
 
@@ -525,9 +525,9 @@ WHERE NOT (p."Int" = ANY ($__ints_0) AND p."Int" = ANY ($__ints_0) IS NOT NULL)
             """
 $__enums_0={ '0', '3' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Enum" = ANY ($__enums_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Enum" = ANY ($__enums_0)
 """);
     }
 
@@ -539,17 +539,17 @@ WHERE p."Enum" = ANY ($__enums_0)
             """
 $__ints_0={ '10', '999' } (Nullable = false) (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" = ANY ($__ints_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Int" = ANY ($__ints_0)
 """,
             //
             """
 $__ints_0={ '10', '999' } (Nullable = false) (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."Int" = ANY ($__ints_0) AND p."Int" = ANY ($__ints_0) IS NOT NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE NOT ("p"."Int" = ANY ($__ints_0) AND "p"."Int" = ANY ($__ints_0) IS NOT NULL)
 """);
     }
 
@@ -561,17 +561,17 @@ WHERE NOT (p."Int" = ANY ($__ints_0) AND p."Int" = ANY ($__ints_0) IS NOT NULL)
             """
 $__ints_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableInt" = ANY ($__ints_0) OR (p."NullableInt" IS NULL AND array_position($__ints_0, NULL) IS NOT NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."NullableInt" = ANY ($__ints_0) OR ("p"."NullableInt" IS NULL AND array_position($__ints_0, NULL) IS NOT NULL)
 """,
             //
             """
 $__ints_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."NullableInt" = ANY ($__ints_0) AND p."NullableInt" = ANY ($__ints_0) IS NOT NULL) AND (p."NullableInt" IS NOT NULL OR array_position($__ints_0, NULL) IS NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE NOT ("p"."NullableInt" = ANY ($__ints_0) AND "p"."NullableInt" = ANY ($__ints_0) IS NOT NULL) AND ("p"."NullableInt" IS NOT NULL OR array_position($__ints_0, NULL) IS NULL)
 """);
     }
 
@@ -583,17 +583,17 @@ WHERE NOT (p."NullableInt" = ANY ($__ints_0) AND p."NullableInt" = ANY ($__ints_
             """
 $__nullableInts_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" = ANY ($__nullableInts_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Int" = ANY ($__nullableInts_0)
 """,
             //
             """
 $__nullableInts_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."Int" = ANY ($__nullableInts_0) AND p."Int" = ANY ($__nullableInts_0) IS NOT NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE NOT ("p"."Int" = ANY ($__nullableInts_0) AND "p"."Int" = ANY ($__nullableInts_0) IS NOT NULL)
 """);
     }
 
@@ -605,17 +605,17 @@ WHERE NOT (p."Int" = ANY ($__nullableInts_0) AND p."Int" = ANY ($__nullableInts_
             """
 $__nullableInts_0={ NULL, '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableInt" = ANY ($__nullableInts_0) OR (p."NullableInt" IS NULL AND array_position($__nullableInts_0, NULL) IS NOT NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."NullableInt" = ANY ($__nullableInts_0) OR ("p"."NullableInt" IS NULL AND array_position($__nullableInts_0, NULL) IS NOT NULL)
 """,
             //
             """
 $__nullableInts_0={ NULL, '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."NullableInt" = ANY ($__nullableInts_0) AND p."NullableInt" = ANY ($__nullableInts_0) IS NOT NULL) AND (p."NullableInt" IS NOT NULL OR array_position($__nullableInts_0, NULL) IS NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE NOT ("p"."NullableInt" = ANY ($__nullableInts_0) AND "p"."NullableInt" = ANY ($__nullableInts_0) IS NOT NULL) AND ("p"."NullableInt" IS NOT NULL OR array_position($__nullableInts_0, NULL) IS NULL)
 """);
     }
 
@@ -627,17 +627,17 @@ WHERE NOT (p."NullableInt" = ANY ($__nullableInts_0) AND p."NullableInt" = ANY (
             """
 $__strings_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."String" = ANY ($__strings_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."String" = ANY ($__strings_0)
 """,
             //
             """
 $__strings_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."String" = ANY ($__strings_0) AND p."String" = ANY ($__strings_0) IS NOT NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE NOT ("p"."String" = ANY ($__strings_0) AND "p"."String" = ANY ($__strings_0) IS NOT NULL)
 """);
     }
 
@@ -649,17 +649,17 @@ WHERE NOT (p."String" = ANY ($__strings_0) AND p."String" = ANY ($__strings_0) I
             """
 $__strings_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableString" = ANY ($__strings_0) OR (p."NullableString" IS NULL AND array_position($__strings_0, NULL) IS NOT NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."NullableString" = ANY ($__strings_0) OR ("p"."NullableString" IS NULL AND array_position($__strings_0, NULL) IS NOT NULL)
 """,
             //
             """
 $__strings_0={ '10', '999' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."NullableString" = ANY ($__strings_0) AND p."NullableString" = ANY ($__strings_0) IS NOT NULL) AND (p."NullableString" IS NOT NULL OR array_position($__strings_0, NULL) IS NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE NOT ("p"."NullableString" = ANY ($__strings_0) AND "p"."NullableString" = ANY ($__strings_0) IS NOT NULL) AND ("p"."NullableString" IS NOT NULL OR array_position($__strings_0, NULL) IS NULL)
 """);
     }
 
@@ -671,17 +671,17 @@ WHERE NOT (p."NullableString" = ANY ($__strings_0) AND p."NullableString" = ANY 
             """
 $__strings_0={ '10', NULL } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."String" = ANY ($__strings_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."String" = ANY ($__strings_0)
 """,
             //
             """
 $__strings_0={ '10', NULL } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."String" = ANY ($__strings_0) AND p."String" = ANY ($__strings_0) IS NOT NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE NOT ("p"."String" = ANY ($__strings_0) AND "p"."String" = ANY ($__strings_0) IS NOT NULL)
 """);
     }
 
@@ -693,17 +693,17 @@ WHERE NOT (p."String" = ANY ($__strings_0) AND p."String" = ANY ($__strings_0) I
             """
 $__strings_0={ '999', NULL } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableString" = ANY ($__strings_0) OR (p."NullableString" IS NULL AND array_position($__strings_0, NULL) IS NOT NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."NullableString" = ANY ($__strings_0) OR ("p"."NullableString" IS NULL AND array_position($__strings_0, NULL) IS NOT NULL)
 """,
             //
             """
 $__strings_0={ '999', NULL } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE NOT (p."NullableString" = ANY ($__strings_0) AND p."NullableString" = ANY ($__strings_0) IS NOT NULL) AND (p."NullableString" IS NOT NULL OR array_position($__strings_0, NULL) IS NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE NOT ("p"."NullableString" = ANY ($__strings_0) AND "p"."NullableString" = ANY ($__strings_0) IS NOT NULL) AND ("p"."NullableString" IS NOT NULL OR array_position($__strings_0, NULL) IS NULL)
 """);
     }
 
@@ -715,9 +715,9 @@ WHERE NOT (p."NullableString" = ANY ($__strings_0) AND p."NullableString" = ANY 
             """
 $__dateTimes_0={ '2020-01-10T12:30:00.0000000Z', '9999-01-01T00:00:00.0000000Z' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."DateTime" = ANY ($__dateTimes_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."DateTime" = ANY ($__dateTimes_0)
 """);
     }
 
@@ -729,9 +729,9 @@ WHERE p."DateTime" = ANY ($__dateTimes_0)
             """
 $__bools_0={ 'True' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Bool" = ANY ($__bools_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Bool" = ANY ($__bools_0)
 """);
     }
 
@@ -743,9 +743,9 @@ WHERE p."Bool" = ANY ($__bools_0)
             """
 $__enums_0={ '0', '3' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Enum" = ANY ($__enums_0)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Enum" = ANY ($__enums_0)
 """);
     }
 
@@ -755,9 +755,9 @@ WHERE p."Enum" = ANY ($__enums_0)
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Int" = ANY (NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Int" = ANY (NULL)
 """);
     }
 
@@ -767,9 +767,9 @@ WHERE p."Int" = ANY (NULL)
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" IN (2, 999, 1000)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" IN (2, 999, 1000)
 """);
     }
 
@@ -779,12 +779,12 @@ WHERE p."Id" IN (2, 999, 1000)
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE EXISTS (
     SELECT 1
-    FROM (VALUES (2), (999), (1000)) AS i("Value")
-    WHERE i."Value" > 0)
+    FROM (VALUES (2), (999), (1000)) AS "i"("Value")
+    WHERE "i"."Value" > 0)
 """);
     }
 
@@ -794,12 +794,12 @@ WHERE EXISTS (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
-    FROM (VALUES (2), (999), (1000)) AS i("Value")
-    WHERE i."Value" > p."Id") = 2
+    FROM (VALUES (2), (999), (1000)) AS "i"("Value")
+    WHERE "i"."Value" > "p"."Id") = 2
 """);
     }
 
@@ -811,9 +811,9 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableInts" @> ARRAY[10]::integer[]
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."NullableInts" @> ARRAY[10]::integer[]
 """);
     }
 
@@ -823,9 +823,9 @@ WHERE p."NullableInts" @> ARRAY[10]::integer[]
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE array_position(p."NullableInts", NULL) IS NOT NULL
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE array_position("p"."NullableInts", NULL) IS NOT NULL
 """);
     }
 
@@ -835,9 +835,9 @@ WHERE array_position(p."NullableInts", NULL) IS NOT NULL
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE array_position(p."Strings", NULL) IS NOT NULL
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE array_position("p"."Strings", NULL) IS NOT NULL
 """);
     }
 
@@ -847,9 +847,9 @@ WHERE array_position(p."Strings", NULL) IS NOT NULL
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE array_position(p."NullableStrings", NULL) IS NOT NULL
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE array_position("p"."NullableStrings", NULL) IS NOT NULL
 """);
     }
 
@@ -859,9 +859,9 @@ WHERE array_position(p."NullableStrings", NULL) IS NOT NULL
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Bools" @> ARRAY[TRUE]::boolean[]
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Bools" @> ARRAY[TRUE]::boolean[]
 """);
     }
 
@@ -871,9 +871,9 @@ WHERE p."Bools" @> ARRAY[TRUE]::boolean[]
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE cardinality(p."Ints") = 2
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE cardinality("p"."Ints") = 2
 """);
     }
 
@@ -883,9 +883,9 @@ WHERE cardinality(p."Ints") = 2
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE cardinality(p."Ints") = 2
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE cardinality("p"."Ints") = 2
 """);
     }
 
@@ -895,11 +895,11 @@ WHERE cardinality(p."Ints") = 2
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     WHERE i.value > 1) = 2
 """);
     }
@@ -910,11 +910,11 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     WHERE i.value > 1) = 2
 """);
     }
@@ -925,9 +925,9 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints"[2] = 10
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Ints"[2] = 10
 """);
     }
 
@@ -937,9 +937,9 @@ WHERE p."Ints"[2] = 10
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Strings"[2] = '10'
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Strings"[2] = '10'
 """);
     }
 
@@ -949,9 +949,9 @@ WHERE p."Strings"[2] = '10'
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."DateTimes"[2] = TIMESTAMPTZ '2020-01-10T12:30:00Z'
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."DateTimes"[2] = TIMESTAMPTZ '2020-01-10T12:30:00Z'
 """);
     }
 
@@ -961,9 +961,9 @@ WHERE p."DateTimes"[2] = TIMESTAMPTZ '2020-01-10T12:30:00Z'
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints"[1000] = 10
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Ints"[1000] = 10
 """);
     }
 
@@ -973,9 +973,9 @@ WHERE p."Ints"[1000] = 10
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableStrings"[3] = p."NullableString" OR (p."NullableStrings"[3] IS NULL AND p."NullableString" IS NULL)
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."NullableStrings"[3] = "p"."NullableString" OR ("p"."NullableStrings"[3] IS NULL AND "p"."NullableString" IS NULL)
 """);
     }
 
@@ -985,9 +985,9 @@ WHERE p."NullableStrings"[3] = p."NullableString" OR (p."NullableStrings"[3] IS 
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE cardinality(p."Strings") > 0 AND p."Strings"[2] = p."NullableString"
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE cardinality("p"."Strings") > 0 AND "p"."Strings"[2] = "p"."NullableString"
 """);
     }
 
@@ -997,13 +997,13 @@ WHERE cardinality(p."Strings") > 0 AND p."Strings"[2] = p."NullableString"
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
-    SELECT v."Value"
+    SELECT "v"."Value"
     FROM (VALUES (0, 1::int), (1, 2), (2, 3)) AS v(_ord, "Value")
     ORDER BY v._ord NULLS FIRST
-    LIMIT 1 OFFSET p."Int") = 1
+    LIMIT 1 OFFSET "p"."Int") = 1
 """);
     }
 
@@ -1013,13 +1013,13 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
-    SELECT v."Value"
-    FROM (VALUES (0, 1::int), (1, p."Int"), (2, 3)) AS v(_ord, "Value")
+    SELECT "v"."Value"
+    FROM (VALUES (0, 1::int), (1, "p"."Int"), (2, 3)) AS v(_ord, "Value")
     ORDER BY v._ord NULLS FIRST
-    LIMIT 1 OFFSET p."Int") = 1
+    LIMIT 1 OFFSET "p"."Int") = 1
 """);
     }
 
@@ -1029,13 +1029,13 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
-    SELECT v."Value"
-    FROM (VALUES (0, 1::int), (1, p."Int"), (2, 3)) AS v(_ord, "Value")
+    SELECT "v"."Value"
+    FROM (VALUES (0, 1::int), (1, "p"."Int"), (2, 3)) AS v(_ord, "Value")
     ORDER BY v._ord NULLS FIRST
-    LIMIT 1 OFFSET p."Int") = 1
+    LIMIT 1 OFFSET "p"."Int") = 1
 """);
     }
 
@@ -1047,9 +1047,9 @@ WHERE (
             """
 $__ints_0={ '0', '2', '3' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE $__ints_0[p."Int" + 1] = p."Int"
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE $__ints_0["p"."Int" + 1] = "p"."Int"
 """);
     }
 
@@ -1061,9 +1061,9 @@ WHERE $__ints_0[p."Int" + 1] = p."Int"
             """
 $__ints_0={ '1', '2', '3' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE $__ints_0[p."Int" + 1] = 1
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE $__ints_0["p"."Int" + 1] = 1
 """);
     }
 
@@ -1073,9 +1073,9 @@ WHERE $__ints_0[p."Int" + 1] = 1
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints"[2] = 10
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Ints"[2] = 10
 """);
     }
 
@@ -1085,11 +1085,11 @@ WHERE p."Ints"[2] = 10
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT i.value
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     LIMIT 1) = 1
 """);
     }
@@ -1100,11 +1100,11 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE COALESCE((
     SELECT i.value
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     LIMIT 1), 0) = 1
 """);
     }
@@ -1115,11 +1115,11 @@ WHERE COALESCE((
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT i.value
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     LIMIT 1) = 1
 """);
     }
@@ -1130,11 +1130,11 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE COALESCE((
     SELECT i.value
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     LIMIT 1), 0) = 1
 """);
     }
@@ -1145,9 +1145,9 @@ WHERE COALESCE((
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE cardinality(p."Ints"[2:]) = 2
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE cardinality("p"."Ints"[2:]) = 2
 """);
     }
 
@@ -1157,9 +1157,9 @@ WHERE cardinality(p."Ints"[2:]) = 2
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE 11 = ANY (p."Ints"[:2])
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE 11 = ANY ("p"."Ints"[:2])
 """);
     }
 
@@ -1169,9 +1169,9 @@ WHERE 11 = ANY (p."Ints"[:2])
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE 11 = ANY (p."Ints"[2:3])
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE 11 = ANY ("p"."Ints"[2:3])
 """);
     }
 
@@ -1181,13 +1181,13 @@ WHERE 11 = ANY (p."Ints"[2:3])
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
         SELECT 1
-        FROM unnest(p."Ints") AS i(value)
+        FROM unnest("p"."Ints") AS i(value)
         WHERE i.value > 1
         OFFSET 1
     ) AS i0) = 3
@@ -1200,13 +1200,13 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
         SELECT 1
-        FROM unnest(p."Ints") AS i(value)
+        FROM unnest("p"."Ints") AS i(value)
         WHERE i.value > 1
         LIMIT 2
     ) AS i0) = 2
@@ -1219,13 +1219,13 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
         SELECT 1
-        FROM unnest(p."Ints") AS i(value)
+        FROM unnest("p"."Ints") AS i(value)
         WHERE i.value > 1
         LIMIT 2 OFFSET 1
     ) AS i0) = 1
@@ -1238,11 +1238,11 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE 11 IN (
     SELECT i.value
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     WHERE i.value > 1
 )
 """);
@@ -1254,11 +1254,11 @@ WHERE 11 IN (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT i.value
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     ORDER BY i.value DESC NULLS LAST
     LIMIT 1 OFFSET 0) = 111
 """);
@@ -1270,11 +1270,11 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT i.value
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     WHERE i.value > 1
     LIMIT 1 OFFSET 0) = 11
 """);
@@ -1286,9 +1286,9 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE cardinality(p."Ints") > 0
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE cardinality("p"."Ints") > 0
 """);
     }
 
@@ -1298,13 +1298,13 @@ WHERE cardinality(p."Ints") > 0
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
         SELECT DISTINCT i.value
-        FROM unnest(p."Ints") AS i(value)
+        FROM unnest("p"."Ints") AS i(value)
     ) AS i0) = 3
 """);
     }
@@ -1316,8 +1316,8 @@ WHERE (
         AssertSql(
             """
 SELECT i.value
-FROM "PrimitiveCollectionsEntity" AS p
-JOIN LATERAL unnest(p."Ints") AS i(value) ON TRUE
+FROM "PrimitiveCollectionsEntity" "p"
+JOIN LATERAL unnest("p"."Ints") AS i(value) ON TRUE
 """);
     }
 
@@ -1328,10 +1328,10 @@ JOIN LATERAL unnest(p."Ints") AS i(value) ON TRUE
         AssertSql(
             """
 SELECT i0.value
-FROM "PrimitiveCollectionsEntity" AS p
+FROM "PrimitiveCollectionsEntity" "p"
 JOIN LATERAL (
     SELECT i.value
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     WHERE i.value > 1
 ) AS i0 ON TRUE
 """);
@@ -1344,8 +1344,8 @@ JOIN LATERAL (
         AssertSql(
             """
 SELECT i.value AS "Original", i.value + 1 AS "Incremented"
-FROM "PrimitiveCollectionsEntity" AS p
-JOIN LATERAL unnest(p."Ints") AS i(value) ON TRUE
+FROM "PrimitiveCollectionsEntity" "p"
+JOIN LATERAL unnest("p"."Ints") AS i(value) ON TRUE
 """);
     }
 
@@ -1355,9 +1355,9 @@ JOIN LATERAL unnest(p."Ints") AS i(value) ON TRUE
 
         AssertSql(
             """
-SELECT p."Ints"
-FROM "PrimitiveCollectionsEntity" AS p
-ORDER BY p."Id" NULLS FIRST
+SELECT "p"."Ints"
+FROM "PrimitiveCollectionsEntity" "p"
+ORDER BY "p"."Id" NULLS FIRST
 """);
     }
 
@@ -1369,11 +1369,11 @@ ORDER BY p."Id" NULLS FIRST
             """
 $__ints_0={ '11', '111' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
     INNER JOIN unnest($__ints_0) AS i0(value) ON i.value = i0.value) = 2
 """);
     }
@@ -1384,12 +1384,12 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
-    FROM (VALUES (11::int), (111)) AS v("Value")
-    INNER JOIN unnest(p."Ints") AS i(value) ON v."Value" = i.value) = 2
+    FROM (VALUES (11::int), (111)) AS "v"("Value")
+    INNER JOIN unnest("p"."Ints") AS i(value) ON "v"."Value" = i.value) = 2
 """);
     }
 
@@ -1401,9 +1401,9 @@ WHERE (
             """
 $__ints_0={ '11', '111' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE cardinality($__ints_0 || p."Ints") = 2
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE cardinality($__ints_0 || "p"."Ints") = 2
 """);
     }
 
@@ -1416,10 +1416,10 @@ WHERE cardinality($__ints_0 || p."Ints") = 2
 $__values_0={ 'one', 'two' } (DbType = Object)
 
 SELECT CASE
-    WHEN p."Id" <> 0 THEN $__values_0[p."Int" % 2 + 1]
+    WHEN "p"."Id" <> 0 THEN $__values_0["p"."Int" % 2 + 1]
     ELSE 'foo'
 END
-FROM "PrimitiveCollectionsEntity" AS p
+FROM "PrimitiveCollectionsEntity" "p"
 """);
     }
 
@@ -1431,13 +1431,13 @@ FROM "PrimitiveCollectionsEntity" AS p
             """
 $__ints_0={ '11', '111' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
         SELECT i.value
-        FROM unnest(p."Ints") AS i(value)
+        FROM unnest("p"."Ints") AS i(value)
         UNION
         SELECT i0.value
         FROM unnest($__ints_0) AS i0(value)
@@ -1451,13 +1451,13 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
         SELECT i.value
-        FROM unnest(p."Ints") AS i(value)
+        FROM unnest("p"."Ints") AS i(value)
         INTERSECT
         VALUES (11::int), (111)
     ) AS i0) = 2
@@ -1478,9 +1478,9 @@ WHERE (
             """
 $__ints_0={ '11', '12' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints" && $__ints_0
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Ints" && $__ints_0
 """);
     }
 
@@ -1490,16 +1490,16 @@ WHERE p."Ints" && $__ints_0
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
-        SELECT v."Value"
-        FROM (VALUES (11::int), (111)) AS v("Value")
+        SELECT "v"."Value"
+        FROM (VALUES (11::int), (111)) AS "v"("Value")
         EXCEPT
         SELECT i.value AS "Value"
-        FROM unnest(p."Ints") AS i(value)
+        FROM unnest("p"."Ints") AS i(value)
     ) AS e
     WHERE e."Value" % 2 = 1) = 2
 """);
@@ -1511,13 +1511,13 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
         SELECT i.value
-        FROM unnest(p."Ints") AS i(value)
+        FROM unnest("p"."Ints") AS i(value)
         WHERE i.value > 100
         UNION
         VALUES (50::int)
@@ -1541,9 +1541,9 @@ WHERE (
 $__ints1_0={ '11' } (DbType = Object)
 $__ints2_1={ '12' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE cardinality($__ints1_0 || p."Ints" || $__ints2_1) = 4
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE cardinality($__ints1_0 || "p"."Ints" || $__ints2_1) = 4
 """);
     }
 
@@ -1562,9 +1562,9 @@ WHERE cardinality($__ints1_0 || p."Ints" || $__ints2_1) = 4
             """
 $__ints_0={ '1', '10' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints" = $__ints_0
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Ints" = $__ints_0
 """);
     }
 
@@ -1574,9 +1574,9 @@ WHERE p."Ints" = $__ints_0
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints" = ARRAY[1,10]::integer[]
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Ints" = ARRAY[1,10]::integer[]
 """);
     }
 
@@ -1594,9 +1594,9 @@ WHERE p."Ints" = ARRAY[1,10]::integer[]
 $__i_0='1'
 $__j_1='10'
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints" = ARRAY[$__i_0,$__j_1]::integer[]
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Ints" = ARRAY[$__i_0,$__j_1]::integer[]
 """);
     }
 
@@ -1615,8 +1615,8 @@ WHERE p."Ints" = ARRAY[$__i_0,$__j_1]::integer[]
             """
 $__ints={ '10', '111' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
@@ -1624,7 +1624,7 @@ WHERE (
         FROM unnest($__ints[2:]) AS i(value)
         UNION
         SELECT i0.value
-        FROM unnest(p."Ints") AS i0(value)
+        FROM unnest("p"."Ints") AS i0(value)
     ) AS u) = 3
 """);
     }
@@ -1637,8 +1637,8 @@ WHERE (
             """
 $__Skip_0={ '111' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
@@ -1646,7 +1646,7 @@ WHERE (
         FROM unnest($__Skip_0) AS s(value)
         UNION
         SELECT i.value
-        FROM unnest(p."Ints") AS i(value)
+        FROM unnest("p"."Ints") AS i(value)
     ) AS u) = 3
 """);
     }
@@ -1659,8 +1659,8 @@ WHERE (
             """
 $__Skip_0={ '111' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
@@ -1674,7 +1674,7 @@ WHERE (
                 SELECT DISTINCT i0.value
                 FROM (
                     SELECT i.value
-                    FROM unnest(p."Ints") AS i(value)
+                    FROM unnest("p"."Ints") AS i(value)
                     ORDER BY i.value NULLS FIRST
                     OFFSET 1
                 ) AS i0
@@ -1709,11 +1709,11 @@ WHERE (
 $__ints={ '10', '111' } (DbType = Object)
 
 SELECT count(*)::int
-FROM "PrimitiveCollectionsEntity" AS p
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM unnest($__ints[2:]) AS i(value)
-    WHERE i.value > p."Id") = 1
+    WHERE i.value > "p"."Id") = 1
 """);
     }
 
@@ -1725,13 +1725,13 @@ WHERE (
             """
 $__ints_0={ '10', '111' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE (
     SELECT count(*)::int
     FROM (
         SELECT i.value
-        FROM unnest(p."Ints"[2:]) AS i(value)
+        FROM unnest("p"."Ints"[2:]) AS i(value)
         UNION
         SELECT i0.value
         FROM unnest($__ints_0) AS i0(value)
@@ -1745,9 +1745,9 @@ WHERE (
 
         AssertSql(
             """
-SELECT p."Ints"
-FROM "PrimitiveCollectionsEntity" AS p
-ORDER BY p."Id" NULLS FIRST
+SELECT "p"."Ints"
+FROM "PrimitiveCollectionsEntity" "p"
+ORDER BY "p"."Id" NULLS FIRST
 """);
     }
 
@@ -1757,10 +1757,10 @@ ORDER BY p."Id" NULLS FIRST
 
         AssertSql(
             """
-SELECT p."Id", i.value, i.ordinality
-FROM "PrimitiveCollectionsEntity" AS p
-LEFT JOIN LATERAL unnest(p."Ints") WITH ORDINALITY AS i(value) ON TRUE
-ORDER BY p."Id" NULLS FIRST, i.value DESC NULLS LAST
+SELECT "p"."Id", i.value, i.ordinality
+FROM "PrimitiveCollectionsEntity" "p"
+LEFT JOIN LATERAL unnest("p"."Ints") WITH ORDINALITY AS i(value) ON TRUE
+ORDER BY "p"."Id" NULLS FIRST, i.value DESC NULLS LAST
 """);
     }
 
@@ -1770,14 +1770,14 @@ ORDER BY p."Id" NULLS FIRST, i.value DESC NULLS LAST
 
         AssertSql(
             """
-SELECT p."Id", d0.value, d0.ordinality
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", d0.value, d0.ordinality
+FROM "PrimitiveCollectionsEntity" "p"
 LEFT JOIN LATERAL (
     SELECT d.value, d.ordinality
-    FROM unnest(p."DateTimes") WITH ORDINALITY AS d(value)
+    FROM unnest("p"."DateTimes") WITH ORDINALITY AS d(value)
     WHERE date_part('day', d.value AT TIME ZONE 'UTC')::int <> 1
 ) AS d0 ON TRUE
-ORDER BY p."Id" NULLS FIRST, d0.ordinality NULLS FIRST
+ORDER BY "p"."Id" NULLS FIRST, d0.ordinality NULLS FIRST
 """);
     }
 
@@ -1787,10 +1787,10 @@ ORDER BY p."Id" NULLS FIRST, d0.ordinality NULLS FIRST
 
         AssertSql(
             """
-SELECT p."Id", n.value, n.ordinality
-FROM "PrimitiveCollectionsEntity" AS p
-LEFT JOIN LATERAL unnest(p."NullableInts"[:20]) WITH ORDINALITY AS n(value) ON TRUE
-ORDER BY p."Id" NULLS FIRST
+SELECT "p"."Id", n.value, n.ordinality
+FROM "PrimitiveCollectionsEntity" "p"
+LEFT JOIN LATERAL unnest("p"."NullableInts"[:20]) WITH ORDINALITY AS n(value) ON TRUE
+ORDER BY "p"."Id" NULLS FIRST
 """);
     }
 
@@ -1800,15 +1800,15 @@ ORDER BY p."Id" NULLS FIRST
 
         AssertSql(
             """
-SELECT p."Id", n0.value, n0.ordinality
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", n0.value, n0.ordinality
+FROM "PrimitiveCollectionsEntity" "p"
 LEFT JOIN LATERAL (
     SELECT n.value, n.ordinality
-    FROM unnest(p."NullableInts") WITH ORDINALITY AS n(value)
+    FROM unnest("p"."NullableInts") WITH ORDINALITY AS n(value)
     ORDER BY n.value NULLS FIRST
     OFFSET 1
 ) AS n0 ON TRUE
-ORDER BY p."Id" NULLS FIRST, n0.value NULLS FIRST
+ORDER BY "p"."Id" NULLS FIRST, n0.value NULLS FIRST
 """);
     }
 
@@ -1818,10 +1818,10 @@ ORDER BY p."Id" NULLS FIRST, n0.value NULLS FIRST
 
         AssertSql(
             """
-SELECT p."Id", n.value, n.ordinality
-FROM "PrimitiveCollectionsEntity" AS p
-LEFT JOIN LATERAL unnest(p."NullableInts"[3:]) WITH ORDINALITY AS n(value) ON TRUE
-ORDER BY p."Id" NULLS FIRST
+SELECT "p"."Id", n.value, n.ordinality
+FROM "PrimitiveCollectionsEntity" "p"
+LEFT JOIN LATERAL unnest("p"."NullableInts"[3:]) WITH ORDINALITY AS n(value) ON TRUE
+ORDER BY "p"."Id" NULLS FIRST
 """);
     }
 
@@ -1831,13 +1831,13 @@ ORDER BY p."Id" NULLS FIRST
 
         AssertSql(
             """
-SELECT p."Id", i0.value
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", i0.value
+FROM "PrimitiveCollectionsEntity" "p"
 LEFT JOIN LATERAL (
     SELECT DISTINCT i.value
-    FROM unnest(p."Ints") AS i(value)
+    FROM unnest("p"."Ints") AS i(value)
 ) AS i0 ON TRUE
-ORDER BY p."Id" NULLS FIRST
+ORDER BY "p"."Id" NULLS FIRST
 """);
     }
 
@@ -1856,9 +1856,9 @@ ORDER BY p."Id" NULLS FIRST
             """
 SELECT p0."Id", i.value, i.ordinality
 FROM (
-    SELECT p."Id", p."Ints"
-    FROM "PrimitiveCollectionsEntity" AS p
-    ORDER BY p."Id" NULLS FIRST
+    SELECT "p"."Id", "p"."Ints"
+    FROM "PrimitiveCollectionsEntity" "p"
+    ORDER BY "p"."Id" NULLS FIRST
     LIMIT 1
 ) AS p0
 LEFT JOIN LATERAL unnest(p0."Ints") WITH ORDINALITY AS i(value) ON TRUE
@@ -1872,19 +1872,19 @@ ORDER BY p0."Id" NULLS FIRST, i.ordinality NULLS FIRST
 
         AssertSql(
             """
-SELECT p."Id", n1.value, n1.ordinality, n2.value, n2.ordinality
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", n1.value, n1.ordinality, n2.value, n2.ordinality
+FROM "PrimitiveCollectionsEntity" "p"
 LEFT JOIN LATERAL (
     SELECT n.value, n.ordinality
-    FROM unnest(p."NullableInts") WITH ORDINALITY AS n(value)
+    FROM unnest("p"."NullableInts") WITH ORDINALITY AS n(value)
     WHERE FALSE
 ) AS n1 ON TRUE
 LEFT JOIN LATERAL (
     SELECT n0.value, n0.ordinality
-    FROM unnest(p."NullableInts") WITH ORDINALITY AS n0(value)
+    FROM unnest("p"."NullableInts") WITH ORDINALITY AS n0(value)
     WHERE n0.value IS NULL
 ) AS n2 ON TRUE
-ORDER BY p."Id" NULLS FIRST, n1.ordinality NULLS FIRST, n2.ordinality NULLS FIRST
+ORDER BY "p"."Id" NULLS FIRST, n1.ordinality NULLS FIRST, n2.ordinality NULLS FIRST
 """);
     }
 
@@ -1912,21 +1912,21 @@ ORDER BY p."Id" NULLS FIRST, n1.ordinality NULLS FIRST, n2.ordinality NULLS FIRS
 
         AssertSql(
             """
-SELECT p."Id", i.value, i.ordinality, i0.value, i0.ordinality, d1.value, d1.ordinality, d2.value, d2.ordinality
-FROM "PrimitiveCollectionsEntity" AS p
-LEFT JOIN LATERAL unnest(p."Ints") WITH ORDINALITY AS i(value) ON TRUE
-LEFT JOIN LATERAL unnest(p."Ints") WITH ORDINALITY AS i0(value) ON TRUE
+SELECT "p"."Id", i.value, i.ordinality, i0.value, i0.ordinality, d1.value, d1.ordinality, d2.value, d2.ordinality
+FROM "PrimitiveCollectionsEntity" "p"
+LEFT JOIN LATERAL unnest("p"."Ints") WITH ORDINALITY AS i(value) ON TRUE
+LEFT JOIN LATERAL unnest("p"."Ints") WITH ORDINALITY AS i0(value) ON TRUE
 LEFT JOIN LATERAL (
     SELECT d.value, d.ordinality
-    FROM unnest(p."DateTimes") WITH ORDINALITY AS d(value)
+    FROM unnest("p"."DateTimes") WITH ORDINALITY AS d(value)
     WHERE date_part('day', d.value AT TIME ZONE 'UTC')::int <> 1
 ) AS d1 ON TRUE
 LEFT JOIN LATERAL (
     SELECT d0.value, d0.ordinality
-    FROM unnest(p."DateTimes") WITH ORDINALITY AS d0(value)
+    FROM unnest("p"."DateTimes") WITH ORDINALITY AS d0(value)
     WHERE d0.value > TIMESTAMPTZ '2000-01-01T00:00:00Z'
 ) AS d2 ON TRUE
-ORDER BY p."Id" NULLS FIRST, i.ordinality NULLS FIRST, i0.value DESC NULLS LAST, i0.ordinality NULLS FIRST, d1.ordinality NULLS FIRST, d2.ordinality NULLS FIRST
+ORDER BY "p"."Id" NULLS FIRST, i.ordinality NULLS FIRST, i0.value DESC NULLS LAST, i0.ordinality NULLS FIRST, d1.ordinality NULLS FIRST, d2.ordinality NULLS FIRST
 """);
     }
 
@@ -1936,10 +1936,10 @@ ORDER BY p."Id" NULLS FIRST, i.ordinality NULLS FIRST, i0.value DESC NULLS LAST,
 
         AssertSql(
             """
-SELECT p."Ints"[1] AS "Indexer", p."DateTimes"[1] AS "EnumerableElementAt", p."Strings"[2] AS "QueryableElementAt"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Id" < 4
-ORDER BY p."Id" NULLS FIRST
+SELECT "p"."Ints"[1] AS "Indexer", "p"."DateTimes"[1] AS "EnumerableElementAt", "p"."Strings"[2] AS "QueryableElementAt"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE "p"."Id" < 4
+ORDER BY "p"."Id" NULLS FIRST
 """);
     }
 
@@ -1949,8 +1949,8 @@ ORDER BY p."Id" NULLS FIRST
 
         AssertSql(
             """
-SELECT ARRAY[p."String",'foo']::text[]
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT ARRAY["p"."String",'foo']::text[]
+FROM "PrimitiveCollectionsEntity" "p"
 """);
     }
 
@@ -1960,16 +1960,16 @@ FROM "PrimitiveCollectionsEntity" AS p
 
         AssertSql(
             """
-SELECT p."Id", u."Value"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", u."Value"
+FROM "PrimitiveCollectionsEntity" "p"
 LEFT JOIN LATERAL (
-    SELECT v."Value"
-    FROM (VALUES (p."String")) AS v("Value")
+    SELECT "v"."Value"
+    FROM (VALUES ("p"."String")) AS "v"("Value")
     UNION
     SELECT p0."String" AS "Value"
-    FROM "PrimitiveCollectionsEntity" AS p0
+    FROM "PrimitiveCollectionsEntity" "p"0
 ) AS u ON TRUE
-ORDER BY p."Id" NULLS FIRST
+ORDER BY "p"."Id" NULLS FIRST
 """);
     }
 
@@ -1989,10 +1989,10 @@ ORDER BY p."Id" NULLS FIRST
 $__ints_0={ '1', '2', '3' } (DbType = Object)
 $__strings_1={ 'one', 'two', 'three' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE CASE
-    WHEN p."Int" = ANY ($__ints_0) THEN 'one'
+    WHEN "p"."Int" = ANY ($__ints_0) THEN 'one'
     ELSE 'two'
 END = ANY ($__strings_1)
 """);
@@ -2007,10 +2007,10 @@ END = ANY ($__strings_1)
 $__ints_0={ '1', '2', '3' } (DbType = Object)
 $__strings_1={ 'one', 'two', 'three' } (DbType = Object)
 
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
 WHERE CASE
-    WHEN p."Int" = ANY ($__ints_0) THEN 'one'
+    WHEN "p"."Int" = ANY ($__ints_0) THEN 'one'
     ELSE 'two'
 END = ANY ($__strings_1)
 """);
@@ -2027,9 +2027,9 @@ END = ANY ($__strings_1)
 
         AssertSql(
             """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE cardinality(array_remove(p."Ints", 1)) = 1
+SELECT "p"."Id", "p"."Bool", "p"."Bools", "p"."DateTime", "p"."DateTimes", "p"."Enum", "p"."Enums", "p"."Int", "p"."Ints", "p"."NullableInt", "p"."NullableInts", "p"."NullableString", "p"."NullableStrings", "p"."String", "p"."Strings"
+FROM "PrimitiveCollectionsEntity" "p"
+WHERE cardinality(array_remove("p"."Ints", 1)) = 1
 """);
     }
 
