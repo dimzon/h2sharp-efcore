@@ -107,9 +107,11 @@ public class H2TimestampTypeMapping : H2TypeMapping
             }
         }
 
-        return dateTime.Kind != DateTimeKind.Utc
-            ? dateTime.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture)
-            : throw new ArgumentException("'timestamp without time zone' literal cannot be generated for a UTC DateTime");
+        // A TIMESTAMP WITHOUT TIME ZONE literal has no offset: H2 reads its components as wall
+        // clock time. A UTC DateTime has equally well-defined components, so writing them is not
+        // the silent zone shift the PG provider guards against. Only the Kind marker is lost, and
+        // H2 reads this column back with Kind=Unspecified either way.
+        return dateTime.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture);
     }
 
     /// <summary>

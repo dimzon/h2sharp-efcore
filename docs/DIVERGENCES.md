@@ -188,6 +188,18 @@ EF их не отдаёт генератору, как в апстриме).
    4 группы с `p0.Key` в производной таблице и 3 формы без LATERAL.
    Полный gate: 12597 passed / 0 failed functional, 325 model, 151 unit
    на net9 и net10.
+   `H2TimestampTypeMapping` больше не отвергает `DateTime` с `Kind=Utc` для
+   `timestamp without time zone`: у H2 в таком литерале нет смещения, поэтому
+   пишутся компоненты времени, а не происходит скрытый сдвиг, которого
+   избегает PG-провайдер. Это сняло 49 отказов `PrecompiledQueryH2Test`;
+   регрессия зафиксирована в `H2TimestampUtcLiteralTest`. Класс остаётся
+   blocked: 62 refusal precompilation `JsonElement` → `MemoryStream`, 41
+   PG-базлайн и 2 `UPDATE ... FROM`, которого нет в H2 2.5. Из того же забега
+   `AdHocJsonQueryH2Test` (62) и `AdHocAdvancedMappingsQueryH2Test` /
+   `OptionalDependentQueryH2Test` (23/20) остаются blocked по тем же причинам
+   JSON-коэрции и отсутствию ожидаемых исключений.
+   Полный gate: 12597 passed / 0 failed functional, 325 model, 152 unit
+   на net9 и net10.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
