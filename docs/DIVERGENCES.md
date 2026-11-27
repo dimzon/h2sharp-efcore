@@ -210,6 +210,12 @@ EF их не отдаёт генератору, как в апстриме).
    свой store; три повторных прогона — 244/244.
    Полный gate: 12607 passed / 0 failed functional, 325 model, 152 unit
    на net9 и net10.
+   `EntitySplittingQueryH2Test` полностью переведён на H2-базлайны и снят с
+   `BlockedByPort`: 75 passed, 20 skipped (upstream-причины). PG-алиасы
+   заменены на `"e"` без `AS` (кроме производных таблиц, где `AS` сохраняется),
+   `NULL::int` → `CAST(NULL AS integer)`.
+   Полный gate: 12682 passed / 0 failed functional, 325 model, 152 unit
+   на net9 и net10.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
