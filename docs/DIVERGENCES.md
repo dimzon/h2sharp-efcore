@@ -272,6 +272,10 @@ EF их не отдаёт генератору, как в апстриме).
    варианты получили собственные store (делили его с нефильтрованными).
    `TPCInheritanceQueryH2Test` остаётся blocked: 16 отказов с на один row
    больше на TPC-наборе.
+   Снят `BlockedByPort` с обоих классов `ConnectionInterceptionH2Test` и с
+   `FunkyDataQueryH2Test` — после разделения store они зелёные.
+   `AdHocMiscellaneousQueryH2Test` остаётся blocked из-за одного теста,
+   ожидающего PG-исключение при NULL-ключе.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:

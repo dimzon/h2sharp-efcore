@@ -76,7 +76,6 @@ public abstract class ConnectionInterceptionH2TestBase(ConnectionInterceptionH2T
             => throw new NotImplementedException();
     }
 
-    [Trait("Category", "BlockedByPort")]
     public class ConnectionInterceptionH2Test(ConnectionInterceptionH2Test.InterceptionH2Fixture fixture)
         : ConnectionInterceptionH2TestBase(fixture), IClassFixture<ConnectionInterceptionH2Test.InterceptionH2Fixture>
     {
@@ -87,7 +86,6 @@ public abstract class ConnectionInterceptionH2TestBase(ConnectionInterceptionH2T
         }
     }
 
-    [Trait("Category", "BlockedByPort")]
     public class ConnectionInterceptionWithDiagnosticsH2Test(
         ConnectionInterceptionWithDiagnosticsH2Test.InterceptionH2Fixture fixture)
         : ConnectionInterceptionH2TestBase(fixture),
