@@ -280,6 +280,9 @@ EF их не отдаёт генератору, как в апстриме).
    Базлайны переведены на H2-алиасы, `DbType = String` и
    `CAST(count(*) AS integer)`; 4 метода остались blocked (LATERAL и форма
    ARRAY-литерала).
+   Снят `BlockedByPort` с `Ef6GroupByH2Test`, `NullSemanticsQueryH2Test` и
+   `PrecompiledSqlPregenerationQueryH2Test`: 450 passed, 1 skipped. Последний
+   базлайн Ef6GroupBy переведён на `CAST(length(...) AS integer)`.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:

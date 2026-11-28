@@ -1,10 +1,9 @@
-using H2Sharp.EntityFrameworkCore.TestUtilities;
+﻿using H2Sharp.EntityFrameworkCore.TestUtilities;
 
 using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-[Trait("Category", "BlockedByPort")]
 public class Ef6GroupByH2Test : Ef6GroupByTestBase<Ef6GroupByH2Test.Ef6GroupByH2Fixture>
 {
     public Ef6GroupByH2Test(Ef6GroupByH2Fixture fixture, ITestOutputHelper testOutputHelper)
@@ -21,18 +20,18 @@ public class Ef6GroupByH2Test : Ef6GroupByTestBase<Ef6GroupByH2Test.Ef6GroupByH2
         AssertSql(
             """
 SELECT (
-    SELECT p0."LastName"
-    FROM "Person" AS p0
-    WHERE p0."MiddleInitial" = 'Q' AND p0."Age" = 20 AND (p."LastName" = p0."LastName" OR (p."LastName" IS NULL AND p0."LastName" IS NULL))
+    SELECT "p0"."LastName"
+    FROM "Person" "p0"
+    WHERE "p0"."MiddleInitial" = 'Q' AND "p0"."Age" = 20 AND ("p"."LastName" = "p0"."LastName" OR ("p"."LastName" IS NULL AND "p0"."LastName" IS NULL))
     LIMIT 1)
-FROM "Person" AS p
-WHERE p."MiddleInitial" = 'Q' AND p."Age" = 20
-GROUP BY p."LastName"
-ORDER BY length((
-    SELECT p0."LastName"
-    FROM "Person" AS p0
-    WHERE p0."MiddleInitial" = 'Q' AND p0."Age" = 20 AND (p."LastName" = p0."LastName" OR (p."LastName" IS NULL AND p0."LastName" IS NULL))
-    LIMIT 1))::int NULLS FIRST
+FROM "Person" "p"
+WHERE "p"."MiddleInitial" = 'Q' AND "p"."Age" = 20
+GROUP BY "p"."LastName"
+ORDER BY CAST(length((
+    SELECT "p0"."LastName"
+    FROM "Person" "p0"
+    WHERE "p0"."MiddleInitial" = 'Q' AND "p0"."Age" = 20 AND ("p"."LastName" = "p0"."LastName" OR ("p"."LastName" IS NULL AND "p0"."LastName" IS NULL))
+    LIMIT 1)) AS integer) NULLS FIRST
 """);
     }
 
@@ -43,16 +42,16 @@ ORDER BY length((
         AssertSql(
             """
 SELECT (
-    SELECT p0."LastName"
-    FROM "Person" AS p0
-    WHERE p."FirstName" = p0."FirstName" OR (p."FirstName" IS NULL AND p0."FirstName" IS NULL)
+    SELECT "p0"."LastName"
+    FROM "Person" "p0"
+    WHERE "p"."FirstName" = "p0"."FirstName" OR ("p"."FirstName" IS NULL AND "p0"."FirstName" IS NULL)
     LIMIT 1)
-FROM "Person" AS p
-GROUP BY p."FirstName"
+FROM "Person" "p"
+GROUP BY "p"."FirstName"
 ORDER BY (
-    SELECT p0."LastName"
-    FROM "Person" AS p0
-    WHERE p."FirstName" = p0."FirstName" OR (p."FirstName" IS NULL AND p0."FirstName" IS NULL)
+    SELECT "p0"."LastName"
+    FROM "Person" "p0"
+    WHERE "p"."FirstName" = "p0"."FirstName" OR ("p"."FirstName" IS NULL AND "p0"."FirstName" IS NULL)
     LIMIT 1) NULLS FIRST
 """);
     }
@@ -64,17 +63,17 @@ ORDER BY (
         AssertSql(
             """
 SELECT (
-    SELECT p0."MiddleInitial"
-    FROM "Person" AS p0
-    WHERE p0."Age" = 20 AND p."Id" = p0."Id"
+    SELECT "p0"."MiddleInitial"
+    FROM "Person" "p0"
+    WHERE "p0"."Age" = 20 AND "p"."Id" = "p0"."Id"
     LIMIT 1)
-FROM "Person" AS p
-WHERE p."Age" = 20
-GROUP BY p."Id"
+FROM "Person" "p"
+WHERE "p"."Age" = 20
+GROUP BY "p"."Id"
 ORDER BY (
-    SELECT p0."MiddleInitial"
-    FROM "Person" AS p0
-    WHERE p0."Age" = 20 AND p."Id" = p0."Id"
+    SELECT "p0"."MiddleInitial"
+    FROM "Person" "p0"
+    WHERE "p0"."Age" = 20 AND "p"."Id" = "p0"."Id"
     LIMIT 1) NULLS FIRST
 """);
     }

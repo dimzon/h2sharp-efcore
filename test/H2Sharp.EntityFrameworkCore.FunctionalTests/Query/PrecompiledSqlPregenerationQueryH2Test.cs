@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.Query.Internal;
+﻿using Microsoft.EntityFrameworkCore.Query.Internal;
 using H2Sharp.EntityFrameworkCore.Infrastructure;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 
@@ -8,7 +8,6 @@ namespace H2Sharp.EntityFrameworkCore.Query;
 
 // ReSharper disable InconsistentNaming
 
-[Trait("Category", "BlockedByPort")]
 public class PrecompiledSqlPregenerationQueryH2Test(
     PrecompiledSqlPregenerationQueryH2Test.PrecompiledSqlPregenerationQueryH2Fixture fixture,
     ITestOutputHelper testOutputHelper)
@@ -24,9 +23,9 @@ public class PrecompiledSqlPregenerationQueryH2Test(
 
         AssertSql(
             """
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Name" = 'foo'
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Name" = 'foo'
 """);
     }
 
@@ -38,9 +37,9 @@ WHERE b."Name" = 'foo'
             """
 $__id_0='8'
 
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Id" = $__id_0
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Id" = $__id_0
 """);
     }
 
@@ -52,9 +51,9 @@ WHERE b."Id" = $__id_0
             """
 $__id_0='8' (Nullable = true)
 
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Id" = $__id_0
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Id" = $__id_0
 """);
     }
 
@@ -66,9 +65,9 @@ WHERE b."Id" = $__id_0
             """
 $__name_0='bar'
 
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Name" = $__name_0
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Name" = $__name_0
 """);
     }
 
@@ -80,9 +79,9 @@ WHERE b."Name" = $__name_0
             """
 $__name_0='bar' (Nullable = false)
 
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Name" = $__name_0
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Name" = $__name_0
 """);
     }
 
@@ -95,9 +94,9 @@ WHERE b."Name" = $__name_0
 $__id1_0='8' (Nullable = true)
 $__id2_1='9'
 
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Id" = $__id1_0 OR b."Id" = $__id2_1
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Id" = $__id1_0 OR "b"."Id" = $__id2_1
 """);
     }
 
@@ -110,9 +109,9 @@ WHERE b."Id" = $__id1_0 OR b."Id" = $__id2_1
 $__name1_0='foo'
 $__name2_1='bar'
 
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Name" = $__name1_0 OR "b"."Name" = $__name2_1
 """);
     }
 
@@ -125,9 +124,9 @@ WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1
 $__name1_0='foo' (Nullable = false)
 $__name2_1='bar' (Nullable = false)
 
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Name" = $__name1_0 OR "b"."Name" = $__name2_1
 """);
     }
 
@@ -140,9 +139,9 @@ WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1
 $__name1_0='foo'
 $__name2_1='bar' (Nullable = false)
 
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Name" = $__name1_0 OR "b"."Name" = $__name2_1
 """);
     }
 
@@ -157,9 +156,9 @@ $__name2_1='bar'
 $__name3_2='baz'
 $__name4_3='baq'
 
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1 OR b."Name" = $__name3_2 OR b."Name" = $__name4_3
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Name" = $__name1_0 OR "b"."Name" = $__name2_1 OR "b"."Name" = $__name3_2 OR "b"."Name" = $__name4_3
 """);
     }
 
@@ -174,9 +173,9 @@ $__name2_1='bar' (Nullable = false)
 $__name3_2='baz' (Nullable = false)
 $__name4_3='baq' (Nullable = false)
 
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1 OR b."Name" = $__name3_2 OR b."Name" = $__name4_3
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+WHERE "b"."Name" = $__name1_0 OR "b"."Name" = $__name2_1 OR "b"."Name" = $__name3_2 OR "b"."Name" = $__name4_3
 """);
     }
 
@@ -188,10 +187,10 @@ WHERE b."Name" = $__name1_0 OR b."Name" = $__name2_1 OR b."Name" = $__name3_2 OR
 
         AssertSql(
             """
-SELECT b."Id", b."Name", p."Id", p."BlogId", p."Title"
-FROM "Blogs" AS b
-LEFT JOIN "Post" AS p ON b."Id" = p."BlogId"
-ORDER BY b."Id" NULLS FIRST
+SELECT "b"."Id", "b"."Name", "p"."Id", "p"."BlogId", "p"."Title"
+FROM "Blogs" "b"
+LEFT JOIN "Post" "p" ON "b"."Id" = "p"."BlogId"
+ORDER BY "b"."Id" NULLS FIRST
 """);
     }
 
@@ -201,16 +200,16 @@ ORDER BY b."Id" NULLS FIRST
 
         AssertSql(
             """
-SELECT b."Id", b."Name"
-FROM "Blogs" AS b
-ORDER BY b."Id" NULLS FIRST
+SELECT "b"."Id", "b"."Name"
+FROM "Blogs" "b"
+ORDER BY "b"."Id" NULLS FIRST
 """,
             //
             """
-SELECT p."Id", p."BlogId", p."Title", b."Id"
-FROM "Blogs" AS b
-INNER JOIN "Post" AS p ON b."Id" = p."BlogId"
-ORDER BY b."Id" NULLS FIRST
+SELECT "p"."Id", "p"."BlogId", "p"."Title", "b"."Id"
+FROM "Blogs" "b"
+INNER JOIN "Post" "p" ON "b"."Id" = "p"."BlogId"
+ORDER BY "b"."Id" NULLS FIRST
 """);
     }
 
@@ -220,9 +219,9 @@ ORDER BY b."Id" NULLS FIRST
 
         AssertSql(
             """
-SELECT b."Name", b."Id"
-FROM "Blogs" AS b
-ORDER BY b."Name" NULLS FIRST
+SELECT "b"."Name", "b"."Id"
+FROM "Blogs" "b"
+ORDER BY "b"."Name" NULLS FIRST
 """);
     }
 
