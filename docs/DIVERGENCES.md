@@ -304,6 +304,11 @@ EF их не отдаёт генератору, как в апстриме).
    в маппингах строятся через `ExpressionMemberHelper` из typed lambda.
    Остаток JSON-тестов падает на PG-функциях (`JSONB_ARRAY_ELEMENTS_TEXT`) и
    формах JSON-путей; это отдельный slice перевода SQL, не чтения/записи.
+   Снят `BlockedByPort` с `InheritanceRelationshipsQueryH2Test`,
+   `TPCRelationshipsQueryH2Test`, `TPTRelationshipsQueryH2Test`,
+   `TPCManyToManyQueryH2Test`, `TPTManyToManyQueryH2Test` и
+   `NorthwindKeylessEntitiesQueryH2Test`: 872 passed, 8 skipped. Method-level
+   трейты оставлены у 14 кейсов без LATERAL и defining-query-объекта.
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
      `TimeOnly`/`LocalTime` переживают round trip.
