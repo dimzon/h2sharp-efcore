@@ -5,7 +5,6 @@ using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-[Trait("Category", "BlockedByPort")]
 public class SqlQueryH2Test : SqlQueryTestBase<NorthwindQueryH2Fixture<NoopModelCustomizer>>
 {
     public SqlQueryH2Test(NorthwindQueryH2Fixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
@@ -154,7 +153,7 @@ FROM (
     SELECT * FROM "Customers"
 ) AS "m"
 WHERE "m"."CustomerID" IN (
-    SELECT m0."CustomerID"
+    SELECT "m0"."CustomerID"
     FROM (
         SELECT * FROM "Orders"
     ) AS "m0"
@@ -168,14 +167,14 @@ WHERE "m"."CustomerID" IN (
 
         AssertSql(
             """
-SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode", m0."CustomerID", m0."EmployeeID", m0."Freight", m0."OrderDate", m0."OrderID", m0."RequiredDate", m0."ShipAddress", m0."ShipCity", m0."ShipCountry", m0."ShipName", m0."ShipPostalCode", m0."ShipRegion", m0."ShipVia", m0."ShippedDate"
+SELECT "m"."Address", "m"."City", "m"."CompanyName", "m"."ContactName", "m"."ContactTitle", "m"."Country", "m"."CustomerID", "m"."Fax", "m"."Phone", "m"."Region", "m"."PostalCode", "m0"."CustomerID", "m0"."EmployeeID", "m0"."Freight", "m0"."OrderDate", "m0"."OrderID", "m0"."RequiredDate", "m0"."ShipAddress", "m0"."ShipCity", "m0"."ShipCountry", "m0"."ShipName", "m0"."ShipPostalCode", "m0"."ShipRegion", "m0"."ShipVia", "m0"."ShippedDate"
 FROM (
     SELECT * FROM "Customers"
 ) AS "m"
 CROSS JOIN (
     SELECT * FROM "Orders"
 ) AS "m0"
-WHERE "m"."CustomerID" = m0."CustomerID"
+WHERE "m"."CustomerID" = "m0"."CustomerID"
 """);
     }
 
@@ -276,7 +275,7 @@ SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $p1
 
         AssertSql(
             """
-p0=NULL (Nullable = false) (DbType = Object)
+p0=NULL (Nullable = false)
 
 SELECT * FROM "Employees" WHERE "ReportsTo" = $p0 OR ("ReportsTo" IS NULL AND $p0 IS NULL)
 """);
@@ -382,7 +381,7 @@ SELECT * FROM "Customers"
 
         AssertSql(
             """
-$city='London' (Nullable = false)
+city='London' (Nullable = false)
 
 SELECT * FROM "Customers" WHERE "City" = $city
 """);
@@ -406,13 +405,13 @@ SELECT * FROM "Customers" WHERE "City" = $city
         AssertSql(
             """
 p0='London'
-$title='Sales Representative' (Nullable = false)
+title='Sales Representative' (Nullable = false)
 
 SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $title
 """,
             //
             """
-$city='London' (Nullable = false)
+city='London' (Nullable = false)
 p1='Sales Representative'
 
 SELECT * FROM "Customers" WHERE "City" = $city AND "ContactTitle" = $p1
@@ -425,13 +424,13 @@ SELECT * FROM "Customers" WHERE "City" = $city AND "ContactTitle" = $p1
 
         AssertSql(
             """
-$id='ALFKI' (Nullable = false)
+id='ALFKI' (Nullable = false)
 
 SELECT * FROM "Customers" WHERE "CustomerID" = $id
 """,
             //
             """
-$id='ALFKI' (Nullable = false)
+id='ALFKI' (Nullable = false)
 
 SELECT * FROM "Customers" WHERE "CustomerID" = $id
 """);
@@ -443,7 +442,7 @@ SELECT * FROM "Customers" WHERE "CustomerID" = $id
 
         AssertSql(
             """
-$somename='ALFKI' (Nullable = false)
+somename='ALFKI' (Nullable = false)
 
 SELECT * FROM "Customers" WHERE "CustomerID" = $somename
 """);
@@ -489,7 +488,7 @@ WHERE "m"."OrderID" <= $__max_1 AND EXISTS (
     FROM (
         SELECT * FROM "Orders" WHERE "OrderID" >= $p0
     ) AS "m0"
-    WHERE m0."OrderID" = "m"."OrderID")
+    WHERE "m0"."OrderID" = "m"."OrderID")
 """,
             //
             """
@@ -505,7 +504,7 @@ WHERE "m"."OrderID" <= $__max_1 AND EXISTS (
     FROM (
         SELECT * FROM "Orders" WHERE "OrderID" >= $p0
     ) AS "m0"
-    WHERE m0."OrderID" = "m"."OrderID")
+    WHERE "m0"."OrderID" = "m"."OrderID")
 """);
     }
 
@@ -532,7 +531,7 @@ FROM (
     SELECT * FROM "Customers" WHERE "City" = 'London'
 ) AS "m"
 UNION ALL
-SELECT m0."Address", m0."City", m0."CompanyName", m0."ContactName", m0."ContactTitle", m0."Country", m0."CustomerID", m0."Fax", m0."Phone", m0."Region", m0."PostalCode"
+SELECT "m0"."Address", "m0"."City", "m0"."CompanyName", "m0"."ContactName", "m0"."ContactTitle", "m0"."Country", "m0"."CustomerID", "m0"."Fax", "m0"."Phone", "m0"."Region", "m0"."PostalCode"
 FROM (
     SELECT * FROM "Customers" WHERE "City" = 'Berlin'
 ) AS "m0"
@@ -560,14 +559,14 @@ WHERE "m"."City" = 'Seattle'
 
         AssertSql(
             """
-$city='London' (Nullable = false)
+city='London' (Nullable = false)
 
 SELECT "m"."CustomerID", "m"."EmployeeID", "m"."Freight", "m"."OrderDate", "m"."OrderID", "m"."RequiredDate", "m"."ShipAddress", "m"."ShipCity", "m"."ShipCountry", "m"."ShipName", "m"."ShipPostalCode", "m"."ShipRegion", "m"."ShipVia", "m"."ShippedDate"
 FROM (
     SELECT * FROM "Orders"
 ) AS "m"
 WHERE "m"."CustomerID" IN (
-    SELECT m0."CustomerID"
+    SELECT "m0"."CustomerID"
     FROM (
         SELECT * FROM "Customers" WHERE "City" = $city
     ) AS "m0"
@@ -588,7 +587,7 @@ FROM (
     SELECT * FROM "Orders"
 ) AS "m"
 WHERE "m"."CustomerID" IN (
-    SELECT m0."CustomerID"
+    SELECT "m0"."CustomerID"
     FROM (
         SELECT * FROM "Customers" WHERE "City" = $p0
     ) AS "m0"
@@ -602,14 +601,14 @@ WHERE "m"."CustomerID" IN (
 
         AssertSql(
             """
-$city='London' (Nullable = false)
+city='London' (Nullable = false)
 
 SELECT "m"."CustomerID", "m"."EmployeeID", "m"."Freight", "m"."OrderDate", "m"."OrderID", "m"."RequiredDate", "m"."ShipAddress", "m"."ShipCity", "m"."ShipCountry", "m"."ShipName", "m"."ShipPostalCode", "m"."ShipRegion", "m"."ShipVia", "m"."ShippedDate"
 FROM (
     SELECT * FROM "Orders"
 ) AS "m"
 WHERE "m"."CustomerID" IN (
-    SELECT m0."CustomerID"
+    SELECT "m0"."CustomerID"
     FROM (
         SELECT * FROM "Customers" WHERE "City" = $city
     ) AS "m0"
@@ -624,14 +623,14 @@ WHERE "m"."CustomerID" IN (
         AssertSql(
             """
 p0='London'
-$title='Sales Representative' (Nullable = false)
+title='Sales Representative' (Nullable = false)
 
 SELECT "m"."CustomerID", "m"."EmployeeID", "m"."Freight", "m"."OrderDate", "m"."OrderID", "m"."RequiredDate", "m"."ShipAddress", "m"."ShipCity", "m"."ShipCountry", "m"."ShipName", "m"."ShipPostalCode", "m"."ShipRegion", "m"."ShipVia", "m"."ShippedDate"
 FROM (
     SELECT * FROM "Orders"
 ) AS "m"
 WHERE "m"."CustomerID" IN (
-    SELECT m0."CustomerID"
+    SELECT "m0"."CustomerID"
     FROM (
         SELECT * FROM "Customers" WHERE "City" = $p0 AND "ContactTitle" = $title
     ) AS "m0"
@@ -639,7 +638,7 @@ WHERE "m"."CustomerID" IN (
 """,
             //
             """
-$city='London' (Nullable = false)
+city='London' (Nullable = false)
 p1='Sales Representative'
 
 SELECT "m"."CustomerID", "m"."EmployeeID", "m"."Freight", "m"."OrderDate", "m"."OrderID", "m"."RequiredDate", "m"."ShipAddress", "m"."ShipCity", "m"."ShipCountry", "m"."ShipName", "m"."ShipPostalCode", "m"."ShipRegion", "m"."ShipVia", "m"."ShippedDate"
@@ -647,7 +646,7 @@ FROM (
     SELECT * FROM "Orders"
 ) AS "m"
 WHERE "m"."CustomerID" IN (
-    SELECT m0."CustomerID"
+    SELECT "m0"."CustomerID"
     FROM (
         SELECT * FROM "Customers" WHERE "City" = $city AND "ContactTitle" = $p1
     ) AS "m0"
@@ -668,7 +667,7 @@ FROM (
     SELECT * FROM "Customers" WHERE "City" = $city
 ) AS "m"
 INTERSECT
-SELECT m0."Address", m0."City", m0."CompanyName", m0."ContactName", m0."ContactTitle", m0."Country", m0."CustomerID", m0."Fax", m0."Phone", m0."Region", m0."PostalCode"
+SELECT "m0"."Address", "m0"."City", "m0"."CompanyName", "m0"."ContactName", "m0"."ContactTitle", "m0"."Country", "m0"."CustomerID", "m0"."Fax", "m0"."Phone", "m0"."Region", "m0"."PostalCode"
 FROM (
     SELECT * FROM "Customers" WHERE "City" = $city
 ) AS "m0"
@@ -701,6 +700,37 @@ WHERE "m"."ContactName" LIKE '%z%'
     public override Task Bad_data_error_handling_invalid_cast_projection(bool async)
         => Task.CompletedTask;
 #pragma warning restore xUnit1026
+
+    // The PG guards assert provider-specific exceptions and messages that H2 does not produce.
+    [ConditionalTheory]
+    [MemberData(nameof(IsAsyncData))]
+    [Trait("Category", "BlockedByPort")]
+    public override Task Bad_data_error_handling_invalid_cast_key(bool async)
+        => base.Bad_data_error_handling_invalid_cast_key(async);
+
+    [ConditionalTheory]
+    [MemberData(nameof(IsAsyncData))]
+    [Trait("Category", "BlockedByPort")]
+    public override Task Bad_data_error_handling_invalid_cast_no_tracking(bool async)
+        => base.Bad_data_error_handling_invalid_cast_no_tracking(async);
+
+    [ConditionalTheory]
+    [MemberData(nameof(IsAsyncData))]
+    [Trait("Category", "BlockedByPort")]
+    public override Task Bad_data_error_handling_null(bool async)
+        => base.Bad_data_error_handling_null(async);
+
+    [ConditionalTheory]
+    [MemberData(nameof(IsAsyncData))]
+    [Trait("Category", "BlockedByPort")]
+    public override Task Bad_data_error_handling_null_no_tracking(bool async)
+        => base.Bad_data_error_handling_null_no_tracking(async);
+
+    [ConditionalTheory]
+    [MemberData(nameof(IsAsyncData))]
+    [Trait("Category", "BlockedByPort")]
+    public override Task Bad_data_error_handling_null_projection(bool async)
+        => base.Bad_data_error_handling_null_projection(async);
 
     // The spec base creates PG-style '@name' parameters; H2 writes '$name'.
     protected override DbParameter CreateDbParameter(string name, object value)

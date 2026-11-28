@@ -208,6 +208,52 @@ public class H2TestStore : RelationalTestStore
     }
 
 
+    // The spec bases write PG-style '@name' placeholders in raw SQL. The H2 dialect writes
+    // '$name', so normalize only those markers; '@' inside a literal or identifier stays put.
+    public override string NormalizeDelimitersInRawString(string sql)
+        => RewriteAtParameters(base.NormalizeDelimitersInRawString(sql));
+
+    private static string RewriteAtParameters(string sql)
+    {
+        var builder = new System.Text.StringBuilder(sql.Length);
+        char quote = '\0';
+        for (int i = 0; i < sql.Length; i++)
+        {
+            char c = sql[i];
+            if (quote != '\0')
+            {
+                _ = builder.Append(c);
+                if (c == quote)
+                {
+                    quote = i + 1 < sql.Length && sql[i + 1] == quote ? sql[++i] : '\0';
+                    if (quote == c)
+                    {
+                        _ = builder.Append(c);
+                    }
+                }
+
+                continue;
+            }
+
+            if (c is '\'' or '"')
+            {
+                quote = c;
+                _ = builder.Append(c);
+                continue;
+            }
+
+            if (c == '@' && i + 1 < sql.Length && char.IsLetter(sql[i + 1]))
+            {
+                _ = builder.Append('$');
+                continue;
+            }
+
+            _ = builder.Append(c);
+        }
+
+        return builder.ToString();
+    }
+
     public override void OpenConnection()
         => Connection.Open();
 

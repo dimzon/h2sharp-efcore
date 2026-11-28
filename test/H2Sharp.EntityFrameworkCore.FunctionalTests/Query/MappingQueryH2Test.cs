@@ -5,7 +5,6 @@ using Xunit;
 namespace H2Sharp.EntityFrameworkCore.Query;
 
 // ReSharper disable once UnusedMember.Global
-[Trait("Category", "BlockedByPort")]
 public class MappingQueryH2Test : MappingQueryTestBase<MappingQueryH2Test.MappingQueryH2Fixture>
 {
     public MappingQueryH2Test(MappingQueryH2Fixture fixture)

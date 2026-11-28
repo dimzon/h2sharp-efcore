@@ -244,6 +244,15 @@ EF их не отдаёт генератору, как в апстриме).
    0 failed functional, 325 model, 152 unit на net9 и net10. Остаток
    `SqlQueryH2Test`/`MappingQueryH2Test` объясняется не отсутствием данных,
    а `@`-плейсхолдерами в raw SQL и PG-ожиданиями исключений.
+   `@`-плейсхолдеры вылечены в тестовом адаптере: `H2TestStore`
+   переопределяет `NormalizeDelimitersInRawString` и меняет `@name` на `$name`
+   вне строковых литералов и кавычек; движок и провайдер не менялись.
+   `SqlQueryH2Test` снят с `BlockedByPort`, 5 методов (PG-исключения при
+   неверных данных) остались blocked на уровне методов; `MappingQueryH2Test`
+   тоже зелёный. В `FromSqlQueryH2Test` сняты трейты с 8 методов, которые
+   заработали после нормализации; 10 методов остаются blocked.
+   Полный gate: 13323 passed / 0 failed functional, 325 model, 152 unit
+   на net9 и net10.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
