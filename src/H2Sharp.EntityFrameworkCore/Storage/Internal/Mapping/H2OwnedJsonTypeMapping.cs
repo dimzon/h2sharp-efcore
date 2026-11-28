@@ -14,10 +14,15 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 public class H2OwnedJsonTypeMapping : JsonTypeMapping
 {
     // The engine keeps a JSON value as normalized UTF-8 bytes, and H2DataReader.GetStream hands
-    // them out as a MemoryStream over those bytes. No text decoding/re-encoding is needed.
+    // them out as a MemoryStream over those bytes. The unwrapper only intervenes for JSON string
+    // scalars left by PG-style string-literal seeds.
     private static readonly MethodInfo GetStreamMethod
         = ExpressionMemberHelper.Method<Func<DbDataReader, int, System.IO.Stream>>(
             (reader, index) => reader.GetStream(index));
+
+    private static readonly MethodInfo UnwrapMethod
+        = ExpressionMemberHelper.Method<Func<System.IO.Stream, MemoryStream>>(
+            stream => H2JsonStreamUnwrapper.Unwrap(stream));
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -50,7 +55,7 @@ public class H2OwnedJsonTypeMapping : JsonTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public override Expression CustomizeDataReaderExpression(Expression expression)
-        => expression;
+        => Expression.Call(UnwrapMethod, expression);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

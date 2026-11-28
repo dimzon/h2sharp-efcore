@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using H2Sharp.Data;
 using H2Sharp.Engine;
+using H2Sharp.EntityFrameworkCore.Storage.Internal;
 
 namespace H2Sharp.EntityFrameworkCore.Storage;
 
@@ -43,7 +44,9 @@ public static class H2DataSources
     public static H2DataSource GetOrCreate(string connectionString)
         => Sources.GetOrAdd(
             Key(connectionString),
-            _ => new H2DataSourceBuilder(connectionString).Build());
+            _ => new H2DataSourceBuilder(connectionString)
+                .ConfigureExtensions(H2JsonPathUdfs.Register)
+                .Build());
 
     /// <summary>
     ///     The data source that owns the database the connection string names, if there is one.

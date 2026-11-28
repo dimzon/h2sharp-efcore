@@ -1,5 +1,6 @@
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using H2Sharp.Data;
 using H2Sharp.EntityFrameworkCore.Infrastructure.Internal;
 using H2Sharp.EntityFrameworkCore.Storage;
 
@@ -104,9 +105,11 @@ public class H2RelationalConnection : RelationalConnection, IH2RelationalConnect
         // ADO providers hand back an unconfigured connection here; opening it without a
         // connection string is what refuses. EF's interception tests need to see the
         // connection before they configure or replace it.
-        return string.IsNullOrEmpty(ConnectionString)
+        H2Connection connection = string.IsNullOrEmpty(ConnectionString)
             ? new H2Connection()
             : new H2Connection(ConnectionString);
+        H2JsonPathUdfs.Register(connection);
+        return connection;
     }
 
     /// <summary>

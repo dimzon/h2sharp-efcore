@@ -4,6 +4,7 @@ using System.Text;using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using H2Sharp.EntityFrameworkCore.Query.Expressions;
 using H2Sharp.EntityFrameworkCore.Query.Expressions.Internal;
+using H2Sharp.EntityFrameworkCore.Storage.Internal;
 using H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
 namespace H2Sharp.EntityFrameworkCore.Query.Internal;
@@ -1041,22 +1042,18 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
                 GenerateJsonPath(returnsText: true);
                 break;
 
-            // bytea requires special handling, since we encode the binary data as base64 inside the JSON, but that requires a special
-            // conversion function to be extracted out to a PG bytea.
+            // A JSON string is already text; no cast is needed.
             case H2ByteArrayTypeMapping:
-                Sql.Append("decode(");
                 GenerateJsonPath(returnsText: true);
-                Sql.Append(", 'base64')");
                 break;
 
-            // Arrays require special handling; we cannot simply cast a JSON array (as text) to a PG array ([1,2,3] isn't a valid PG array
-            // representation). We use jsonb_array_elements_text to extract the array elements as a set, cast them to their PG element type
-            // and then build an array from that.
+            // Build the SQL array from the provider's table UDF: its ordinality column keeps the
+            // order of the JSON array, which matters for ordered query results.
             case H2ArrayTypeMapping arrayMapping:
-                Sql.Append("(ARRAY(SELECT CAST(element AS ").Append(arrayMapping.ElementTypeMapping.StoreType)
-                    .Append(") FROM jsonb_array_elements_text(");
+                Sql.Append("(ARRAY(SELECT CAST(\"value\" AS ").Append(arrayMapping.ElementTypeMapping.StoreType)
+                    .Append(") FROM ").Append(H2JsonPathUdfs.ArrayElementsText).Append("(");
                 GenerateJsonPath(returnsText: false);
-                Sql.Append(") WITH ORDINALITY AS t(element) ORDER BY ordinality))");
+                Sql.Append(") ORDER BY ordinality))");
                 break;
 
             default:
@@ -1101,44 +1098,39 @@ public class H2QuerySqlGenerator : QuerySqlGenerator
     }
 
     private void GenerateJsonPath(SqlExpression expression, bool returnsText, IReadOnlyList<SqlExpression> path)
-    {
-        Visit(expression);
+        => WritePath(expression, returnsText, path, path.Count - 1);
 
-        if (path.Count == 1)
+    private void WritePath(
+        SqlExpression expression, bool returnsText, IReadOnlyList<SqlExpression> path, int index)
+    {
+        if (index < 0)
         {
-            Sql.Append(returnsText ? " ->> " : " -> ");
-            Visit(path[0]);
+            Visit(expression);
             return;
         }
 
-        // Multiple path components
-        Sql.Append(returnsText ? " #>> " : " #> ");
+        // The last segment decides whether the caller needs a JSON fragment (nested entity)
+        // or a scalar text value. Earlier segments always navigate within the document.
+        var function = index == path.Count - 1 && !returnsText
+            ? H2JsonPathUdfs.Query
+            : H2JsonPathUdfs.Extract;
+        Sql.Append(function).Append("(");
+        WritePath(expression, returnsText, path, index - 1);
+        Sql.Append(", ");
 
-        // Use simplified array literal syntax if all path components are constants for cleaner SQL
-        if (path.All(p => p is SqlConstantExpression { Value: var pathSegment }
-                && (pathSegment is not string s || s.All(char.IsAsciiLetterOrDigit))))
+        SqlExpression segment = path[index];
+        if (segment is SqlConstantExpression { Value: string propertyName })
         {
-            Sql
-                .Append("'{")
-                .Append(string.Join(",", path.Select(p => ((SqlConstantExpression)p).Value)))
-                .Append("}'");
+            Sql.Append("'").Append(propertyName.Replace("'", "''")).Append("'");
         }
         else
         {
-            Sql.Append("ARRAY[");
-            for (var i = 0; i < path.Count; i++)
-            {
-                Visit(path[i]);
-                if (i < path.Count - 1)
-                {
-                    Sql.Append(",");
-                }
-            }
-
-            // No cast after the brackets: H2 2.5 has no "::" and the type of the array
-            // follows from the elements and from the place the array stands in.
-            Sql.Append("]");
+            Sql.Append("CAST(");
+            Visit(segment);
+            Sql.Append(" AS VARCHAR)");
         }
+
+        Sql.Append(")");
     }
 
     /// <summary>
