@@ -261,6 +261,11 @@ EF их не отдаёт генератору, как в апстриме).
    расхождения в форме SQL для set-операций и complex types.
    Полный gate после этой частичной подготовки без изменений: 13323 passed /
    0 failed functional, 325 model, 152 unit.
+   `ComplexNavigationsQueryH2Test` снят с `BlockedByPort`: 602 passed, 7
+   методов (LATERAL и PG-исключение) остались blocked на уровне методов.
+   Остальные пять вариантов ComplexNavigations (collections/split/shared)
+   пока остаются class-level blocked: 188 из 198 отказов — отсутствие
+   LATERAL, то есть ограничение эталонного H2 2.5.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
