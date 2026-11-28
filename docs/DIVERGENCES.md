@@ -285,6 +285,9 @@ EF их не отдаёт генератору, как в апстриме).
    базлайн Ef6GroupBy переведён на `CAST(length(...) AS integer)`.
    `AdHocAdvancedMappingsQueryH2Test` снят с `BlockedByPort`: 23 passed; 6
    методов с PG-ожиданиями исключений остались blocked на уровне методов.
+   Снят `BlockedByPort` с `AdHocManyToManyQueryH2Test` и
+   `StoredProcedureUpdateH2Test` — оба зелёные без правок SQL.
+
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:

@@ -6,7 +6,6 @@ namespace H2Sharp.EntityFrameworkCore.Update;
 
 #nullable enable
 
-[Trait("Category", "BlockedByPort")]
 [MinimumPostgresVersion(14, 0)]
 public class StoredProcedureUpdateH2Test : StoredProcedureUpdateTestBase
 {
