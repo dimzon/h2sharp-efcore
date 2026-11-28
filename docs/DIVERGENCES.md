@@ -276,6 +276,10 @@ EF их не отдаёт генератору, как в апстриме).
    `FunkyDataQueryH2Test` — после разделения store они зелёные.
    `AdHocMiscellaneousQueryH2Test` остаётся blocked из-за одного теста,
    ожидающего PG-исключение при NULL-ключе.
+   `ComplexTypeQueryH2Test` снят с `BlockedByPort`: 148 passed, 1 skipped.
+   Базлайны переведены на H2-алиасы, `DbType = String` и
+   `CAST(count(*) AS integer)`; 4 метода остались blocked (LATERAL и форма
+   ARRAY-литерала).
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
