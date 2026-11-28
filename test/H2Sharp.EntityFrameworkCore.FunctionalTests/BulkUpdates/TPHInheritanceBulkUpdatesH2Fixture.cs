@@ -9,6 +9,9 @@ public class TPHInheritanceBulkUpdatesH2Fixture : TPHInheritanceBulkUpdatesFixtu
     protected override ITestStoreFactory TestStoreFactory
         => H2TestStoreFactory.Instance;
 
+    protected override string StoreName
+        => "TPHBulkUpdates";
+
     protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
     {
         base.OnModelCreating(modelBuilder, context);

@@ -7,4 +7,7 @@ public class TPTInheritanceBulkUpdatesH2Fixture : TPTInheritanceBulkUpdatesFixtu
 {
     protected override ITestStoreFactory TestStoreFactory
         => H2TestStoreFactory.Instance;
+
+    protected override string StoreName
+        => "TPTBulkUpdates";
 }

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.BulkUpdates;
+﻿using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.BulkUpdates;
@@ -22,8 +22,8 @@ public class TPCInheritanceBulkUpdatesH2Test(
 
         AssertSql(
             """
-DELETE FROM "Kiwi" AS k
-WHERE k."Name" = 'Great spotted kiwi'
+DELETE FROM "Kiwi" "k"
+WHERE "k"."Name" = 'Great spotted kiwi'
 """);
     }
 
@@ -33,17 +33,17 @@ WHERE k."Name" = 'Great spotted kiwi'
 
         AssertSql(
             """
-DELETE FROM "Countries" AS c
+DELETE FROM "Countries" "c"
 WHERE (
-    SELECT count(*)::int
+    SELECT CAST(count(*) AS integer)
     FROM (
-        SELECT e."CountryId"
-        FROM "Eagle" AS e
+        SELECT "e"."CountryId"
+        FROM "Eagle" "e"
         UNION ALL
-        SELECT k."CountryId"
-        FROM "Kiwi" AS k
-    ) AS u
-    WHERE c."Id" = u."CountryId" AND u."CountryId" > 0) > 0
+        SELECT "k"."CountryId"
+        FROM "Kiwi" "k"
+    ) AS "u"
+    WHERE "c"."Id" = "u"."CountryId" AND "u"."CountryId" > 0) > 0
 """);
     }
 
@@ -53,14 +53,14 @@ WHERE (
 
         AssertSql(
             """
-DELETE FROM "Countries" AS c
+DELETE FROM "Countries" "c"
 WHERE (
-    SELECT count(*)::int
+    SELECT CAST(count(*) AS integer)
     FROM (
-        SELECT k."CountryId"
-        FROM "Kiwi" AS k
-    ) AS u
-    WHERE c."Id" = u."CountryId" AND u."CountryId" > 0) > 0
+        SELECT "k"."CountryId"
+        FROM "Kiwi" "k"
+    ) AS "u"
+    WHERE "c"."Id" = "u"."CountryId" AND "u"."CountryId" > 0) > 0
 """);
     }
 
@@ -126,7 +126,7 @@ WHERE (
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Kiwi" AS k
+UPDATE "Kiwi" "k"
 SET "Name" = 'SomeOtherKiwi'
 """);
     }
@@ -137,7 +137,7 @@ SET "Name" = 'SomeOtherKiwi'
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Kiwi" AS k
+UPDATE "Kiwi" "k"
 SET "FoundOn" = 0
 """);
     }
@@ -148,18 +148,18 @@ SET "FoundOn" = 0
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Countries" AS c
+UPDATE "Countries" "c"
 SET "Name" = 'Monovia'
 WHERE (
-    SELECT count(*)::int
+    SELECT CAST(count(*) AS integer)
     FROM (
-        SELECT e."CountryId"
-        FROM "Eagle" AS e
+        SELECT "e"."CountryId"
+        FROM "Eagle" "e"
         UNION ALL
-        SELECT k."CountryId"
-        FROM "Kiwi" AS k
-    ) AS u
-    WHERE c."Id" = u."CountryId" AND u."CountryId" > 0) > 0
+        SELECT "k"."CountryId"
+        FROM "Kiwi" "k"
+    ) AS "u"
+    WHERE "c"."Id" = "u"."CountryId" AND "u"."CountryId" > 0) > 0
 """);
     }
 
@@ -169,7 +169,7 @@ WHERE (
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Kiwi" AS k
+UPDATE "Kiwi" "k"
 SET "FoundOn" = 0,
     "Name" = 'Kiwi'
 """);
@@ -181,15 +181,15 @@ SET "FoundOn" = 0,
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Countries" AS c
+UPDATE "Countries" "c"
 SET "Name" = 'Monovia'
 WHERE (
-    SELECT count(*)::int
+    SELECT CAST(count(*) AS integer)
     FROM (
-        SELECT k."CountryId"
-        FROM "Kiwi" AS k
-    ) AS u
-    WHERE c."Id" = u."CountryId" AND u."CountryId" > 0) > 0
+        SELECT "k"."CountryId"
+        FROM "Kiwi" "k"
+    ) AS "u"
+    WHERE "c"."Id" = "u"."CountryId" AND "u"."CountryId" > 0) > 0
 """);
     }
 
@@ -206,7 +206,7 @@ WHERE (
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Coke" AS c
+UPDATE "Coke" "c"
 SET "SugarGrams" = 0
 """);
     }
@@ -217,7 +217,7 @@ SET "SugarGrams" = 0
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Coke" AS c
+UPDATE "Coke" "c"
 SET "SugarGrams" = 0
 """);
     }

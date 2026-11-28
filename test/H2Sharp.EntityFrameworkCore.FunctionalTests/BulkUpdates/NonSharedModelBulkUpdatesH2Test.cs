@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.BulkUpdates;
+﻿using Microsoft.EntityFrameworkCore.BulkUpdates;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
@@ -10,6 +10,9 @@ public class NonSharedModelBulkUpdatesH2Test : NonSharedModelBulkUpdatesRelation
     protected override ITestStoreFactory TestStoreFactory
         => H2TestStoreFactory.Instance;
 
+    protected override string StoreName
+        => "NonSharedModelBulkUpdates";
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => TestHelpers.AssertAllMethodsOverridden(GetType());
@@ -20,7 +23,7 @@ public class NonSharedModelBulkUpdatesH2Test : NonSharedModelBulkUpdatesRelation
 
         AssertSql(
             """
-DELETE FROM "Owner" AS o
+DELETE FROM "Owner" "o"
 """);
     }
 
@@ -32,11 +35,11 @@ DELETE FROM "Owner" AS o
             """
 $__p_0='1'
 
-DELETE FROM "Owner" AS o
-WHERE o."Id" IN (
-    SELECT o0."Id"
-    FROM "Owner" AS o0
-    ORDER BY o0."Title" NULLS FIRST
+DELETE FROM "Owner" "o"
+WHERE "o"."Id" IN (
+    SELECT "o0"."Id"
+    FROM "Owner" "o0"
+    ORDER BY "o0"."Title" NULLS FIRST
     OFFSET $__p_0
 )
 """);
@@ -48,7 +51,7 @@ WHERE o."Id" IN (
 
         AssertSql(
             """
-DELETE FROM "Owner" AS o
+DELETE FROM "Owner" "o"
 """);
     }
 
@@ -58,10 +61,10 @@ DELETE FROM "Owner" AS o
 
         AssertSql(
             """
-UPDATE "OwnedCollection" AS o0
+UPDATE "OwnedCollection" "o0"
 SET "Value" = 'SomeValue'
-FROM "Owner" AS o
-WHERE o."Id" = o0."OwnerId"
+FROM "Owner" "o"
+WHERE "o"."Id" = "o0"."OwnerId"
 """);
     }
 
@@ -78,7 +81,7 @@ WHERE o."Id" = o0."OwnerId"
 
         AssertSql(
             """
-UPDATE "Owner" AS o
+UPDATE "Owner" "o"
 SET "Title" = 'SomeValue'
 """);
     }
@@ -89,12 +92,12 @@ SET "Title" = 'SomeValue'
 
         AssertSql(
             """
-DELETE FROM "Posts" AS p
-WHERE p."Id" IN (
-    SELECT p0."Id"
-    FROM "Posts" AS p0
-    LEFT JOIN "Blogs" AS b ON p0."BlogId" = b."Id"
-    WHERE b."Title" LIKE 'Arthur%'
+DELETE FROM "Posts" "p"
+WHERE "p"."Id" IN (
+    SELECT "p0"."Id"
+    FROM "Posts" "p0"
+    LEFT JOIN "Blogs" "b" ON "p0"."BlogId" = "b"."Id"
+    WHERE "b"."Title" LIKE 'Arthur%'
 )
 """);
     }
@@ -105,8 +108,8 @@ WHERE p."Id" IN (
 
         AssertSql(
             """
-UPDATE "Owner" AS o
-SET "Title" = COALESCE(o."Title", '') || '_Suffix'
+UPDATE "Owner" "o"
+SET "Title" = COALESCE("o"."Title", '') || '_Suffix'
 """);
     }
 
@@ -116,10 +119,10 @@ SET "Title" = COALESCE(o."Title", '') || '_Suffix'
 
         AssertSql(
             """
-UPDATE "Owner" AS o
+UPDATE "Owner" "o"
 SET "Title" = 'NewValue'
-FROM "Owner" AS o0
-WHERE o."Id" = o0."Id"
+FROM "Owner" "o0"
+WHERE "o"."Id" = "o0"."Id"
 """);
     }
 
@@ -129,9 +132,9 @@ WHERE o."Id" = o0."Id"
 
         AssertSql(
             """
-UPDATE "Owner" AS o
-SET "OwnedReference_Number" = length(o."Title")::int,
-    "Title" = COALESCE(o."OwnedReference_Number"::text, '')
+UPDATE "Owner" "o"
+SET "OwnedReference_Number" = length("o"."Title")::int,
+    "Title" = COALESCE("o"."OwnedReference_Number"::text, '')
 """);
     }
 
@@ -162,7 +165,7 @@ SET "OwnedReference_Number" = length(o."Title")::int,
 
         AssertSql(
             """
-UPDATE "Blogs" AS b
+UPDATE "Blogs" "b"
 SET "CreationTimestamp" = TIMESTAMPTZ '2020-01-01T00:00:00Z'
 """);
     }
@@ -173,11 +176,11 @@ SET "CreationTimestamp" = TIMESTAMPTZ '2020-01-01T00:00:00Z'
 
         AssertSql(
             """
-UPDATE "BlogsPart1" AS b0
-SET "Rating" = length(b0."Title")::int,
-    "Title" = b0."Rating"::text
-FROM "Blogs" AS b
-WHERE b."Id" = b0."Id"
+UPDATE "BlogsPart1" "b0"
+SET "Rating" = length("b0"."Title")::int,
+    "Title" = "b0"."Rating"::text
+FROM "Blogs" "b"
+WHERE "b"."Id" = "b0"."Id"
 """);
     }
 
@@ -187,11 +190,11 @@ WHERE b."Id" = b0."Id"
 
         AssertSql(
             """
-DELETE FROM "Context30572_Principal" AS c
-WHERE c."Id" IN (
-    SELECT c0."Id"
-    FROM "Context30572_Principal" AS c0
-    LEFT JOIN "Context30572_Dependent" AS c1 ON c0."DependentId" = c1."Id"
+DELETE FROM "Context30572_Principal" "c"
+WHERE "c"."Id" IN (
+    SELECT "c0"."Id"
+    FROM "Context30572_Principal" "c0"
+    LEFT JOIN "Context30572_Dependent" "c1" ON "c0"."DependentId" = "c1"."Id"
 )
 """);
     }
@@ -202,12 +205,12 @@ WHERE c."Id" IN (
 
         AssertSql(
             """
-UPDATE "Orders" AS o
+UPDATE "Orders" "o"
 SET "Total" = (
-    SELECT COALESCE(sum(o0."Amount"), 0)::int
-    FROM "OrderProduct" AS o0
-    WHERE o."Id" = o0."OrderId")
-WHERE o."Id" = 1
+    SELECT COALESCE(sum("o0"."Amount"), 0)::int
+    FROM "OrderProduct" "o0"
+    WHERE "o"."Id" = "o0"."OrderId")
+WHERE "o"."Id" = 1
 """);
     }
 

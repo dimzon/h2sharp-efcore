@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.BulkUpdates;
+﻿using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.BulkUpdates;
@@ -29,11 +29,11 @@ public class TPTFiltersInheritanceBulkUpdatesSqlServerTest(
 
         AssertSql(
             """
-DELETE FROM "Countries" AS c
+DELETE FROM "Countries" "c"
 WHERE (
-    SELECT count(*)::int
-    FROM "Animals" AS a
-    WHERE a."CountryId" = 1 AND c."Id" = a."CountryId" AND a."CountryId" > 0) > 0
+    SELECT CAST(count(*) AS integer)
+    FROM "Animals" "a"
+    WHERE "a"."CountryId" = 1 AND "c"."Id" = "a"."CountryId" AND "a"."CountryId" > 0) > 0
 """);
     }
 
@@ -43,12 +43,12 @@ WHERE (
 
         AssertSql(
             """
-DELETE FROM "Countries" AS c
+DELETE FROM "Countries" "c"
 WHERE (
-    SELECT count(*)::int
-    FROM "Animals" AS a
-    LEFT JOIN "Kiwi" AS k ON a."Id" = k."Id"
-    WHERE a."CountryId" = 1 AND c."Id" = a."CountryId" AND k."Id" IS NOT NULL AND a."CountryId" > 0) > 0
+    SELECT CAST(count(*) AS integer)
+    FROM "Animals" "a"
+    LEFT JOIN "Kiwi" "k" ON "a"."Id" = "k"."Id"
+    WHERE "a"."CountryId" = 1 AND "c"."Id" = "a"."CountryId" AND "k"."Id" IS NOT NULL AND "a"."CountryId" > 0) > 0
 """);
     }
 
@@ -80,14 +80,14 @@ WHERE (
         // TODO: This over-complex SQL would get pruned after https://github.com/dotnet/efcore/issues/31083
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a0
+UPDATE "Animals" "a0"
 SET "Name" = 'Animal'
 FROM (
-    SELECT a."Id"
-    FROM "Animals" AS a
-    WHERE a."CountryId" = 1 AND a."Name" = 'Great spotted kiwi'
-) AS s
-WHERE a0."Id" = s."Id"
+    SELECT "a"."Id"
+    FROM "Animals" "a"
+    WHERE "a"."CountryId" = 1 AND "a"."Name" = 'Great spotted kiwi'
+) AS "s"
+WHERE "a0"."Id" = "s"."Id"
 """);
     }
 
@@ -98,17 +98,17 @@ WHERE a0."Id" = s."Id"
         // TODO: This over-complex SQL would get pruned after https://github.com/dotnet/efcore/issues/31083
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a0
+UPDATE "Animals" "a0"
 SET "Name" = 'NewBird'
-FROM "Birds" AS b,
-    "Kiwi" AS k0,
+FROM "Birds" "b",
+    "Kiwi" "k0",
     (
-        SELECT a."Id"
-        FROM "Animals" AS a
-        LEFT JOIN "Kiwi" AS k ON a."Id" = k."Id"
-        WHERE a."CountryId" = 1 AND k."Id" IS NOT NULL
-    ) AS s
-WHERE a0."Id" = s."Id" AND a0."Id" = k0."Id" AND a0."Id" = b."Id"
+        SELECT "a"."Id"
+        FROM "Animals" "a"
+        LEFT JOIN "Kiwi" "k" ON "a"."Id" = "k"."Id"
+        WHERE "a"."CountryId" = 1 AND "k"."Id" IS NOT NULL
+    ) AS "s"
+WHERE "a0"."Id" = "s"."Id" AND "a0"."Id" = "k0"."Id" AND "a0"."Id" = "b"."Id"
 """);
     }
 
@@ -139,11 +139,11 @@ WHERE a0."Id" = s."Id" AND a0."Id" = k0."Id" AND a0."Id" = b."Id"
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a
+UPDATE "Animals" "a"
 SET "Name" = 'SomeOtherKiwi'
-FROM "Birds" AS b,
-    "Kiwi" AS k
-WHERE a."Id" = k."Id" AND a."Id" = b."Id" AND a."CountryId" = 1
+FROM "Birds" "b",
+    "Kiwi" "k"
+WHERE "a"."Id" = "k"."Id" AND "a"."Id" = "b"."Id" AND "a"."CountryId" = 1
 """);
     }
 
@@ -153,11 +153,11 @@ WHERE a."Id" = k."Id" AND a."Id" = b."Id" AND a."CountryId" = 1
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Kiwi" AS k
+UPDATE "Kiwi" "k"
 SET "FoundOn" = 0
-FROM "Animals" AS a
-INNER JOIN "Birds" AS b ON a."Id" = b."Id"
-WHERE a."Id" = k."Id" AND a."CountryId" = 1
+FROM "Animals" "a"
+INNER JOIN "Birds" "b" ON "a"."Id" = "b"."Id"
+WHERE "a"."Id" = "k"."Id" AND "a"."CountryId" = 1
 """);
     }
 
@@ -174,12 +174,12 @@ WHERE a."Id" = k."Id" AND a."CountryId" = 1
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Countries" AS c
+UPDATE "Countries" "c"
 SET "Name" = 'Monovia'
 WHERE (
-    SELECT count(*)::int
-    FROM "Animals" AS a
-    WHERE a."CountryId" = 1 AND c."Id" = a."CountryId" AND a."CountryId" > 0) > 0
+    SELECT CAST(count(*) AS integer)
+    FROM "Animals" "a"
+    WHERE "a"."CountryId" = 1 AND "c"."Id" = "a"."CountryId" AND "a"."CountryId" > 0) > 0
 """);
     }
 
@@ -189,13 +189,13 @@ WHERE (
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Countries" AS c
+UPDATE "Countries" "c"
 SET "Name" = 'Monovia'
 WHERE (
-    SELECT count(*)::int
-    FROM "Animals" AS a
-    LEFT JOIN "Kiwi" AS k ON a."Id" = k."Id"
-    WHERE a."CountryId" = 1 AND c."Id" = a."CountryId" AND k."Id" IS NOT NULL AND a."CountryId" > 0) > 0
+    SELECT CAST(count(*) AS integer)
+    FROM "Animals" "a"
+    LEFT JOIN "Kiwi" "k" ON "a"."Id" = "k"."Id"
+    WHERE "a"."CountryId" = 1 AND "c"."Id" = "a"."CountryId" AND "k"."Id" IS NOT NULL AND "a"."CountryId" > 0) > 0
 """);
     }
 

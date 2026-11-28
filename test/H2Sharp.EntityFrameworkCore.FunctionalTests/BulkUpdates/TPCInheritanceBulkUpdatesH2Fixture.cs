@@ -8,6 +8,9 @@ public class TPCInheritanceBulkUpdatesH2Fixture : TPCInheritanceBulkUpdatesFixtu
     protected override ITestStoreFactory TestStoreFactory
         => H2TestStoreFactory.Instance;
 
+    protected override string StoreName
+        => "TPCBulkUpdates";
+
     public override bool UseGeneratedKeys
         => false;
 }

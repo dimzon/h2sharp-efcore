@@ -9,7 +9,12 @@ public class NorthwindBulkUpdatesH2Fixture<TModelCustomizer> : NorthwindBulkUpda
     where TModelCustomizer : ITestModelCustomizer, new()
 {
     protected override ITestStoreFactory TestStoreFactory
-        => H2NorthwindTestStoreFactory.Instance;
+        => H2NorthwindTestStoreFactory.BulkUpdates;
+
+    // Bulk update tests enlist a second context in the first one's transaction, which needs the
+    // shared store connection; a private store keeps that transaction away from other fixtures.
+    protected override string StoreName
+        => "NorthwindBulkUpdates";
 
     protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
     {

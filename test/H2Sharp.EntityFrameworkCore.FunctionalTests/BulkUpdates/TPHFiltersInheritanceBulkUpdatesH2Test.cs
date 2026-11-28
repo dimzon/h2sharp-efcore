@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.BulkUpdates;
+﻿using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.BulkUpdates;
@@ -16,8 +16,8 @@ public class TPHFiltersInheritanceBulkUpdatesH2Test(
 
         AssertSql(
             """
-DELETE FROM "Animals" AS a
-WHERE a."CountryId" = 1 AND a."Name" = 'Great spotted kiwi'
+DELETE FROM "Animals" "a"
+WHERE "a"."CountryId" = 1 AND "a"."Name" = 'Great spotted kiwi'
 """);
     }
 
@@ -27,8 +27,8 @@ WHERE a."CountryId" = 1 AND a."Name" = 'Great spotted kiwi'
 
         AssertSql(
             """
-DELETE FROM "Animals" AS a
-WHERE a."Discriminator" = 'Kiwi' AND a."CountryId" = 1 AND a."Name" = 'Great spotted kiwi'
+DELETE FROM "Animals" "a"
+WHERE "a"."Discriminator" = 'Kiwi' AND "a"."CountryId" = 1 AND "a"."Name" = 'Great spotted kiwi'
 """);
     }
 
@@ -38,11 +38,11 @@ WHERE a."Discriminator" = 'Kiwi' AND a."CountryId" = 1 AND a."Name" = 'Great spo
 
         AssertSql(
             """
-DELETE FROM "Countries" AS c
+DELETE FROM "Countries" "c"
 WHERE (
-    SELECT count(*)::int
-    FROM "Animals" AS a
-    WHERE a."CountryId" = 1 AND c."Id" = a."CountryId" AND a."CountryId" > 0) > 0
+    SELECT CAST(count(*) AS integer)
+    FROM "Animals" "a"
+    WHERE "a"."CountryId" = 1 AND "c"."Id" = "a"."CountryId" AND "a"."CountryId" > 0) > 0
 """);
     }
 
@@ -52,11 +52,11 @@ WHERE (
 
         AssertSql(
             """
-DELETE FROM "Countries" AS c
+DELETE FROM "Countries" "c"
 WHERE (
-    SELECT count(*)::int
-    FROM "Animals" AS a
-    WHERE a."CountryId" = 1 AND c."Id" = a."CountryId" AND a."Discriminator" = 'Kiwi' AND a."CountryId" > 0) > 0
+    SELECT CAST(count(*) AS integer)
+    FROM "Animals" "a"
+    WHERE "a"."CountryId" = 1 AND "c"."Id" = "a"."CountryId" AND "a"."Discriminator" = 'Kiwi' AND "a"."CountryId" > 0) > 0
 """);
     }
 
@@ -80,17 +80,17 @@ WHERE (
 
         AssertSql(
             """
-DELETE FROM "Animals" AS a
-WHERE a."CountryId" = 1 AND a."Id" IN (
+DELETE FROM "Animals" "a"
+WHERE "a"."CountryId" = 1 AND "a"."Id" IN (
     SELECT (
-        SELECT a1."Id"
-        FROM "Animals" AS a1
-        WHERE a1."CountryId" = 1 AND a0."CountryId" = a1."CountryId"
+        SELECT "a1"."Id"
+        FROM "Animals" "a1"
+        WHERE "a1"."CountryId" = 1 AND "a0"."CountryId" = "a1"."CountryId"
         LIMIT 1)
-    FROM "Animals" AS a0
-    WHERE a0."CountryId" = 1
-    GROUP BY a0."CountryId"
-    HAVING count(*)::int < 3
+    FROM "Animals" "a0"
+    WHERE "a0"."CountryId" = 1
+    GROUP BY "a0"."CountryId"
+    HAVING CAST(count(*) AS integer) < 3
 )
 """);
     }
@@ -108,9 +108,9 @@ WHERE a."CountryId" = 1 AND a."Id" IN (
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a
+UPDATE "Animals" "a"
 SET "Name" = 'Animal'
-WHERE a."CountryId" = 1 AND a."Name" = 'Great spotted kiwi'
+WHERE "a"."CountryId" = 1 AND "a"."Name" = 'Great spotted kiwi'
 """);
     }
 
@@ -120,9 +120,9 @@ WHERE a."CountryId" = 1 AND a."Name" = 'Great spotted kiwi'
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a
+UPDATE "Animals" "a"
 SET "Name" = 'NewBird'
-WHERE a."CountryId" = 1 AND a."Discriminator" = 'Kiwi'
+WHERE "a"."CountryId" = 1 AND "a"."Discriminator" = 'Kiwi'
 """);
     }
 
@@ -135,12 +135,12 @@ WHERE a."CountryId" = 1 AND a."Discriminator" = 'Kiwi'
 $__p_1='3'
 $__p_0='0'
 
-DELETE FROM "Animals" AS a
-WHERE a."Id" IN (
-    SELECT a0."Id"
-    FROM "Animals" AS a0
-    WHERE a0."CountryId" = 1 AND a0."Name" = 'Great spotted kiwi'
-    ORDER BY a0."Name" NULLS FIRST
+DELETE FROM "Animals" "a"
+WHERE "a"."Id" IN (
+    SELECT "a0"."Id"
+    FROM "Animals" "a0"
+    WHERE "a0"."CountryId" = 1 AND "a0"."Name" = 'Great spotted kiwi'
+    ORDER BY "a0"."Name" NULLS FIRST
     LIMIT $__p_1 OFFSET $__p_0
 )
 """);
@@ -159,9 +159,9 @@ WHERE a."Id" IN (
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a
+UPDATE "Animals" "a"
 SET "Name" = 'SomeOtherKiwi'
-WHERE a."Discriminator" = 'Kiwi' AND a."CountryId" = 1
+WHERE "a"."Discriminator" = 'Kiwi' AND "a"."CountryId" = 1
 """);
     }
 
@@ -171,9 +171,9 @@ WHERE a."Discriminator" = 'Kiwi' AND a."CountryId" = 1
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a
+UPDATE "Animals" "a"
 SET "FoundOn" = 0
-WHERE a."Discriminator" = 'Kiwi' AND a."CountryId" = 1
+WHERE "a"."Discriminator" = 'Kiwi' AND "a"."CountryId" = 1
 """);
     }
 
@@ -183,10 +183,10 @@ WHERE a."Discriminator" = 'Kiwi' AND a."CountryId" = 1
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a
+UPDATE "Animals" "a"
 SET "FoundOn" = 0,
     "Name" = 'Kiwi'
-WHERE a."Discriminator" = 'Kiwi' AND a."CountryId" = 1
+WHERE "a"."Discriminator" = 'Kiwi' AND "a"."CountryId" = 1
 """);
     }
 
@@ -196,12 +196,12 @@ WHERE a."Discriminator" = 'Kiwi' AND a."CountryId" = 1
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Countries" AS c
+UPDATE "Countries" "c"
 SET "Name" = 'Monovia'
 WHERE (
-    SELECT count(*)::int
-    FROM "Animals" AS a
-    WHERE a."CountryId" = 1 AND c."Id" = a."CountryId" AND a."CountryId" > 0) > 0
+    SELECT CAST(count(*) AS integer)
+    FROM "Animals" "a"
+    WHERE "a"."CountryId" = 1 AND "c"."Id" = "a"."CountryId" AND "a"."CountryId" > 0) > 0
 """);
     }
 
@@ -211,12 +211,12 @@ WHERE (
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Countries" AS c
+UPDATE "Countries" "c"
 SET "Name" = 'Monovia'
 WHERE (
-    SELECT count(*)::int
-    FROM "Animals" AS a
-    WHERE a."CountryId" = 1 AND c."Id" = a."CountryId" AND a."Discriminator" = 'Kiwi' AND a."CountryId" > 0) > 0
+    SELECT CAST(count(*) AS integer)
+    FROM "Animals" "a"
+    WHERE "a"."CountryId" = 1 AND "c"."Id" = "a"."CountryId" AND "a"."Discriminator" = 'Kiwi' AND "a"."CountryId" > 0) > 0
 """);
     }
 

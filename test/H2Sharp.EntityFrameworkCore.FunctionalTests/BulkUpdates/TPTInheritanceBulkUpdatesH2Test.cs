@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.BulkUpdates;
+﻿using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.BulkUpdates;
@@ -65,14 +65,14 @@ public class TPTInheritanceBulkUpdatesH2Test(
         // TODO: This over-complex SQL would get pruned after https://github.com/dotnet/efcore/issues/31083
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a0
+UPDATE "Animals" "a0"
 SET "Name" = 'Animal'
 FROM (
-    SELECT a."Id"
-    FROM "Animals" AS a
-    WHERE a."Name" = 'Great spotted kiwi'
-) AS s
-WHERE a0."Id" = s."Id"
+    SELECT "a"."Id"
+    FROM "Animals" "a"
+    WHERE "a"."Name" = 'Great spotted kiwi'
+) AS "s"
+WHERE "a0"."Id" = "s"."Id"
 """);
     }
 
@@ -83,17 +83,17 @@ WHERE a0."Id" = s."Id"
         // TODO: This over-complex SQL would get pruned after https://github.com/dotnet/efcore/issues/31083
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a0
+UPDATE "Animals" "a0"
 SET "Name" = 'NewBird'
-FROM "Birds" AS b,
-    "Kiwi" AS k0,
+FROM "Birds" "b",
+    "Kiwi" "k0",
     (
-        SELECT a."Id"
-        FROM "Animals" AS a
-        LEFT JOIN "Kiwi" AS k ON a."Id" = k."Id"
-        WHERE k."Id" IS NOT NULL
-    ) AS s
-WHERE a0."Id" = s."Id" AND a0."Id" = k0."Id" AND a0."Id" = b."Id"
+        SELECT "a"."Id"
+        FROM "Animals" "a"
+        LEFT JOIN "Kiwi" "k" ON "a"."Id" = "k"."Id"
+        WHERE "k"."Id" IS NOT NULL
+    ) AS "s"
+WHERE "a0"."Id" = "s"."Id" AND "a0"."Id" = "k0"."Id" AND "a0"."Id" = "b"."Id"
 """);
     }
 
@@ -124,11 +124,11 @@ WHERE a0."Id" = s."Id" AND a0."Id" = k0."Id" AND a0."Id" = b."Id"
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Animals" AS a
+UPDATE "Animals" "a"
 SET "Name" = 'SomeOtherKiwi'
-FROM "Birds" AS b,
-    "Kiwi" AS k
-WHERE a."Id" = k."Id" AND a."Id" = b."Id"
+FROM "Birds" "b",
+    "Kiwi" "k"
+WHERE "a"."Id" = "k"."Id" AND "a"."Id" = "b"."Id"
 """);
     }
 
@@ -138,11 +138,11 @@ WHERE a."Id" = k."Id" AND a."Id" = b."Id"
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Kiwi" AS k
+UPDATE "Kiwi" "k"
 SET "FoundOn" = 0
-FROM "Animals" AS a
-INNER JOIN "Birds" AS b ON a."Id" = b."Id"
-WHERE a."Id" = k."Id"
+FROM "Animals" "a"
+INNER JOIN "Birds" "b" ON "a"."Id" = "b"."Id"
+WHERE "a"."Id" = "k"."Id"
 """);
     }
 
@@ -159,12 +159,12 @@ WHERE a."Id" = k."Id"
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Countries" AS c
+UPDATE "Countries" "c"
 SET "Name" = 'Monovia'
 WHERE (
-    SELECT count(*)::int
-    FROM "Animals" AS a
-    WHERE c."Id" = a."CountryId" AND a."CountryId" > 0) > 0
+    SELECT CAST(count(*) AS integer)
+    FROM "Animals" "a"
+    WHERE "c"."Id" = "a"."CountryId" AND "a"."CountryId" > 0) > 0
 """);
     }
 
@@ -174,13 +174,13 @@ WHERE (
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Countries" AS c
+UPDATE "Countries" "c"
 SET "Name" = 'Monovia'
 WHERE (
-    SELECT count(*)::int
-    FROM "Animals" AS a
-    LEFT JOIN "Kiwi" AS k ON a."Id" = k."Id"
-    WHERE c."Id" = a."CountryId" AND k."Id" IS NOT NULL AND a."CountryId" > 0) > 0
+    SELECT CAST(count(*) AS integer)
+    FROM "Animals" "a"
+    LEFT JOIN "Kiwi" "k" ON "a"."Id" = "k"."Id"
+    WHERE "c"."Id" = "a"."CountryId" AND "k"."Id" IS NOT NULL AND "a"."CountryId" > 0) > 0
 """);
     }
 
@@ -197,10 +197,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Coke" AS c
+UPDATE "Coke" "c"
 SET "SugarGrams" = 0
-FROM "Drinks" AS d
-WHERE d."Id" = c."Id"
+FROM "Drinks" "d"
+WHERE "d"."Id" = "c"."Id"
 """);
     }
 
@@ -210,10 +210,10 @@ WHERE d."Id" = c."Id"
 
         AssertExecuteUpdateSql(
             """
-UPDATE "Coke" AS c
+UPDATE "Coke" "c"
 SET "SugarGrams" = 0
-FROM "Drinks" AS d
-WHERE d."Id" = c."Id"
+FROM "Drinks" "d"
+WHERE "d"."Id" = "c"."Id"
 """);
     }
 
