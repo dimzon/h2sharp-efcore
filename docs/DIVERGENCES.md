@@ -174,8 +174,9 @@ EF их не отдаёт генератору, как в апстриме).
    `Product.UnitsOnOrder`, потому что SQL Server/SQLite берут их из полного
    Northwind.sql. H2 создаёт схему из EF-модели и сидирует только её, поэтому
    raw-SQL-тесты выбирают несуществующие колонки или получают NULL. Добавление
-   shadow-колонок убирает «column not found», но не даёт данных — для полного
-   снятия трайта нужен перенос дампа Northwind, а не правка движка.
+   shadow-колонок убирает «column not found», но не даёт данных. Дамп позже
+   перенесён (см. ниже), но остаток отказов объясняется `@`-плейсхолдерами в
+   raw SQL и PG-ожиданиями исключений, а не правкой движка.
    Тем же ограничением сидирования объясняется `MappingQueryH2Test`: его
    фикстура не вызывает `NorthwindData.SeedAsync`, а ждёт данные из Northwind.sql.
    Снят `BlockedByPort` с `AdHocComplexTypeQueryH2Test`,
@@ -230,6 +231,19 @@ EF их не отдаёт генератору, как в апстриме).
    полный дамп Northwind.sql).
    Полный gate: 13202 passed / 0 failed functional, 325 model, 152 unit
    на net9 и net10.
+   Разово конвертирован `Northwind.sql`: `tools/convert_northwind_h2.py`
+   убирает SET/EXTENSION/GO/trigger-команды, PG-функции и индексы, переводит
+   типы в H2 (`SERIAL` → identity, `bytea` → `VARBINARY`, `text` → `VARCHAR`,
+   `money` → `DECIMAL(19,4)`, `nchar` → `CHAR`), `N'...'` → `'...'` и
+   `E'\\x...'` → `X'...'`. Результат — `NorthwindH2.sql` (13 таблиц, полные
+   данные), который `H2NorthwindTestStoreFactory` передаёт как `scriptPath`.
+   При наличии скрипта `H2TestStore` не вызывает EF-сидирование, поэтому
+   строки загружаются один раз. FK-ограничения в скрипте опущены: дамп
+   выгружался с отключёнными триггерами, а H2 не умеет `DISABLE TRIGGER`.
+   Полный gate после подключения полного дампа без изменений: 13202 passed /
+   0 failed functional, 325 model, 152 unit на net9 и net10. Остаток
+   `SqlQueryH2Test`/`MappingQueryH2Test` объясняется не отсутствием данных,
+   а `@`-плейсхолдерами в raw SQL и PG-ожиданиями исключений.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:

@@ -10,14 +10,13 @@ public class H2NorthwindTestStoreFactory : H2TestStoreFactory
         // Many Northwind fixtures share this store while xunit runs their classes in parallel.
         // A single store connection would be closed by one fixture's teardown while another is
         // still querying; H2Connection.Close() cancels its session and produces 57014.
-        : base(useConnectionString: true)
+        // The converted dump supplies the full schema and data; H2TestStore skips EF seeding
+        // when a script is present, so the rows are loaded exactly once.
+        : base(scriptPath: "NorthwindH2.sql", useConnectionString: true)
     {
     }
 
     public override TestStore GetOrCreate(string storeName)
-        // Northwind.sql is a PostgreSQL dump: SET statement_timeout, CREATE EXTENSION, SERIAL,
-        // bytea and 3202 E'\\x...' literals. The reference engine refuses it. EF's Northwind
-        // fixture already seeds NorthwindData after the store is initialized, so let H2 create
-        // the schema from NorthwindH2Context and load the data through EF instead.
+        // All Northwind fixtures use the one database the converted dump seeds.
         => base.GetOrCreate(Name);
 }
