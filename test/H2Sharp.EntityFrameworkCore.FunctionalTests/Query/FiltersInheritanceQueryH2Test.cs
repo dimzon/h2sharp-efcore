@@ -2,7 +2,6 @@ using Xunit;
 
 namespace H2Sharp.EntityFrameworkCore.Query;
 
-[Trait("Category", "BlockedByPort")]
 public class FiltersInheritanceQueryH2Test : FiltersInheritanceQueryTestBase<TPHFiltersInheritanceQueryH2Fixture>
 {
     // ReSharper disable once UnusedParameter.Local

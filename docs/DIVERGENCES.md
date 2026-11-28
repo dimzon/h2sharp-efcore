@@ -266,6 +266,12 @@ EF их не отдаёт генератору, как в апстриме).
    Остальные пять вариантов ComplexNavigations (collections/split/shared)
    пока остаются class-level blocked: 188 из 198 отказов — отсутствие
    LATERAL, то есть ограничение эталонного H2 2.5.
+   Снят `BlockedByPort` с `TPHInheritanceQueryH2Test`,
+   `TPTInheritanceQueryH2Test`, `TPCFiltersInheritanceQueryH2Test` и
+   `FiltersInheritanceQueryH2Test`: 234 passed, 8 skipped. Фильтрованные
+   варианты получили собственные store (делили его с нефильтрованными).
+   `TPCInheritanceQueryH2Test` остаётся blocked: 16 отказов с на один row
+   больше на TPC-наборе.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:

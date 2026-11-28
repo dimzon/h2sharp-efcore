@@ -20,5 +20,9 @@ public class TPCRelationshipsQueryH2Test
     {
         protected override ITestStoreFactory TestStoreFactory
             => H2TestStoreFactory.Instance;
+
+        // Shares TPCInheritanceQueryFixture's store name upstream; give it its own database.
+        protected override string StoreName
+            => "TPCRelationshipsTest";
     }
 }
