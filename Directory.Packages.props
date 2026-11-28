@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <EFCoreVersion>[9.0.14,10.0.0)</EFCoreVersion>
+    <EFCoreVersion>[9.0.23, 10.0.0)</EFCoreVersion>
     <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
     <!-- The engine ships its own version line (0.x while the port is unfinished). -->
     <H2SharpVersion>0.1.44-alpha.2</H2SharpVersion>
