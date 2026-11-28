@@ -95,40 +95,11 @@ public class H2DatabaseCreator : RelationalDatabaseCreator
     /// <inheritdoc />
     public override void Delete()
     {
-        // H2 has no database to drop: the schema is part of the connection's URL, and what a "delete
-        // the database" means for it is the objects in it. H2's own "DROP ALL OBJECTS" would be the
-        // short way to say this, and it is what this will issue once the engine's parser reads it.
-        //
-        // Until then the tables are dropped by name, from the model EF has: the tables the context
-        // maps are the tables that were created. A table that was created by some other model is
-        // not dropped, because H2 has no catalogue to find it in -- there is no INFORMATION_SCHEMA
-        // in the port.
-        var model = Dependencies.CurrentContext.Context.Model;
-        if (model is null)
-        {
-            return;
-        }
-
-        var wasOpen = _connection.DbConnection.State == ConnectionState.Open;
-        if (!wasOpen)
-        {
-            _connection.Open();
-        }
-
-        try
-        {
-            foreach (var table in model.GetRelationalModel().Tables)
-            {
-                Execute($"DROP TABLE IF EXISTS {_sqlGenerationHelper.DelimitIdentifier(table.Name, table.Schema)}");
-            }
-        }
-        finally
-        {
-            if (!wasOpen)
-            {
-                _connection.Close();
-            }
-        }
+        // H2 has no database to drop apart from the objects in it, and the engine reads
+        // DROP ALL OBJECTS (see Parser.parseDrop). Dropping only the tables in the current model
+        // left __EFMigrationsHistory and __H2SharpMigrationLock alive, so the next Migrate saw
+        // an applied migration whose table was gone and tried to revert it.
+        Execute("DROP ALL OBJECTS");
     }
 
     /// <inheritdoc />

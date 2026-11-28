@@ -287,6 +287,16 @@ EF их не отдаёт генератору, как в апстриме).
    методов с PG-ожиданиями исключений остались blocked на уровне методов.
    Снят `BlockedByPort` с `AdHocManyToManyQueryH2Test` и
    `StoredProcedureUpdateH2Test` — оба зелёные без правок SQL.
+   Параллельные миграции разбирались отдельно: thread-safe гейт `H2Migrator`
+   работает (в стеке, `Parallel.For` на чистой фикстуре — 0 отказов). Настоящая
+   причина — `H2DatabaseCreator.Delete()` удалял только таблицы из текущей
+   модели, оставляя `__EFMigrationsHistory` и `__H2SharpMigrationLock`; после
+   `EnsureDeleted()` следующий `Migrate` видел уже применённую миграцию и
+   пытался откатить её (`RENAME COLUMN Bar TO Foo`) на исчезнувшей таблице.
+   `Delete()` теперь исполняет эталонный `DROP ALL OBJECTS`; регрессия
+   `H2DatabaseCreatorDeleteTest` проверяет удаление таблицы вне модели.
+   `MigrationsInfrastructureH2Test` снят с `BlockedByPort`: 19 passed, 5 skipped.
+
 
 
    Закрыто в этом прогоне:
