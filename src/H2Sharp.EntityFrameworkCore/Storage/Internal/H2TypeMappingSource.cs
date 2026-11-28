@@ -100,7 +100,6 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
     // JSON mappings - older string/weakly-typed support
     private readonly H2JsonTypeMapping _jsonString = new("json", typeof(string));
     private readonly H2JsonTypeMapping _jsonDocument = new("json", typeof(JsonDocument));
-    private readonly H2JsonTypeMapping _jsonElement = new("json", typeof(JsonElement));
 
     // Date/Time types
     private readonly H2DateTimeDateTypeMapping _dateDateTime = H2DateTimeDateTypeMapping.Default;
@@ -204,7 +203,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             { "blob", [_blob] },
 
             { "uuid", [_uuid] },
-            { "json", [_jsonString, _jsonDocument, _jsonElement] },
+            { "json", [_jsonString, _jsonDocument, _jsonOwned] },
             { "geometry", [_geometry] }
         };
 // ReSharper restore CoVariantArrayConversion
@@ -229,7 +228,7 @@ public class H2TypeMappingSource : RelationalTypeMappingSource
             { typeof(BigInteger), _bigInteger },
             { typeof(string), _text },
             { typeof(JsonDocument), _jsonDocument },
-            { typeof(JsonElement), _jsonElement },
+            { typeof(JsonElement), _jsonOwned },
             { typeof(char), _singleChar },
             { typeof(DateTime), _timestamp },
             { typeof(DateOnly), _dateDateOnly },

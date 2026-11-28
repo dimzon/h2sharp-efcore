@@ -104,7 +104,8 @@ public class H2DateTimeDateTypeMapping : H2TypeMapping
     /// </summary>
     public sealed class H2JsonDateTimeReaderWriter : JsonValueReaderWriter<DateTime>
     {
-        private static readonly PropertyInfo InstanceProperty = typeof(H2JsonDateTimeReaderWriter).GetProperty(nameof(Instance))!;
+        private static readonly PropertyInfo InstanceProperty =
+            ExpressionMemberHelper.Property(() => H2JsonDateTimeReaderWriter.Instance);
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

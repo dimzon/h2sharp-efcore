@@ -40,11 +40,12 @@ public class H2RowValueTypeMapping : RelationalTypeMapping
             Expression.Block(
                 Expression.Throw(
                     Expression.New(
-                        typeof(InvalidOperationException).GetConstructor([typeof(string)])!,
+                        ExpressionMemberHelper.Constructor(() => new InvalidOperationException("")),
                         Expression.Constant("Row values cannot be sent as parameters"))),
                 Expression.Default(providerType)),
             model);
 
+        // The tuple type is only known at runtime, so a typed lambda cannot name its constructor.
         var fields = clrType.GetGenericArguments();
         var constructor = clrType.GetConstructor(fields)
             ?? throw new InvalidOperationException($"No tuple constructor on {clrType}");

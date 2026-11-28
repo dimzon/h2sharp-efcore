@@ -55,11 +55,13 @@ public class H2DateOnlyTypeMapping : H2TypeMapping
 
     /// <inheritdoc />
     public override MethodInfo GetDataReaderMethod()
-        => typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDateTime), [typeof(int)])!;
+        => ExpressionMemberHelper.Method<Func<DbDataReader, int, DateTime>>(
+            (reader, index) => reader.GetDateTime(index));
 
     /// <inheritdoc />
     public override Expression CustomizeDataReaderExpression(Expression expression)
-        => Expression.Call(typeof(DateOnly).GetMethod(nameof(DateOnly.FromDateTime), [typeof(DateTime)])!, expression);
+        => Expression.Call(
+            ExpressionMemberHelper.Method<Func<DateTime, DateOnly>>(value => DateOnly.FromDateTime(value)), expression);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -110,7 +112,8 @@ public class H2DateOnlyTypeMapping : H2TypeMapping
     /// </summary>
     public sealed class H2JsonDateOnlyReaderWriter : JsonValueReaderWriter<DateOnly>
     {
-        private static readonly PropertyInfo InstanceProperty = typeof(H2JsonDateOnlyReaderWriter).GetProperty(nameof(Instance))!;
+        private static readonly PropertyInfo InstanceProperty =
+            ExpressionMemberHelper.Property(() => H2JsonDateOnlyReaderWriter.Instance);
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

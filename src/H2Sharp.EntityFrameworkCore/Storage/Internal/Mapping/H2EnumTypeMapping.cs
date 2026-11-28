@@ -155,7 +155,8 @@ public class H2EnumTypeMapping : RelationalTypeMapping
     public sealed class JsonPgEnumReaderWriter<T> : JsonValueReaderWriter<T>
         where T : struct, Enum
     {
-        private static readonly PropertyInfo InstanceProperty = typeof(JsonPgEnumReaderWriter<T>).GetProperty(nameof(Instance))!;
+        private static readonly PropertyInfo InstanceProperty =
+            ExpressionMemberHelper.Property(() => JsonPgEnumReaderWriter<T>.Instance);
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

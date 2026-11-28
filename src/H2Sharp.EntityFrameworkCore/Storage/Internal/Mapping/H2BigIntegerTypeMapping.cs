@@ -72,7 +72,8 @@ public class H2BigIntegerTypeMapping : H2TypeMapping
     /// </summary>
     public sealed class JsonBigIntegerReaderWriter : JsonValueReaderWriter<BigInteger>
     {
-        private static readonly PropertyInfo InstanceProperty = typeof(JsonBigIntegerReaderWriter).GetProperty(nameof(Instance))!;
+        private static readonly PropertyInfo InstanceProperty =
+            ExpressionMemberHelper.Property(() => JsonBigIntegerReaderWriter.Instance);
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

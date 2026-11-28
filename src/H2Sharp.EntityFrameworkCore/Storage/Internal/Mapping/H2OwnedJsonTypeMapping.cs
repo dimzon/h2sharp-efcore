@@ -1,6 +1,7 @@
 using System.Data.Common;
 using System.Text;
 using System.Text.Json;
+using H2Sharp.Data;
 
 namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 
@@ -12,17 +13,11 @@ namespace H2Sharp.EntityFrameworkCore.Storage.Internal.Mapping;
 /// </summary>
 public class H2OwnedJsonTypeMapping : JsonTypeMapping
 {
-    private static readonly MethodInfo GetStringMethod
-        = typeof(DbDataReader).GetRuntimeMethod(nameof(DbDataReader.GetString), [typeof(int)])!;
-
-    private static readonly PropertyInfo UTF8Property
-        = typeof(Encoding).GetProperty(nameof(Encoding.UTF8))!;
-
-    private static readonly MethodInfo EncodingGetBytesMethod
-        = typeof(Encoding).GetMethod(nameof(Encoding.GetBytes), [typeof(string)])!;
-
-    private static readonly ConstructorInfo MemoryStreamConstructor
-        = typeof(MemoryStream).GetConstructor([typeof(byte[])])!;
+    // The engine keeps a JSON value as normalized UTF-8 bytes, and H2DataReader.GetStream hands
+    // them out as a MemoryStream over those bytes. No text decoding/re-encoding is needed.
+    private static readonly MethodInfo GetStreamMethod
+        = ExpressionMemberHelper.Method<Func<DbDataReader, int, System.IO.Stream>>(
+            (reader, index) => reader.GetStream(index));
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -46,7 +41,7 @@ public class H2OwnedJsonTypeMapping : JsonTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public override MethodInfo GetDataReaderMethod()
-        => GetStringMethod;
+        => GetStreamMethod;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -55,12 +50,7 @@ public class H2OwnedJsonTypeMapping : JsonTypeMapping
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public override Expression CustomizeDataReaderExpression(Expression expression)
-        => Expression.New(
-            MemoryStreamConstructor,
-            Expression.Call(
-                Expression.Property(null, UTF8Property),
-                EncodingGetBytesMethod,
-                expression));
+        => expression;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -88,6 +78,14 @@ public class H2OwnedJsonTypeMapping : JsonTypeMapping
         }
 
         base.ConfigureParameter(parameter);
+
+        // EF hands the serialized document to the provider as a string. A plain string bound to
+        // a JSON column becomes a JSON string literal, so wrap it: the engine then parses it as a
+        // document through H2JsonParameterValue.
+        if (parameter.Value is string json && json.Length > 0)
+        {
+            parameter.Value = new JsonTextParameterValue(json);
+        }
     }
 
     /// <summary>
@@ -116,4 +114,12 @@ public class H2OwnedJsonTypeMapping : JsonTypeMapping
     /// </summary>
     protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
         => new H2OwnedJsonTypeMapping(parameters);
+
+    private sealed class JsonTextParameterValue(string text) : H2JsonParameterValue
+    {
+        private byte[]? bytes;
+
+        public override byte[] GetUtf8Bytes()
+            => bytes ??= Encoding.UTF8.GetBytes(text);
+    }
 }

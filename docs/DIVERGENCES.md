@@ -296,9 +296,14 @@ EF их не отдаёт генератору, как в апстриме).
    `Delete()` теперь исполняет эталонный `DROP ALL OBJECTS`; регрессия
    `H2DatabaseCreatorDeleteTest` проверяет удаление таблицы вне модели.
    `MigrationsInfrastructureH2Test` снят с `BlockedByPort`: 19 passed, 5 skipped.
-
-
-
+   JSONowned-маппинг переведён с `GetString`+перекодировки на
+   `H2DataReader.GetStream` (движок отдаёт `MemoryStream` готовых UTF-8 байт),
+   а документ на записи оборачивается в `H2JsonParameterValue` (D-055) вместо
+   строки — это убирает двойное кодирование. `JsonElement` теперь резолвится в
+   owned-маппинг, а не в слабый JSON-маппинг. Все `MethodInfo`/`PropertyInfo`
+   в маппингах строятся через `ExpressionMemberHelper` из typed lambda.
+   Остаток JSON-тестов падает на PG-функциях (`JSONB_ARRAY_ELEMENTS_TEXT`) и
+   формах JSON-путей; это отдельный slice перевода SQL, не чтения/записи.
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
      `TimeOnly`/`LocalTime` переживают round trip.

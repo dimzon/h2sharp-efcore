@@ -62,12 +62,14 @@ public class H2TimeTypeMapping : H2TypeMapping
 
     /// <inheritdoc />
     public override MethodInfo GetDataReaderMethod()
-        => typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetFieldValue))!.MakeGenericMethod(typeof(TimeSpan));
+        => ExpressionMemberHelper.Method<Func<DbDataReader, int, TimeSpan>>(
+            (reader, index) => reader.GetFieldValue<TimeSpan>(index));
 
     /// <inheritdoc />
     public override Expression CustomizeDataReaderExpression(Expression expression)
         => (Converter?.ProviderClrType ?? ClrType) == typeof(TimeOnly)
-            ? Expression.Call(typeof(TimeOnly).GetMethod(nameof(TimeOnly.FromTimeSpan), [typeof(TimeSpan)])!, expression)
+            ? Expression.Call(
+                ExpressionMemberHelper.Method<Func<TimeSpan, TimeOnly>>(value => TimeOnly.FromTimeSpan(value)), expression)
             : expression;
 
     /// <summary>

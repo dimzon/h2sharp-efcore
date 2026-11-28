@@ -185,7 +185,8 @@ public class H2IntervalTypeMapping : H2TypeMapping
     /// </summary>
     public sealed class H2JsonTimeSpanReaderWriter : JsonValueReaderWriter<TimeSpan>
     {
-        private static readonly PropertyInfo InstanceProperty = typeof(H2JsonTimeSpanReaderWriter).GetProperty(nameof(Instance))!;
+        private static readonly PropertyInfo InstanceProperty =
+            ExpressionMemberHelper.Property(() => H2JsonTimeSpanReaderWriter.Instance);
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

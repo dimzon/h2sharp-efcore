@@ -206,8 +206,8 @@ public class H2TimestampTzTypeMapping : H2TypeMapping
     /// </summary>
     public sealed class H2JsonTimestampTzDateTimeReaderWriter : JsonValueReaderWriter<DateTime>
     {
-        private static readonly PropertyInfo InstanceProperty
-            = typeof(H2JsonTimestampTzDateTimeReaderWriter).GetProperty(nameof(Instance))!;
+        private static readonly PropertyInfo InstanceProperty =
+            ExpressionMemberHelper.Property(() => H2JsonTimestampTzDateTimeReaderWriter.Instance);
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -264,8 +264,8 @@ public class H2TimestampTzTypeMapping : H2TypeMapping
     /// </summary>
     public sealed class H2JsonTimestampTzDateTimeOffsetReaderWriter : JsonValueReaderWriter<DateTimeOffset>
     {
-        private static readonly PropertyInfo InstanceProperty
-            = typeof(H2JsonTimestampTzDateTimeOffsetReaderWriter).GetProperty(nameof(Instance))!;
+        private static readonly PropertyInfo InstanceProperty =
+            ExpressionMemberHelper.Property(() => H2JsonTimestampTzDateTimeOffsetReaderWriter.Instance);
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

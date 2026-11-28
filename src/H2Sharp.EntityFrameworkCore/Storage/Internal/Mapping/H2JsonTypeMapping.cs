@@ -77,7 +77,8 @@ public class H2JsonTypeMapping : H2TypeMapping
 
     /// <inheritdoc />
     public override MethodInfo GetDataReaderMethod()
-        => typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetString), [typeof(int)])!;
+        => ExpressionMemberHelper.Method<Func<DbDataReader, int, string>>(
+            (reader, index) => reader.GetString(index));
 
     /// <inheritdoc />
     public override Expression CustomizeDataReaderExpression(Expression expression)
@@ -94,10 +95,7 @@ public class H2JsonTypeMapping : H2TypeMapping
                 : Expression.Property(document, nameof(JsonDocument.RootElement));
         }
 
-        return Expression.Call(typeof(JsonSerializer).GetMethods()
-                .Single(m => m.Name == nameof(JsonSerializer.Deserialize) && m.IsGenericMethodDefinition
-                    && m.GetParameters() is var p && p.Length == 2 && p[0].ParameterType == typeof(string)
-                    && p[1].ParameterType == typeof(JsonSerializerOptions)).MakeGenericMethod(ClrType),
+        return Expression.Call(DeserializeDefinition.MakeGenericMethod(ClrType),
             expression, Expression.Constant(null, typeof(JsonSerializerOptions)));
     }
 
@@ -162,8 +160,16 @@ public class H2JsonTypeMapping : H2TypeMapping
             _ => throw new NotSupportedException("Cannot generate code literals for JSON POCOs")
         };
 
-    private static readonly Expression DefaultJsonDocumentOptions = Expression.New(typeof(JsonDocumentOptions));
+    // JsonDocumentOptions has no explicit constructor: the expression tree represents
+    // `new JsonDocumentOptions()` as default, with no ConstructorInfo to look up.
+    private static readonly Expression DefaultJsonDocumentOptions = Expression.Default(typeof(JsonDocumentOptions));
 
     private static readonly MethodInfo ParseMethod =
-        typeof(JsonDocument).GetMethod(nameof(JsonDocument.Parse), [typeof(string), typeof(JsonDocumentOptions)])!;
+        ExpressionMemberHelper.Method<Func<string, JsonDocumentOptions, JsonDocument>>(
+            (json, options) => JsonDocument.Parse(json, options));
+
+    private static readonly MethodInfo DeserializeDefinition =
+        ExpressionMemberHelper.Method<Func<string, JsonSerializerOptions, object>>(
+            (json, options) => JsonSerializer.Deserialize<object>(json, options)!)
+            .GetGenericMethodDefinition();
 }
