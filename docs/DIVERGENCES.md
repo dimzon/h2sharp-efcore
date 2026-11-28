@@ -309,7 +309,10 @@ EF их не отдаёт генератору, как в апстриме).
    `H2DataSourceBuilder.ConfigureExtensions`. Двойное кодирование из PG-seed
    разворачивается в UDF и в stream-ридере. В `AdHocJsonQueryH2Test` стало
    20 passed вместо 3; остаток — PG-формы JSON-путей и расхождения в
-   сообщениях об ошибках.
+   сообщениях об ошибках. `JsonUpdateH2Test` после правки ADO-привязки
+   `byte[]` с `DbType.SByte` (движок теперь строит SQL ARRAY, а не VARBINARY)
+   поднялся с 0 до 40 passed; остаток — частичное обновление JSON
+   (`jsonb_set`) и расхождения в выборе маппинга для JSON-колонок.
    Снят `BlockedByPort` с `InheritanceRelationshipsQueryH2Test`,
    `TPCRelationshipsQueryH2Test`, `TPTRelationshipsQueryH2Test`,
    `TPCManyToManyQueryH2Test`, `TPTManyToManyQueryH2Test` и
