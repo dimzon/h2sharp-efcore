@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Globalization;
+using System.Linq;
+using H2Sharp.Data;
 using System.Data;
 using System.Data.Common;
 using System.Text;
@@ -413,11 +415,18 @@ public class H2ArrayTypeMapping<TCollection, TConcreteCollection, TElement> : H2
                 $"H2-specific type mapping {GetType()} being used with non-H2 parameter type {parameter.GetType().Name}");
         }
 
-        // An H2 array is typed by its element, so the element's DbType is the only thing worth
-        // carrying down. The engine is what decides the rest from the value it is handed.
+        // An H2 array is typed by its element. The wrapper carries that type explicitly, so a
+        // byte[] holding sbyte values is not mistaken for VARBINARY by the engine.
         if (ElementTypeMapping.DbType is { } elementDbType)
         {
             ((H2Parameter)parameter).DbType = elementDbType;
+        }
+
+        // Only the ambiguous shape needs the wrapper: byte[] carrying sbyte values. Other
+        // collection values already reach the engine with their CLR type intact.
+        if (ElementTypeMapping.ClrType == typeof(sbyte) && parameter.Value is byte[] bytes)
+        {
+            parameter.Value = new H2EfArrayParameterValue(typeof(sbyte), bytes.Select(b => unchecked((sbyte)b)));
         }
     }
 }

@@ -313,6 +313,13 @@ EF их не отдаёт генератору, как в апстриме).
    `byte[]` с `DbType.SByte` (движок теперь строит SQL ARRAY, а не VARBINARY)
    поднялся с 0 до 40 passed; остаток — частичное обновление JSON
    (`jsonb_set`) и расхождения в выборе маппинга для JSON-колонок.
+   По визе пользователя добавлен контракт `H2ArrayParameterValue` (D-056) с
+   явным типом элемента; EF-обёртка `H2EfArrayParameterValue` internal и
+   применяется только к неоднозначной форме `byte[]` для `sbyte`-коллекций,
+   чтобы не менять формат параметра в остальных базлайнах. Прямые ADO-вызовы
+   с `DbType.Byte`/`SByte` сохраняют fallback. Ещё одна гонка фикстур:
+   `TransactionInterception`-классы делили store — после разделения store
+   три прогона на net9 дали 72/72.
    Снят `BlockedByPort` с `InheritanceRelationshipsQueryH2Test`,
    `TPCRelationshipsQueryH2Test`, `TPTRelationshipsQueryH2Test`,
    `TPCManyToManyQueryH2Test`, `TPTManyToManyQueryH2Test` и

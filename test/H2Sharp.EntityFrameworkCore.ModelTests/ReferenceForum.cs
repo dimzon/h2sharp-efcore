@@ -2,6 +2,7 @@ using System.Data.Common;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using H2Sharp.Data;
 using H2Sharp.EntityFrameworkCore.ModelTests.Model;
 using H2Sharp.EntityFrameworkCore.ModelTests.Seeding;
 using H2Sharp.EntityFrameworkCore.TestUtilities;
@@ -75,6 +76,7 @@ internal static class ReferenceForum
             ? $"INTERVAL '{span.TotalDays}' DAY"
             : $"INTERVAL '{Math.Floor(span.TotalDays)} {span.Hours:D2}:{span.Minutes:D2}:{span.Seconds:D2}' DAY TO SECOND",
         Enum role => Literal(role.ToString()),
+        H2ArrayParameterValue array => "ARRAY[" + string.Join(",", array.Values.Select(Literal)) + "]",
         System.Collections.IEnumerable array => "ARRAY[" + string.Join(",", array.Cast<object?>().Select(Literal)) + "]",
         IFormattable number => number.ToString(null, CultureInfo.InvariantCulture),
         _ => throw new NotSupportedException($"Reference parameter type: {value.GetType()}")

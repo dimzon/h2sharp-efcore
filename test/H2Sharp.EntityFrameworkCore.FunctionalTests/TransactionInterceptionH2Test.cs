@@ -27,6 +27,10 @@ public abstract class TransactionInterceptionH2TestBase(TransactionInterceptionH
     {
         public class InterceptionH2Fixture : InterceptionH2FixtureBase
         {
+            // The two suites run in parallel; separate stores keep their transactions apart.
+            protected override string StoreName
+                => "TransactionInterceptionWithoutDiagnostics";
+
             protected override bool ShouldSubscribeToDiagnosticListener
                 => false;
         }
@@ -39,6 +43,9 @@ public abstract class TransactionInterceptionH2TestBase(TransactionInterceptionH
     {
         public class InterceptionH2Fixture : InterceptionH2FixtureBase
         {
+            protected override string StoreName
+                => "TransactionInterceptionWithDiagnostics";
+
             protected override bool ShouldSubscribeToDiagnosticListener
                 => true;
         }
