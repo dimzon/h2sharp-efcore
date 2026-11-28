@@ -224,6 +224,12 @@ EF их не отдаёт генератору, как в апстриме).
    identity equality subquery.
    Полный gate: 13092 passed / 0 failed functional, 325 model, 152 unit
    на net9 и net10.
+   `FromSqlQueryH2Test` снят с `BlockedByPort`: 110 passed. Параметры `@name`
+   тестовой базы нормализуются в `$name`; 18 методов остались blocked на
+   уровне методов (PG-исключения при плохих данных и запросы, которым нужен
+   полный дамп Northwind.sql).
+   Полный gate: 13202 passed / 0 failed functional, 325 model, 152 unit
+   на net9 и net10.
 
    Закрыто в этом прогоне:
    * `TIME` без точности в H2 2.5 — это `TIME(0)`, поэтому провайдер пишет `time(7)`:
